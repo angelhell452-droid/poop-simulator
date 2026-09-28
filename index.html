@@ -101,22 +101,33 @@
       <div class="flex items-center gap-1.5 bg-purple-950/90 px-3 py-1 rounded-xl border-2 border-yellow-400 shadow">
         <span class="text-lg">🧻</span>
         <div>
-          <div class="text-[9px] text-yellow-300 font-bold uppercase">Втулки Судьбы</div>
+          <div class="text-[9px] text-yellow-300 font-bold uppercase">Втулки</div>
           <span class="font-game text-sm sm:text-base text-yellow-200 tracking-wide" id="topPrestige">0</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 bg-indigo-950/90 px-3 py-1 rounded-xl border-2 border-cyan-400 shadow">
+        <span class="text-lg">🪠</span>
+        <div>
+          <div class="text-[9px] text-cyan-300 font-bold uppercase">Вантузы</div>
+          <span class="font-game text-sm sm:text-base text-cyan-200 tracking-wide" id="topPlungers">0</span>
         </div>
       </div>
     </div>
 
     <!-- DATABASE STATUS & ACTIONS -->
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1.5 sm:gap-2">
       <div id="cloudIndicator"
-        class="flex items-center gap-1 text-[11px] bg-stone-800 px-2.5 py-1 rounded-lg border border-stone-600 font-bold text-stone-300">
+        class="hidden sm:flex items-center gap-1 text-[11px] bg-stone-800 px-2 py-1 rounded-lg border border-stone-600 font-bold text-stone-300">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         <span id="cloudStatusText">БД: OK</span>
       </div>
       <button id="btnPrestigeModal"
-        class="bg-gradient-to-r from-purple-700 to-indigo-700 hover:brightness-110 text-white font-game px-3 py-1 rounded-xl border border-yellow-400 text-xs jelly-btn">
-        🌀 Смыв Судьбы
+        class="bg-gradient-to-r from-purple-700 to-indigo-700 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-400 text-xs jelly-btn">
+        🌀 Смыв
+      </button>
+      <button id="btnTranscendModal"
+        class="bg-gradient-to-r from-cyan-600 via-indigo-700 to-purple-800 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-cyan-400 text-xs jelly-btn">
+        🪠 Прорыв
       </button>
       <button id="btnAccountModal"
         class="bg-amber-800 hover:bg-amber-700 text-amber-100 p-1.5 rounded-xl border border-amber-600 text-sm jelly-btn"
@@ -159,6 +170,18 @@
             <div id="barHappy" class="bg-pink-500 h-full transition-all duration-300" style="width: 100%"></div>
           </div>
         </div>
+      </div>
+
+      <!-- COMBO HEAT & TURBO FRENZY BAR -->
+      <div class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between gap-2 z-10">
+        <div class="flex items-center gap-1.5 shrink-0 text-[10px] font-bold text-amber-400">
+          <span id="comboFlameIcon" class="text-xs">⚡</span>
+          <span id="comboLabel">ЯРОСТЬ КЛИКОВ: 0%</span>
+        </div>
+        <div class="flex-1 bg-stone-800 h-2.5 rounded-full overflow-hidden relative border border-stone-700/80">
+          <div id="comboBar" class="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 transition-all duration-100" style="width: 0%"></div>
+        </div>
+        <span id="turboRushTimer" class="text-[10px] font-game text-yellow-300 hidden bg-red-950/80 px-2 py-0.5 rounded border border-red-500 animate-pulse">🔥 ТУРБО x10!</span>
       </div>
 
       <!-- Canvas Viewport with Adaptive Background -->
@@ -222,14 +245,14 @@
       <!-- Panel Body -->
       <div class="flex-1 overflow-y-auto p-3 custom-scroll space-y-3 text-xs" id="dashPanels">
 
-        <!-- 1. EVOLUTIONS (200 STAGES) -->
+        <!-- 1. EVOLUTIONS (10,000 FORMS) -->
         <div id="panelEvo" class="space-y-3">
           <div
             class="bg-gradient-to-r from-amber-900/80 to-yellow-900/80 p-3 rounded-2xl border border-yellow-500/50 shadow">
             <div class="flex justify-between items-center mb-1">
               <span class="font-bold text-amber-200 uppercase text-[10px]">Текущая Ступень:</span>
               <span class="font-black bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded" id="evoProgressBadge">1 /
-                200</span>
+                10,000</span>
             </div>
             <div class="font-game text-base text-yellow-300" id="evoStageName">Форма 1: Исходная Кварк-Капля</div>
             <div class="text-[11px] text-stone-300 mt-0.5" id="evoStageDesc">Микроскопическое начало органической
@@ -243,7 +266,7 @@
             </div>
           </div>
 
-          <div class="font-bold text-stone-400 uppercase text-[10px] px-1">Хроники 200 Мутаций:</div>
+          <div class="font-bold text-stone-400 uppercase text-[10px] px-1">Хроники 10,000 Мутаций:</div>
           <div class="space-y-1.5 max-h-[360px] overflow-y-auto custom-scroll pr-1" id="evoListContainer"></div>
         </div>
 
@@ -397,6 +420,73 @@
     </div>
   </div>
 
+  <!-- ASTRAL TRANSCENDENCE MODAL -->
+  <div id="transcendModal"
+    class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div
+      class="bg-gradient-to-b from-stone-900 via-indigo-950 to-purple-950 rounded-3xl border-4 border-cyan-400 max-w-lg w-full p-5 relative text-center shadow-2xl max-h-[92vh] overflow-y-auto custom-scroll">
+      <button
+        class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
+      <div class="text-5xl my-1 animate-pulse">🪠</div>
+      <h3 class="font-game text-2xl text-cyan-300">АСТРАЛЬНЫЙ ПРОРЫВ</h3>
+      <p class="text-xs text-indigo-200 mt-1">Трансцендентное перерождение 2-го уровня! Получите священные <b>Астральные Вантузы</b> за накопленные Втулки Судьбы.</p>
+
+      <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
+        <div class="flex justify-between">
+          <span class="text-stone-300">Условие доступа:</span>
+          <span class="font-bold text-cyan-300">Форма 100+ и 500+ 🧻</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-stone-300">Запас Втулок Судьбы:</span>
+          <span class="font-game text-yellow-300" id="transcendCurrentRolls">0 🧻</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-stone-300">Награда за Прорыв:</span>
+          <span class="font-game text-cyan-300 text-sm" id="transcendCalcPlungers">+0 🪠 Вантузов</span>
+        </div>
+      </div>
+
+      <!-- Astral Upgrades Grid -->
+      <div class="text-left text-xs font-bold text-cyan-300 mb-1.5 uppercase">Астральные Артефакты Омниверса:</div>
+      <div class="space-y-2 mb-4 text-left" id="transcendUpgradesList">
+        <!-- Rendered in JS -->
+      </div>
+
+      <button id="btnExecuteTranscend"
+        class="w-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:brightness-110 text-white font-game text-sm py-2.5 rounded-2xl shadow-xl disabled:opacity-40 disabled:cursor-not-allowed">
+        СОВЕРШИТЬ АСТРАЛЬНЫЙ ПРОРЫВ! 🌌
+      </button>
+    </div>
+  </div>
+
+  <!-- OFFLINE WELCOME MODAL -->
+  <div id="offlineModal"
+    class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div
+      class="bg-gradient-to-b from-stone-900 via-amber-950 to-stone-900 rounded-3xl border-4 border-yellow-400 max-w-sm w-full p-5 text-center shadow-2xl">
+      <div class="text-5xl my-1 animate-bounce">💤</div>
+      <h3 class="font-game text-2xl text-yellow-300">С ВОЗВРАЩЕНИЕМ!</h3>
+      <p class="text-xs text-stone-300 mt-1" id="offlineTimeText">Вы отсутствовали некоторое время.</p>
+
+      <div class="bg-stone-950/80 border border-yellow-500/40 rounded-2xl p-3 my-4 text-left text-xs space-y-2">
+        <div class="text-stone-400">Пока вас не было, заводы продолжали добычу:</div>
+        <div class="flex justify-between items-center text-sm font-bold">
+          <span class="text-stone-300">Биомасса:</span>
+          <span class="text-emerald-400 font-game" id="offlineBioGain">+0 💨</span>
+        </div>
+        <div class="flex justify-between items-center text-sm font-bold">
+          <span class="text-stone-300">Блестяшки:</span>
+          <span class="text-yellow-400 font-game" id="offlineSparkleGain">+0 ✨</span>
+        </div>
+      </div>
+
+      <button id="btnClaimOffline"
+        class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-sm py-2.5 rounded-2xl shadow-xl jelly-btn">
+        ЗАБРАТЬ ДОБЫЧУ! 🚀
+      </button>
+    </div>
+  </div>
+
   <script>
     /* =========================================================================
        1. GAME STATE & 200 EVOLUTIONS GENERATOR
@@ -407,13 +497,16 @@
     function formatNumber(num) {
       if (num === null || num === undefined || isNaN(num)) return '0';
       if (num < 1000) return Math.floor(num).toString();
+      if (num >= 1e66) {
+        return num.toExponential(2).replace('+', '');
+      }
       const units = ['k', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Ocd', 'Nod', 'Vg'];
       const unitIndex = Math.floor(Math.log10(Math.abs(num)) / 3) - 1;
       if (unitIndex >= 0 && unitIndex < units.length) {
         const scaled = num / Math.pow(10, (unitIndex + 1) * 3);
         return scaled.toFixed(scaled >= 100 ? 0 : (scaled >= 10 ? 1 : 2)).replace(/\.0$/, '') + ' ' + units[unitIndex];
       }
-      return Math.floor(num).toLocaleString();
+      return num.toExponential(2).replace('+', '');
     }
 
     // Unique player ID & nickname for Netlify Database storage
@@ -429,6 +522,8 @@
       sparkles: 20,
       prestigeRolls: 0,
       totalPrestiges: 0,
+      transcendPlungers: 0,
+      totalTranscend: 0,
       evoStage: 0,
       hunger: 100,
       clean: 100,
@@ -438,7 +533,14 @@
       cycleBiomass: 0, // biomass gained in CURRENT prestige cycle (anti-abuse)
       lastFlushTime: 0,
       equippedHat: null,
-      autoClickerActive: false
+      autoClickerActive: false,
+      comboHeat: 0,
+      turboRushTime: 0,
+      lastSaveTime: Date.now(),
+      lastActiveTime: Date.now(),
+      meteorsCaught: 0,
+      turboCount: 0,
+      transcendUpgrades: { autoBuyer: false, passiveRolls: 0, omniMult: 0, afkCap: 0 }
     };
 
     let feedCount = 0;
@@ -446,56 +548,62 @@
     let polishCount = 0;
     let flushCount = 0;
 
-    // 200 CREATIVE EVOLUTION STAGES GENERATOR
+    // 10,000 CREATIVE EVOLUTION STAGES GENERATOR (25 GRAND EPOCHS)
     const EPOCH_NAMES = [
-      { epoch: "Органическая", bg: "#0284c7", body: "#78350f", aura: null },
-      { epoch: "Индустриальная", bg: "#334155", body: "#57534e", aura: "steam" },
-      { epoch: "Кристаллическая", bg: "#701a75", body: "#d97706", aura: "crystal" },
-      { epoch: "Кибернетическая", bg: "#0f172a", body: "#38bdf8", aura: "cyber" },
-      { epoch: "Радиоактивная", bg: "#064e3b", body: "#22c55e", aura: "toxic" },
-      { epoch: "Магматическая", bg: "#450a0a", body: "#ef4444", aura: "magma" },
-      { epoch: "Астральная", bg: "#2e1065", body: "#a855f7", aura: "astral" },
-      { epoch: "Звездная", bg: "#1e1b4b", body: "#ec4899", aura: "stars" },
-      { epoch: "Божественная", bg: "#451a03", body: "#fbbf24", aura: "divine" },
-      { epoch: "Мультиверс Коллапс", bg: "#030712", body: "#f43f5e", aura: "multiverse" }
+      { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null },
+      { epoch: "Индустриальный Смог", bg: "#334155", body: "#57534e", aura: "steam" },
+      { epoch: "Паровой Механизм", bg: "#475569", body: "#713f12", aura: "steam" },
+      { epoch: "Токсичные Реагенты", bg: "#064e3b", body: "#15803d", aura: "toxic" },
+      { epoch: "Кристаллическая Жеода", bg: "#701a75", body: "#d97706", aura: "crystal" },
+      { epoch: "Неоновый Киберпанк", bg: "#0f172a", body: "#06b6d4", aura: "cyber" },
+      { epoch: "Нанотехнологический Рой", bg: "#1e293b", body: "#38bdf8", aura: "cyber" },
+      { epoch: "Ядерно-Урановый Распад", bg: "#022c22", body: "#22c55e", aura: "toxic" },
+      { epoch: "Вулканическая Магма", bg: "#450a0a", body: "#ef4444", aura: "magma" },
+      { epoch: "Термоядерная Плазма", bg: "#7c2d12", body: "#f97316", aura: "magma" },
+      { epoch: "Лунно-Орбитальный Дрейф", bg: "#1e1b4b", body: "#94a3b8", aura: "stars" },
+      { epoch: "Гелиосферные Бури", bg: "#78350f", body: "#facc15", aura: "stars" },
+      { epoch: "Сверхновые Звезды", bg: "#31104b", body: "#ec4899", aura: "stars" },
+      { epoch: "Астральные Созвездия", bg: "#2e1065", body: "#a855f7", aura: "astral" },
+      { epoch: "Гравитационные Черные Дыры", bg: "#030712", body: "#475569", aura: "multiverse" },
+      { epoch: "11-Мерные Суперструны", bg: "#09090b", body: "#c084fc", aura: "multiverse" },
+      { epoch: "Темная Материя Космоса", bg: "#020617", body: "#6366f1", aura: "multiverse" },
+      { epoch: "Галактический Квазар", bg: "#172554", body: "#38bdf8", aura: "stars" },
+      { epoch: "Хроно-Временной Парадокс", bg: "#1c1917", body: "#eab308", aura: "astral" },
+      { epoch: "Мультивселенский Разлом", bg: "#050505", body: "#f43f5e", aura: "multiverse" },
+      { epoch: "Сакральный Серафим", bg: "#451a03", body: "#fbbf24", aura: "divine" },
+      { epoch: "Чистая Пси-Ноосфера", bg: "#1e1b4b", body: "#818cf8", aura: "divine" },
+      { epoch: "Гиперпространственный Тетраэдр", bg: "#18181b", body: "#34d399", aura: "astral" },
+      { epoch: "Творец Вселенского Разума", bg: "#020617", body: "#f472b6", aura: "divine" },
+      { epoch: "Точка Омега: Абсолютный Бог", bg: "#000000", body: "#ffd700", aura: "omega" }
     ];
 
-    const STAGE_TITLES = [
-      "Кварк-Капля", "Атомная Пылинка", "Микро-Комочек", "Склизкий Пузырек", "Первичный Бульончик",
-      "Утренний Завиток", "Бодрый Кофеин", "Овсяный Брусок", "Клетчаточный Титан", "Глянцевый Монолит",
-      "Стальной Шестеренщик", "Паровой Поршень", "Чугунный Бойлер", "Турбо-Шнек", "Гидравлический Пресс",
-      "Янтарный Самородок", "Топазовая Жеода", "Рубиновый Осколок", "Изумрудный Сгусток", "Алмазный Завиток",
-      "Нано-Бот 1.0", "Квантовый Процессор", "Неоновый Сервер", "Кибер-Висмут", "Искусственный Интеллект",
-      "Изотоп-238", "Плутониевый Мутант", "Урановый Бур", "Гамма-Аномалия", "Чернобыльский Сталкер",
-      "Базальтовый Корж", "Лавовый Фонтан", "Вулканический Демон", "Плазменный Шторм", "Ядро Преисподней",
-      "Лунная Пыль", "Орбитальный Дрейф", "Гравитационный Захват", "Солнечный Протуберанец", "Галактический Рукав",
-      "Серафим Труб", "Благословенный Нимб", "Хранитель Сантехники", "Архангел Чистоты", "Божественный Трон",
-      "Сингулярность", "Хроно-Владыка", "Исказитель Пространства", "Пожиратель Миров", "Владыка 11 Измерений"
-    ];
+    const PREFIXES = ["Микро", "Первичный", "Склизкий", "Шестеренчатый", "Паровой", "Чугунный", "Янтарный", "Рубиновый", "Алмазный", "Неоновый", "Квантовый", "Кибер", "Изотопный", "Гамма", "Магматический", "Плазменный", "Лунный", "Солнечный", "Звездный", "Астральный", "Сингулярный", "Струнный", "Темный", "Галактический", "Хроно", "Мультиверс", "Серафический", "Псионический", "Гиперпространственный", "Омега", "Титанический", "Эфирный", "Фотонный", "Гравитонный", "Божественный", "Абсолютный", "Трансцендентный", "Квазаровый", "Энергетический", "Имперский"];
+    const ENTITIES = ["Капля", "Комочек", "Завиток", "Шлам", "Брусок", "Монолит", "Сгусток", "Самородок", "Поршень", "Бойлер", "Процессор", "Сервер", "Мутант", "Аномалия", "Фонтан", "Шторм", "Владыка", "Ореол", "Страж", "Титан", "Коллапс", "Сингуляр", "Суперструна", "Квазар", "Парадокс", "Создатель", "Архитектор", "Абсолют", "Вулкан", "Дракон", "Архангел", "Демиург"];
 
     const EVOLUTIONS = [];
-    for (let i = 0; i < 200; i++) {
-      const epochIndex = Math.min(EPOCH_NAMES.length - 1, Math.floor(i / 20));
-      const epoch = EPOCH_NAMES[epochIndex];
-      const titleName = STAGE_TITLES[i % STAGE_TITLES.length] + (i >= 50 ? ` Tier ${Math.floor(i / 50) + 1}` : '');
-      const cost = i === 0 ? 0 : Math.round(50 * Math.pow(1.152, i));
-      const epochBoost = Math.pow(2.2, Math.floor(i / 20));
-      const mult = Number(((1 + i * 1.2 + Math.pow(i, 1.55) * 0.2) * epochBoost).toFixed(1));
-
+    for (let i = 0; i < 10000; i++) {
+      const epochIdx = Math.min(EPOCH_NAMES.length - 1, Math.floor(i / 400));
+      const ep = EPOCH_NAMES[epochIdx];
+      const pfx = PREFIXES[i % PREFIXES.length];
+      const ent = ENTITIES[(i * 3 + Math.floor(i / 7)) % ENTITIES.length];
+      const tier = (i % 100) + 1;
+      const name = (i === 9999) ? 'Точка Омега: Абсолютный Бог Омниверса' : (i % 400 === 0 ? 'Владыка Эпохи: ' + ep.epoch : pfx + ' ' + ent + ' ' + tier);
+      const cost = i === 0 ? 0 : Math.floor(75 * Math.pow(1.066, i) * Math.pow(i + 1, 1.4));
+      const mult = (1 + i * 1.5 + Math.pow(i, 1.62) * 0.4) * Math.pow(1.042, i);
       EVOLUTIONS.push({
         id: i,
-        name: titleName,
-        epoch: epoch.epoch,
+        name: name,
+        epoch: ep.epoch,
         cost: cost,
         mult: mult,
-        bgColor: epoch.bg,
-        bodyColor: epoch.body,
-        aura: epoch.aura,
-        desc: `Форма #${i + 1} из эпохи [${epoch.epoch}]. Умножает силу клика и доход в ${formatNumber(mult)}x раз!`
+        bgColor: ep.bg,
+        bodyColor: ep.body,
+        aura: ep.aura,
+        desc: `Форма #${i + 1} [${ep.epoch}]. Умножает силу клика и доход в ${formatNumber(mult)}x раз!`
       });
     }
 
-    // FACTORIES PRODUCTION UNITS (16 Balanced Tiers with Milestones)
+    // FACTORIES PRODUCTION UNITS (20 Balanced Tiers with Milestones up to God Tier)
     const FACTORIES = [
       { id: 'fly_squad', name: 'Эскадрилья Мух-Курьеров', cost: 15, baseCps: 1.5, count: 0, icon: '🪰' },
       { id: 'news_paper', name: 'Утренняя Пресса Со Скидкой', cost: 100, baseCps: 8.0, count: 0, icon: '📰' },
@@ -512,11 +620,15 @@
       { id: 'temporal_extractor', name: 'Хроно-Экстрактор Времени', cost: 1600000000000, baseCps: 55000000000, count: 0, icon: '⏳' },
       { id: 'dimension_portal', name: 'Межпространственный Разлом', cost: 15000000000000, baseCps: 480000000000, count: 0, icon: '🚪' },
       { id: 'multiverse_forge', name: 'Кузница Вселенных', cost: 140000000000000, baseCps: 4200000000000, count: 0, icon: '🪐' },
-      { id: 'cosmic_ascension', name: 'Абсолютный Творец Реальности', cost: 1500000000000000, baseCps: 40000000000000, count: 0, icon: '👑' }
+      { id: 'cosmic_ascension', name: 'Абсолютный Творец Реальности', cost: 1500000000000000, baseCps: 40000000000000, count: 0, icon: '👑' },
+      { id: 'string_synthesizer', name: 'Синтезатор Суперструн', cost: 20000000000000000, baseCps: 450000000000000, count: 0, icon: '🎻' },
+      { id: 'dyson_sphere', name: 'Астральная Сфера Дайсона', cost: 300000000000000000, baseCps: 6000000000000000, count: 0, icon: '🔮' },
+      { id: 'omniverse_engine', name: 'Двигатель Омниверса', cost: 5000000000000000000, baseCps: 90000000000000000, count: 0, icon: '🚀' },
+      { id: 'absolute_throne', name: 'Трон Первозданного Бога Унитаза', cost: 100000000000000000000, baseCps: 1500000000000000000, count: 0, icon: '🚽' }
     ];
     const SPONSORS = FACTORIES;
 
-    // SHOP ITEMS (HATS & UPGRADES) - Balanced from cheap to billionaire tier
+    // SHOP ITEMS (HATS & LUXURY UPGRADES)
     const SHOP_ITEMS = [
       { id: 'hat_cap', name: 'Кепка Новичка', type: 'hat', cost: 15, clickBoost: 1.15, icon: '🧢', desc: '+15% к клику' },
       { id: 'hat_shades', name: 'Крутые Очки', type: 'hat', cost: 50, clickBoost: 1.35, icon: '🕶️', desc: '+35% к клику' },
@@ -530,59 +642,79 @@
       { id: 'upg_magnet', name: 'Магнит Блестяшек', type: 'perk', cost: 300, icon: '🧲', desc: '+30% к шансу выпадения блестяшек при клике!' },
       { id: 'upg_goldrush', name: 'Золотая Лихорадка', type: 'perk', cost: 1200, icon: '💰', desc: 'Удваивает доход всех заводов навсегда!' },
       { id: 'upg_quantum_click', name: 'Квантовый Синергизм Кликера', type: 'perk', cost: 2500, icon: '🔮', desc: 'Сила клика получает +2% от ВСЕГО пассивного дохода заводов!' },
-      { id: 'upg_factory_overclock', name: 'Оверклокинг Фабричных Турбин', type: 'perk', cost: 6000, icon: '🏭', desc: 'Удваивает мощность всех автоматических заводов!' },
-      { id: 'upg_zen_master', name: 'Дзен-Гармония Потребностей', type: 'perk', cost: 15000, icon: '🧘', desc: 'Голод и чистота падают в 3 раза медленнее!' },
-      { id: 'upg_infinite_sparkles', name: 'Рог Изобилия Блестяшек', type: 'perk', cost: 45000, icon: '✨', desc: 'Утраивает выпадение всех блестяшек навсегда!' }
+      { id: 'upg_comborush', name: 'Катализатор Ярости', type: 'perk', cost: 5000, icon: '🔥', desc: 'Увеличивает длительность Турбо-Режима Ярости до 18 секунд!' },
+      { id: 'upg_factory_overclock', name: 'Оверклокинг Фабричных Турбин', type: 'perk', cost: 8000, icon: '🏭', desc: 'Удваивает мощность всех автоматических заводов!' },
+      { id: 'upg_meteor_magnet', name: 'Радар Золотых Метеоритов', type: 'perk', cost: 15000, icon: '🌠', desc: 'Золотые метеориты прилетают на 40% чаще!' },
+      { id: 'upg_zen_master', name: 'Дзен-Гармония Потребностей', type: 'perk', cost: 25000, icon: '🧘', desc: 'Голод и чистота падают в 3 раза медленнее!' },
+      { id: 'upg_infinite_sparkles', name: 'Рог Изобилия Блестяшек', type: 'perk', cost: 60000, icon: '✨', desc: 'Утраивает выпадение всех блестяшек навсегда!' },
+      { id: 'upg_afk_booster', name: 'Капсула Гиперсна', type: 'perk', cost: 100000, icon: '💤', desc: 'Офлайн-доход работает со 100% максимальной эффективностью!' }
     ];
 
-    // PRESTIGE TALENTS (Сбалансированная экспоненциальная экономика)
+    // PRESTIGE TALENTS (15 Deep Branching Talents)
     const TALENTS = [
-      { id: 'soft_rolls', name: 'Мягкость 4-х слоев', desc: '+25% ко всему доходу за каждый уровень', cost: 1, level: 0, max: 200, icon: '🧻' },
-      { id: 'crit_master', name: 'Ультра-Шмяк (Крит)', desc: '+0.2% шанс крита и +40% к урону крита за уровень', cost: 2, level: 0, max: 150, icon: '💥' },
-      { id: 'turbo_pipe', name: 'Трубопроводный Разгон Заводов', desc: '+35% к мощности всех заводов за уровень', cost: 2, level: 0, max: 150, icon: '⚡' },
-      { id: 'royal_gold', name: 'Стартовый Золотой Трон', desc: '+25,000 💨 стартовой биомассы после смыва за уровень', cost: 3, level: 0, max: 100, icon: '🚽' },
-      { id: 'sparkle_alchemy', name: 'Алхимия Блестяшек', desc: '+10% к выпадению блестяшек при каждом клике', cost: 3, level: 0, max: 100, icon: '✨' },
-      { id: 'cosmic_resonance', name: 'Космический Резонанс Мультиверса', desc: 'x1.5 к множителю всех форм мутации за каждые 2 уровня', cost: 5, level: 0, max: 100, icon: '🌌' },
-      { id: 'golden_synergy', name: 'Священный Синергизм Заводов', desc: '+150% к силе клика от каждых 10 купленных заводов', cost: 4, level: 0, max: 100, icon: '🏭' },
-      { id: 'infinity_flush', name: 'Вечный Смыв Судьбы', desc: '+10% к получению Золотых Втулок за каждый Смыв', cost: 5, level: 0, max: 100, icon: '🌀' },
-      { id: 'hyper_click', name: 'Гипер-Кликер (1ms Овердрайв)', desc: '+5% к силе клика за каждые 500 сделанных кликов', cost: 3, level: 0, max: 100, icon: '👆' }
+      { id: 'soft_rolls', name: 'Мягкость 4-х слоев', desc: '+25% ко всему доходу за каждый уровень', cost: 1, level: 0, max: 500, icon: '🧻' },
+      { id: 'crit_master', name: 'Ультра-Шмяк (Крит)', desc: '+0.2% шанс крита и +40% к урону крита за уровень', cost: 2, level: 0, max: 200, icon: '💥' },
+      { id: 'turbo_pipe', name: 'Трубопроводный Разгон Заводов', desc: '+35% к мощности всех заводов за уровень', cost: 2, level: 0, max: 250, icon: '⚡' },
+      { id: 'royal_gold', name: 'Стартовый Золотой Трон', desc: '+50,000 💨 стартовой биомассы после смыва за уровень', cost: 3, level: 0, max: 150, icon: '🚽' },
+      { id: 'sparkle_alchemy', name: 'Алхимия Блестяшек', desc: '+15% к выпадению блестяшек при каждом клике', cost: 3, level: 0, max: 150, icon: '✨' },
+      { id: 'cosmic_resonance', name: 'Космический Резонанс Мультиверса', desc: 'x1.5 к множителю всех форм мутации за каждые 2 уровня', cost: 5, level: 0, max: 150, icon: '🌌' },
+      { id: 'golden_synergy', name: 'Священный Синергизм Заводов', desc: '+150% к силе клика от каждых 10 купленных заводов', cost: 4, level: 0, max: 150, icon: '🏭' },
+      { id: 'infinity_flush', name: 'Вечный Смыв Судьбы', desc: '+10% к получению Золотых Втулок за каждый Смыв', cost: 5, level: 0, max: 150, icon: '🌀' },
+      { id: 'hyper_click', name: 'Гипер-Кликер (1ms Овердрайв)', desc: '+5% к силе клика за каждые 500 сделанных кликов', cost: 3, level: 0, max: 200, icon: '👆' },
+      { id: 'combo_master', name: 'Владыка Комбо-Ярости', desc: '+20% к длительности комбо и +50% к множителю Турбо', cost: 4, level: 0, max: 100, icon: '🔥' },
+      { id: 'meteor_hunter', name: 'Ловец Звездных Метеоритов', desc: 'Золотые метеориты падают на 20% чаще и дают x2 награду', cost: 5, level: 0, max: 100, icon: '🌠' },
+      { id: 'afk_slumber', name: 'Мастер Офлайн-Медитации', desc: '+25% к офлайн-добыче и +3 часа к лимиту AFK', cost: 4, level: 0, max: 100, icon: '💤' },
+      { id: 'transcend_soul', name: 'Астральная Трансценденция', desc: '+20% к получению Астральных Вантузов при Прорыве', cost: 6, level: 0, max: 100, icon: '🪠' },
+      { id: 'quantum_mastery', name: 'Квантовое Господство', desc: '+1% от пассивного дохода заводов переходит в клик', cost: 5, level: 0, max: 100, icon: '🔮' },
+      { id: 'omega_destiny', name: 'Печать Точки Омега', desc: 'Снижает стоимость эволюции всех 10,000 форм на 3% за уровень', cost: 8, level: 0, max: 100, icon: '👑' }
     ];
 
     function getTalentCost(tl) {
       return Math.floor(tl.cost * Math.pow(1.22, tl.level)) + tl.level;
     }
 
-    // ACHIEVEMENTS
+    // ASTRAL TRANSCENDENCE ARTIFACTS
+    const TRANSCEND_UPGRADES = [
+      { id: 'art_autobuyer', name: '⚙️ Авто-Закупщик Заводов', desc: 'Автоматически покупает доступные заводы каждые 2 секунды', cost: 1, max: 1, owned: false },
+      { id: 'art_passive_rolls', name: '🧻 Хроно-Генератор Втулок', desc: '+1 Втулка Судьбы каждые 5 секунд пассивно без Смыва', cost: 2, max: 5, level: 0 },
+      { id: 'art_omni_mult', name: '🌌 Омни-Множитель Бытия', desc: '+100% ко ВСЕЙ биомассе и силе клика за уровень', cost: 3, max: 10, level: 0 },
+      { id: 'art_afk_god', name: '⏳ Сверх-Офлайн Модуль', desc: '+12 часов к максимальному времени офлайн-дохода', cost: 2, max: 3, level: 0 }
+    ];
+
+    // ACHIEVEMENTS (SCALING ACROSS ALL 10,000 FORMS & SYSTEMS)
     const ACHIEVEMENTS = [];
-    const achClickGoals = [1, 50, 250, 1000, 5000, 25000, 100000, 500000, 2000000];
+    const achClickGoals = [1, 50, 250, 1000, 5000, 25000, 100000, 500000, 2000000, 10000000];
     achClickGoals.forEach((c, idx) => {
-      ACHIEVEMENTS.push({ id: `ach_c_${c}`, title: `Шмяк-Мастер ${idx + 1}`, desc: `Совершить ${formatNumber(c)} кликов`, target: c, type: 'clicks', reward: 10 * (idx + 1), done: false, icon: '👆' });
+      ACHIEVEMENTS.push({ id: `ach_c_${c}`, title: `Шмяк-Мастер ${idx + 1}`, desc: `Совершить ${formatNumber(c)} кликов`, target: c, type: 'clicks', reward: 15 * (idx + 1), done: false, icon: '👆' });
     });
 
-    const achEvoGoals = [2, 5, 10, 20, 35, 50, 75, 100, 130, 160, 180, 200];
-    achEvoGoals.forEach(e => {
-      ACHIEVEMENTS.push({ id: `ach_e_${e}`, title: `Эволюция: Ступень ${e}`, desc: `Достичь ${e}-й формы мутации`, target: e - 1, type: 'evo', reward: e * 2, done: false, icon: '🧬' });
+    const achEvoGoals = [5, 25, 50, 100, 250, 500, 1000, 2000, 3500, 5000, 7500, 10000];
+    achEvoGoals.forEach((e, idx) => {
+      ACHIEVEMENTS.push({ id: `ach_e_${e}`, title: `Эволюция: Форма ${formatNumber(e)}`, desc: `Достичь ${formatNumber(e)}-й формы мутации`, target: e - 1, type: 'evo', reward: 30 * (idx + 1), done: false, icon: '🧬' });
     });
 
-    const achBioGoals = [1000, 50000, 1000000, 50000000, 1000000000, 50000000000, 1000000000000, 50000000000000];
+    const achBioGoals = [1000, 50000, 1000000, 50000000, 1000000000, 50000000000, 1000000000000, 50000000000000, 1e18, 1e24, 1e33, 1e50, 1e75, 1e100];
     achBioGoals.forEach((b, idx) => {
-      ACHIEVEMENTS.push({ id: `ach_b_${b}`, title: `Био-Магнат ${idx + 1}`, desc: `Накопить ${formatNumber(b)} биомассы за всё время`, target: b, type: 'allBiomass', reward: 25 * (idx + 1), done: false, icon: '💨' });
+      ACHIEVEMENTS.push({ id: `ach_b_${idx}`, title: `Био-Магнат ${idx + 1}`, desc: `Накопить ${formatNumber(b)} биомассы за всё время`, target: b, type: 'allBiomass', reward: 25 * (idx + 1), done: false, icon: '💨' });
     });
 
-    const achFacGoals = [10, 50, 100, 250, 500, 1000];
+    const achFacGoals = [10, 50, 100, 250, 500, 1000, 2500, 5000];
     achFacGoals.forEach((fg, idx) => {
-      ACHIEVEMENTS.push({ id: `ach_f_${fg}`, title: `Промышленный Барон ${idx + 1}`, desc: `Построить суммарно ${fg} заводов`, target: fg, type: 'factories', reward: 30 * (idx + 1), done: false, icon: '🏭' });
+      ACHIEVEMENTS.push({ id: `ach_f_${fg}`, title: `Промышленный Барон ${idx + 1}`, desc: `Построить суммарно ${formatNumber(fg)} заводов`, target: fg, type: 'factories', reward: 30 * (idx + 1), done: false, icon: '🏭' });
     });
 
     ACHIEVEMENTS.push(
-      { id: 'ach_feed_5', title: 'Сытный Перекус', desc: 'Честно покормить голодную какашечку 5 раз', target: 5, type: 'feed', reward: 15, done: false, icon: '🍔' },
-      { id: 'ach_feed_25', title: 'Шеф-Повар Унитаза', desc: 'Честно покормить 25 раз', target: 25, type: 'feed', reward: 40, done: false, icon: '🍕' },
-      { id: 'ach_wash_5', title: 'Мыльная Пена', desc: 'Вымыть испачканную какашечку 5 раз', target: 5, type: 'wash', reward: 15, done: false, icon: '🧼' },
-      { id: 'ach_wash_25', title: 'Стерильная Чистота', desc: 'Вымыть испачканную какашечку 25 раз', target: 25, type: 'wash', reward: 40, done: false, icon: '🫧' },
+      { id: 'ach_feed_5', title: 'Сытный Перекус', desc: 'Покормить какашечку 5 раз', target: 5, type: 'feed', reward: 15, done: false, icon: '🍔' },
+      { id: 'ach_feed_25', title: 'Шеф-Повар Унитаза', desc: 'Покормить 25 раз', target: 25, type: 'feed', reward: 40, done: false, icon: '🍕' },
+      { id: 'ach_wash_5', title: 'Мыльная Пена', desc: 'Вымыть какашечку 5 раз', target: 5, type: 'wash', reward: 15, done: false, icon: '🧼' },
+      { id: 'ach_wash_25', title: 'Стерильная Чистота', desc: 'Вымыть какашечку 25 раз', target: 25, type: 'wash', reward: 40, done: false, icon: '🫧' },
       { id: 'ach_polish_10', title: 'Зеркальный Блеск', desc: 'Отполировать бумагой 10 раз', target: 10, type: 'polish', reward: 25, done: false, icon: '🧻' },
       { id: 'ach_flush_3', title: 'Водоворот', desc: 'Активировать Быстрый Смыв 3 раза', target: 3, type: 'flush', reward: 20, done: false, icon: '🌀' },
       { id: 'ach_prest_1', title: 'Первое Перерождение', desc: 'Совершить 1 Смыв Судьбы', target: 1, type: 'prestige', reward: 50, done: false, icon: '👑' },
       { id: 'ach_prest_5', title: 'Хозяин Астральных Труб', desc: 'Совершить 5 Смывов Судьбы', target: 5, type: 'prestige', reward: 150, done: false, icon: '🌌' },
+      { id: 'ach_transcend_1', title: 'Астральный Первопроходец', desc: 'Совершить 1 Астральный Прорыв (Вантузы)', target: 1, type: 'transcend', reward: 250, done: false, icon: '🪠' },
+      { id: 'ach_meteor_5', title: 'Звездочет', desc: 'Поймать 5 Золотых Метеоритов на экране', target: 5, type: 'meteor', reward: 75, done: false, icon: '🌠' },
+      { id: 'ach_turbo_5', title: 'Яростный Шмяк', desc: 'Активировать Турбо-Режим Ярости 5 раз', target: 5, type: 'turbo', reward: 60, done: false, icon: '🔥' },
       { id: 'ach_hat_first', title: 'Модник', desc: 'Купить первый головной убор в бутике', target: 1, type: 'hat', reward: 30, done: false, icon: '🎩' },
       { id: 'ach_billionaire', title: 'Клуб Миллиардеров', desc: 'Приобрести Корону Мультиверса', target: 1, type: 'billionaire', reward: 500, done: false, icon: '💎' },
       { id: 'ach_secret', title: 'Секретный Тап', desc: 'Кликнуть по логотипу игры в шапке', target: 1, type: 'secret', reward: 25, done: false, icon: '🤫' }
@@ -753,14 +885,27 @@
     }
 
     /* =========================================================================
-       3. HIGH-SPEED CLICKER BUFFER (1ms ADAPTATION) & FORMULA CALCULATIONS
+       3. HIGH-SPEED CLICKER BUFFER, GOLDEN METEORS & COMBO RUSH FORMULAS
        ========================================================================= */
     let pendingClicks = 0;
     let visualParticles = [];
-
     let lastSecondClicks = 0;
     let liveCps = 0;
     let lastAchCheck = 0;
+
+    // GOLDEN METEOR SYSTEM (Mystery random events)
+    let goldenMeteor = {
+      active: false,
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      radius: 26,
+      rotation: 0,
+      life: 0
+    };
+    let meteorFrenzyTime = 0; // x777 click frenzy active timer
+    let nextMeteorSpawn = Date.now() + 35000;
 
     function getHatClickMult() {
       if (!GAME.equippedHat) return 1.0;
@@ -784,13 +929,29 @@
       const hyperTalent = TALENTS.find(t => t.id === 'hyper_click');
       const hyperMult = 1 + (hyperTalent ? Math.floor(GAME.totalClicks / 500) * (hyperTalent.level * 0.05) : 0);
 
+      // Astral Plungers transcendence multiplier
+      const plungersMult = 1 + (GAME.transcendPlungers || 0) * (1 + (GAME.transcendUpgrades?.omniMult || 0));
+
+      // Turbo Frenzy Rush
+      const comboTalent = TALENTS.find(t => t.id === 'combo_master');
+      const turboBoost = GAME.turboRushTime > 0 ? (10 + (comboTalent ? comboTalent.level * 0.5 : 0)) : 1.0;
+
+      // Golden Meteor Frenzy
+      const meteorBoost = meteorFrenzyTime > 0 ? 777.0 : 1.0;
+
       const hatMult = getHatClickMult();
       const moodMult = GAME.happy >= 80 ? 1.3 : 1.0;
 
-      let power = Math.max(1, Math.round(1 * evo.mult * cosmicMult * rollsMult * synergyMult * hyperMult * hatMult * moodMult));
+      let power = Math.max(1, Math.round(1 * evo.mult * cosmicMult * rollsMult * synergyMult * hyperMult * plungersMult * turboBoost * meteorBoost * hatMult * moodMult));
 
-      if (SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned) {
-        power += Math.round(getPassiveIncome() * 0.02);
+      // Quantum Click Shop Item & Quantum Mastery Talent
+      const qmTalent = TALENTS.find(t => t.id === 'quantum_mastery');
+      let passiveToClickPct = 0;
+      if (SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned) passiveToClickPct += 0.02;
+      if (qmTalent && qmTalent.level > 0) passiveToClickPct += qmTalent.level * 0.01;
+
+      if (passiveToClickPct > 0) {
+        power += Math.round(getPassiveIncome() * passiveToClickPct);
       }
 
       return power;
@@ -820,7 +981,14 @@
       const cosmicRes = TALENTS.find(t => t.id === 'cosmic_resonance');
       const cosmicMult = cosmicRes ? Math.pow(1.5, Math.floor(cosmicRes.level / 2)) : 1;
 
-      return base * turboMult * goldRushMult * overclockMult * rollsMult * cosmicMult;
+      // Astral Plungers transcendence multiplier
+      const plungersMult = 1 + (GAME.transcendPlungers || 0) * (1 + (GAME.transcendUpgrades?.omniMult || 0));
+
+      // Turbo Frenzy Rush
+      const comboTalent = TALENTS.find(t => t.id === 'combo_master');
+      const turboBoost = GAME.turboRushTime > 0 ? (10 + (comboTalent ? comboTalent.level * 0.5 : 0)) : 1.0;
+
+      return base * turboMult * goldRushMult * overclockMult * rollsMult * cosmicMult * plungersMult * turboBoost;
     }
 
     // Handles extreme click spam (1ms clickers) safely without frame drop
@@ -829,14 +997,13 @@
 
       const basePower = getClickPower();
       const critTalent = TALENTS.find(t => t.id === 'crit_master');
-      const critFrenzy = SHOP_ITEMS.find(i => i.id === 'upg_crit_frenzy')?.owned;
-      let critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.002 : 0.05) + (critFrenzy ? 0.15 : 0));
-      let critMultiplier = (20 + (critTalent ? critTalent.level * 0.4 : 0)) * (critFrenzy ? 3.0 : 1.0);
+      let critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.002 : 0.05));
+      let critMultiplier = (20 + (critTalent ? critTalent.level * 0.4 : 0));
 
       const sparkleTalent = TALENTS.find(t => t.id === 'sparkle_alchemy');
       const magnetActive = SHOP_ITEMS.find(i => i.id === 'upg_magnet')?.owned;
       const hornActive = SHOP_ITEMS.find(i => i.id === 'upg_infinite_sparkles')?.owned;
-      let sparkleChance = Math.min(0.95, (magnetActive ? 0.30 : 0.15) * (hornActive ? 3.0 : 1.0) * (1 + (sparkleTalent ? sparkleTalent.level * 0.1 : 0)));
+      let sparkleChance = Math.min(0.95, (magnetActive ? 0.30 : 0.15) * (hornActive ? 3.0 : 1.0) * (1 + (sparkleTalent ? sparkleTalent.level * 0.15 : 0)));
 
       let totalEarned = 0;
       let sparklesEarned = 0;
@@ -878,6 +1045,28 @@
       GAME.totalClicks += clicksToProcess;
       GAME.sparkles += sparklesEarned;
 
+      // Accumulate combo heat
+      if (GAME.turboRushTime <= 0) {
+        const heatGain = Math.min(25, clicksToProcess > 25 ? 12 : clicksToProcess * 0.7);
+        GAME.comboHeat = Math.min(100, GAME.comboHeat + heatGain);
+        if (GAME.comboHeat >= 100) {
+          const comboTalent = TALENTS.find(t => t.id === 'combo_master');
+          const bonusDuration = (comboTalent ? comboTalent.level * 0.5 : 0) + (SHOP_ITEMS.find(i => i.id === 'upg_comborush')?.owned ? 6 : 0);
+          GAME.turboRushTime = Math.round(12 + bonusDuration);
+          GAME.turboCount = (GAME.turboCount || 0) + 1;
+          visualParticles.push({
+            x: canvasBox.clientWidth / 2,
+            y: canvasBox.clientHeight * 0.35,
+            text: '🔥 ТУРБО-РЕЖИМ x10! 🔥',
+            color: '#ef4444',
+            scale: 1.8,
+            life: 1.8,
+            vy: -3.0
+          });
+          checkAchievements();
+        }
+      }
+
       // Spawn consolidated particle effect (capped cleanly so canvas is smooth at 60 fps)
       if (visualParticles.length < 20) {
         const textLabel = clicksToProcess > 1
@@ -888,7 +1077,7 @@
           x: canvasBox.clientWidth / 2 + (Math.random() * 80 - 40),
           y: canvasBox.clientHeight * 0.5,
           text: textLabel,
-          color: critsCount > 0 ? '#f97316' : '#22c55e',
+          color: critsCount > 0 ? '#f97316' : (meteorFrenzyTime > 0 ? '#facc15' : '#22c55e'),
           scale: critsCount > 0 ? 1.35 : 1.1,
           life: 1.0,
           vy: -2.8
@@ -916,6 +1105,55 @@
     }
     window.addEventListener('resize', resizeCanvas);
 
+    function catchGoldenMeteor() {
+      goldenMeteor.active = false;
+      GAME.meteorsCaught = (GAME.meteorsCaught || 0) + 1;
+
+      const hunterTalent = TALENTS.find(t => t.id === 'meteor_hunter');
+      const rewardMult = 1 + (hunterTalent ? hunterTalent.level * 0.25 : 0);
+
+      const roll = Math.random();
+      let label = '';
+      if (roll < 0.35) {
+        // Click Frenzy x777
+        meteorFrenzyTime = 15;
+        label = '⚡ УЛЬТРА-ЛИХОРАДКА: КЛИК x777 (15с)!';
+      } else if (roll < 0.70) {
+        // Instant Biomass Burst (20 minutes of passive income)
+        const burst = Math.max(2500 * getClickPower(), getPassiveIncome() * 1200) * rewardMult;
+        GAME.biomass += burst;
+        GAME.allTimeBiomass += burst;
+        GAME.cycleBiomass += burst;
+        label = `💰 ЗОЛОТОЙ ВЗРЫВ: +${formatNumber(burst)} 💨!`;
+      } else if (roll < 0.90) {
+        // Sparkles Storm
+        const spGain = Math.round((75 + Math.random() * 175) * rewardMult);
+        GAME.sparkles += spGain;
+        label = `✨ ЗВЕЗДНЫЙ ДОЖДЬ: +${spGain} Блестяшек!`;
+      } else {
+        // Toilet Rolls drop
+        const rollGain = Math.round((5 + Math.random() * 20) * rewardMult);
+        GAME.prestigeRolls += rollGain;
+        label = `🧻 СВЯЩЕННЫЙ РУЛОН: +${rollGain} Втулок Судьбы!`;
+      }
+
+      visualParticles.push({
+        x: goldenMeteor.x,
+        y: goldenMeteor.y,
+        text: label,
+        color: '#facc15',
+        scale: 1.6,
+        life: 2.2,
+        vy: -2.5
+      });
+
+      const nextInterval = (40000 + Math.random() * 35000) * (SHOP_ITEMS.find(i => i.id === 'upg_meteor_magnet')?.owned ? 0.6 : 1.0);
+      nextMeteorSpawn = Date.now() + nextInterval;
+
+      checkAchievements();
+      updateDashboardUI();
+    }
+
     function renderScene(time) {
       processBatchedClicks();
 
@@ -928,7 +1166,7 @@
       ctx.fillRect(0, 0, w, h);
 
       // Grid / Cosmic Particles in background
-      if (GAME.evoStage >= 140) {
+      if (GAME.evoStage >= 100) {
         // Multiverse Black Hole Whirlpool
         ctx.save();
         ctx.translate(w / 2, h / 2);
@@ -974,6 +1212,14 @@
       ctx.translate(w / 2, h * 0.63);
       ctx.scale(squashX, squashY);
 
+      // TURBO RUSH FIERY AURA
+      if (GAME.turboRushTime > 0) {
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.4)';
+        ctx.beginPath();
+        ctx.arc(0, -10, 85 + Math.sin(time * 0.02) * 12, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       // AURA VISUAL EFFECTS
       if (currentEvo.aura === 'magma') {
         ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
@@ -987,14 +1233,14 @@
           ctx.arc(Math.sin(time * 0.005 + i) * 60, -((time * 0.04 + i * 35) % 90), 8, 0, Math.PI * 2);
           ctx.fill();
         }
-      } else if (currentEvo.aura === 'divine') {
+      } else if (currentEvo.aura === 'divine' || currentEvo.aura === 'omega') {
         // Golden Divine Halo
         ctx.strokeStyle = '#facc15';
         ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.ellipse(0, -95, 45, 12, 0, 0, Math.PI * 2);
         ctx.stroke();
-      } else if (currentEvo.aura === 'multiverse') {
+      } else if (currentEvo.aura === 'multiverse' || currentEvo.aura === 'astral') {
         ctx.strokeStyle = '#ec4899';
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -1004,7 +1250,6 @@
 
       // MAIN POOP GEOMETRY
       ctx.fillStyle = currentEvo.bodyColor;
-      // 3 Layers of coils
       ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.ellipse(0, -25, 36, 18, 0, 0, Math.PI * 2); ctx.fill();
@@ -1078,6 +1323,46 @@
 
       ctx.restore();
 
+      // RENDER GOLDEN METEOR
+      if (goldenMeteor.active) {
+        goldenMeteor.x += goldenMeteor.vx;
+        goldenMeteor.y += goldenMeteor.vy;
+        goldenMeteor.rotation += 0.04;
+        goldenMeteor.life--;
+
+        if (goldenMeteor.life <= 0 || goldenMeteor.x < -60 || goldenMeteor.x > w + 60 || goldenMeteor.y < -60 || goldenMeteor.y > h + 60) {
+          goldenMeteor.active = false;
+          nextMeteorSpawn = Date.now() + 40000 + Math.random() * 30000;
+        } else {
+          ctx.save();
+          ctx.translate(goldenMeteor.x, goldenMeteor.y);
+          ctx.rotate(goldenMeteor.rotation);
+
+          const glowGrad = ctx.createRadialGradient(0, 0, 4, 0, 0, goldenMeteor.radius + 14);
+          glowGrad.addColorStop(0, 'rgba(250, 204, 21, 0.95)');
+          glowGrad.addColorStop(0.5, 'rgba(245, 158, 11, 0.55)');
+          glowGrad.addColorStop(1, 'rgba(234, 88, 12, 0)');
+          ctx.fillStyle = glowGrad;
+          ctx.beginPath();
+          ctx.arc(0, 0, goldenMeteor.radius + 16, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.font = '32px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🌟', 0, 0);
+          ctx.restore();
+        }
+      } else if (Date.now() > nextMeteorSpawn) {
+        goldenMeteor.active = true;
+        goldenMeteor.life = 750;
+        const fromLeft = Math.random() < 0.5;
+        goldenMeteor.x = fromLeft ? -30 : w + 30;
+        goldenMeteor.y = 80 + Math.random() * Math.max(120, h * 0.6);
+        goldenMeteor.vx = (fromLeft ? 1 : -1) * (1.1 + Math.random() * 0.9);
+        goldenMeteor.vy = (Math.random() - 0.5) * 0.8;
+      }
+
       // FLOATING NUMBER PARTICLES
       for (let i = visualParticles.length - 1; i >= 0; i--) {
         const p = visualParticles[i];
@@ -1103,6 +1388,18 @@
     const canvasBox = document.getElementById('canvasBox');
 
     function onPointerClick(e) {
+      // Check if clicked on Golden Meteor
+      if (goldenMeteor.active) {
+        const rect = canvasBox.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        const dist = Math.hypot(clickX - goldenMeteor.x, clickY - goldenMeteor.y);
+        if (dist < goldenMeteor.radius + 18) {
+          catchGoldenMeteor();
+          return;
+        }
+      }
+
       pendingClicks++;
       squashX = 1.25; squashY = 0.8;
     }
@@ -1170,14 +1467,18 @@
       updateDashboardUI();
     });
 
-    // EVOLVE BUTTON
+    // EVOLVE BUTTON (Supports 10,000 stages and omega_destiny talent discount)
     document.getElementById('btnEvolve').addEventListener('click', () => {
       const next = GAME.evoStage + 1;
       if (next >= EVOLUTIONS.length) return;
       const target = EVOLUTIONS[next];
 
-      if (GAME.biomass >= target.cost) {
-        GAME.biomass -= target.cost;
+      const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');
+      const costDiscount = omegaTalent ? Math.pow(0.97, omegaTalent.level) : 1.0;
+      const targetCost = Math.max(1, Math.floor(target.cost * costDiscount));
+
+      if (GAME.biomass >= targetCost) {
+        GAME.biomass -= targetCost;
         GAME.evoStage = next;
         squashX = 1.4; squashY = 1.4;
         visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.45, text: `🧬 МУТАЦИЯ: ${target.name}!`, color: '#facc15', scale: 1.6, life: 1.5, vy: -3 });
@@ -1213,7 +1514,7 @@
       GAME.cycleBiomass = 0; // reset cycle biomass
 
       const startTalent = TALENTS.find(t => t.id === 'royal_gold');
-      const startBio = startTalent ? startTalent.level * 25000 : 0;
+      const startBio = startTalent ? startTalent.level * 50000 : 0;
 
       GAME.biomass = startBio;
       GAME.evoStage = 0;
@@ -1226,6 +1527,114 @@
       checkAchievements();
       updateDashboardUI();
     });
+
+    // ASTRAL TRANSCENDENCE: Requires Stage >= 99 (Form 100) AND prestigeRolls >= 500
+    function getTranscendPlungersReward() {
+      if (GAME.evoStage < 99 && GAME.prestigeRolls < 500) return 0;
+      let base = Math.max(1, Math.floor(Math.pow(GAME.prestigeRolls / 300, 0.55)));
+      const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');
+      if (soulTalent && soulTalent.level > 0) {
+        base = Math.round(base * (1 + soulTalent.level * 0.20));
+      }
+      return base;
+    }
+
+    document.getElementById('btnTranscendModal').addEventListener('click', () => {
+      const gain = getTranscendPlungersReward();
+      document.getElementById('transcendCurrentRolls').textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+      document.getElementById('transcendCalcPlungers').textContent = `+${formatNumber(gain)} 🪠 Вантузов`;
+      document.getElementById('btnExecuteTranscend').disabled = gain <= 0;
+      renderTranscendUpgrades();
+      document.getElementById('transcendModal').classList.remove('hidden');
+    });
+
+    document.getElementById('btnExecuteTranscend').addEventListener('click', () => {
+      const gain = getTranscendPlungersReward();
+      if (gain <= 0) return;
+
+      GAME.transcendPlungers = (GAME.transcendPlungers || 0) + gain;
+      GAME.totalTranscend = (GAME.totalTranscend || 0) + 1;
+      GAME.prestigeRolls = 0;
+      GAME.cycleBiomass = 0;
+      GAME.biomass = 0;
+      GAME.evoStage = 0;
+      FACTORIES.forEach(fac => { fac.count = 0; });
+      GAME.clean = 100;
+      GAME.hunger = 100;
+      GAME.happy = 100;
+
+      document.getElementById('transcendModal').classList.add('hidden');
+      checkAchievements();
+      updateDashboardUI();
+    });
+
+    document.getElementById('btnClaimOffline').addEventListener('click', () => {
+      document.getElementById('offlineModal').classList.add('hidden');
+    });
+
+    function renderTranscendUpgrades() {
+      const listEl = document.getElementById('transcendUpgradesList');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      TRANSCEND_UPGRADES.forEach(upg => {
+        let isMax = false;
+        let lvl = 0;
+        if (upg.id === 'art_autobuyer') {
+          isMax = !!GAME.transcendUpgrades?.autoBuyer;
+          lvl = isMax ? 1 : 0;
+        } else if (upg.id === 'art_passive_rolls') {
+          lvl = GAME.transcendUpgrades?.passiveRolls || 0;
+          isMax = lvl >= upg.max;
+        } else if (upg.id === 'art_omni_mult') {
+          lvl = GAME.transcendUpgrades?.omniMult || 0;
+          isMax = lvl >= upg.max;
+        } else if (upg.id === 'art_afk_god') {
+          lvl = GAME.transcendUpgrades?.afkCap || 0;
+          isMax = lvl >= upg.max;
+        }
+
+        const canBuy = (GAME.transcendPlungers || 0) >= upg.cost && !isMax;
+
+        const row = document.createElement('div');
+        row.className = 'p-2 rounded-xl bg-stone-900 border border-cyan-800/60 flex items-center justify-between text-xs';
+        row.innerHTML = `
+          <div>
+            <div class="font-bold text-cyan-200">${upg.name} <span class="text-yellow-400">(${lvl}/${upg.max})</span></div>
+            <div class="text-[10px] text-stone-400">${upg.desc}</div>
+          </div>
+          <button class="buy-art-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 ml-2 transition ${isMax ? 'bg-stone-800 text-stone-500 border-stone-700' : (canBuy ? 'bg-cyan-500 hover:bg-cyan-400 text-stone-950 border-cyan-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed')}" data-id="${upg.id}" ${canBuy ? '' : 'disabled'}>
+            ${isMax ? 'МАКС' : `${upg.cost} 🪠`}
+          </button>
+        `;
+        listEl.appendChild(row);
+      });
+
+      listEl.querySelectorAll('.buy-art-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const upg = TRANSCEND_UPGRADES.find(u => u.id === btn.dataset.id);
+          if (!upg || (GAME.transcendPlungers || 0) < upg.cost) return;
+
+          if (!GAME.transcendUpgrades) GAME.transcendUpgrades = { autoBuyer: false, passiveRolls: 0, omniMult: 0, afkCap: 0 };
+
+          if (upg.id === 'art_autobuyer' && !GAME.transcendUpgrades.autoBuyer) {
+            GAME.transcendPlungers -= upg.cost;
+            GAME.transcendUpgrades.autoBuyer = true;
+          } else if (upg.id === 'art_passive_rolls' && (GAME.transcendUpgrades.passiveRolls || 0) < upg.max) {
+            GAME.transcendPlungers -= upg.cost;
+            GAME.transcendUpgrades.passiveRolls = (GAME.transcendUpgrades.passiveRolls || 0) + 1;
+          } else if (upg.id === 'art_omni_mult' && (GAME.transcendUpgrades.omniMult || 0) < upg.max) {
+            GAME.transcendPlungers -= upg.cost;
+            GAME.transcendUpgrades.omniMult = (GAME.transcendUpgrades.omniMult || 0) + 1;
+          } else if (upg.id === 'art_afk_god' && (GAME.transcendUpgrades.afkCap || 0) < upg.max) {
+            GAME.transcendPlungers -= upg.cost;
+            GAME.transcendUpgrades.afkCap = (GAME.transcendUpgrades.afkCap || 0) + 1;
+          }
+          updateDashboardUI();
+          renderTranscendUpgrades();
+        });
+      });
+    }
 
     /* =========================================================================
        6. UI RENDERING & ACHIEVEMENTS CHECKER
@@ -1249,6 +1658,9 @@
           FACTORIES.forEach(f => { totalFac += f.count; });
           if (totalFac >= ach.target) met = true;
         }
+        if (ach.type === 'meteor' && (GAME.meteorsCaught || 0) >= ach.target) met = true;
+        if (ach.type === 'turbo' && (GAME.turboCount || 0) >= ach.target) met = true;
+        if (ach.type === 'transcend' && (GAME.totalTranscend || 0) >= ach.target) met = true;
 
         if (met) {
           ach.done = true;
@@ -1489,6 +1901,12 @@
           let tf = 0;
           FACTORIES.forEach(f => { tf += f.count; });
           current = tf;
+        } else if (ach.type === 'meteor') {
+          current = GAME.meteorsCaught || 0;
+        } else if (ach.type === 'turbo') {
+          current = GAME.turboCount || 0;
+        } else if (ach.type === 'transcend') {
+          current = GAME.totalTranscend || 0;
         }
 
         let progressHtml = '';
@@ -1532,6 +1950,8 @@
       document.getElementById('topBiomass').textContent = formatNumber(GAME.biomass);
       document.getElementById('topSparkles').textContent = formatNumber(GAME.sparkles);
       document.getElementById('topPrestige').textContent = formatNumber(GAME.prestigeRolls);
+      const topPlungers = document.getElementById('topPlungers');
+      if (topPlungers) topPlungers.textContent = formatNumber(GAME.transcendPlungers || 0);
 
       document.getElementById('txtHunger').textContent = Math.round(GAME.hunger) + '%';
       document.getElementById('barHunger').style.width = GAME.hunger + '%';
@@ -1552,18 +1972,21 @@
       document.getElementById('flushCooldownLabel').textContent = flushCooldownLeft > 0 ? `${Math.ceil(flushCooldownLeft / 1000)}с` : (GAME.clean >= 70 ? 'Слишком чисто' : 'Готов');
 
       const currEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
-      document.getElementById('topStageTitle').textContent = `Форма ${currEvo.id + 1}: ${currEvo.name}`;
-      document.getElementById('evoProgressBadge').textContent = `${currEvo.id + 1} / 200`;
+      document.getElementById('topStageTitle').textContent = `Форма ${(currEvo.id + 1).toLocaleString()}: ${currEvo.name}`;
+      document.getElementById('evoProgressBadge').textContent = `${(currEvo.id + 1).toLocaleString()} / 10,000`;
       document.getElementById('evoStageName').textContent = currEvo.name;
       document.getElementById('evoStageDesc').textContent = currEvo.desc;
 
       const nextEvo = EVOLUTIONS[GAME.evoStage + 1];
       const btnEvolve = document.getElementById('btnEvolve');
       if (nextEvo) {
-        document.getElementById('evoCostLabel').textContent = `След: ${formatNumber(nextEvo.cost)} 💨`;
-        btnEvolve.disabled = GAME.biomass < nextEvo.cost;
+        const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');
+        const costDiscount = omegaTalent ? Math.pow(0.97, omegaTalent.level) : 1.0;
+        const targetCost = Math.max(1, Math.floor(nextEvo.cost * costDiscount));
+        document.getElementById('evoCostLabel').textContent = `След: ${formatNumber(targetCost)} 💨`;
+        btnEvolve.disabled = GAME.biomass < targetCost;
       } else {
-        document.getElementById('evoCostLabel').textContent = 'ВЫСШИЙ ВЛАДЫКА МУЛЬТИВЕРСА';
+        document.getElementById('evoCostLabel').textContent = 'ВЫСШИЙ ВЛАДЫКА ОМНИВЕРСА';
         btnEvolve.disabled = true;
       }
 
@@ -1600,6 +2023,10 @@
       btn.addEventListener('click', () => {
         document.getElementById('accountModal').classList.add('hidden');
         document.getElementById('prestigeModal').classList.add('hidden');
+        const tModal = document.getElementById('transcendModal');
+        if (tModal) tModal.classList.add('hidden');
+        const oModal = document.getElementById('offlineModal');
+        if (oModal) oModal.classList.add('hidden');
       });
     });
 
@@ -1687,12 +2114,62 @@
       }
     });
 
+    let passiveRollTick = 0;
+
     // 1-SECOND PASSIVE ENGINE & AUTO-CLICKER PERK & REAL-TIME CPS
     setInterval(() => {
       const passive = getPassiveIncome();
       GAME.biomass += passive;
       GAME.allTimeBiomass += passive;
       GAME.cycleBiomass += passive;
+
+      // Transcendence Artifact: AutoBuyer (purchases affordable factories from highest tier down)
+      if (GAME.transcendUpgrades?.autoBuyer) {
+        for (let i = FACTORIES.length - 1; i >= 0; i--) {
+          const fac = FACTORIES[i];
+          const cost = Math.round(fac.cost * Math.pow(1.15, fac.count));
+          if (GAME.biomass >= cost) {
+            GAME.biomass -= cost;
+            fac.count++;
+            break;
+          }
+        }
+      }
+
+      // Transcendence Artifact: Passive Toilet Rolls
+      if (GAME.transcendUpgrades?.passiveRolls > 0) {
+        passiveRollTick = (passiveRollTick || 0) + 1;
+        if (passiveRollTick >= 5) {
+          passiveRollTick = 0;
+          GAME.prestigeRolls += GAME.transcendUpgrades.passiveRolls;
+        }
+      }
+
+      // Combo Heat decay & Turbo Rush countdown
+      if (GAME.turboRushTime > 0) {
+        GAME.turboRushTime--;
+        GAME.comboHeat = 100;
+        const rushTimerEl = document.getElementById('turboRushTimer');
+        if (rushTimerEl) {
+          rushTimerEl.textContent = `(${GAME.turboRushTime}с)`;
+          rushTimerEl.classList.remove('hidden');
+        }
+        const comboLbl = document.getElementById('comboLabel');
+        if (comboLbl) comboLbl.textContent = '🔥 ТУРБО-РЕЖИМ x10! 🔥';
+      } else {
+        const rushTimerEl = document.getElementById('turboRushTimer');
+        if (rushTimerEl) rushTimerEl.classList.add('hidden');
+        GAME.comboHeat = Math.max(0, (GAME.comboHeat || 0) - 3.5);
+        const comboLbl = document.getElementById('comboLabel');
+        if (comboLbl) comboLbl.textContent = `${Math.round(GAME.comboHeat)}%`;
+      }
+      const comboBarEl = document.getElementById('comboBar');
+      if (comboBarEl) comboBarEl.style.width = `${Math.round(GAME.comboHeat || 0)}%`;
+
+      // Meteor Frenzy countdown
+      if (meteorFrenzyTime > 0) {
+        meteorFrenzyTime--;
+      }
 
       // Natural decay of needs with Zen Master dampening
       const zenMaster = SHOP_ITEMS.find(i => i.id === 'upg_zen_master')?.owned;
@@ -1722,6 +2199,9 @@
         }
       }
 
+      // Record last active time for AFK progress calculation
+      GAME.lastActiveTime = Date.now();
+
       updateDashboardUI();
     }, 1000);
 
@@ -1737,6 +2217,46 @@
     window.onload = async function () {
       resizeCanvas();
       await loadFromNetlifyBlobsOrLocal();
+
+      // Check AFK offline progress
+      const now = Date.now();
+      if (GAME.lastActiveTime && now - GAME.lastActiveTime > 45000) {
+        const awaySeconds = Math.floor((now - GAME.lastActiveTime) / 1000);
+        const slumberTalent = TALENTS.find(t => t.id === 'afk_slumber');
+        const godArtifact = GAME.transcendUpgrades?.afkCap || 0;
+        const maxHours = 4 + (slumberTalent ? slumberTalent.level * 3 : 0) + godArtifact * 12;
+        const maxSeconds = maxHours * 3600;
+        const effectiveSeconds = Math.min(awaySeconds, maxSeconds);
+
+        const boosterActive = SHOP_ITEMS.find(i => i.id === 'upg_afk_booster')?.owned;
+        const efficiency = boosterActive ? 1.0 : (0.35 + (slumberTalent ? slumberTalent.level * 0.05 : 0));
+        const basePassive = getPassiveIncome();
+        const offlineBiomass = Math.round(basePassive * effectiveSeconds * efficiency);
+        const offlineSparkles = Math.min(500, Math.floor(effectiveSeconds / 180));
+
+        if (offlineBiomass > 0 || offlineSparkles > 0) {
+          GAME.biomass += offlineBiomass;
+          GAME.allTimeBiomass += offlineBiomass;
+          GAME.cycleBiomass += offlineBiomass;
+          GAME.sparkles += offlineSparkles;
+
+          const minsAway = Math.floor(effectiveSeconds / 60);
+          const hoursAway = (effectiveSeconds / 3600).toFixed(1);
+          const timeDesc = effectiveSeconds >= 3600 ? `${hoursAway} ч.` : `${minsAway} мин.`;
+
+          const offTimeEl = document.getElementById('offlineTimeText');
+          if (offTimeEl) offTimeEl.textContent = `Вы отсутствовали ${timeDesc} (эффективность ${Math.round(efficiency * 100)}%)`;
+          const bioEl = document.getElementById('offlineBioGain');
+          if (bioEl) bioEl.textContent = `+${formatNumber(offlineBiomass)} 💨`;
+          const spEl = document.getElementById('offlineSparkleGain');
+          if (spEl) spEl.textContent = `+${formatNumber(offlineSparkles)} ✨`;
+
+          const offModal = document.getElementById('offlineModal');
+          if (offModal) offModal.classList.remove('hidden');
+        }
+      }
+      GAME.lastActiveTime = now;
+
       updateDashboardUI();
       renderScene(0);
     };
