@@ -62,7 +62,7 @@
   </style>
 </head>
 
-<body class="bg-stone-900 text-stone-100 min-h-screen flex flex-col overflow-x-hidden selection:bg-amber-400">
+<script>localStorage.setItem('PoopSimulator_GodTier_Save', JSON.stringify({"game":{"biomass":0,"sparkles":20,"prestigeRolls":0,"totalPrestiges":0,"evoStage":0,"hunger":62,"clean":69.59999999999957,"happy":100,"totalClicks":0,"allTimeBiomass":0,"cycleBiomass":0,"lastFlushTime":0,"equippedHat":null,"autoClickerActive":false},"feedCount":0,"washCount":0,"polishCount":0,"flushCount":0,"sponsors":[{"id":"fly_squad","count":0},{"id":"news_paper","count":0},{"id":"freshener_pine","count":0},{"id":"turbo_plunger","count":0},{"id":"sewer_factory","count":0},{"id":"hydro_cyclone","count":0},{"id":"orbital_station","count":0},{"id":"quantum_collider","count":0},{"id":"cosmic_blackhole","count":0},{"id":"multiverse_reactor","count":0}],"talents":[{"id":"soft_rolls","level":0},{"id":"crit_master","level":0},{"id":"turbo_pipe","level":0},{"id":"royal_gold","level":0},{"id":"sparkle_alchemy","level":0},{"id":"cosmic_resonance","level":0},{"id":"golden_synergy","level":0},{"id":"infinity_flush","level":0}],"achievements":[],"purchasedItems":[]}));</script><body class="bg-stone-900 text-stone-100 min-h-screen flex flex-col overflow-x-hidden selection:bg-amber-400">
 
   <!-- TOP APP HEADER -->
   <header
@@ -209,7 +209,7 @@
       <!-- Nav Tabs -->
       <div class="grid grid-cols-5 bg-stone-950 border-b border-amber-900/80 text-[11px] font-black">
         <button class="dash-tab py-2.5 text-center bg-amber-700 text-white" data-target="panelEvo">🧬 Формы</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelFactories">🏭
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelSponsors">🏭
           Заводы</button>
         <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelShop">💎
           Бутик</button>
@@ -247,11 +247,11 @@
           <div class="space-y-1.5 max-h-[360px] overflow-y-auto custom-scroll pr-1" id="evoListContainer"></div>
         </div>
 
-        <!-- 2. FACTORIES PRODUCTION -->
-        <div id="panelFactories" class="hidden space-y-2">
+        <!-- 2. SPONSORS PRODUCTION -->
+        <div id="panelSponsors" class="hidden space-y-2">
           <div class="text-stone-400 text-[11px] px-1">Автоматические био-заводы дают стабильный доход каждую секунду:
           </div>
-          <div class="space-y-2 max-h-[460px] overflow-y-auto custom-scroll pr-1" id="factoriesContainer"></div>
+          <div class="space-y-2 max-h-[460px] overflow-y-auto custom-scroll pr-1" id="sponsorsContainer"></div>
         </div>
 
         <!-- 3. LUXURY WARDROBE & SPARKLE BOUTIQUE -->
@@ -494,8 +494,8 @@
       });
     }
 
-    // FACTORIES PRODUCTION UNITS (+Заводы)
-    const FACTORIES = [
+    // SPONSOR PRODUCTION UNITS (+Заводы)
+    const SPONSORS = [
       { id: 'fly_squad', name: 'Эскадрилья Мух-Курьеров', cost: 15, baseCps: 1.5, count: 0, icon: '🪰' },
       { id: 'news_paper', name: 'Утренняя Пресса Со Скидкой', cost: 85, baseCps: 8.0, count: 0, icon: '📰' },
       { id: 'freshener_pine', name: 'Хвойный Ароматизатор Pro', cost: 380, baseCps: 45, count: 0, icon: '🌲' },
@@ -507,7 +507,6 @@
       { id: 'cosmic_blackhole', name: 'Сингулярный Пожиратель Отходов', cost: 4000000, baseCps: 700000, count: 0, icon: '🌌' },
       { id: 'multiverse_reactor', name: 'Мультиверс Гипер-Реактор', cost: 25000000, baseCps: 4500000, count: 0, icon: '💥' }
     ];
-    const SPONSORS = FACTORIES;
 
     // SHOP ITEMS (HATS & UPGRADES) - Balanced from cheap to billionaire tier
     const SHOP_ITEMS = [
@@ -579,8 +578,7 @@
         washCount,
         polishCount,
         flushCount,
-        factories: FACTORIES.map(s => ({ id: s.id, count: s.count })),
-        sponsors: FACTORIES.map(s => ({ id: s.id, count: s.count })),
+        sponsors: SPONSORS.map(s => ({ id: s.id, count: s.count })),
         talents: TALENTS.map(t => ({ id: t.id, level: t.level })),
         achievements: ACHIEVEMENTS.map(a => ({ id: a.id, done: a.done })),
         purchasedItems: SHOP_ITEMS.filter(item => item.owned).map(i => i.id)
@@ -703,11 +701,10 @@
       if (typeof data.polishCount === 'number') polishCount = data.polishCount;
       if (typeof data.flushCount === 'number') flushCount = data.flushCount;
 
-      const savedFactories = data.factories || data.sponsors;
-      if (Array.isArray(savedFactories)) {
-        savedFactories.forEach(savedFac => {
-          const fac = FACTORIES.find(s => s.id === savedFac.id);
-          if (fac) fac.count = savedFac.count || 0;
+      if (Array.isArray(data.sponsors)) {
+        data.sponsors.forEach(savedSp => {
+          const sp = SPONSORS.find(s => s.id === savedSp.id);
+          if (sp) sp.count = savedSp.count || 0;
         });
       }
       if (Array.isArray(data.talents)) {
@@ -751,7 +748,7 @@
       const cosmicMult = cosmicRes ? Math.pow(2, Math.floor(cosmicRes.level / 5)) : 1;
 
       let totalFactories = 0;
-      FACTORIES.forEach(fac => { totalFactories += fac.count; });
+      SPONSORS.forEach(sp => { totalFactories += sp.count; });
       const synergyTalent = TALENTS.find(t => t.id === 'golden_synergy');
       const synergyMult = 1 + (synergyTalent ? Math.floor(totalFactories / 10) * (synergyTalent.level * 1.0) : 0);
 
@@ -768,8 +765,8 @@
       const goldRushActive = SHOP_ITEMS.find(i => i.id === 'upg_goldrush')?.owned;
       const goldRushMult = goldRushActive ? 2.0 : 1.0;
 
-      FACTORIES.forEach(fac => {
-        base += fac.count * fac.baseCps;
+      SPONSORS.forEach(sp => {
+        base += sp.count * sp.baseCps;
       });
 
       const softRolls = TALENTS.find(t => t.id === 'soft_rolls');
@@ -1153,7 +1150,7 @@
 
       GAME.biomass = startBio;
       GAME.evoStage = 0;
-      FACTORIES.forEach(fac => { fac.count = 0; });
+      SPONSORS.forEach(sp => { sp.count = 0; });
       GAME.clean = 100;
       GAME.hunger = 100;
       GAME.happy = 100;
@@ -1189,45 +1186,42 @@
       });
     }
 
-    function renderFactories() {
-      const container = document.getElementById('factoriesContainer');
-      if (!container) return;
+    function renderSponsors() {
+      const container = document.getElementById('sponsorsContainer');
       container.innerHTML = '';
-      FACTORIES.forEach(fac => {
-        const cost = Math.round(fac.cost * Math.pow(1.15, fac.count));
+      SPONSORS.forEach(sp => {
+        const cost = Math.round(sp.cost * Math.pow(1.15, sp.count));
         const canBuy = GAME.biomass >= cost;
 
         const row = document.createElement('div');
         row.className = 'flex items-center justify-between p-2 rounded-xl bg-stone-950 border border-stone-800';
         row.innerHTML = `
           <div class="flex items-center gap-2">
-            <span class="text-xl">${fac.icon}</span>
+            <span class="text-xl">${sp.icon}</span>
             <div>
-              <div class="font-bold text-stone-200 text-xs">${fac.name} <span class="text-amber-400 font-game">(${fac.count})</span></div>
-              <div class="text-[10px] text-stone-400">+${fac.baseCps} 💨/с</div>
+              <div class="font-bold text-stone-200 text-xs">${sp.name} <span class="text-amber-400 font-game">(${sp.count})</span></div>
+              <div class="text-[10px] text-stone-400">+${sp.baseCps} 💨/с</div>
             </div>
           </div>
-          <button class="buy-fac-btn font-game text-xs px-3 py-1.5 rounded-xl border transition ${canBuy ? 'bg-amber-600 hover:bg-amber-500 text-white border-amber-500 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${fac.id}" ${canBuy ? '' : 'disabled'}>
+          <button class="buy-sp-btn font-game text-xs px-3 py-1.5 rounded-xl border transition ${canBuy ? 'bg-amber-600 hover:bg-amber-500 text-white border-amber-500 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${sp.id}" ${canBuy ? '' : 'disabled'}>
             ${cost.toLocaleString()} 💨
           </button>
         `;
         container.appendChild(row);
       });
 
-      container.querySelectorAll('.buy-fac-btn').forEach(btn => {
+      container.querySelectorAll('.buy-sp-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          const fac = FACTORIES.find(s => s.id === btn.dataset.id);
-          if (!fac) return;
-          const cost = Math.round(fac.cost * Math.pow(1.15, fac.count));
+          const sp = SPONSORS.find(s => s.id === btn.dataset.id);
+          const cost = Math.round(sp.cost * Math.pow(1.15, sp.count));
           if (GAME.biomass >= cost) {
             GAME.biomass -= cost;
-            fac.count++;
+            sp.count++;
             updateDashboardUI();
           }
         });
       });
     }
-    const renderSponsors = renderFactories;
 
     function renderShop() {
       const container = document.getElementById('shopItemsContainer');
@@ -1438,7 +1432,7 @@
       document.getElementById('footPassiveRate').textContent = `+${Math.round(getPassiveIncome()).toLocaleString()} /сек`;
       document.getElementById('footClickPower').textContent = getClickPower().toLocaleString();
 
-      renderFactories();
+      renderSponsors();
       renderShop();
       renderTalents();
       renderEvoChronicles();
@@ -1449,7 +1443,7 @@
     document.querySelectorAll('.dash-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         const target = tab.dataset.target;
-        ['panelEvo', 'panelFactories', 'panelShop', 'panelTalents', 'panelTrophies'].forEach(id => {
+        ['panelEvo', 'panelSponsors', 'panelShop', 'panelTalents', 'panelTrophies'].forEach(id => {
           document.getElementById(id).classList.add('hidden');
         });
         document.getElementById(target).classList.remove('hidden');
