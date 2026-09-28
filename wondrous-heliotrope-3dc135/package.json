@@ -1,0 +1,25 @@
+{
+  "name": "repo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://x-access-token:eyJ0eXAiOiJKV1QiLCJraWQiOiJwRFpsK3MrTmZBTVBCeExqdXlka0dYK2JYV01xbFprc1U1RW1DUE1mQXVnIiwiYWxnIjoiSFMyNTYifQ.eyJzY29wZSI6InJlcG86NDgxYzNmYTEtOTljYS00ODg4LWFlYjUtMDI0NzZlYzg2NDU5OndyaXRlIiwicmVwb19zbHVnIjoiYW5nZWxoZWxsNDUyL3dvbmRyb3VzLWhlbGlvdHJvcGUtM2RjMTM1IiwiZXhwIjoxNzkwNjMyODQwLCJpYXQiOjE3OTA2MjkyNDB9.Afts8jpLzulyEIcmJYZqzRGsEPiUwPuhK83tPl_ljPQ@hgit.services-prod.nsvcs.net/angelhell452/wondrous-heliotrope-3dc135.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@netlify/database": "^2.0.1",
+    "drizzle-orm": "^1.0.0-beta.22"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^6.0.0",
+    "drizzle-kit": "^1.0.0-beta.22"
+  }
+}
