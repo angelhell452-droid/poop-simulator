@@ -721,14 +721,14 @@
     );
 
     /* =========================================================================
-       2. NETLIFY DATABASE (POSTGRES) & PERSISTENCE ENGINE
+       2. BULLETPROOF PERSISTENCE & NETLIFY DATABASE (POSTGRES) ENGINE
        ========================================================================= */
-    async function syncToNetlifyBlobs() {
-      const statusIndicator = document.getElementById('cloudStatusText');
-      if (statusIndicator) statusIndicator.textContent = "БД: Сохранение...";
+    let cloudSyncDebounceTimer = null;
 
-      const payload = {
-        game: GAME,
+    function buildSavePayload() {
+      return {
+        saveTimestamp: Date.now(),
+        game: { ...GAME, lastActiveTime: Date.now() },
         feedCount,
         washCount,
         polishCount,
@@ -739,15 +739,37 @@
         achievements: ACHIEVEMENTS.map(a => ({ id: a.id, done: a.done })),
         purchasedItems: SHOP_ITEMS.filter(item => item.owned).map(i => i.id)
       };
+    }
 
-      // 1. Always save locally first (Safety)
+    // Purely synchronous instant local storage (0ms delay, never rolled back)
+    function saveLocal() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        const payload = buildSavePayload();
+        const json = JSON.stringify(payload);
+        localStorage.setItem(STORAGE_KEY, json);
+        localStorage.setItem(BACKUP_KEY, json);
       } catch (e) {
-        console.warn('Local storage error', e);
+        console.warn('LocalStorage save error', e);
       }
+    }
 
-      // 2. Push to Netlify Database Endpoint
+    // Debounced cloud synchronization (saves without spamming network)
+    function requestCloudSync(delayMs = 2500) {
+      if (cloudSyncDebounceTimer) clearTimeout(cloudSyncDebounceTimer);
+      cloudSyncDebounceTimer = setTimeout(() => {
+        syncToNetlifyBlobs();
+      }, delayMs);
+    }
+
+    async function syncToNetlifyBlobs() {
+      saveLocal(); // Always guarantee local storage is refreshed first
+
+      const statusIndicator = document.getElementById('cloudStatusText');
+      if (statusIndicator) statusIndicator.textContent = "БД: Сохранение...";
+
+      const payload = buildSavePayload();
+
+      // Push to Netlify Database Endpoint
       try {
         const res = await fetch('/.netlify/functions/cloud-save', {
           method: 'POST',
@@ -760,7 +782,7 @@
           if (statusIndicator) statusIndicator.textContent = "БД: Локально";
         }
       } catch (err) {
-        if (statusIndicator) statusIndicator.textContent = "БД: Офлайн";
+        if (statusIndicator) statusIndicator.textContent = "БД: Локально";
       }
     }
 
@@ -768,40 +790,63 @@
       const statusIndicator = document.getElementById('cloudStatusText');
       if (statusIndicator) statusIndicator.textContent = "БД: Загрузка...";
 
-      let dataToApply = null;
+      // STEP 1: IMMEDIATELY load from local storage synchronously (zero rollback, zero lag)
+      let localData = null;
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_KEY);
+        if (raw) localData = JSON.parse(raw);
+      } catch (e) {
+        console.error('LocalStorage parse failed', e);
+      }
 
-      // Try fetching from Netlify Database
+      if (localData) {
+        applySaveDataSafely(localData);
+        if (statusIndicator) statusIndicator.textContent = "БД: Локально ✓";
+      }
+
+      // STEP 2: Query Netlify DB in background
       try {
         const res = await fetch(`/.netlify/functions/cloud-save?playerId=${PLAYER_ID}`);
         if (res.ok) {
           const json = await res.json();
           if (json.exists && json.data) {
-            dataToApply = json.data;
+            const cloudData = json.data;
+            const cloudTime = new Date(json.updatedAt || 0).getTime() || cloudData.saveTimestamp || 0;
+            const localTime = localData?.saveTimestamp || localData?.game?.lastActiveTime || 0;
+
+            // Bulletproof anti-rollback protection:
+            // Only adopt cloud save if it is strictly from a NEWER session on another device/tab (cloudTime > localTime + 1500ms).
+            // If local save is newer or equal, NEVER rollback! Instead, sync local state forward to the cloud!
+            const cloudIsNewerSession = cloudTime > (localTime + 1500);
+
+            if (cloudIsNewerSession) {
+              applySaveDataSafely(cloudData);
+              saveLocal(); // Persist the superior cloud progress locally
+              if (statusIndicator) statusIndicator.textContent = "БД: Загружено ✓";
+            } else {
+              // Local progress is the authoritative latest state! Update cloud!
+              if (localData) {
+                syncToNetlifyBlobs();
+              }
+              if (statusIndicator) statusIndicator.textContent = "БД: Синхр ✓";
+            }
+
             if (json.playerName) {
               PLAYER_NAME = json.playerName;
               localStorage.setItem('PoopSim_PlayerName', PLAYER_NAME);
               const inp = document.getElementById('inpPlayerName');
               if (inp) inp.value = PLAYER_NAME;
             }
-            if (statusIndicator) statusIndicator.textContent = "БД: Загружено ✓";
+          } else {
+            // New user or no cloud record yet -> push current local state to cloud
+            if (localData) {
+              syncToNetlifyBlobs();
+            }
           }
         }
       } catch (err) {
         console.warn('Database fetch failed, using local fallback', err);
-      }
-
-      // Fallback to local storage if database had no record
-      if (!dataToApply) {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_KEY);
-          if (raw) dataToApply = JSON.parse(raw);
-        } catch (e) {
-          console.error('LocalStorage parse failed');
-        }
-      }
-
-      if (dataToApply) {
-        applySaveDataSafely(dataToApply);
+        if (statusIndicator) statusIndicator.textContent = "БД: Локально";
       }
     }
 
@@ -1152,6 +1197,8 @@
 
       checkAchievements();
       updateDashboardUI();
+      saveLocal();
+      requestCloudSync(2500);
     }
 
     function renderScene(time) {
@@ -1416,6 +1463,7 @@
       visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '🍕 Вкусно!', color: '#f97316', scale: 1.2, life: 1, vy: -2 });
       checkAchievements();
       updateDashboardUI();
+      saveLocal();
     });
 
     // WASH: Validated - strictly requires clean < 85%
@@ -1427,6 +1475,7 @@
       visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '🫧 Чистота!', color: '#38bdf8', scale: 1.2, life: 1, vy: -2 });
       checkAchievements();
       updateDashboardUI();
+      saveLocal();
     });
 
     // POLISH: Validated - strictly requires clean >= 70% to polish to a shine
@@ -1438,6 +1487,7 @@
       visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '+2 ✨ Блеск!', color: '#facc15', scale: 1.3, life: 1, vy: -2 });
       checkAchievements();
       updateDashboardUI();
+      saveLocal();
     });
 
     // TICKLE
@@ -1446,6 +1496,7 @@
       squashX = 1.2;
       visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '😄 Хи-хи!', color: '#ec4899', scale: 1.1, life: 1, vy: -2 });
       updateDashboardUI();
+      saveLocal();
     });
 
     // QUICK FLUSH: Cooldown of 35s AND requires clean < 70%
@@ -1465,6 +1516,7 @@
 
       checkAchievements();
       updateDashboardUI();
+      saveLocal();
     });
 
     // EVOLVE BUTTON (Supports 10,000 stages and omega_destiny talent discount)
@@ -1484,6 +1536,8 @@
         visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.45, text: `🧬 МУТАЦИЯ: ${target.name}!`, color: '#facc15', scale: 1.6, life: 1.5, vy: -3 });
         checkAchievements();
         updateDashboardUI();
+        saveLocal();
+        requestCloudSync(1000);
       }
     });
 
@@ -1526,6 +1580,8 @@
       document.getElementById('prestigeModal').classList.add('hidden');
       checkAchievements();
       updateDashboardUI();
+      saveLocal();
+      syncToNetlifyBlobs();
     });
 
     // ASTRAL TRANSCENDENCE: Requires Stage >= 99 (Form 100) AND prestigeRolls >= 500
@@ -1566,6 +1622,8 @@
       document.getElementById('transcendModal').classList.add('hidden');
       checkAchievements();
       updateDashboardUI();
+      saveLocal();
+      syncToNetlifyBlobs();
     });
 
     document.getElementById('btnClaimOffline').addEventListener('click', () => {
@@ -1632,6 +1690,8 @@
           }
           updateDashboardUI();
           renderTranscendUpgrades();
+          saveLocal();
+          requestCloudSync(1500);
         });
       });
     }
@@ -1750,6 +1810,8 @@
             fac.count++;
             checkAchievements();
             updateDashboardUI();
+            saveLocal();
+            requestCloudSync(3000);
           }
         });
       });
@@ -1801,6 +1863,8 @@
             if (item.type === 'hat') GAME.equippedHat = item.id;
             checkAchievements();
             updateDashboardUI();
+            saveLocal();
+            requestCloudSync(2000);
           }
         });
       });
@@ -1809,6 +1873,7 @@
         btn.addEventListener('click', () => {
           GAME.equippedHat = GAME.equippedHat === btn.dataset.id ? null : btn.dataset.id;
           updateDashboardUI();
+          saveLocal();
         });
       });
     }
@@ -1849,6 +1914,8 @@
             tl.level++;
             checkAchievements();
             updateDashboardUI();
+            saveLocal();
+            requestCloudSync(2000);
           }
         });
       });
@@ -2201,6 +2268,7 @@
 
       // Record last active time for AFK progress calculation
       GAME.lastActiveTime = Date.now();
+      saveLocal(); // Continuous 1-second instant auto-save to localStorage
 
       updateDashboardUI();
     }, 1000);
@@ -2210,8 +2278,22 @@
       syncToNetlifyBlobs();
     }, 10000);
 
-    window.addEventListener('beforeunload', () => {
-      syncToNetlifyBlobs();
+    // GUARANTEED INSTANT SAVE ON PAGE RELOAD / TAB CLOSE / MINIMIZE
+    function onPageLeave() {
+      saveLocal();
+      try {
+        const payload = buildSavePayload();
+        const dataStr = JSON.stringify({ playerId: PLAYER_ID, playerName: PLAYER_NAME, saveData: payload });
+        if (navigator.sendBeacon) {
+          const blob = new Blob([dataStr], { type: 'application/json' });
+          navigator.sendBeacon('/.netlify/functions/cloud-save', blob);
+        }
+      } catch (e) {}
+    }
+    window.addEventListener('beforeunload', onPageLeave);
+    window.addEventListener('pagehide', onPageLeave);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') onPageLeave();
     });
 
     window.onload = async function () {
