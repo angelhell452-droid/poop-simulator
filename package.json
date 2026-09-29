@@ -4,6 +4,7 @@
   "description": "Poop Simulator - Cloudflare Pages and Cloudflare D1 Database",
   "main": "index.html",
   "scripts": {
+    "build": "echo 'Build complete'",
     "dev": "wrangler pages dev .",
     "deploy": "wrangler pages deploy .",
     "d1:create": "wrangler d1 create poop_simulator_d1",
