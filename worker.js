@@ -70,14 +70,15 @@ async function handleCloudSave(req, env) {
       return new Response(JSON.stringify({ error: "Missing playerId" }), { status: 400, headers });
     }
 
-    // Handle wiping ALL player saves from cloud database (admin / season reset)
+    // Handle wiping ALL player saves from cloud database (admin / season reset only)
     if (action === "wipe_all") {
-      const adminKey = url.searchParams.get("key");
-      if (adminKey === "poop2026_reset" || adminKey === "wipe") {
+      const adminKey = url.searchParams.get("key") || req.headers.get("x-admin-key");
+      const validAdminKey = env.ADMIN_KEY || env.ADMIN_SECRET_KEY || "adm_secret_poop_2026_x9k2";
+      if (adminKey && adminKey === validAdminKey) {
         await env.DB.prepare(`DELETE FROM player_saves`).run();
         return new Response(JSON.stringify({ success: true, message: "All player saves wiped" }), { status: 200, headers });
       }
-      return new Response(JSON.stringify({ error: "Unauthorized key" }), { status: 403, headers });
+      return new Response(JSON.stringify({ error: "Unauthorized: Invalid admin key" }), { status: 403, headers });
     }
 
     if (req.method === "POST") {

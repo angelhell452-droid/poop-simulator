@@ -7924,23 +7924,6 @@
       location.href = location.pathname;
     };
 
-    window.wipeAllPlayers = async function (key = 'poop2026_reset') {
-      if (!confirm('ВНИМАНИЕ! Стереть базу данных ВСЕХ игроков на сервере D1 и сбросить таблицу лидеров?')) return;
-      isWipingData = true;
-      window.removeEventListener('beforeunload', onPageLeave);
-      window.removeEventListener('pagehide', onPageLeave);
-      try {
-        const res = await fetch(`/api/cloud-save?action=wipe_all&key=${encodeURIComponent(key)}`);
-        const data = await res.json();
-        alert('Результат сервера: ' + JSON.stringify(data));
-      } catch (e) {
-        alert('Ошибка связи с сервером: ' + e);
-      }
-      localStorage.clear();
-      sessionStorage.clear();
-      location.href = location.pathname;
-    };
-
     document.getElementById('logoSecretClick').addEventListener('click', () => {
       const ach = ACHIEVEMENTS.find(a => a.id === 'ach_secret');
       if (ach && !ach.done) {
