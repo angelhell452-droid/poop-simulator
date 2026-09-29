@@ -1,0 +1,2 @@
+# Cloudflare Pages Redirects
+/.netlify/functions/cloud-save /api/cloud-save 200
