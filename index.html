@@ -337,6 +337,31 @@
         </div>
       </div>
 
+      <!-- AUTO-CARE DECK (Авто-Кормление, Авто-Мытье, Авто-Щекотка) -->
+      <div class="px-3 py-1.5 bg-stone-950/95 border-t border-amber-900/60 flex items-center justify-between gap-1 flex-wrap z-10 text-[11px]">
+        <div class="flex items-center gap-1.5 font-bold text-amber-300">
+          <span class="text-sm">🤖</span>
+          <span class="text-[10px] uppercase font-bold text-stone-300">Авто-Уход:</span>
+        </div>
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button id="btnAutoFeed" class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700" title="Автоматически кормить при голоде < 75%">
+            <span id="autoFeedLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+            <span>🍔 Авто-Еда</span>
+          </button>
+          <button id="btnAutoWash" class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700" title="Автоматически мыть и полировать при чистоте < 75%">
+            <span id="autoWashLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+            <span>🧼 Авто-Мытье</span>
+          </button>
+          <button id="btnAutoTickle" class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700" title="Автоматически щекотать для комбо и счастья">
+            <span id="autoTickleLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+            <span>🪶 Авто-Щекотка</span>
+          </button>
+          <button id="btnAutoCareAll" class="px-2.5 py-1 rounded-xl border text-[10px] font-game bg-amber-900/60 hover:bg-amber-800 text-amber-200 border-amber-600 transition shadow jelly-btn" title="Переключить все авто-действия">
+            ⚡ Все ВКЛ
+          </button>
+        </div>
+      </div>
+
       <!-- Pet Care Bar (Legit validation checks) -->
       <div
         class="bg-stone-900/95 p-2.5 border-t border-amber-900/60 flex flex-wrap items-center justify-around gap-2 z-10">
@@ -371,6 +396,20 @@
         <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelShop">💎 Бутик</button>
         <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTalents">🌟 Таланты</button>
         <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTrophies">🏆 Подвиги</button>
+      </div>
+
+      <!-- Universal Multiplier Toolbar (x1 / x10 / x100 / xMAX) -->
+      <div id="buyMultiplierBar" class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-1.5">
+          <span class="text-amber-400 font-bold">🛒</span>
+          <span class="text-[10px] uppercase font-bold text-stone-300">Режим покупки:</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-amber-600 text-white font-bold border border-yellow-400 shadow jelly-btn" data-mult="1">x1</button>
+          <button class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn" data-mult="10">x10</button>
+          <button class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn" data-mult="100">x100</button>
+          <button class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn" data-mult="max">xМАКС</button>
+        </div>
       </div>
 
       <!-- Panel Body -->
@@ -813,6 +852,10 @@
       autoclickerSpeed: 1000, // target clicks per second (1ms = 1000 cps)
       gameMode: 'boys', // Standard default mode
       girlyMode: false,
+      buyMultiplier: 1, // 1, 10, 100, 'max'
+      autoFeed: false,
+      autoWash: false,
+      autoTickle: false,
       equippedKnife: null,
       unlockedKnives: [],
       casesOpened: 0,
@@ -2467,26 +2510,264 @@
       saveLocal();
     });
 
-    // EVOLVE BUTTON (Supports 10,000 stages and omega_destiny talent discount)
-    document.getElementById('btnEvolve').addEventListener('click', () => {
-      const next = GAME.evoStage + 1;
-      if (next >= EVOLUTIONS.length) return;
-      const target = EVOLUTIONS[next];
+    // =========================================================================
+    // UNIVERSAL MULTIPLIERS (x1, x10, x100, xMAX) & AUTO-CARE PET ENGINE
+    // =========================================================================
+    let buyMultiplier = 1; // 1, 10, 100, 'max'
 
+    function setBuyMultiplier(m) {
+      buyMultiplier = m;
+      GAME.buyMultiplier = m;
+      updateMultiplierUI();
+      updateDashboardUI();
+      saveLocal();
+    }
+
+    function updateMultiplierUI() {
+      document.querySelectorAll('.buy-mult-btn').forEach(btn => {
+        const multVal = btn.dataset.mult === 'max' ? 'max' : parseInt(btn.dataset.mult);
+        if (multVal === buyMultiplier) {
+          btn.className = 'buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-amber-600 text-white font-bold border border-yellow-400 shadow jelly-btn';
+        } else {
+          btn.className = 'buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn';
+        }
+      });
+    }
+
+    function getAffordableEvoInfo() {
       const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');
       const costDiscount = omegaTalent ? Math.pow(0.97, omegaTalent.level) : 1.0;
-      const targetCost = Math.max(1, Math.floor(target.cost * costDiscount));
 
-      if (GAME.biomass >= targetCost) {
-        GAME.biomass -= targetCost;
-        GAME.evoStage = next;
-        squashX = 1.4; squashY = 1.4;
-        visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.45, text: `🧬 МУТАЦИЯ: ${target.name}!`, color: '#facc15', scale: 1.6, life: 1.5, vy: -3 });
-        checkAchievements();
-        updateDashboardUI();
-        saveLocal();
-        requestCloudSync(1000);
+      if (GAME.evoStage >= EVOLUTIONS.length - 1) {
+        return { count: 0, totalCost: 0, canBuy: false, maxReached: true };
       }
+
+      let targetCount = 1;
+      if (buyMultiplier === 10) targetCount = 10;
+      else if (buyMultiplier === 100) targetCount = 100;
+      else if (buyMultiplier === 'max') targetCount = 10000;
+
+      let totalCost = 0;
+      let count = 0;
+      let currBio = GAME.biomass;
+
+      for (let s = GAME.evoStage + 1; s < EVOLUTIONS.length; s++) {
+        const cost = Math.max(1, Math.floor(EVOLUTIONS[s].cost * costDiscount));
+        if (buyMultiplier === 'max') {
+          if (currBio >= cost) {
+            currBio -= cost;
+            totalCost += cost;
+            count++;
+          } else {
+            break;
+          }
+        } else {
+          if (count < targetCount) {
+            totalCost += cost;
+            count++;
+          } else {
+            break;
+          }
+        }
+      }
+
+      if (buyMultiplier === 'max' && count === 0) {
+        totalCost = Math.max(1, Math.floor(EVOLUTIONS[GAME.evoStage + 1].cost * costDiscount));
+      }
+
+      const canBuy = count > 0 && GAME.biomass >= totalCost;
+      return { count: count || 1, totalCost, canBuy: canBuy && count > 0, maxReached: false };
+    }
+
+    function getAffordableFactoryInfo(fac) {
+      let targetCount = 1;
+      if (buyMultiplier === 10) targetCount = 10;
+      else if (buyMultiplier === 100) targetCount = 100;
+      else if (buyMultiplier === 'max') targetCount = 10000;
+
+      let totalCost = 0;
+      let count = 0;
+      let currBio = GAME.biomass;
+      let curCount = fac.count;
+
+      for (let i = 0; i < targetCount; i++) {
+        const cost = Math.round(fac.cost * Math.pow(1.15, curCount + i));
+        if (buyMultiplier === 'max') {
+          if (currBio >= cost) {
+            currBio -= cost;
+            totalCost += cost;
+            count++;
+          } else {
+            break;
+          }
+        } else {
+          totalCost += cost;
+          count++;
+        }
+      }
+
+      if (buyMultiplier === 'max' && count === 0) {
+        totalCost = Math.round(fac.cost * Math.pow(1.15, curCount));
+      }
+
+      const canBuy = count > 0 && GAME.biomass >= totalCost;
+      return { count: count || 1, totalCost, canBuy: canBuy && count > 0 };
+    }
+
+    function getAffordableTalentInfo(tl) {
+      const remainingLevels = tl.max - tl.level;
+      if (remainingLevels <= 0) return { count: 0, totalCost: 0, canBuy: false, maxed: true };
+
+      let targetCount = 1;
+      if (buyMultiplier === 10) targetCount = 10;
+      else if (buyMultiplier === 100) targetCount = 100;
+      else if (buyMultiplier === 'max') targetCount = remainingLevels;
+
+      targetCount = Math.min(targetCount, remainingLevels);
+
+      let totalCost = 0;
+      let count = 0;
+      let currRolls = GAME.prestigeRolls;
+
+      for (let i = 0; i < targetCount; i++) {
+        const lvl = tl.level + i;
+        const cost = Math.floor(tl.cost * Math.pow(1.22, lvl)) + lvl;
+        if (buyMultiplier === 'max') {
+          if (currRolls >= cost) {
+            currRolls -= cost;
+            totalCost += cost;
+            count++;
+          } else {
+            break;
+          }
+        } else {
+          totalCost += cost;
+          count++;
+        }
+      }
+
+      if (buyMultiplier === 'max' && count === 0) {
+        totalCost = Math.floor(tl.cost * Math.pow(1.22, tl.level)) + tl.level;
+      }
+
+      const canBuy = count > 0 && GAME.prestigeRolls >= totalCost;
+      return { count: count || 1, totalCost, canBuy: canBuy && count > 0, maxed: false };
+    }
+
+    function updateAutocareUI() {
+      const feedBtn = document.getElementById('btnAutoFeed');
+      const feedLed = document.getElementById('autoFeedLed');
+      if (feedBtn && feedLed) {
+        if (GAME.autoFeed) {
+          feedBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-emerald-950 border-emerald-500 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
+          feedLed.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse';
+        } else {
+          feedBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700';
+          feedLed.className = 'w-2 h-2 rounded-full bg-stone-500';
+        }
+      }
+
+      const washBtn = document.getElementById('btnAutoWash');
+      const washLed = document.getElementById('autoWashLed');
+      if (washBtn && washLed) {
+        if (GAME.autoWash) {
+          washBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-cyan-950 border-cyan-500 text-cyan-200 shadow-[0_0_8px_rgba(6,182,212,0.35)]';
+          washLed.className = 'w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee] animate-pulse';
+        } else {
+          washBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700';
+          washLed.className = 'w-2 h-2 rounded-full bg-stone-500';
+        }
+      }
+
+      const tickleBtn = document.getElementById('btnAutoTickle');
+      const tickleLed = document.getElementById('autoTickleLed');
+      if (tickleBtn && tickleLed) {
+        if (GAME.autoTickle) {
+          tickleBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-pink-950 border-pink-500 text-pink-200 shadow-[0_0_8px_rgba(236,72,153,0.35)]';
+          tickleLed.className = 'w-2 h-2 rounded-full bg-pink-400 shadow-[0_0_6px_#f472b6] animate-pulse';
+        } else {
+          tickleBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700';
+          tickleLed.className = 'w-2 h-2 rounded-full bg-stone-500';
+        }
+      }
+
+      const allBtn = document.getElementById('btnAutoCareAll');
+      if (allBtn) {
+        const allOn = GAME.autoFeed && GAME.autoWash && GAME.autoTickle;
+        allBtn.textContent = allOn ? '⚡ Все ВЫКЛ' : '⚡ Все ВКЛ';
+        allBtn.className = allOn
+          ? 'px-2.5 py-1 rounded-xl border text-[10px] font-game bg-emerald-800 hover:bg-emerald-700 text-emerald-100 border-emerald-400 transition shadow jelly-btn shadow-[0_0_8px_rgba(16,185,129,0.4)]'
+          : 'px-2.5 py-1 rounded-xl border text-[10px] font-game bg-amber-900/60 hover:bg-amber-800 text-amber-200 border-amber-600 transition shadow jelly-btn';
+      }
+    }
+
+    // Auto-Care Click Event Listeners
+    const btnAutoFeedEl = document.getElementById('btnAutoFeed');
+    if (btnAutoFeedEl) {
+      btnAutoFeedEl.addEventListener('click', () => {
+        GAME.autoFeed = !GAME.autoFeed;
+        updateAutocareUI();
+        saveLocal();
+      });
+    }
+    const btnAutoWashEl = document.getElementById('btnAutoWash');
+    if (btnAutoWashEl) {
+      btnAutoWashEl.addEventListener('click', () => {
+        GAME.autoWash = !GAME.autoWash;
+        updateAutocareUI();
+        saveLocal();
+      });
+    }
+    const btnAutoTickleEl = document.getElementById('btnAutoTickle');
+    if (btnAutoTickleEl) {
+      btnAutoTickleEl.addEventListener('click', () => {
+        GAME.autoTickle = !GAME.autoTickle;
+        updateAutocareUI();
+        saveLocal();
+      });
+    }
+    const btnAutoCareAllEl = document.getElementById('btnAutoCareAll');
+    if (btnAutoCareAllEl) {
+      btnAutoCareAllEl.addEventListener('click', () => {
+        const allOn = GAME.autoFeed && GAME.autoWash && GAME.autoTickle;
+        GAME.autoFeed = !allOn;
+        GAME.autoWash = !allOn;
+        GAME.autoTickle = !allOn;
+        updateAutocareUI();
+        saveLocal();
+      });
+    }
+
+    // Buy Multiplier Event Listeners
+    document.querySelectorAll('.buy-mult-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const m = btn.dataset.mult === 'max' ? 'max' : parseInt(btn.dataset.mult);
+        setBuyMultiplier(m);
+      });
+    });
+
+    // EVOLVE BUTTON (Supports Multipliers x1, x10, x100, xMAX, 10,000 stages and omega_destiny talent discount)
+    document.getElementById('btnEvolve').addEventListener('click', () => {
+      const evoInfo = getAffordableEvoInfo();
+      if (!evoInfo.canBuy || evoInfo.count <= 0) return;
+
+      GAME.biomass -= evoInfo.totalCost;
+      GAME.evoStage += evoInfo.count;
+      squashX = 1.4; squashY = 1.4;
+      const target = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[EVOLUTIONS.length - 1];
+      visualParticles.push({
+        x: canvasBox.clientWidth / 2,
+        y: canvasBox.clientHeight * 0.45,
+        text: evoInfo.count > 1 ? `🧬 МУТАЦИЯ +${evoInfo.count} ФОРМ! (${target.name})` : `🧬 МУТАЦИЯ: ${target.name}!`,
+        color: '#facc15',
+        scale: 1.6,
+        life: 1.5,
+        vy: -3
+      });
+      checkAchievements();
+      updateDashboardUI();
+      saveLocal();
+      requestCloudSync(1000);
     });
 
     // PRESTIGE: Requires Stage >= 14 OR cycleBiomass >= 300,000
@@ -2705,8 +2986,8 @@
       const globalFacMultiplier = turboMult * goldRushMult * overclockMult * rollsMult * cosmicMult;
 
       FACTORIES.forEach(fac => {
-        const cost = Math.round(fac.cost * Math.pow(1.15, fac.count));
-        const canBuy = GAME.biomass >= cost;
+        const facInfo = getAffordableFactoryInfo(fac);
+        const canBuy = facInfo.canBuy;
 
         let mMult = 1;
         if (fac.count >= 25) mMult *= 2;
@@ -2722,6 +3003,10 @@
 
         const effectiveCpsPerUnit = fac.baseCps * mMult * globalFacMultiplier;
         const totalIncomeThisType = fac.count * effectiveCpsPerUnit;
+
+        const btnLabel = buyMultiplier === 'max'
+          ? `+${facInfo.count} (МАКС): ${formatNumber(facInfo.totalCost)} 💨`
+          : (buyMultiplier > 1 ? `+${facInfo.count}: ${formatNumber(facInfo.totalCost)} 💨` : `${formatNumber(facInfo.totalCost)} 💨`);
 
         const row = document.createElement('div');
         row.className = 'p-2 rounded-xl bg-stone-950 border border-stone-800 hover:border-amber-700/60 transition';
@@ -2742,7 +3027,7 @@
               </div>
             </div>
             <button class="buy-fac-btn font-game text-xs px-3 py-1.5 rounded-xl border transition shrink-0 ml-2 ${canBuy ? 'bg-amber-600 hover:bg-amber-500 text-white border-amber-500 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${fac.id}" ${canBuy ? '' : 'disabled'}>
-              ${formatNumber(cost)} 💨
+              ${btnLabel}
             </button>
           </div>
           ${nextMilestone ? `
@@ -2761,10 +3046,10 @@
         btn.addEventListener('click', () => {
           const fac = FACTORIES.find(s => s.id === btn.dataset.id);
           if (!fac) return;
-          const cost = Math.round(fac.cost * Math.pow(1.15, fac.count));
-          if (GAME.biomass >= cost) {
-            GAME.biomass -= cost;
-            fac.count++;
+          const facInfo = getAffordableFactoryInfo(fac);
+          if (facInfo.canBuy && facInfo.count > 0) {
+            GAME.biomass -= facInfo.totalCost;
+            fac.count += facInfo.count;
             checkAchievements();
             updateDashboardUI();
             saveLocal();
@@ -2841,9 +3126,15 @@
       document.getElementById('talentRollsLabel').textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
 
       TALENTS.forEach(tl => {
-        const cost = getTalentCost(tl);
+        const tlInfo = getAffordableTalentInfo(tl);
         const maxed = tl.level >= tl.max;
-        const canBuy = GAME.prestigeRolls >= cost && !maxed;
+        const canBuy = tlInfo.canBuy && !maxed;
+
+        const btnLabel = maxed
+          ? 'МАКС'
+          : (buyMultiplier === 'max'
+              ? `+${tlInfo.count} (МАКС): ${formatNumber(tlInfo.totalCost)} 🧻`
+              : (buyMultiplier > 1 ? `+${tlInfo.count}: ${formatNumber(tlInfo.totalCost)} 🧻` : `${formatNumber(tlInfo.totalCost)} 🧻`));
 
         const row = document.createElement('div');
         row.className = 'flex items-center justify-between p-2 rounded-xl bg-stone-950 border border-purple-900/60';
@@ -2856,7 +3147,7 @@
             </div>
           </div>
           <button class="buy-tl-btn font-game text-xs px-3 py-1.5 rounded-xl border transition shrink-0 ml-2 ${maxed ? 'bg-stone-800 text-stone-500 border-stone-700' : (canBuy ? 'bg-yellow-400 hover:bg-yellow-300 text-purple-950 border-yellow-200 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed')}" data-id="${tl.id}" ${canBuy ? '' : 'disabled'}>
-            ${maxed ? 'МАКС' : `${formatNumber(cost)} 🧻`}
+            ${btnLabel}
           </button>
         `;
         container.appendChild(row);
@@ -2865,10 +3156,11 @@
       container.querySelectorAll('.buy-tl-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const tl = TALENTS.find(t => t.id === btn.dataset.id);
-          const cost = getTalentCost(tl);
-          if (GAME.prestigeRolls >= cost && tl.level < tl.max) {
-            GAME.prestigeRolls -= cost;
-            tl.level++;
+          if (!tl) return;
+          const tlInfo = getAffordableTalentInfo(tl);
+          if (tlInfo.canBuy && tlInfo.count > 0 && tl.level < tl.max) {
+            GAME.prestigeRolls -= tlInfo.totalCost;
+            tl.level += tlInfo.count;
             checkAchievements();
             updateDashboardUI();
             saveLocal();
@@ -3692,17 +3984,19 @@
       document.getElementById('evoStageName').textContent = currEvo.name;
       document.getElementById('evoStageDesc').textContent = currEvo.desc;
 
-      const nextEvo = EVOLUTIONS[GAME.evoStage + 1];
+      const evoInfo = getAffordableEvoInfo();
       const btnEvolve = document.getElementById('btnEvolve');
-      if (nextEvo) {
-        const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');
-        const costDiscount = omegaTalent ? Math.pow(0.97, omegaTalent.level) : 1.0;
-        const targetCost = Math.max(1, Math.floor(nextEvo.cost * costDiscount));
-        document.getElementById('evoCostLabel').textContent = `След: ${formatNumber(targetCost)} 💨`;
-        btnEvolve.disabled = GAME.biomass < targetCost;
-      } else {
+      if (evoInfo.maxReached) {
         document.getElementById('evoCostLabel').textContent = 'ВЫСШИЙ ВЛАДЫКА ОМНИВЕРСА';
+        btnEvolve.textContent = 'МАКС 🏆';
         btnEvolve.disabled = true;
+      } else {
+        const countTxt = buyMultiplier === 'max'
+          ? `+${evoInfo.count} (МАКС)`
+          : (buyMultiplier > 1 ? `+${evoInfo.count}` : `След`);
+        document.getElementById('evoCostLabel').textContent = `${countTxt}: ${formatNumber(evoInfo.totalCost)} 💨`;
+        btnEvolve.textContent = evoInfo.count > 1 ? `Мутировать x${evoInfo.count}! 🧬` : `Мутировать! 🧬`;
+        btnEvolve.disabled = !evoInfo.canBuy;
       }
 
       document.getElementById('footPassiveRate').textContent = `+${formatNumber(getPassiveIncome())} /сек`;
@@ -3715,6 +4009,8 @@
       renderAchievements();
       renderCasesSystem();
       updateAutoclickerUI();
+      updateAutocareUI();
+      updateMultiplierUI();
       applyGameModeUI();
     }
 
@@ -3902,6 +4198,37 @@
         GAME.happy = Math.max(0, GAME.happy - 0.4 * decayMult);
       }
 
+      // AUTO-CARE PET ENGINE (Авто-Кормление 🍔, Авто-Мытье 🧼, Авто-Щекотка 🪶)
+      let autoCareTriggered = false;
+      if (GAME.autoFeed && GAME.hunger < 75) {
+        GAME.hunger = Math.min(100, GAME.hunger + 30);
+        GAME.happy = Math.min(100, GAME.happy + 10);
+        GAME.sparkles += 1;
+        feedCount++;
+        autoCareTriggered = true;
+      }
+      if (GAME.autoWash && GAME.clean < 75) {
+        GAME.clean = Math.min(100, GAME.clean + 25);
+        GAME.happy = Math.min(100, GAME.happy + 5);
+        GAME.biomass += 5;
+        washCount++;
+        autoCareTriggered = true;
+      } else if (GAME.autoWash && GAME.clean >= 75 && GAME.clean < 95) {
+        GAME.clean = 100;
+        GAME.happy = Math.min(100, GAME.happy + 15);
+        GAME.sparkles += 1;
+        polishCount++;
+        autoCareTriggered = true;
+      }
+      if (GAME.autoTickle) {
+        GAME.happy = Math.min(100, GAME.happy + 8);
+        GAME.comboHeat = Math.min(100, (GAME.comboHeat || 0) + 4);
+        autoCareTriggered = true;
+      }
+      if (autoCareTriggered) {
+        checkAchievements();
+      }
+
       // Auto-clicker perk (20 clicks/sec simulated)
       if (SHOP_ITEMS.find(i => i.id === 'upg_autoclick')?.owned) {
         pendingClicks += 20;
@@ -3954,6 +4281,9 @@
     window.onload = async function () {
       resizeCanvas();
       await loadFromNetlifyBlobsOrLocal();
+      buyMultiplier = GAME.buyMultiplier || 1;
+      updateMultiplierUI();
+      updateAutocareUI();
 
       // Check AFK offline progress
       const now = Date.now();
