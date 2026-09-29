@@ -7880,9 +7880,17 @@
       });
     }
 
-    document.getElementById('btnResetData').addEventListener('click', () => {
-      if (confirm('ВНИМАНИЕ! Это полностью сотрет весь прогресс и перерождения. Продолжить?')) {
+    document.getElementById('btnResetData').addEventListener('click', async () => {
+      if (confirm('ВНИМАНИЕ! Это полностью сотрет весь прогресс и перерождения как на устройстве, так и на сервере. Продолжить?')) {
+        try {
+          if (PLAYER_ID) {
+            await fetch(`/api/cloud-save?action=wipe&playerId=${encodeURIComponent(PLAYER_ID)}`, { method: 'POST' });
+          }
+        } catch (e) {}
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(BACKUP_KEY);
+        localStorage.removeItem('PoopSim_PlayerId');
+        localStorage.removeItem('PoopSim_PlayerName');
         location.reload();
       }
     });

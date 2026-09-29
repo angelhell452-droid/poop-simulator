@@ -50,6 +50,36 @@ async function handleCloudSave(req, env) {
   try {
     await ensureSchema(env.DB);
 
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action");
+    const playerIdParam = url.searchParams.get("playerId");
+
+    // Handle wiping single player progress from cloud database
+    if (action === "wipe" || action === "delete") {
+      let targetId = playerIdParam;
+      if (!targetId && req.method === "POST") {
+        try {
+          const body = await req.clone().json();
+          targetId = body.playerId;
+        } catch (e) {}
+      }
+      if (targetId) {
+        await env.DB.prepare(`DELETE FROM player_saves WHERE player_id = ?`).bind(targetId).run();
+        return new Response(JSON.stringify({ success: true, wiped: targetId }), { status: 200, headers });
+      }
+      return new Response(JSON.stringify({ error: "Missing playerId" }), { status: 400, headers });
+    }
+
+    // Handle wiping ALL player saves from cloud database (admin / season reset)
+    if (action === "wipe_all") {
+      const adminKey = url.searchParams.get("key");
+      if (adminKey === "poop2026_reset" || adminKey === "wipe") {
+        await env.DB.prepare(`DELETE FROM player_saves`).run();
+        return new Response(JSON.stringify({ success: true, message: "All player saves wiped" }), { status: 200, headers });
+      }
+      return new Response(JSON.stringify({ error: "Unauthorized key" }), { status: 403, headers });
+    }
+
     if (req.method === "POST") {
       const body = await req.json();
       const { playerId, playerName, saveData } = body;
