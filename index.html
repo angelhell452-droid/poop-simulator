@@ -780,6 +780,7 @@
       <div class="flex justify-between items-center text-[10px] text-stone-400 pt-1">
         <button id="btnManualExport" class="hover:underline">Экспорт текста</button>
         <button id="btnManualImport" class="hover:underline">Импорт текста</button>
+        <button id="btnRepairSave" class="text-amber-400 font-bold hover:underline">🛠️ Починить баланс</button>
         <button id="btnResetData" class="text-red-400 hover:underline">Полный сброс</button>
       </div>
     </div>
@@ -1119,6 +1120,7 @@
 
     function formatNumber(num) {
       if (num === null || num === undefined || isNaN(num)) return '0';
+      if (!isFinite(num)) return '999.99 Vg';
       if (num < 1000) return Math.floor(num).toString();
       if (num >= 1e66) {
         return num.toExponential(2).replace('+', '');
@@ -1231,8 +1233,7 @@
     const ENTITIES = ["Капля", "Комочек", "Завиток", "Шлам", "Брусок", "Монолит", "Сгусток", "Самородок", "Поршень", "Бойлер", "Процессор", "Сервер", "Мутант", "Аномалия", "Фонтан", "Шторм", "Владыка", "Ореол", "Страж", "Титан", "Коллапс", "Сингуляр", "Суперструна", "Квазар", "Парадокс", "Создатель", "Архитектор", "Абсолют", "Вулкан", "Дракон", "Архангел", "Демиург"];
 
     const EVOLUTIONS = [];
-    const costBase = 1.048;
-    const multBase = 1.043;
+    const costBase = 1.0165;
     for (let i = 0; i < 20000; i++) {
       const epochIdx = Math.min(EPOCH_NAMES.length - 1, Math.floor(i / 500));
       const ep = EPOCH_NAMES[epochIdx];
@@ -1241,13 +1242,14 @@
       const tier = (i % 100) + 1;
       const name = (i === 19999) ? 'Точка Омега: Абсолютный Бог Омниверса' : (i % 500 === 0 ? 'Владыка Эпохи: ' + ep.epoch : pfx + ' ' + ent + ' ' + tier);
       
-      const centuries = Math.floor(i / 100);
-      const epochs = Math.floor(i / 500);
-      const millenniums = Math.floor(i / 1000);
-      const milestoneBoost = Math.pow(2.0, centuries) * Math.pow(5.0, epochs) * Math.pow(10.0, millenniums);
+      const cost = i === 0 ? 0 : Math.floor(15 * Math.pow(costBase, i) * Math.pow(i + 1, 1.8));
       
-      const cost = i === 0 ? 0 : Math.floor(60 * Math.pow(costBase, i) * Math.pow(i + 1, 1.5));
-      const mult = (1 + i * 2.0 + Math.pow(i, 1.7) * 0.5) * Math.pow(multBase, i) * milestoneBoost;
+      const linear = 1 + i * 0.20;
+      const centuryBonus = Math.pow(1.03, Math.floor(i / 100));
+      const epochBonus = Math.pow(1.15, Math.floor(i / 500));
+      const baseGrowth = Math.pow(1.0022, i);
+      const mult = linear * baseGrowth * centuryBonus * epochBonus;
+
       EVOLUTIONS.push({
         id: i,
         name: name,
@@ -4231,10 +4233,10 @@
       { id: 'art_omni_mult', key: 'omniMult', name: '🌌 Омни-Множитель Бытия', desc: '+100% ко ВСЕЙ биомассе и силе клика за уровень', cost: 3, max: 500, costStep: 2 },
       { id: 'art_afk_god', key: 'afkCap', name: '⏳ Сверх-Офлайн Модуль', desc: '+12 часов к максимальному лимиту времени офлайн-дохода', cost: 2, max: 50, costStep: 1 },
       { id: 'art_knife_forge', key: 'knifeForge', name: '🗡️ Небесная Кузница Ножей', desc: '+30% к урону клика и пассивному доходу всех ножей за уровень', cost: 5, max: 250, costStep: 3 },
-      { id: 'art_factory_overdrive', key: 'factoryOverdrive', name: '⚡ Гипер-Ускоритель Заводов', desc: 'Удваивает CPS абсолютно всех фабрик за каждый уровень', cost: 8, max: 250, costStep: 4 },
+      { id: 'art_factory_overdrive', key: 'factoryOverdrive', name: '⚡ Гипер-Ускоритель Заводов', desc: '+100% к CPS абсолютно всех фабрик за каждый уровень', cost: 8, max: 100, costStep: 4 },
       { id: 'art_plunger_incubator', key: 'plungerIncubator', name: '🪠 Астральный Инкубатор Вантузов', desc: '+10% к получаемым Вантузам при каждом Прорыве за уровень', cost: 10, max: 100, costStep: 5 },
-      { id: 'art_golden_meteor_storm', key: 'meteorStorm', name: '🌠 Звездный Дождь Метеоритов', desc: 'Метеориты приносят в 3x больше биомассы за каждый уровень', cost: 15, max: 50, costStep: 5 },
-      { id: 'art_evo_blessing', key: 'evoBlessing', name: '🧬 Благословение Демиурга', desc: 'Умножает множитель ВСЕХ форм мутации в 1.5x за уровень', cost: 12, max: 250, costStep: 4 },
+      { id: 'art_golden_meteor_storm', key: 'meteorStorm', name: '🌠 Звездный Дождь Метеоритов', desc: '+100% к биомассе метеоритов за каждый уровень', cost: 15, max: 50, costStep: 5 },
+      { id: 'art_evo_blessing', key: 'evoBlessing', name: '🧬 Благословение Демиурга', desc: '+50% к множителю ВСЕХ форм мутации за каждый уровень', cost: 12, max: 100, costStep: 4 },
       { id: 'art_auto_evolution', key: 'autoEvolution', name: '🌀 Авто-Эволюция Мутаций', desc: 'Автоматически совершает мутацию в новую форму при наличии биомассы!', cost: 25, max: 1 }
     ];
 
@@ -4310,6 +4312,9 @@
     // Purely synchronous instant local storage (0ms delay, never rolled back)
     function saveLocal() {
       try {
+        if (!isFinite(GAME.biomass) || GAME.biomass < 0 || GAME.biomass > 1e160) GAME.biomass = 0;
+        if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e160) GAME.cycleBiomass = 0;
+        if (!isFinite(GAME.allTimeBiomass) || GAME.allTimeBiomass < 0 || GAME.allTimeBiomass > 1e160) GAME.allTimeBiomass = 0;
         const payload = buildSavePayload();
         const json = JSON.stringify(payload);
         localStorage.setItem(STORAGE_KEY, json);
@@ -4486,6 +4491,44 @@
           GAME.transcendUpgrades = { ...GAME.transcendUpgrades, ...data.game.transcendUpgrades };
         }
       }
+
+      // Sanitize Infinity / NaN numbers and repair glitched saves
+      if (!isFinite(GAME.biomass) || GAME.biomass < 0 || GAME.biomass > 1e160) {
+        GAME.biomass = 0;
+      }
+      if (!isFinite(GAME.allTimeBiomass) || GAME.allTimeBiomass < 0 || GAME.allTimeBiomass > 1e160) {
+        GAME.allTimeBiomass = 0;
+      }
+      if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e160) {
+        GAME.cycleBiomass = 0;
+      }
+      if (!isFinite(GAME.prestigeRolls) || GAME.prestigeRolls < 0 || GAME.prestigeRolls > 1e15) {
+        GAME.prestigeRolls = 0;
+      }
+      if (!isFinite(GAME.transcendPlungers) || GAME.transcendPlungers < 0 || GAME.transcendPlungers > 1e10) {
+        GAME.transcendPlungers = 0;
+      }
+      if (!isFinite(GAME.evoStage) || GAME.evoStage < 0) {
+        GAME.evoStage = 0;
+      }
+      if (GAME.evoStage >= EVOLUTIONS.length) {
+        GAME.evoStage = EVOLUTIONS.length - 1;
+      }
+
+      // Automatic repair for saves caught in the form 14746 runaway bug
+      if (GAME.evoStage >= 500) {
+        let totalFacs = 0;
+        if (Array.isArray(data.factories || data.sponsors)) {
+          (data.factories || data.sponsors).forEach(f => { totalFacs += (f.count || 0); });
+        }
+        if (totalFacs < 50 && (GAME.totalPrestiges || 0) < 5) {
+          console.warn('Auto-repaired runaway form glitch from old save');
+          GAME.evoStage = 0;
+          GAME.biomass = 0;
+          GAME.cycleBiomass = 0;
+        }
+      }
+
       if (typeof data.feedCount === 'number') feedCount = data.feedCount;
       if (typeof data.washCount === 'number') washCount = data.washCount;
       if (typeof data.polishCount === 'number') polishCount = data.polishCount;
@@ -4601,7 +4644,7 @@
       const allStarsBonus = 1 + (totalAllStars * 0.005 * starForgeMult);
 
       // Demiurge Evolution Blessing Artifact
-      const evoBlessingMult = Math.pow(1.5, GAME.transcendUpgrades?.evoBlessing || 0);
+      const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.50;
 
       // Omni-Mastery Late-Game Talent
       const omniTalent = TALENTS.find(t => t.id === 'omni_mastery');
@@ -4667,7 +4710,7 @@
       const plungersMult = 1 + (GAME.transcendPlungers || 0) * (1 + omniLvl);
 
       // Transcendence Artifact: Factory Overdrive
-      const facOverdriveMult = Math.pow(2.0, GAME.transcendUpgrades?.factoryOverdrive || 0);
+      const facOverdriveMult = 1 + (GAME.transcendUpgrades?.factoryOverdrive || 0) * 1.0;
 
       // Turbo Frenzy Rush
       const comboTalent = TALENTS.find(t => t.id === 'combo_master');
@@ -7818,6 +7861,24 @@
         }
       }
     });
+
+    const btnRepairSave = document.getElementById('btnRepairSave');
+    if (btnRepairSave) {
+      btnRepairSave.addEventListener('click', () => {
+        if (confirm('Сбросить сломанные/бесконечные значения биомассы и перекалибровать этап мутации под текущие фабрики для честной игры?')) {
+          GAME.biomass = 0;
+          GAME.cycleBiomass = 0;
+          GAME.allTimeBiomass = 0;
+          let facCount = 0;
+          FACTORIES.forEach(f => { facCount += f.count; });
+          GAME.evoStage = Math.min(GAME.evoStage, Math.max(0, Math.floor(facCount / 2)));
+          saveLocal();
+          syncToCloudDatabase();
+          updateDashboardUI();
+          alert('Баланс успешно восстановлен! Бесконечности удалены.');
+        }
+      });
+    }
 
     document.getElementById('btnResetData').addEventListener('click', () => {
       if (confirm('ВНИМАНИЕ! Это полностью сотрет весь прогресс и перерождения. Продолжить?')) {
