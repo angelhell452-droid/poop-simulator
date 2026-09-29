@@ -6901,36 +6901,79 @@
         if (i === winnerIndex) {
           itemKnife = rouletteWinningKnife;
         } else if ((i === winnerIndex - 1 || i === winnerIndex + 1) && Math.random() < 0.65) {
-          // CS:GO Heart-stopping NEAR MISS: place another rare knife right next to winner!
-          const rarePool = specials.length > 0 ? specials : coverts;
-          itemKnife = rarePool[Math.floor(Math.random() * rarePool.length)] || poolKnives[Math.floor(Math.random() * poolKnives.length)];
+          // CS:GO Heart-stopping NEAR MISS: place another high-tier knife right next to winner!
+          const topPool = (godlys.length > 0 ? godlys : (titaniums.length > 0 ? titaniums : (celestials.length > 0 ? celestials : (rainbows.length > 0 ? rainbows : (coverts.length > 0 ? coverts : poolKnives)))));
+          itemKnife = topPool[Math.floor(Math.random() * topPool.length)] || poolKnives[Math.floor(Math.random() * poolKnives.length)];
         } else {
           itemKnife = poolKnives[Math.floor(Math.random() * poolKnives.length)];
         }
 
-        const isGold = itemKnife.rarity === 'special';
-        const isRed = itemKnife.rarity === 'covert';
-        const rColor = isGold
-          ? 'border-yellow-400 bg-gradient-to-b from-yellow-950/40 to-stone-900 shadow-[0_0_12px_rgba(250,204,21,0.35)]'
-          : (isRed
-            ? 'border-red-500 bg-gradient-to-b from-red-950/40 to-stone-900 shadow-[0_0_10px_rgba(239,68,68,0.25)]'
-            : (itemKnife.rarity === 'classified'
-              ? 'border-pink-500 bg-gradient-to-b from-pink-950/40 to-stone-900'
-              : (itemKnife.rarity === 'restricted'
-                ? 'border-purple-500 bg-gradient-to-b from-purple-950/30 to-stone-900'
-                : 'border-blue-500 bg-gradient-to-b from-blue-950/30 to-stone-900')));
+        const isGodly = itemKnife.rarity === 'godly' || itemKnife.rarity === 'special';
+        const isTitanium = itemKnife.rarity === 'titanium';
+        const isCelestial = itemKnife.rarity === 'celestial';
+        const isRainbow = itemKnife.rarity === 'rainbow';
+        const isCovert = itemKnife.rarity === 'covert';
+        const isClassified = itemKnife.rarity === 'classified';
+        const isEpic = itemKnife.rarity === 'epic';
+        const isVeryRare = itemKnife.rarity === 'very_rare' || itemKnife.rarity === 'restricted';
+        const isRare = itemKnife.rarity === 'rare';
 
-        const badgeColor = isGold ? 'bg-yellow-400 text-stone-950 font-black' : (isRed ? 'bg-red-600 text-white' : 'bg-stone-800 text-stone-300');
+        let rColor = 'border-stone-500 bg-stone-900/90';
+        let barColor = 'bg-stone-500';
+        let badgeColor = 'bg-stone-800 text-stone-300';
+        let starBadge = '';
+
+        if (isGodly) {
+          rColor = 'border-yellow-400 bg-gradient-to-b from-yellow-950/70 to-purple-950/70 shadow-[0_0_16px_rgba(250,204,21,0.6)]';
+          barColor = 'bg-yellow-400';
+          badgeColor = 'bg-yellow-400 text-stone-950 font-black';
+          starBadge = '<span class="text-yellow-300 animate-spin-slow">★</span>';
+        } else if (isTitanium) {
+          rColor = 'border-teal-400 bg-gradient-to-b from-teal-950/60 to-stone-900 shadow-[0_0_14px_rgba(45,212,191,0.5)]';
+          barColor = 'bg-teal-400';
+          badgeColor = 'bg-teal-400 text-stone-950 font-black';
+          starBadge = '<span class="text-teal-300">⚙️</span>';
+        } else if (isCelestial) {
+          rColor = 'border-cyan-300 bg-gradient-to-b from-cyan-950/60 to-indigo-950/60 shadow-[0_0_14px_rgba(103,232,249,0.5)]';
+          barColor = 'bg-cyan-300';
+          badgeColor = 'bg-cyan-400 text-stone-950 font-black';
+          starBadge = '<span class="text-cyan-300">✨</span>';
+        } else if (isRainbow) {
+          rColor = 'border-amber-300 bg-gradient-to-b from-red-950/40 via-purple-950/40 to-blue-950/40 shadow-[0_0_14px_rgba(244,63,94,0.5)]';
+          barColor = 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500';
+          badgeColor = 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500 text-white font-black';
+          starBadge = '<span class="text-yellow-300">🌈</span>';
+        } else if (isCovert) {
+          rColor = 'border-red-500 bg-gradient-to-b from-red-950/40 to-stone-900 shadow-[0_0_12px_rgba(239,68,68,0.4)]';
+          barColor = 'bg-red-500';
+          badgeColor = 'bg-red-600 text-white font-bold';
+        } else if (isClassified) {
+          rColor = 'border-pink-500 bg-gradient-to-b from-pink-950/40 to-stone-900 shadow-[0_0_10px_rgba(236,72,153,0.35)]';
+          barColor = 'bg-pink-500';
+          badgeColor = 'bg-pink-600 text-white font-bold';
+        } else if (isEpic) {
+          rColor = 'border-purple-500 bg-gradient-to-b from-purple-950/30 to-stone-900';
+          barColor = 'bg-purple-500';
+          badgeColor = 'bg-purple-600 text-white font-bold';
+        } else if (isVeryRare) {
+          rColor = 'border-indigo-500 bg-gradient-to-b from-indigo-950/30 to-stone-900';
+          barColor = 'bg-indigo-500';
+          badgeColor = 'bg-indigo-600 text-white font-bold';
+        } else if (isRare) {
+          rColor = 'border-sky-500 bg-gradient-to-b from-blue-950/30 to-stone-900';
+          barColor = 'bg-sky-400';
+          badgeColor = 'bg-sky-600 text-white font-bold';
+        }
 
         cards.push(`
           <div class="w-36 h-28 shrink-0 rounded-2xl border-2 ${rColor} p-2 flex flex-col items-center justify-between text-center relative select-none">
             <div class="w-full flex justify-between items-center text-[8px]">
               <span class="font-bold uppercase ${badgeColor} px-1.5 py-0.2 rounded">${itemKnife.rarityName}</span>
-              ${isGold ? '<span class="text-yellow-300 animate-spin-slow">★</span>' : ''}
+              ${starBadge}
             </div>
             <span class="text-3xl my-0.5 filter drop-shadow">${itemKnife.icon}</span>
             <div class="font-game text-[10px] text-yellow-200 truncate w-full px-1">${itemKnife.name}</div>
-            <div class="h-1 w-full rounded-full ${isGold ? 'bg-yellow-400' : (isRed ? 'bg-red-500' : (itemKnife.rarity === 'classified' ? 'bg-pink-500' : 'bg-purple-500'))}"></div>
+            <div class="h-1 w-full rounded-full ${barColor}"></div>
           </div>
         `);
       }
@@ -7005,7 +7048,7 @@
       isRouletteSpinning = false;
       document.getElementById('rouletteControlSection').classList.add('hidden');
 
-      const isGold = rouletteWinningKnife.rarity === 'special';
+      const isGold = ['godly', 'special', 'celestial', 'titanium', 'rainbow'].includes(rouletteWinningKnife.rarity);
       const isCovert = rouletteWinningKnife.rarity === 'covert';
 
       // Golden Screen Flash Overlay
@@ -7263,10 +7306,9 @@
     });
 
     document.getElementById('btnCloseCaseRoulette').addEventListener('click', () => {
-      if (!isRouletteSpinning) {
-        document.getElementById('caseRouletteModal').classList.add('hidden');
-        updateDashboardUI();
-      }
+      isRouletteSpinning = false;
+      document.getElementById('caseRouletteModal').classList.add('hidden');
+      updateDashboardUI();
     });
 
     // Audio Mute/Unmute Toggle Button
