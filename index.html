@@ -616,50 +616,100 @@
     </div>
   <!-- CS:GO CASE ROULETTE MODAL -->
   <div id="caseRouletteModal"
-    class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    class="fixed inset-0 bg-black/92 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div
-      class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-amber-600 max-w-xl w-full p-5 text-center shadow-2xl relative overflow-hidden">
-      <button id="btnCloseCaseRoulette"
-        class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
+      class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-amber-600 max-w-2xl w-full p-4 sm:p-6 text-center shadow-[0_0_50px_rgba(245,158,11,0.25)] relative overflow-hidden">
       
-      <div class="text-xs font-bold text-amber-400 uppercase tracking-widest" id="rouletteCaseSubtitle">ОТКРЫТИЕ КЕЙСА CS:GO</div>
-      <h3 class="font-game text-2xl text-yellow-300 mt-0.5" id="rouletteCaseTitle">Weapon Case</h3>
+      <!-- Golden Flash Overlay on Jackpot Drop -->
+      <div id="rouletteFlashOverlay" class="absolute inset-0 bg-yellow-300 pointer-events-none opacity-0 z-50 transition-opacity duration-300"></div>
+
+      <!-- Confetti Fireworks Overlay -->
+      <canvas id="rouletteConfettiCanvas" class="absolute inset-0 pointer-events-none z-40 w-full h-full"></canvas>
+
+      <!-- Audio Mute/Unmute Toggle & Close Button -->
+      <div class="flex items-center justify-between mb-2">
+        <button id="btnToggleRouletteAudio" class="bg-stone-800/90 hover:bg-stone-700 text-yellow-400 font-game text-[11px] px-3 py-1 rounded-xl border border-stone-600 flex items-center gap-1.5 transition">
+          <span id="rouletteAudioIcon">🔊</span> <span id="rouletteAudioText">ЗВУК CS:GO: ВКЛ</span>
+        </button>
+        <button id="btnCloseCaseRoulette"
+          class="modal-close text-stone-400 hover:text-white text-2xl font-bold p-1 leading-none">&times;</button>
+      </div>
+
+      <div class="text-[11px] font-bold text-amber-400 uppercase tracking-widest" id="rouletteCaseSubtitle">ОТКРЫТИЕ КОНТЕЙНЕРА CS:GO</div>
+      <h3 class="font-game text-2xl sm:text-3xl text-yellow-300 tracking-wide mt-0.5" id="rouletteCaseTitle">Weapon Case</h3>
+
+      <!-- Key Unlocking Transition Screen -->
+      <div id="rouletteUnlockScreen" class="hidden py-10 flex flex-col items-center justify-center animate-pulse">
+        <div class="text-6xl my-2">🗝️ ➔ 🔒</div>
+        <div class="font-game text-yellow-400 text-lg">ВСТАВКА КЛЮЧА И ОТПИРАНИЕ ЗАМКА...</div>
+        <div class="text-xs text-stone-400 mt-1">Декодирование секретного содержимого контейнера</div>
+      </div>
 
       <!-- Horizontal Roulette Wheel Viewport -->
-      <div class="relative my-5 mx-auto w-full max-w-[500px] h-32 bg-stone-950 border-4 border-amber-800/80 rounded-2xl overflow-hidden shadow-inner flex items-center">
-        <!-- Center Target Indicator Needle -->
-        <div class="absolute left-1/2 top-0 bottom-0 w-1 bg-yellow-400 -translate-x-1/2 z-30 shadow-[0_0_12px_#facc15] pointer-events-none">
-          <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-6 border-x-transparent border-t-8 border-t-yellow-400"></div>
-          <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-6 border-x-transparent border-b-8 border-b-yellow-400"></div>
+      <div id="rouletteWheelBox" class="relative my-4 mx-auto w-full max-w-[560px] h-36 bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 border-4 border-amber-800/90 rounded-2xl overflow-hidden shadow-[inset_0_0_25px_rgba(0,0,0,0.9)] flex items-center">
+        <!-- CS:GO Center Target Needle with Mechanical Kick Physics -->
+        <div id="rouletteNeedle" class="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-300 via-amber-400 to-yellow-300 -translate-x-1/2 z-30 shadow-[0_0_16px_#facc15] pointer-events-none origin-top transition-transform duration-75">
+          <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-10 border-t-yellow-400 drop-shadow-[0_0_8px_#facc15]"></div>
+          <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-b-10 border-b-yellow-400 drop-shadow-[0_0_8px_#facc15]"></div>
         </div>
 
-        <!-- Sliding Tape of Items -->
-        <div id="rouletteTrack" class="flex items-center gap-2 pl-[210px] will-change-transform" style="transform: translateX(0px);">
-          <!-- Items populated by JS -->
+        <!-- Sliding Reel of 80 Items -->
+        <div id="rouletteTrack" class="flex items-center gap-2 pl-[240px] will-change-transform" style="transform: translateX(0px);">
+          <!-- Items populated dynamically by JS -->
         </div>
       </div>
 
-      <!-- Result Banner (Revealed after spin stops) -->
-      <div id="rouletteResultBanner" class="hidden my-3 p-3 rounded-2xl bg-stone-900/90 border-2 border-yellow-400 flex flex-col items-center justify-center animate-bounce-once">
-        <span class="text-xs uppercase text-stone-400">Вам выпало сокровище:</span>
-        <div class="flex items-center gap-3 my-2">
-          <span id="rouletteResultIcon" class="text-3xl">🔪</span>
-          <div class="text-left">
-            <div id="rouletteResultName" class="font-game text-base text-yellow-300">★ Керамбит | Градиент</div>
-            <div id="rouletteResultRarity" class="text-xs font-bold text-pink-400">Тайное (Covert) ★ +500% Клика</div>
+      <!-- Result Inspect Banner (CS:GO Weapon Showcase Revealed after spin) -->
+      <div id="rouletteResultBanner" class="hidden my-2 p-4 rounded-3xl bg-gradient-to-b from-stone-900/95 via-stone-950 to-stone-900 border-2 border-yellow-400 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
+        <!-- Sunburst God Rays behind weapon -->
+        <div class="absolute w-96 h-96 rounded-full bg-gradient-to-tr from-yellow-500/10 via-amber-400/20 to-pink-500/10 animate-spin-slow pointer-events-none -z-0"></div>
+
+        <div class="text-[11px] uppercase tracking-wider font-bold text-stone-400 z-10">Вам выпал легендарный предмет!</div>
+        
+        <div class="flex flex-col sm:flex-row items-center gap-4 my-2.5 z-10">
+          <div id="rouletteResultIcon" class="text-6xl drop-shadow-[0_0_20px_rgba(250,204,21,0.5)] transform hover:scale-110 transition duration-300 cursor-pointer">🔪</div>
+          <div class="text-center sm:text-left">
+            <div id="rouletteResultName" class="font-game text-xl sm:text-2xl text-yellow-300 drop-shadow">★ Керамбит | Градиент</div>
+            <div id="rouletteResultRarity" class="text-xs font-bold text-pink-400 flex items-center justify-center sm:justify-start gap-2 mt-0.5">
+              <span>★ Необычайно редкий</span>
+              <span class="text-stone-500">•</span>
+              <span id="rouletteResultStatTrak" class="text-orange-400 font-mono">StatTrak™: 0 кликов</span>
+            </div>
+            <!-- Float value bar -->
+            <div class="mt-2 text-left bg-stone-900/80 p-2 rounded-xl border border-stone-800 text-[10px] space-y-1">
+              <div class="flex justify-between text-stone-300">
+                <span class="font-bold">Качество:</span>
+                <span id="rouletteResultFloatText" class="text-emerald-400 font-bold">Прямо с завода (0.0142)</span>
+              </div>
+              <div class="h-1.5 w-full bg-stone-800 rounded-full overflow-hidden flex">
+                <div class="h-full bg-emerald-500 w-[7%]" title="Factory New"></div>
+                <div class="h-full bg-teal-500 w-[8%]" title="Minimal Wear"></div>
+                <div class="h-full bg-yellow-500 w-[23%]" title="Field-Tested"></div>
+                <div class="h-full bg-amber-600 w-[7%]" title="Well-Worn"></div>
+                <div class="h-full bg-red-600 w-[55%]" title="Battle-Scarred"></div>
+              </div>
+            </div>
+            <!-- Boosts -->
+            <div class="mt-2 flex flex-wrap gap-2 justify-center sm:justify-start text-xs font-bold">
+              <span id="rouletteResultClickBoost" class="px-2.5 py-0.5 rounded-lg bg-emerald-950 border border-emerald-500/50 text-emerald-300">+60% Клик</span>
+              <span id="rouletteResultPassiveBoost" class="px-2.5 py-0.5 rounded-lg bg-cyan-950 border border-cyan-500/50 text-cyan-300">+30% Заводы</span>
+            </div>
           </div>
         </div>
-        <div class="flex gap-2 w-full mt-2">
-          <button id="btnEquipRouletteKnife" class="flex-1 bg-yellow-500 hover:bg-yellow-400 text-stone-950 font-game text-xs py-2 rounded-xl font-bold jelly-btn">ЭКИПИРОВАТЬ СЕЙЧАС! ⚔️</button>
-          <button id="btnKeepRouletteKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs px-4 py-2 rounded-xl">В инвентарь</button>
+
+        <div class="flex gap-2.5 w-full mt-3 z-10 max-w-md">
+          <button id="btnEquipRouletteKnife" class="flex-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-xs sm:text-sm py-2.5 rounded-2xl font-black shadow-lg jelly-btn">
+            ⚔️ ЭКИПИРОВАТЬ НОЖ!
+          </button>
+          <button id="btnKeepRouletteKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs px-5 py-2.5 rounded-2xl border border-stone-600">
+            В инвентарь
+          </button>
         </div>
       </div>
 
-      <!-- Control Button -->
-      <div id="rouletteControlSection" class="mt-4 flex gap-3 justify-center">
-        <button id="btnSpinRoulette" class="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:brightness-110 text-stone-950 font-game text-sm px-8 py-3 rounded-2xl shadow-xl font-black jelly-btn flex items-center gap-2">
-          <span>🎰</span> <span>КРУТИТЬ РУЛЕТКУ!</span>
-        </button>
+      <!-- Action Section during roulette -->
+      <div id="rouletteControlSection" class="mt-3 flex gap-3 justify-center">
+        <span class="text-xs text-stone-400 font-bold animate-pulse">Рулетка крутится... Испытайте удачу CS:GO!</span>
       </div>
     </div>
   </div>
@@ -787,24 +837,66 @@
       });
     }
 
-    // CS:GO LEGENDARY KNIVES DATASET
+    // 42 LEGENDARY CS:GO KNIVES & ICONIC SKINS
     const KNIVES = [
-      { id: 'knife_gut', name: '★ Gut Knife | Патина', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 1.6, passiveMult: 1.3, icon: '🪝', bladeColor: '#94a3b8', handleColor: '#78350f', style: 'gut', desc: 'Удобный крюк для потрошения биомассы. +60% к клику и +30% к фабрикам!' },
-      { id: 'knife_flip', name: '★ Flip Knife | Ночь', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 2.2, passiveMult: 1.5, icon: '🗡️', bladeColor: '#1e293b', handleColor: '#0f172a', style: 'flip', desc: 'Скрытный складной клинок во тьме унитаза. x2.2 к клику!' },
-      { id: 'knife_huntsman', name: '★ Huntsman Knife | Камуфляж', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 3.2, passiveMult: 1.8, icon: '⚔️', bladeColor: '#cbd5e1', handleColor: '#334155', style: 'huntsman', desc: 'Тяжелый тесак для суровых охотников. x3.2 к клику!' },
-      { id: 'knife_falchion', name: '★ Falchion | Кровавая паутина', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 4.8, passiveMult: 2.2, icon: '🗡️', bladeColor: '#dc2626', handleColor: '#450a0a', style: 'falchion', desc: 'Алый узор паутины на изогнутом лезвии. x4.8 к клику!' },
-      { id: 'knife_bowie', name: '★ Bowie Knife | Зуб тигра', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 7.5, passiveMult: 2.8, icon: '🔪', bladeColor: '#f59e0b', handleColor: '#78350f', style: 'bowie', desc: 'Огромный свирепый клинок с золотыми полосами. x7.5 к клику!' },
-      { id: 'knife_daggers', name: '★ Shadow Daggers | Градиент (Fade)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 11.0, passiveMult: 3.5, icon: '✨', bladeColor: 'fade', handleColor: '#18181b', style: 'daggers', desc: 'Парные стилеты со спектральным сиянием Fade. x11.0 к клику!' },
-      { id: 'knife_butterfly', name: '★ Butterfly Knife | Doppler Phase 2', rarity: 'covert', rarityName: 'Тайное', clickMult: 20.0, passiveMult: 5.0, icon: '🦋', bladeColor: '#ec4899', handleColor: '#581c87', style: 'butterfly', desc: 'Культовый флип ножа-бабочки в розовом перламутре Doppler. x20 к клику!' },
-      { id: 'knife_m9', name: '★ M9 Bayonet | Marble Fade (3-Color)', rarity: 'covert', rarityName: 'Тайное', clickMult: 35.0, passiveMult: 8.0, icon: '🗡️', bladeColor: 'marble', handleColor: '#27272a', style: 'bayonet', desc: 'Тяжелый штык-нож с зубьями пилы и переливом Marble Fade. x35 к клику!' },
-      { id: 'knife_karambit', name: '★ Karambit | Fade 100% Max Purple', rarity: 'special', rarityName: '★ Необычайно редкий', clickMult: 60.0, passiveMult: 14.0, icon: '🌀', bladeColor: 'fade', handleColor: '#09090b', style: 'karambit', desc: 'Легендарный коготь тигра с кольцом под палец и чистым градиентом Fade. x60 к клику!' },
-      { id: 'knife_lore', name: '★ Karambit | Dragon Lore (Золотое пламя)', rarity: 'special', rarityName: '★ СУВЕНИРНЫЙ ГРААЛЬ', clickMult: 150.0, passiveMult: 35.0, icon: '🐉', bladeColor: '#ffd700', handleColor: '#451a03', style: 'lore', desc: 'Абсолютный божественный грааль CS:GO! x150 к силе клика и x35 к доходу всех заводов!' }
+      // === MIL-SPEC TIER (Армейское качество, синяя рамка) ===
+      { id: 'knife_navaja_safari', name: '★ Navaja Knife | Safari Mesh', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 1.4, passiveMult: 1.2, icon: '🪒', bladeColor: '#78716c', handleColor: '#44403c', style: 'navaja', desc: 'Мемная классика: Африканская сетка. Зато свой нож! +40% к клику.' },
+      { id: 'knife_gut_rust', name: '★ Gut Knife | Rust Coat', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 1.6, passiveMult: 1.3, icon: '🪝', bladeColor: '#7c2d12', handleColor: '#451a03', style: 'gut', desc: 'Покрытый плотной ржавчиной крюк. +60% к клику и +30% к фабрикам!' },
+      { id: 'knife_gut_patina', name: '★ Gut Knife | Патина (Stained)', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 1.8, passiveMult: 1.4, icon: '🪝', bladeColor: '#94a3b8', handleColor: '#78350f', style: 'gut', desc: 'Стальной крюк с травлением кислотой. +80% к клику.' },
+      { id: 'knife_flip_forest', name: '★ Flip Knife | Северный лес', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 2.0, passiveMult: 1.5, icon: '🗡️', bladeColor: '#3f6212', handleColor: '#1e293b', style: 'flip', desc: 'Камуфляжный складной нож спецназа. x2.0 к клику!' },
+      { id: 'knife_flip_night', name: '★ Flip Knife | Ночь (Night)', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 2.3, passiveMult: 1.5, icon: '🗡️', bladeColor: '#0f172a', handleColor: '#020617', style: 'flip', desc: 'Матовое черное лезвие для ночных вылазок. x2.3 к клику!' },
+      { id: 'knife_falchion_urban', name: '★ Falchion | Городская маскировка', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 2.6, passiveMult: 1.6, icon: '🗡️', bladeColor: '#cbd5e1', handleColor: '#475569', style: 'falchion', desc: 'Удобный фальшион в серо-белом городском камуфляже. x2.6 к клику!' },
+      { id: 'knife_shadow_damascus', name: '★ Shadow Daggers | Дамасская сталь', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 2.9, passiveMult: 1.7, icon: '✨', bladeColor: 'damascus', handleColor: '#18181b', style: 'daggers', desc: 'Парные стилеты со слоистой дамасской текстурой. x2.9 к клику!' },
+      { id: 'knife_survival_boreal', name: '★ Survival Knife | Лесной камуфляж', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 3.2, passiveMult: 1.8, icon: '🪓', bladeColor: '#15803d', handleColor: '#1c1917', style: 'survival', desc: 'Прочный армейский нож выживания с пилой. x3.2 к клику!' },
+
+      // === RESTRICTED TIER (Запрещенное качество, фиолетовая рамка) ===
+      { id: 'knife_ursus_scorched', name: '★ Ursus Knife | Ожоги (Scorched)', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 3.8, passiveMult: 2.0, icon: '🗡️', bladeColor: '#292524', handleColor: '#1c1917', style: 'ursus', desc: 'Танто-клинок с боевым черным нагаром. x3.8 к клику!' },
+      { id: 'knife_falchion_web', name: '★ Falchion | Кровавая паутина (Crimson Web)', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 4.5, passiveMult: 2.2, icon: '🗡️', bladeColor: 'crimson', handleColor: '#450a0a', style: 'falchion', desc: 'Алый лак с паутиной ручной работы. x4.5 к клику!' },
+      { id: 'knife_huntsman_camo', name: '★ Huntsman Knife | Камуфляж DDPAT', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 5.2, passiveMult: 2.4, icon: '⚔️', bladeColor: '#4d7c0f', handleColor: '#334155', style: 'huntsman', desc: 'Тяжелый тактический тесак для выживания. x5.2 к клику!' },
+      { id: 'knife_shadow_fade', name: '★ Shadow Daggers | Градиент 100% Fade', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 6.0, passiveMult: 2.6, icon: '✨', bladeColor: 'fade', handleColor: '#18181b', style: 'daggers', desc: 'Парные стилеты со спектральным переливом Full Fade! x6.0 к клику!' },
+      { id: 'knife_ursus_slaughter', name: '★ Ursus Knife | Убийство (Slaughter)', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 7.0, passiveMult: 2.8, icon: '🗡️', bladeColor: 'slaughter', handleColor: '#450a0a', style: 'ursus', desc: 'Кроваво-рубиновый узор Slaughter на лезвии Танто. x7.0 к клику!' },
+      { id: 'knife_huntsman_hyper', name: '★ Huntsman Knife | Скоростной зверь (Hyper Beast)', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 8.5, passiveMult: 3.0, icon: '👾', bladeColor: 'hyper', handleColor: '#0f172a', style: 'huntsman', desc: 'Психоделический монстр с клыками и неоновыми красками! x8.5 к клику!' },
+      { id: 'knife_paracord_slaughter', name: '★ Paracord Knife | Убийство (Slaughter)', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 10.0, passiveMult: 3.2, icon: '🧶', bladeColor: 'slaughter', handleColor: '#78350f', style: 'paracord', desc: 'Оплетенная паракордом рукоять с кровавым клинком. x10 к клику!' },
+
+      // === CLASSIFIED TIER (Засекреченное качество, розовая рамка) ===
+      { id: 'knife_bowie_tiger', name: '★ Bowie Knife | Зуб тигра (Tiger Tooth)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 12.0, passiveMult: 3.6, icon: '🔪', bladeColor: 'tiger', handleColor: '#78350f', style: 'bowie', desc: 'Огромный тесак Боуи с золотым отливом и полосами тигра. x12 к клику!' },
+      { id: 'knife_bowie_fade', name: '★ Bowie Knife | Градиент (Fade)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 14.5, passiveMult: 4.0, icon: '🔪', bladeColor: 'fade', handleColor: '#18181b', style: 'bowie', desc: 'Мощный градиентный клинок с зеркальным блеском. x14.5 к клику!' },
+      { id: 'knife_nomad_bluegem', name: '★ Nomad Knife | Поверхностная закалка (Blue Gem #661)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 17.0, passiveMult: 4.5, icon: '💎', bladeColor: 'bluegem', handleColor: '#27272a', style: 'nomad', desc: 'Чистейший 98% синий самородок Blue Gem! Мечта коллекционера. x17 к клику!' },
+      { id: 'knife_nomad_fade', name: '★ Nomad Knife | Градиент 100% Full Fade', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 20.0, passiveMult: 5.0, icon: '🗡️', bladeColor: 'fade', handleColor: '#18181b', style: 'nomad', desc: 'Складной нож кочевника с фиолетовым острием Fade. x20 к клику!' },
+      { id: 'knife_classic_fade', name: '★ Classic Knife | Градиент (CS 1.6 Vintage)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 23.0, passiveMult: 5.5, icon: '🗡️', bladeColor: 'fade', handleColor: '#262626', style: 'classic', desc: 'Легендарный нож из CS 1.6 в юбилейном градиенте. x23 к клику!' },
+      { id: 'knife_classic_crimson', name: '★ Classic Knife | Кровавая паутина (3 Паутины)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 26.0, passiveMult: 6.0, icon: '🕸️', bladeColor: 'crimson', handleColor: '#1c1917', style: 'classic', desc: 'Раритетный клинок 1.6 с тремя идеальными центрами паутины. x26 к клику!' },
+      { id: 'knife_stiletto_damascus', name: '★ Stiletto Knife | Дамасская сталь', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 30.0, passiveMult: 6.8, icon: '🗡️', bladeColor: 'damascus', handleColor: '#78350f', style: 'stiletto', desc: 'Итальянский стилет с волнообразным дамасским узором. x30 к клику!' },
+      { id: 'knife_stiletto_marble', name: '★ Stiletto Knife | Marble Fade (Fire & Ice)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 35.0, passiveMult: 7.5, icon: '🔥', bladeColor: 'fire_ice', handleColor: '#18181b', style: 'stiletto', desc: 'Тончайший стилет «Огонь и Лёд» без желтизны. x35 к клику!' },
+      { id: 'knife_talon_tiger', name: '★ Talon Knife | Зуб тигра (Tiger Tooth)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 40.0, passiveMult: 8.5, icon: '🦅', bladeColor: 'tiger', handleColor: '#fafaf9', style: 'talon', desc: 'Коготь с рукоятью цвета слоновой кости и тигровым лезвием. x40 к клику!' },
+      { id: 'knife_talon_fade', name: '★ Talon Knife | Градиент 100% Full Fade', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 46.0, passiveMult: 9.5, icon: '🌀', bladeColor: 'fade', handleColor: '#fafaf9', style: 'talon', desc: 'Изогнутый коготь хищника с плавным переливом спектра. x46 к клику!' },
+      { id: 'knife_bayonet_autotronic', name: '★ Bayonet | Автотроника (Autotronic)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 52.0, passiveMult: 11.0, icon: '⚡', bladeColor: 'autotronic', handleColor: '#27272a', style: 'bayonet', desc: 'Анодированная сталь со сквозной красной сеткой. x52 к клику!' },
+      { id: 'knife_bayonet_doppler', name: '★ Bayonet | Волны Допплер Phase 4 (Max Blue)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 60.0, passiveMult: 13.0, icon: '🌊', bladeColor: 'doppler_blue', handleColor: '#09090b', style: 'bayonet', desc: 'Глубокий океанический сапфировый перелив Phase 4. x60 к клику!' },
+
+      // === COVERT TIER (Тайное качество, красная рамка) ===
+      { id: 'knife_m9_autotronic', name: '★ M9 Bayonet | Автотроника (Autotronic)', rarity: 'covert', rarityName: 'Тайное', clickMult: 75.0, passiveMult: 16.0, icon: '🗡️', bladeColor: 'autotronic', handleColor: '#27272a', style: 'bayonet', desc: 'Штык-нож M9 с пилой и высокотехнологичным красным сердечником. x75 к клику!' },
+      { id: 'knife_m9_marble', name: '★ M9 Bayonet | Marble Fade (Fire & Ice)', rarity: 'covert', rarityName: 'Тайное', clickMult: 90.0, passiveMult: 19.0, icon: '🔥', bladeColor: 'fire_ice', handleColor: '#27272a', style: 'bayonet', desc: 'Культовый штык-нож M9 с триколором Огонь и Лёд. x90 к клику!' },
+      { id: 'knife_m9_lore', name: '★ M9 Bayonet | Легенды (Lore)', rarity: 'covert', rarityName: 'Тайное', clickMult: 110.0, passiveMult: 23.0, icon: '👑', bladeColor: 'lore', handleColor: '#3f6212', style: 'bayonet', desc: 'Золотое кельтское травление с благородным зеленым оттенком. x110 к клику!' },
+      { id: 'knife_m9_emerald', name: '★ M9 Bayonet | Гамма-допплер Изумруд (Emerald)', rarity: 'covert', rarityName: 'Тайное', clickMult: 140.0, passiveMult: 28.0, icon: '❇️', bladeColor: 'emerald', handleColor: '#022c22', style: 'bayonet', desc: 'Редчайший драгоценный камень Emerald чистейшей зелени. x140 к клику!' },
+      { id: 'knife_butterfly_doppler', name: '★ Butterfly Knife | Doppler Phase 2 (Pink Galaxy)', rarity: 'covert', rarityName: 'Тайное', clickMult: 175.0, passiveMult: 35.0, icon: '🦋', bladeColor: 'doppler_pink', handleColor: '#4c1d95', style: 'butterfly', desc: 'Культовый флип ножа-бабочки в розовом перламутре Phase 2! x175 к клику!' },
+      { id: 'knife_butterfly_marble', name: '★ Butterfly Knife | Marble Fade (Max Red Tip)', rarity: 'covert', rarityName: 'Тайное', clickMult: 210.0, passiveMult: 42.0, icon: '🦋', bladeColor: 'marble', handleColor: '#18181b', style: 'butterfly', desc: 'Бабочка с алым кончиком и триколором Marble Fade. x210 к клику!' },
+      { id: 'knife_butterfly_lore', name: '★ Butterfly Knife | Легенды (Lore)', rarity: 'covert', rarityName: 'Тайное', clickMult: 250.0, passiveMult: 50.0, icon: '🦋', bladeColor: 'lore', handleColor: '#365314', style: 'butterfly', desc: 'Золотой клинок с драконьей вязью и зеленой рукоятью. x250 к клику!' },
+      { id: 'knife_butterfly_printstream', name: '★ Butterfly Knife | Поток информации (Printstream)', rarity: 'covert', rarityName: 'Тайное', clickMult: 300.0, passiveMult: 60.0, icon: '🤍', bladeColor: 'printstream', handleColor: '#09090b', style: 'butterfly', desc: 'Жемчужно-белый корпус с голографическими иконками и кодами. x300 к клику!' },
+      { id: 'knife_skeleton_fade', name: '★ Skeleton Knife | Градиент 100% Fade', rarity: 'covert', rarityName: 'Тайное', clickMult: 360.0, passiveMult: 72.0, icon: '💀', bladeColor: 'fade', handleColor: '#18181b', style: 'skeleton', desc: 'Скелетный нож с отверстием под палец и полным градиентом. x360 к клику!' },
+      { id: 'knife_skeleton_slaughter', name: '★ Skeleton Knife | Убийство (Slaughter Diamond)', rarity: 'covert', rarityName: 'Тайное', clickMult: 420.0, passiveMult: 85.0, icon: '💀', bladeColor: 'slaughter', handleColor: '#450a0a', style: 'skeleton', desc: 'Редчайший узор ромба и ангела на скелетном кинжале. x420 к клику!' },
+      { id: 'knife_skeleton_crimson', name: '★ Skeleton Knife | Кровавая паутина (Crimson Web)', rarity: 'covert', rarityName: 'Тайное', clickMult: 500.0, passiveMult: 100.0, icon: '💀', bladeColor: 'crimson', handleColor: '#1c1917', style: 'skeleton', desc: 'Идеальное паучье логово на алом скелетном кинжале. x500 к клику!' },
+
+      // === SPECIAL TIER (★ Необычайно редкий предмет / Золотой Священный Грааль) ===
+      { id: 'knife_karambit_fade', name: '★ Karambit | Fade 100% Max Purple (Кошачий коготь)', rarity: 'special', rarityName: '★ Необычайно редкий', clickMult: 777.0, passiveMult: 150.0, icon: '🌀', bladeColor: 'fade', handleColor: '#09090b', style: 'karambit', desc: 'Культовый коготь тигра CS:GO с кольцом и градиентом Max Purple! x777 к клику!' },
+      { id: 'knife_karambit_ruby', name: '★ Karambit | Допплер Рубин (Pure Ruby)', rarity: 'special', rarityName: '★ Необычайно редкий', clickMult: 1200.0, passiveMult: 250.0, icon: '🔴', bladeColor: 'ruby', handleColor: '#450a0a', style: 'karambit', desc: '100% чистый драгоценный Рубин без пятен. Ослепительное пламя. x1200 к клику!' },
+      { id: 'knife_karambit_sapphire', name: '★ Karambit | Допплер Сапфир (Pure Sapphire)', rarity: 'special', rarityName: '★ Необычайно редкий', clickMult: 1800.0, passiveMult: 350.0, icon: '🔵', bladeColor: 'sapphire', handleColor: '#082f49', style: 'karambit', desc: 'Абсолютный королевский Сапфир. Король трейдинга CS:GO. x1800 к клику!' },
+      { id: 'knife_karambit_bluegem', name: '★ Karambit | Case Hardened (Blue Gem #387)', rarity: 'special', rarityName: '★ Необычайно редкий', clickMult: 2500.0, passiveMult: 500.0, icon: '🔷', bladeColor: 'bluegem', handleColor: '#18181b', style: 'karambit', desc: 'Знаменитый Pattern #387 за $1,500,000! 100% синяя лазурь. x2500 к клику!' },
+      { id: 'knife_karambit_lore', name: '★ Karambit | Dragon Lore (Золотое пламя дракона)', rarity: 'special', rarityName: '★ СУВЕНИРНЫЙ ГРААЛЬ', clickMult: 5000.0, passiveMult: 1000.0, icon: '🐉', bladeColor: 'lore', handleColor: '#451a03', style: 'karambit', desc: 'Абсолютный божественный грааль CS:GO с золотым драконом! x5000 к клику и x1000 к фабрикам!' }
     ];
 
-    // CS:GO CASES DATASET (Opened for rolls 🧻 and plungers 🪠)
+    // CS:GO CASES DATASET (6 Thematic Crates)
     const CSGO_CASES = [
       {
-        id: 'case_weapon',
+        id: 'case_classic',
         name: 'CS:GO Weapon Case #1',
         icon: '📦',
         currency: 'rolls',
@@ -812,32 +904,56 @@
         currencySymbol: '🧻',
         borderClass: 'border-blue-500/70',
         bgClass: 'from-blue-950 via-stone-900 to-stone-950',
-        pool: ['knife_gut', 'knife_flip', 'knife_huntsman', 'knife_falchion'],
-        desc: 'Классический первый кейс CS:GO. Шанс выбить Gut, Flip или Falchion!'
+        pool: ['knife_navaja_safari', 'knife_gut_rust', 'knife_gut_patina', 'knife_flip_forest', 'knife_flip_night', 'knife_falchion_urban', 'knife_shadow_damascus', 'knife_survival_boreal'],
+        desc: 'Классический первый кейс CS:GO: Navaja, Gut, Flip, Falchion и стилеты.'
       },
       {
         id: 'case_chroma',
-        name: 'Кейс «Хрома» (Chroma)',
+        name: 'Кейс «Хрома 3» (Chroma)',
         icon: '🧰',
         currency: 'rolls',
-        cost: 10,
+        cost: 8,
         currencySymbol: '🧻',
         borderClass: 'border-purple-500/70',
         bgClass: 'from-purple-950 via-stone-900 to-stone-950',
-        pool: ['knife_huntsman', 'knife_falchion', 'knife_bowie', 'knife_daggers', 'knife_butterfly'],
-        desc: 'Металлические хромированные лезвия, включая Bowie и нож-бабочку Doppler!'
+        pool: ['knife_ursus_scorched', 'knife_falchion_web', 'knife_huntsman_camo', 'knife_shadow_fade', 'knife_ursus_slaughter', 'knife_bowie_tiger', 'knife_bowie_fade'],
+        desc: 'Яркие металлические лезвия: Bowie Tiger, Ursus Slaughter и Shadow Fade.'
       },
       {
         id: 'case_gamma',
-        name: 'Кейс «Гамма» (Gamma Waves)',
+        name: 'Кейс «Гамма 2» (Gamma Waves)',
         icon: '🎁',
         currency: 'rolls',
-        cost: 25,
+        cost: 15,
         currencySymbol: '🧻',
         borderClass: 'border-emerald-500/70',
         bgClass: 'from-emerald-950 via-stone-900 to-stone-950',
-        pool: ['knife_bowie', 'knife_daggers', 'knife_butterfly', 'knife_m9', 'knife_karambit'],
-        desc: 'Премиальный кейс Гамма: шанс достать M9 Bayonet Marble Fade или Керамбит!'
+        pool: ['knife_huntsman_hyper', 'knife_paracord_slaughter', 'knife_stiletto_damascus', 'knife_bayonet_autotronic', 'knife_bayonet_doppler', 'knife_m9_autotronic', 'knife_m9_emerald'],
+        desc: 'Неоновые и изумрудные клинки: Huntsman Hyper Beast, Bayonet Doppler и M9 Emerald!'
+      },
+      {
+        id: 'case_prisma',
+        name: 'Кейс «Призма» (Prisma Spectrum)',
+        icon: '💎',
+        currency: 'rolls',
+        cost: 25,
+        currencySymbol: '🧻',
+        borderClass: 'border-cyan-500/70',
+        bgClass: 'from-cyan-950 via-stone-900 to-stone-950',
+        pool: ['knife_stiletto_marble', 'knife_talon_tiger', 'knife_talon_fade', 'knife_nomad_bluegem', 'knife_nomad_fade', 'knife_classic_fade', 'knife_skeleton_fade'],
+        desc: 'Спектральные клинки: стилеты Fire & Ice, Talon Fade, Nomad Blue Gem и Skeleton Fade!'
+      },
+      {
+        id: 'case_dreams',
+        name: 'Кейс «Грёзы и Кошмары»',
+        icon: '🔮',
+        currency: 'rolls',
+        cost: 40,
+        currencySymbol: '🧻',
+        borderClass: 'border-pink-500/80',
+        bgClass: 'from-pink-950 via-stone-900 to-stone-950',
+        pool: ['knife_butterfly_doppler', 'knife_butterfly_marble', 'knife_butterfly_lore', 'knife_butterfly_printstream', 'knife_skeleton_slaughter', 'knife_skeleton_crimson', 'knife_karambit_fade', 'knife_karambit_sapphire'],
+        desc: 'Премиальные ножи-бабочки Doppler, Printstream, Skeleton Crimson и Керамбит Сапфир!'
       },
       {
         id: 'case_dragon',
@@ -846,10 +962,10 @@
         currency: 'plungers',
         cost: 2,
         currencySymbol: '🪠',
-        borderClass: 'border-yellow-500',
+        borderClass: 'border-yellow-400',
         bgClass: 'from-yellow-950 via-stone-900 to-amber-950',
-        pool: ['knife_butterfly', 'knife_m9', 'knife_karambit', 'knife_lore'],
-        desc: 'Священный сувенирный кейс Астральных Вантузов. Шанс выбить Керамбит Dragon Lore x150!'
+        pool: ['knife_m9_lore', 'knife_karambit_ruby', 'knife_karambit_sapphire', 'knife_karambit_bluegem', 'knife_karambit_lore'],
+        desc: 'Сувенирный кейс Астральных Вантузов. Шанс выбить Керамбит Dragon Lore (x5000 к клику)!'
       }
     ];
 
@@ -992,7 +1108,8 @@
         sponsors: FACTORIES.map(s => ({ id: s.id, count: s.count })),
         talents: TALENTS.map(t => ({ id: t.id, level: t.level })),
         achievements: ACHIEVEMENTS.map(a => ({ id: a.id, done: a.done })),
-        purchasedItems: SHOP_ITEMS.filter(item => item.owned).map(i => i.id)
+        purchasedItems: SHOP_ITEMS.filter(item => item.owned).map(i => i.id),
+        knifeStats: KNIVES.map(k => ({ id: k.id, statTrak: k.statTrak || 0 }))
       };
     }
 
@@ -1182,6 +1299,12 @@
           if (it) it.owned = true;
         });
       }
+      if (Array.isArray(data.knifeStats)) {
+        data.knifeStats.forEach(ks => {
+          const kn = KNIVES.find(k => k.id === ks.id);
+          if (kn && typeof ks.statTrak === 'number') kn.statTrak = ks.statTrak;
+        });
+      }
     }
 
     /* =========================================================================
@@ -1368,6 +1491,12 @@
       GAME.totalClicks += clicksToProcess;
       GAME.sparkles += sparklesEarned;
 
+      // Increment StatTrak™ counter for equipped knife
+      const eqKnife = getEquippedKnife();
+      if (eqKnife) {
+        eqKnife.statTrak = (eqKnife.statTrak || 0) + clicksToProcess;
+      }
+
       // Accumulate combo heat
       if (GAME.turboRushTime <= 0) {
         const heatGain = Math.min(25, clicksToProcess > 25 ? 12 : clicksToProcess * 0.7);
@@ -1509,7 +1638,7 @@
       ctx.save();
       ctx.translate(8, -2);
 
-      // Dynamic CS:GO Blade Gradients
+      // Dynamic CS:GO Blade Gradients & Shaders
       let bladeFill = knife.bladeColor;
       if (knife.bladeColor === 'fade') {
         const fadeGrad = ctx.createLinearGradient(0, -6, 50, 10);
@@ -1520,23 +1649,107 @@
         bladeFill = fadeGrad;
       } else if (knife.bladeColor === 'marble') {
         const marbleGrad = ctx.createLinearGradient(0, -6, 50, 10);
-        marbleGrad.addColorStop(0, '#ef4444'); // Red tip
-        marbleGrad.addColorStop(0.5, '#3b82f6'); // Blue center
-        marbleGrad.addColorStop(1, '#eab308'); // Yellow base
+        marbleGrad.addColorStop(0, '#ef4444');
+        marbleGrad.addColorStop(0.5, '#3b82f6');
+        marbleGrad.addColorStop(1, '#eab308');
         bladeFill = marbleGrad;
+      } else if (knife.bladeColor === 'fire_ice') {
+        const fiGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        fiGrad.addColorStop(0, '#ef4444'); // Max Fire
+        fiGrad.addColorStop(0.5, '#3b82f6'); // Max Ice
+        fiGrad.addColorStop(1, '#06b6d4');
+        bladeFill = fiGrad;
       } else if (knife.bladeColor === 'lore') {
         const loreGrad = ctx.createLinearGradient(0, -6, 50, 10);
         loreGrad.addColorStop(0, '#fef08a');
         loreGrad.addColorStop(0.4, '#eab308');
         loreGrad.addColorStop(1, '#ca8a04');
         bladeFill = loreGrad;
+      } else if (knife.bladeColor === 'ruby') {
+        const rubyGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        rubyGrad.addColorStop(0, '#f87171');
+        rubyGrad.addColorStop(0.5, '#dc2626');
+        rubyGrad.addColorStop(1, '#991b1b');
+        bladeFill = rubyGrad;
+      } else if (knife.bladeColor === 'sapphire') {
+        const saphGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        saphGrad.addColorStop(0, '#60a5fa');
+        saphGrad.addColorStop(0.5, '#2563eb');
+        saphGrad.addColorStop(1, '#1e3a8a');
+        bladeFill = saphGrad;
+      } else if (knife.bladeColor === 'emerald') {
+        const emGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        emGrad.addColorStop(0, '#34d399');
+        emGrad.addColorStop(0.5, '#059669');
+        emGrad.addColorStop(1, '#064e3b');
+        bladeFill = emGrad;
+      } else if (knife.bladeColor === 'bluegem') {
+        const bgGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        bgGrad.addColorStop(0, '#38bdf8');
+        bgGrad.addColorStop(0.7, '#0284c7');
+        bgGrad.addColorStop(1, '#ca8a04'); // hint of gold on heel
+        bladeFill = bgGrad;
+      } else if (knife.bladeColor === 'tiger') {
+        const tigerGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        tigerGrad.addColorStop(0, '#fef08a');
+        tigerGrad.addColorStop(0.5, '#f59e0b');
+        tigerGrad.addColorStop(1, '#b45309');
+        bladeFill = tigerGrad;
+      } else if (knife.bladeColor === 'slaughter') {
+        const slGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        slGrad.addColorStop(0, '#f87171');
+        slGrad.addColorStop(0.5, '#b91c1c');
+        slGrad.addColorStop(1, '#7f1d1d');
+        bladeFill = slGrad;
+      } else if (knife.bladeColor === 'crimson') {
+        const cwGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        cwGrad.addColorStop(0, '#ef4444');
+        cwGrad.addColorStop(1, '#7f1d1d');
+        bladeFill = cwGrad;
+      } else if (knife.bladeColor === 'autotronic') {
+        const atGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        atGrad.addColorStop(0, '#e4e4e7');
+        atGrad.addColorStop(0.6, '#71717a');
+        atGrad.addColorStop(1, '#ef4444');
+        bladeFill = atGrad;
+      } else if (knife.bladeColor === 'damascus') {
+        const damGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        damGrad.addColorStop(0, '#f4f4f5');
+        damGrad.addColorStop(0.3, '#71717a');
+        damGrad.addColorStop(0.6, '#d4d4d8');
+        damGrad.addColorStop(1, '#52525b');
+        bladeFill = damGrad;
+      } else if (knife.bladeColor === 'hyper') {
+        const hypGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        hypGrad.addColorStop(0, '#06b6d4');
+        hypGrad.addColorStop(0.5, '#ec4899');
+        hypGrad.addColorStop(1, '#8b5cf6');
+        bladeFill = hypGrad;
+      } else if (knife.bladeColor === 'printstream') {
+        const psGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        psGrad.addColorStop(0, '#ffffff');
+        psGrad.addColorStop(0.5, '#f1f5f9');
+        psGrad.addColorStop(1, '#e2e8f0');
+        bladeFill = psGrad;
+      } else if (knife.bladeColor === 'doppler_pink') {
+        const dpGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        dpGrad.addColorStop(0, '#f472b6');
+        dpGrad.addColorStop(0.6, '#db2777');
+        dpGrad.addColorStop(1, '#581c87');
+        bladeFill = dpGrad;
+      } else if (knife.bladeColor === 'doppler_blue') {
+        const dbGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        dbGrad.addColorStop(0, '#38bdf8');
+        dbGrad.addColorStop(0.6, '#1d4ed8');
+        dbGrad.addColorStop(1, '#0f172a');
+        bladeFill = dbGrad;
       }
 
       ctx.fillStyle = knife.handleColor || '#18181b';
       ctx.strokeStyle = '#09090b';
       ctx.lineWidth = 1.5;
 
-      if (knife.style === 'karambit' || knife.style === 'lore') {
+      if (knife.style === 'karambit' || knife.style === 'talon') {
         // Finger safety ring at pommel
         ctx.beginPath();
         ctx.arc(-8, -3, 6.5, 0, Math.PI * 2);
@@ -1569,19 +1782,17 @@
         ctx.strokeStyle = '#18181b';
         ctx.stroke();
 
-        // Blade spine highlight
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        // Spine highlight
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
         ctx.lineWidth = 1.2;
         ctx.beginPath();
         ctx.moveTo(12, -2);
         ctx.quadraticCurveTo(30, -5, 46, 12);
         ctx.stroke();
 
-        if (knife.style === 'lore') {
+        if (knife.bladeColor === 'lore') {
           ctx.fillStyle = '#10b981';
-          ctx.beginPath();
-          ctx.arc(24, 2, 2.5, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(24, 2, 2.5, 0, Math.PI * 2); ctx.fill();
         }
       } else if (knife.style === 'butterfly') {
         // Split double handles
@@ -1607,6 +1818,29 @@
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(38, 0); ctx.stroke();
+      } else if (knife.style === 'skeleton') {
+        // Skeletonized handle with center finger hole
+        ctx.fillStyle = knife.handleColor || '#18181b';
+        ctx.beginPath();
+        ctx.moveTo(-8, -4); ctx.lineTo(10, -4); ctx.lineTo(10, 4); ctx.lineTo(-8, 4); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        // Cutout hole
+        ctx.fillStyle = '#09090b';
+        ctx.beginPath(); ctx.arc(1, 0, 2.5, 0, Math.PI * 2); ctx.fill();
+
+        // Dagger blade
+        ctx.fillStyle = bladeFill;
+        ctx.beginPath();
+        ctx.moveTo(10, -5); ctx.lineTo(44, -1); ctx.lineTo(50, 0); ctx.lineTo(44, 1); ctx.lineTo(10, 5); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+      } else if (knife.style === 'stiletto') {
+        // Slender Italian Switchblade
+        ctx.fillStyle = knife.handleColor || '#78350f';
+        ctx.fillRect(-8, -3, 18, 6);
+        ctx.fillStyle = bladeFill;
+        ctx.beginPath();
+        ctx.moveTo(10, -2); ctx.lineTo(50, 0); ctx.lineTo(10, 2); ctx.closePath();
+        ctx.fill(); ctx.stroke();
       } else if (knife.style === 'bayonet') {
         // Crossguard & Ring
         ctx.fillStyle = '#52525b';
@@ -1617,18 +1851,12 @@
         // Serrated Bayonet Blade
         ctx.fillStyle = bladeFill;
         ctx.beginPath();
-        ctx.moveTo(12, -5);
-        ctx.lineTo(44, -5);
-        ctx.lineTo(52, 0);
-        ctx.lineTo(12, 5);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+        ctx.moveTo(12, -5); ctx.lineTo(44, -5); ctx.lineTo(52, 0); ctx.lineTo(12, 5); ctx.closePath();
+        ctx.fill(); ctx.stroke();
         // Spine saw teeth
         ctx.fillStyle = '#18181b';
         for (let s = 16; s < 34; s += 4) {
-          ctx.beginPath();
-          ctx.moveTo(s, -5); ctx.lineTo(s + 2, -8); ctx.lineTo(s + 4, -5); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(s, -5); ctx.lineTo(s + 2, -8); ctx.lineTo(s + 4, -5); ctx.fill();
         }
       } else if (knife.style === 'gut') {
         ctx.fillStyle = knife.handleColor || '#78350f';
@@ -1641,22 +1869,22 @@
         ctx.quadraticCurveTo(38, -3, 46, 2);
         ctx.lineTo(10, 6);
         ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+        ctx.fill(); ctx.stroke();
       } else {
-        // Huntsman / Falchion / Bowie / Daggers
+        // Bowie / Huntsman / Nomad / Ursus / Classic / Navaja / Paracord / Survival
         ctx.fillStyle = knife.handleColor || '#1c1917';
         ctx.fillRect(-6, -4, 16, 8);
         ctx.fillStyle = bladeFill;
         ctx.beginPath();
-        ctx.moveTo(10, -5);
-        ctx.lineTo(38, -6);
-        ctx.lineTo(48, 2);
-        ctx.lineTo(10, 5);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+        ctx.moveTo(10, -5); ctx.lineTo(38, -6); ctx.lineTo(48, 2); ctx.lineTo(10, 5); ctx.closePath();
+        ctx.fill(); ctx.stroke();
       }
+
+      // Specular Shine Glint
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.beginPath();
+      ctx.arc(36, -1, 1.5, 0, Math.PI * 2);
+      ctx.fill();
 
       ctx.restore();
     }
@@ -2752,6 +2980,14 @@
     let isRouletteSpinning = false;
 
     function renderCasesSystem() {
+      // 0. Update Currency Labels & Badges
+      const rollsLabel = document.getElementById('casesRollsLabel');
+      if (rollsLabel) rollsLabel.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+      const plungersLabel = document.getElementById('casesPlungersLabel');
+      if (plungersLabel) plungersLabel.textContent = `${formatNumber(GAME.transcendPlungers || 0)} 🪠`;
+      const countBadge = document.getElementById('knivesCountBadge');
+      if (countBadge) countBadge.textContent = `${(GAME.unlockedKnives || []).length} / ${KNIVES.length} найдено`;
+
       // 1. Render Crates
       const cratesList = document.getElementById('casesCratesList');
       if (cratesList) {
@@ -2794,6 +3030,7 @@
                 <div>
                   <div class="font-game text-sm text-yellow-300">${equippedObj.name}</div>
                   <div class="text-[10px] text-pink-300 font-bold">${equippedObj.rarityName} ★ <span class="text-emerald-300">+${Math.round((equippedObj.clickMult - 1) * 100)}% Клик</span> ★ <span class="text-cyan-300">+${Math.round((equippedObj.passiveMult - 1) * 100)}% Заводы</span></div>
+                  <div class="text-[10px] text-orange-400 font-mono font-bold mt-0.5">★ StatTrak™: ${(equippedObj.statTrak || 0).toLocaleString()} кликов</div>
                   <div class="text-[9px] text-stone-400 mt-0.5">${equippedObj.desc}</div>
                 </div>
               </div>
@@ -2836,7 +3073,10 @@
                     <span class="text-[9px] font-bold uppercase text-stone-400">${kn.rarityName}</span>
                   </div>
                   <div class="font-game text-xs text-yellow-300 mt-1 truncate">${kn.name}</div>
-                  <div class="text-[10px] text-emerald-400 font-bold mt-0.5">+${Math.round((kn.clickMult - 1) * 100)}% Клик</div>
+                  <div class="flex items-center justify-between mt-0.5">
+                    <span class="text-[10px] text-emerald-400 font-bold">+${Math.round((kn.clickMult - 1) * 100)}% Клик</span>
+                    <span class="text-[9px] text-orange-400 font-mono font-bold">★ ${(kn.statTrak || 0).toLocaleString()}</span>
+                  </div>
                 </div>
                 <div class="flex gap-1.5 mt-2.5">
                   <button class="equip-knife-btn flex-1 py-1 rounded-lg text-[10px] font-bold ${isEquipped ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-500 text-white jelly-btn'}" data-id="${kn.id}">
@@ -2877,6 +3117,158 @@
       }
     }
 
+    // =========================================================================
+    // CS:GO AUTHENTIC WEB AUDIO SYNTHESIZER & CASE ROULETTE ENGINE
+    // =========================================================================
+    let csgoAudioEnabled = true;
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // CS:GO Mechanical Ticker Click
+    function playCsgoTick(volume = 0.35, freq = 820) {
+      if (!csgoAudioEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.022);
+        gain.gain.setValueAtTime(Math.min(0.5, volume), now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.022);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.025);
+      } catch(e) {}
+    }
+
+    // CS:GO Key & Lock Opening Clack
+    function playCsgoUnlock() {
+      if (!csgoAudioEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, now);
+        osc.frequency.exponentialRampToValueAtTime(320, now + 0.08);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.09);
+      } catch(e) {}
+    }
+
+    // CS:GO Celebratory Brass Fanfare Stinger
+    function playCsgoWinFanfare(rarity) {
+      if (!csgoAudioEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const isSpecial = (rarity === 'special');
+        const isCovert = (rarity === 'covert');
+        const notes = isSpecial ? [523.25, 659.25, 783.99, 1046.50] : (isCovert ? [392.00, 493.88, 587.33, 783.99] : [329.63, 392.00, 493.88, 659.25]);
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const noteStart = now + idx * 0.12;
+          osc.type = isSpecial ? 'sawtooth' : 'triangle';
+          osc.frequency.setValueAtTime(freq, noteStart);
+          gain.gain.setValueAtTime(0.28, noteStart);
+          gain.gain.exponentialRampToValueAtTime(0.001, noteStart + (idx === notes.length - 1 ? 1.6 : 0.35));
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(noteStart);
+          osc.stop(noteStart + (idx === notes.length - 1 ? 1.7 : 0.4));
+        });
+      } catch(e) {}
+    }
+
+    // Fireworks & Confetti Canvas Engine
+    let confettiParticles = [];
+    let confettiAnimId = null;
+
+    function launchConfettiFireworks(isGold = false) {
+      const c = document.getElementById('rouletteConfettiCanvas');
+      if (!c) return;
+      c.width = c.clientWidth;
+      c.height = c.clientHeight;
+      const ctx = c.getContext('2d');
+      confettiParticles = [];
+
+      const colors = isGold 
+        ? ['#facc15', '#fde047', '#ffd700', '#f59e0b', '#ffffff'] 
+        : ['#ef4444', '#f43f5e', '#ec4899', '#a855f7', '#38bdf8', '#facc15'];
+
+      for (let i = 0; i < 75; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 4 + Math.random() * 8;
+        confettiParticles.push({
+          x: c.width / 2,
+          y: c.height * 0.45,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 3,
+          size: 4 + Math.random() * 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.2,
+          life: 1.0,
+          decay: 0.012 + Math.random() * 0.008
+        });
+      }
+
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+
+      function stepConfetti() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        let active = 0;
+        for (let p of confettiParticles) {
+          if (p.life <= 0) continue;
+          active++;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.22; // gravity
+          p.vx *= 0.98;
+          p.rotation += p.rotSpeed;
+          p.life -= p.decay;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation);
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
+          ctx.restore();
+        }
+        if (active > 0) {
+          confettiAnimId = requestAnimationFrame(stepConfetti);
+        } else {
+          ctx.clearRect(0, 0, c.width, c.height);
+        }
+      }
+      stepConfetti();
+    }
+
     function openCaseRoulette(caseId) {
       if (isRouletteSpinning) return;
       const caseObj = CSGO_CASES.find(c => c.id === caseId);
@@ -2892,7 +3284,7 @@
         return;
       }
 
-      // Deduct cost immediately
+      // Deduct currency immediately
       if (caseObj.currency === 'rolls') {
         GAME.prestigeRolls -= caseObj.cost;
       } else {
@@ -2908,92 +3300,212 @@
       document.getElementById('rouletteResultBanner').classList.add('hidden');
       document.getElementById('rouletteControlSection').classList.remove('hidden');
 
-      // Populate tape
+      // Key Unlocking Animation sequence
+      const unlockScreen = document.getElementById('rouletteUnlockScreen');
+      const wheelBox = document.getElementById('rouletteWheelBox');
+      unlockScreen.classList.remove('hidden');
+      wheelBox.classList.add('opacity-40');
+      playCsgoUnlock();
+
+      setTimeout(() => {
+        unlockScreen.classList.add('hidden');
+        wheelBox.classList.remove('opacity-40');
+        setupAndRunRouletteTape(caseObj);
+      }, 750);
+    }
+
+    function setupAndRunRouletteTape(caseObj) {
       const track = document.getElementById('rouletteTrack');
       track.style.transition = 'none';
       track.style.transform = 'translateX(0px)';
+      track.style.filter = 'none';
 
-      // Pick winning knife based on rarity chances
       const poolKnives = caseObj.pool.map(id => KNIVES.find(k => k.id === id)).filter(Boolean);
       const roll = Math.random();
-      // Weighted roll: special (4%), covert (14%), classified (24%), restricted (28%), mil-spec (30%)
+
       const specials = poolKnives.filter(k => k.rarity === 'special');
       const coverts = poolKnives.filter(k => k.rarity === 'covert');
       const classifieds = poolKnives.filter(k => k.rarity === 'classified');
       const restricteds = poolKnives.filter(k => k.rarity === 'restricted');
       const milspecs = poolKnives.filter(k => k.rarity === 'mil-spec');
 
+      // Authentic CS:GO Odds
       if (roll < 0.05 && specials.length > 0) {
         rouletteWinningKnife = specials[Math.floor(Math.random() * specials.length)];
-      } else if (roll < 0.20 && coverts.length > 0) {
+      } else if (roll < 0.22 && coverts.length > 0) {
         rouletteWinningKnife = coverts[Math.floor(Math.random() * coverts.length)];
-      } else if (roll < 0.45 && classifieds.length > 0) {
+      } else if (roll < 0.48 && classifieds.length > 0) {
         rouletteWinningKnife = classifieds[Math.floor(Math.random() * classifieds.length)];
-      } else if (roll < 0.72 && restricteds.length > 0) {
+      } else if (roll < 0.75 && restricteds.length > 0) {
         rouletteWinningKnife = restricteds[Math.floor(Math.random() * restricteds.length)];
       } else {
         rouletteWinningKnife = (milspecs.length > 0 ? milspecs : poolKnives)[Math.floor(Math.random() * (milspecs.length > 0 ? milspecs : poolKnives).length)];
       }
 
-      // Generate 55 cards
-      const winnerIndex = 42;
+      // 65 Cards in Reel with Predetermined Winner at Index 48
+      const winnerIndex = 48;
       const cards = [];
-      for (let i = 0; i < 55; i++) {
-        const itemKnife = (i === winnerIndex) ? rouletteWinningKnife : poolKnives[Math.floor(Math.random() * poolKnives.length)];
-        const rColor = itemKnife.rarity === 'special' ? 'border-yellow-400 text-yellow-300' : (itemKnife.rarity === 'covert' ? 'border-red-500 text-red-300' : (itemKnife.rarity === 'classified' ? 'border-pink-500 text-pink-300' : 'border-purple-500 text-purple-300'));
+
+      for (let i = 0; i < 65; i++) {
+        let itemKnife;
+        if (i === winnerIndex) {
+          itemKnife = rouletteWinningKnife;
+        } else if ((i === winnerIndex - 1 || i === winnerIndex + 1) && Math.random() < 0.65) {
+          // CS:GO Heart-stopping NEAR MISS: place another rare knife right next to winner!
+          const rarePool = specials.length > 0 ? specials : coverts;
+          itemKnife = rarePool[Math.floor(Math.random() * rarePool.length)] || poolKnives[Math.floor(Math.random() * poolKnives.length)];
+        } else {
+          itemKnife = poolKnives[Math.floor(Math.random() * poolKnives.length)];
+        }
+
+        const isGold = itemKnife.rarity === 'special';
+        const isRed = itemKnife.rarity === 'covert';
+        const rColor = isGold 
+          ? 'border-yellow-400 bg-gradient-to-b from-yellow-950/40 to-stone-900 shadow-[0_0_12px_rgba(250,204,21,0.35)]' 
+          : (isRed 
+            ? 'border-red-500 bg-gradient-to-b from-red-950/40 to-stone-900 shadow-[0_0_10px_rgba(239,68,68,0.25)]' 
+            : (itemKnife.rarity === 'classified' 
+              ? 'border-pink-500 bg-gradient-to-b from-pink-950/40 to-stone-900' 
+              : (itemKnife.rarity === 'restricted' 
+                ? 'border-purple-500 bg-gradient-to-b from-purple-950/30 to-stone-900' 
+                : 'border-blue-500 bg-gradient-to-b from-blue-950/30 to-stone-900')));
+
+        const badgeColor = isGold ? 'bg-yellow-400 text-stone-950 font-black' : (isRed ? 'bg-red-600 text-white' : 'bg-stone-800 text-stone-300');
+
         cards.push(`
-          <div class="w-32 h-24 shrink-0 bg-stone-900 rounded-xl border-2 ${rColor} p-2 flex flex-col items-center justify-center text-center shadow-lg relative select-none">
-            <span class="text-3xl">${itemKnife.icon}</span>
-            <div class="font-game text-[10px] mt-1 truncate w-full">${itemKnife.name}</div>
-            <div class="text-[8px] opacity-75">${itemKnife.rarityName}</div>
+          <div class="w-36 h-28 shrink-0 rounded-2xl border-2 ${rColor} p-2 flex flex-col items-center justify-between text-center relative select-none">
+            <div class="w-full flex justify-between items-center text-[8px]">
+              <span class="font-bold uppercase ${badgeColor} px-1.5 py-0.2 rounded">${itemKnife.rarityName}</span>
+              ${isGold ? '<span class="text-yellow-300 animate-spin-slow">★</span>' : ''}
+            </div>
+            <span class="text-3xl my-0.5 filter drop-shadow">${itemKnife.icon}</span>
+            <div class="font-game text-[10px] text-yellow-200 truncate w-full px-1">${itemKnife.name}</div>
+            <div class="h-1 w-full rounded-full ${isGold ? 'bg-yellow-400' : (isRed ? 'bg-red-500' : (itemKnife.rarity === 'classified' ? 'bg-pink-500' : 'bg-purple-500'))}"></div>
           </div>
         `);
       }
       track.innerHTML = cards.join('');
 
-      // Auto start roulette roll immediately
-      startRouletteSpin(winnerIndex);
+      runPhysicalRouletteSpin(winnerIndex);
     }
 
-    function startRouletteSpin(winnerIndex) {
+    function runPhysicalRouletteSpin(winnerIndex) {
       if (isRouletteSpinning) return;
       isRouletteSpinning = true;
 
       const track = document.getElementById('rouletteTrack');
-      document.getElementById('btnSpinRoulette').disabled = true;
-
-      // Card width (128px) + gap (8px) = 136px
-      const cardPitch = 136;
-      // Center needle offset with slight human randomization inside the winning card
-      const randomJitter = (Math.random() - 0.5) * 60;
+      const needle = document.getElementById('rouletteNeedle');
+      const cardPitch = 152; // card width (144px) + gap (8px)
+      const randomJitter = (Math.random() - 0.5) * 70;
       const targetOffset = winnerIndex * cardPitch + randomJitter;
 
-      // Trigger high-speed sliding easing animation
-      setTimeout(() => {
-        track.style.transition = 'transform 5.2s cubic-bezier(0.12, 0.8, 0.22, 1)';
-        track.style.transform = `translateX(-${targetOffset}px)`;
-      }, 50);
+      const durationMs = 6200; // 6.2s realistic CS:GO spin
+      const startTime = performance.now();
+      let lastCardIndex = -1;
 
-      // On spin finish
-      setTimeout(() => {
-        isRouletteSpinning = false;
-        document.getElementById('rouletteControlSection').classList.add('hidden');
-        const resBanner = document.getElementById('rouletteResultBanner');
-        resBanner.classList.remove('hidden');
+      function frame(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1.0, elapsed / durationMs);
 
-        document.getElementById('rouletteResultIcon').textContent = rouletteWinningKnife.icon;
-        document.getElementById('rouletteResultName').textContent = rouletteWinningKnife.name;
-        document.getElementById('rouletteResultRarity').textContent = `${rouletteWinningKnife.rarityName} ★ +${Math.round((rouletteWinningKnife.clickMult - 1) * 100)}% Клик`;
+        // Quintic Deceleration Easing (Super smooth and slow creeping finish)
+        const ease = 1.0 - Math.pow(1.0 - progress, 4.6);
+        const currentOffset = targetOffset * ease;
 
-        // Add to inventory
-        if (!GAME.unlockedKnives.includes(rouletteWinningKnife.id)) {
-          GAME.unlockedKnives.push(rouletteWinningKnife.id);
+        track.style.transform = `translateX(-${currentOffset}px)`;
+
+        // Motion blur during high velocity
+        const velocity = (1.0 - progress);
+        if (velocity > 0.4) {
+          track.style.filter = `blur(${Math.min(2.5, (velocity - 0.3) * 5)}px)`;
+        } else {
+          track.style.filter = 'none';
         }
-        GAME.casesOpened = (GAME.casesOpened || 0) + 1;
-        saveLocal();
-        updateDashboardUI();
-        requestCloudSync(2000);
-      }, 5300);
+
+        // Ticker Detection: Card boundary crossing needle
+        const centerMarkerPos = currentOffset + 120;
+        const currentCardIndex = Math.floor(centerMarkerPos / cardPitch);
+
+        if (currentCardIndex !== lastCardIndex && currentCardIndex >= 0) {
+          lastCardIndex = currentCardIndex;
+          // Mechanical tick sound: pitch drops as carousel decelerates
+          const tickFreq = 860 - Math.min(320, progress * 320);
+          const tickVol = Math.max(0.12, 0.42 * (1.0 - progress * 0.4));
+          playCsgoTick(tickVol, tickFreq);
+
+          // Physical Needle Kick & Snap-back
+          if (needle) {
+            needle.style.transform = 'translateX(-50%) rotate(-16deg)';
+            setTimeout(() => {
+              if (needle) needle.style.transform = 'translateX(-50%) rotate(0deg)';
+            }, 35);
+          }
+        }
+
+        if (progress < 1.0) {
+          requestAnimationFrame(frame);
+        } else {
+          onRouletteFinished();
+        }
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    function onRouletteFinished() {
+      isRouletteSpinning = false;
+      document.getElementById('rouletteControlSection').classList.add('hidden');
+
+      const isGold = rouletteWinningKnife.rarity === 'special';
+      const isCovert = rouletteWinningKnife.rarity === 'covert';
+
+      // Golden Screen Flash Overlay
+      if (isGold || isCovert) {
+        const flash = document.getElementById('rouletteFlashOverlay');
+        if (flash) {
+          flash.style.opacity = isGold ? '0.85' : '0.5';
+          setTimeout(() => { flash.style.opacity = '0'; }, 280);
+        }
+        // Launch fireworks particles
+        launchConfettiFireworks(isGold);
+      }
+
+      // Celebratory Audio Fanfare
+      playCsgoWinFanfare(rouletteWinningKnife.rarity);
+
+      // Generate randomized CS:GO Float value & Exterior
+      const floatVal = (0.005 + Math.random() * 0.28).toFixed(4);
+      let qualityName = 'Прямо с завода (Factory New)';
+      if (floatVal > 0.15) qualityName = 'После полевых испытаний (Field-Tested)';
+      else if (floatVal > 0.07) qualityName = 'Немного поношенное (Minimal Wear)';
+
+      // Show Result Banner
+      const resBanner = document.getElementById('rouletteResultBanner');
+      resBanner.classList.remove('hidden');
+
+      document.getElementById('rouletteResultIcon').textContent = rouletteWinningKnife.icon;
+      document.getElementById('rouletteResultName').textContent = rouletteWinningKnife.name;
+      document.getElementById('rouletteResultRarity').textContent = `${rouletteWinningKnife.rarityName}`;
+      
+      const stEl = document.getElementById('rouletteResultStatTrak');
+      if (stEl) stEl.textContent = `★ StatTrak™: ${(rouletteWinningKnife.statTrak || 0)} кликов`;
+
+      const flEl = document.getElementById('rouletteResultFloatText');
+      if (flEl) flEl.textContent = `${qualityName} (${floatVal})`;
+
+      const cbEl = document.getElementById('rouletteResultClickBoost');
+      if (cbEl) cbEl.textContent = `+${Math.round((rouletteWinningKnife.clickMult - 1) * 100)}% Клик`;
+
+      const pbEl = document.getElementById('rouletteResultPassiveBoost');
+      if (pbEl) pbEl.textContent = `+${Math.round((rouletteWinningKnife.passiveMult - 1) * 100)}% Заводы`;
+
+      // Add to inventory (if not owned)
+      if (!GAME.unlockedKnives.includes(rouletteWinningKnife.id)) {
+        GAME.unlockedKnives.push(rouletteWinningKnife.id);
+      }
+      GAME.casesOpened = (GAME.casesOpened || 0) + 1;
+      saveLocal();
+      updateDashboardUI();
+      requestCloudSync(2000);
     }
 
     // Modal Equip and Keep buttons
@@ -3017,6 +3529,18 @@
         updateDashboardUI();
       }
     });
+
+    // Audio Mute/Unmute Toggle Button
+    const btnAudioToggle = document.getElementById('btnToggleRouletteAudio');
+    if (btnAudioToggle) {
+      btnAudioToggle.addEventListener('click', () => {
+        csgoAudioEnabled = !csgoAudioEnabled;
+        const icon = document.getElementById('rouletteAudioIcon');
+        const text = document.getElementById('rouletteAudioText');
+        if (icon) icon.textContent = csgoAudioEnabled ? '🔊' : '🔇';
+        if (text) text.textContent = csgoAudioEnabled ? 'ЗВУК CS:GO: ВКЛ' : 'ЗВУК CS:GO: ВЫКЛ';
+      });
+    }
 
     // Toggle Girly Mode Button Handler
     const btnGirlyMode = document.getElementById('btnGirlyMode');
