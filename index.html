@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v3.0: Мультиверс & Netlify Database</title>
+  <title>Poop Simulator v3.0 | 10,000 Мутаций, Кейсы CS:GO, Автокликер 1мс и Режим Девочек</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -14,6 +14,7 @@
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
+      transition: background 0.4s ease, color 0.4s ease;
     }
 
     .font-game {
@@ -43,22 +44,69 @@
     }
 
     @keyframes cosmicAura {
-      0% {
-        transform: rotate(0deg) scale(1);
-      }
-
-      50% {
-        transform: rotate(180deg) scale(1.08);
-      }
-
-      100% {
-        transform: rotate(360deg) scale(1);
-      }
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.08); }
+      100% { transform: rotate(360deg) scale(1); }
     }
 
     .animate-spin-slow {
       animation: cosmicAura 18s linear infinite;
     }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 10px rgba(34, 197, 94, 0.6); }
+      50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.95); }
+    }
+
+    .autoclick-active-glow {
+      animation: pulseGlow 1.2s infinite ease-in-out;
+    }
+
+    /* GIRLY MODE CUTE KAWAII THEME */
+    body.girly-mode {
+      background: radial-gradient(circle at 50% 25%, #4a0433 0%, #1a0215 55%, #0d010a 100%) !important;
+      color: #fdf2f8 !important;
+    }
+    .girly-mode header {
+      background: linear-gradient(90deg, #831843 0%, #9d174d 50%, #be185d 100%) !important;
+      border-color: #f472b6 !important;
+      box-shadow: 0 4px 30px rgba(236, 72, 153, 0.35) !important;
+    }
+    .girly-mode section, .girly-mode aside {
+      border-color: #f472b6 !important;
+      box-shadow: 0 0 30px rgba(244, 114, 182, 0.22) !important;
+    }
+    .girly-mode .bg-stone-800 {
+      background-color: #2b0422 !important;
+    }
+    .girly-mode .bg-stone-900 {
+      background-color: #20031a !important;
+    }
+    .girly-mode .bg-stone-950 {
+      background-color: #140110 !important;
+    }
+    .girly-mode .border-amber-900, .girly-mode .border-amber-700 {
+      border-color: #db2777 !important;
+    }
+    .girly-mode .text-amber-400, .girly-mode .text-yellow-300 {
+      color: #fbcfe8 !important;
+    }
+    .girly-mode .text-amber-200 {
+      color: #f9a8d4 !important;
+    }
+    .girly-mode .text-emerald-400 {
+      color: #f472b6 !important;
+    }
+    .girly-mode .bg-amber-700 {
+      background-color: #ec4899 !important;
+    }
+
+    /* CS:GO RARITY COLOR STYLES */
+    .rarity-mil-spec { border-color: #4b69ff !important; background: linear-gradient(135deg, rgba(75,105,255,0.15), rgba(15,23,42,0.95)); }
+    .rarity-restricted { border-color: #8847ff !important; background: linear-gradient(135deg, rgba(136,71,255,0.18), rgba(15,23,42,0.95)); }
+    .rarity-classified { border-color: #d32ce6 !important; background: linear-gradient(135deg, rgba(211,44,230,0.22), rgba(15,23,42,0.95)); }
+    .rarity-covert { border-color: #eb4b4b !important; background: linear-gradient(135deg, rgba(235,75,75,0.25), rgba(15,23,42,0.95)); }
+    .rarity-special { border-color: #ffd700 !important; background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(24,18,3,0.98)); box-shadow: 0 0 16px rgba(255,215,0,0.4); }
   </style>
 </head>
 
@@ -71,10 +119,9 @@
       <div class="text-3xl filter drop-shadow cursor-pointer select-none" id="logoSecretClick">💩</div>
       <div>
         <div class="flex items-center gap-2">
-          <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide">Poop Simulator</h1>
+          <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
-            class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40">v3.0
-            MULTIVERSE</span>
+            class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40" id="versionTag">v3.0 CS:GO & KAWAII</span>
         </div>
         <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
       </div>
@@ -84,17 +131,17 @@
     <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
       <div
         class="flex items-center gap-1.5 bg-stone-900/90 px-3 py-1 rounded-xl border border-amber-700/60 shadow-inner">
-        <span class="text-lg">💨</span>
+        <span class="text-lg" id="iconBiomass">💨</span>
         <div>
-          <div class="text-[9px] text-amber-400 font-bold uppercase">Биомасса</div>
+          <div class="text-[9px] text-amber-400 font-bold uppercase" id="labelBiomass">Биомасса</div>
           <span class="font-game text-sm sm:text-base text-emerald-400 tracking-wide" id="topBiomass">0</span>
         </div>
       </div>
       <div
         class="flex items-center gap-1.5 bg-stone-900/90 px-3 py-1 rounded-xl border border-amber-700/60 shadow-inner">
-        <span class="text-lg">✨</span>
+        <span class="text-lg" id="iconSparkles">✨</span>
         <div>
-          <div class="text-[9px] text-yellow-400 font-bold uppercase">Блестяшки</div>
+          <div class="text-[9px] text-yellow-400 font-bold uppercase" id="labelSparkles">Блестяшки</div>
           <span class="font-game text-sm sm:text-base text-yellow-300 tracking-wide" id="topSparkles">0</span>
         </div>
       </div>
@@ -116,6 +163,13 @@
 
     <!-- DATABASE STATUS & ACTIONS -->
     <div class="flex items-center gap-1.5 sm:gap-2">
+      <!-- GIRLY MODE TOGGLE -->
+      <button id="btnGirlyMode"
+        class="bg-gradient-to-r from-pink-600 via-rose-500 to-pink-600 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-pink-300 text-xs jelly-btn flex items-center gap-1 shadow-lg"
+        title="Переключить милый девичий режим">
+        <span>🎀</span> <span id="girlyModeText">Девочки</span>
+      </button>
+
       <div id="cloudIndicator"
         class="hidden sm:flex items-center gap-1 text-[11px] bg-stone-800 px-2 py-1 rounded-lg border border-stone-600 font-bold text-stone-300">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -184,6 +238,24 @@
         <span id="turboRushTimer" class="text-[10px] font-game text-yellow-300 hidden bg-red-950/80 px-2 py-0.5 rounded border border-red-500 animate-pulse">🔥 ТУРБО x10!</span>
       </div>
 
+      <!-- BUILT-IN AUTOCLICKER CONTROL DECK (1 ms Overdrive) -->
+      <div class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex flex-wrap items-center justify-between gap-2 z-10 text-xs">
+        <div class="flex items-center gap-2">
+          <button id="btnToggleAutoclicker" class="font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 border-stone-600 text-stone-300">
+            <span id="autoclickLed" class="w-2.5 h-2.5 rounded-full bg-stone-500"></span>
+            <span id="autoclickLabel">АВТОКЛИКЕР: ВЫКЛ</span>
+          </button>
+          <span class="text-[10px] text-stone-400 hidden sm:inline">(Пробел / A)</span>
+        </div>
+        <div class="flex items-center gap-1 text-[10px] flex-wrap">
+          <span class="text-stone-400 font-bold mr-1">Интервал:</span>
+          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700" data-cps="10">100мс</button>
+          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700" data-cps="50">20мс</button>
+          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700" data-cps="200">5мс</button>
+          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-amber-600 text-white font-bold border border-yellow-400" data-cps="1000">1мс ⚡</button>
+        </div>
+      </div>
+
       <!-- Canvas Viewport with Adaptive Background -->
       <div class="relative flex-1 flex items-center justify-center cursor-pointer select-none overflow-hidden"
         id="canvasBox">
@@ -200,6 +272,22 @@
         <div id="flushOverlay"
           class="absolute inset-0 bg-blue-600/50 pointer-events-none opacity-0 transition-opacity duration-500 flex items-center justify-center z-20">
           <div class="text-7xl animate-spin">🌀</div>
+        </div>
+      </div>
+
+      <!-- ACTIVE PET CARE BUFFS BANNER (Meaningful pet care!) -->
+      <div id="petBuffsBanner" class="px-3 py-1.5 bg-stone-950/90 border-t border-amber-900/40 flex items-center justify-between gap-1 text-[10px] flex-wrap z-10">
+        <div id="buffHungerPill" class="flex items-center gap-1 px-2 py-0.5 rounded bg-orange-950/80 border border-orange-600/50 text-orange-200">
+          <span>🍗</span> <span id="buffHungerText">Сытость: 100% (+50% Клик)</span>
+        </div>
+        <div id="buffCleanPill" class="flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-600/50 text-cyan-200">
+          <span>✨</span> <span id="buffCleanText">Чистота: 100% (+40% Заводы)</span>
+        </div>
+        <div id="buffHappyPill" class="flex items-center gap-1 px-2 py-0.5 rounded bg-pink-950/80 border border-pink-600/50 text-pink-200">
+          <span>💖</span> <span id="buffHappyText">Экстаз: x2 Комбо</span>
+        </div>
+        <div id="buffIdealPill" class="hidden flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500/20 border border-yellow-400 text-yellow-300 font-bold animate-pulse">
+          <span>👑</span> <span>ИДЕАЛ x2 ВСЁ!</span>
         </div>
       </div>
 
@@ -229,17 +317,14 @@
     <aside
       class="w-full lg:w-[480px] flex flex-col bg-stone-900 rounded-3xl border-4 border-amber-900 shadow-2xl overflow-hidden h-[590px]">
 
-      <!-- Nav Tabs -->
-      <div class="grid grid-cols-5 bg-stone-950 border-b border-amber-900/80 text-[11px] font-black">
+      <!-- Nav Tabs (6 Tabs) -->
+      <div class="grid grid-cols-6 bg-stone-950 border-b border-amber-900/80 text-[10px] sm:text-[11px] font-black">
         <button class="dash-tab py-2.5 text-center bg-amber-700 text-white" data-target="panelEvo">🧬 Формы</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelFactories">🏭
-          Заводы</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelShop">💎
-          Бутик</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTalents">🌟
-          Таланты</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTrophies">🏆
-          Подвиги</button>
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelFactories">🏭 Заводы</button>
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelCases">🔪 Кейсы</button>
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelShop">💎 Бутик</button>
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTalents">🌟 Таланты</button>
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTrophies">🏆 Подвиги</button>
       </div>
 
       <!-- Panel Body -->
@@ -275,6 +360,50 @@
           <div class="text-stone-400 text-[11px] px-1">Автоматические био-заводы дают стабильный доход каждую секунду:
           </div>
           <div class="space-y-2 max-h-[460px] overflow-y-auto custom-scroll pr-1" id="factoriesContainer"></div>
+        </div>
+
+        <!-- 3. CS:GO KNIFE CASES & WEAPON LOADOUT -->
+        <div id="panelCases" class="hidden space-y-3">
+          <div class="bg-gradient-to-r from-yellow-950/80 via-amber-900/80 to-stone-900 p-3 rounded-2xl border border-yellow-500/50 shadow">
+            <div class="flex justify-between items-center">
+              <span class="font-game text-yellow-300 text-sm">📦 Оружейные Кейсы CS:GO</span>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="text-yellow-200 font-game" id="casesRollsLabel">0 🧻</span>
+                <span class="text-cyan-300 font-game" id="casesPlungersLabel">0 🪠</span>
+              </div>
+            </div>
+            <p class="text-[10px] text-stone-300 mt-1">Открывайте кейсы за валюту перерождений (Втулки и Вантузы)! Выбитые ножи отображаются в руке какашечки и дают сокрушительные множители силы.</p>
+          </div>
+
+          <!-- Active Knife Display -->
+          <div id="equippedKnifeCard" class="p-3 rounded-2xl border-2 border-stone-700 bg-stone-950 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="text-3xl p-2 rounded-xl bg-stone-900 border border-stone-800" id="equippedKnifeIcon">✊</div>
+              <div>
+                <div class="text-[10px] text-stone-400 uppercase font-bold">Экипированный Нож:</div>
+                <div class="font-game text-sm text-stone-200" id="equippedKnifeName">Голые руки (Без ножа)</div>
+                <div class="text-[10px] text-emerald-400 font-semibold" id="equippedKnifeStats">Бонус: Стандартный урон</div>
+              </div>
+            </div>
+            <button id="btnUnequipKnife" class="hidden text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-stone-300 px-2.5 py-1.5 rounded-xl border border-stone-600 jelly-btn">
+              Снять
+            </button>
+          </div>
+
+          <!-- Cases Crates Grid -->
+          <div class="font-bold text-stone-400 uppercase text-[10px] px-1">Доступные Кейсы для Открытия:</div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="casesCratesList">
+            <!-- Rendered in JS -->
+          </div>
+
+          <!-- Unlocked Knives Inventory -->
+          <div class="flex items-center justify-between px-1 pt-1">
+            <span class="font-bold text-stone-400 uppercase text-[10px]">Коллекция Ножей:</span>
+            <span class="text-[10px] text-amber-400 font-bold" id="knivesCountBadge">0 / 9 найдено</span>
+          </div>
+          <div class="space-y-2 max-h-[220px] overflow-y-auto custom-scroll pr-1" id="knivesInventoryContainer">
+            <!-- Rendered in JS -->
+          </div>
         </div>
 
         <!-- 3. LUXURY WARDROBE & SPARKLE BOUTIQUE -->
@@ -485,6 +614,54 @@
         ЗАБРАТЬ ДОБЫЧУ! 🚀
       </button>
     </div>
+  <!-- CS:GO CASE ROULETTE MODAL -->
+  <div id="caseRouletteModal"
+    class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div
+      class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-amber-600 max-w-xl w-full p-5 text-center shadow-2xl relative overflow-hidden">
+      <button id="btnCloseCaseRoulette"
+        class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
+      
+      <div class="text-xs font-bold text-amber-400 uppercase tracking-widest" id="rouletteCaseSubtitle">ОТКРЫТИЕ КЕЙСА CS:GO</div>
+      <h3 class="font-game text-2xl text-yellow-300 mt-0.5" id="rouletteCaseTitle">Weapon Case</h3>
+
+      <!-- Horizontal Roulette Wheel Viewport -->
+      <div class="relative my-5 mx-auto w-full max-w-[500px] h-32 bg-stone-950 border-4 border-amber-800/80 rounded-2xl overflow-hidden shadow-inner flex items-center">
+        <!-- Center Target Indicator Needle -->
+        <div class="absolute left-1/2 top-0 bottom-0 w-1 bg-yellow-400 -translate-x-1/2 z-30 shadow-[0_0_12px_#facc15] pointer-events-none">
+          <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-6 border-x-transparent border-t-8 border-t-yellow-400"></div>
+          <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-6 border-x-transparent border-b-8 border-b-yellow-400"></div>
+        </div>
+
+        <!-- Sliding Tape of Items -->
+        <div id="rouletteTrack" class="flex items-center gap-2 pl-[210px] will-change-transform" style="transform: translateX(0px);">
+          <!-- Items populated by JS -->
+        </div>
+      </div>
+
+      <!-- Result Banner (Revealed after spin stops) -->
+      <div id="rouletteResultBanner" class="hidden my-3 p-3 rounded-2xl bg-stone-900/90 border-2 border-yellow-400 flex flex-col items-center justify-center animate-bounce-once">
+        <span class="text-xs uppercase text-stone-400">Вам выпало сокровище:</span>
+        <div class="flex items-center gap-3 my-2">
+          <span id="rouletteResultIcon" class="text-3xl">🔪</span>
+          <div class="text-left">
+            <div id="rouletteResultName" class="font-game text-base text-yellow-300">★ Керамбит | Градиент</div>
+            <div id="rouletteResultRarity" class="text-xs font-bold text-pink-400">Тайное (Covert) ★ +500% Клика</div>
+          </div>
+        </div>
+        <div class="flex gap-2 w-full mt-2">
+          <button id="btnEquipRouletteKnife" class="flex-1 bg-yellow-500 hover:bg-yellow-400 text-stone-950 font-game text-xs py-2 rounded-xl font-bold jelly-btn">ЭКИПИРОВАТЬ СЕЙЧАС! ⚔️</button>
+          <button id="btnKeepRouletteKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs px-4 py-2 rounded-xl">В инвентарь</button>
+        </div>
+      </div>
+
+      <!-- Control Button -->
+      <div id="rouletteControlSection" class="mt-4 flex gap-3 justify-center">
+        <button id="btnSpinRoulette" class="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:brightness-110 text-stone-950 font-game text-sm px-8 py-3 rounded-2xl shadow-xl font-black jelly-btn flex items-center gap-2">
+          <span>🎰</span> <span>КРУТИТЬ РУЛЕТКУ!</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -534,6 +711,12 @@
       lastFlushTime: 0,
       equippedHat: null,
       autoClickerActive: false,
+      autoclickerActive: false,
+      autoclickerSpeed: 1000, // target clicks per second (1ms = 1000 cps)
+      girlyMode: false,
+      equippedKnife: null,
+      unlockedKnives: [],
+      casesOpened: 0,
       comboHeat: 0,
       turboRushTime: 0,
       lastSaveTime: Date.now(),
@@ -548,33 +731,33 @@
     let polishCount = 0;
     let flushCount = 0;
 
-    // 10,000 CREATIVE EVOLUTION STAGES GENERATOR (25 GRAND EPOCHS)
+    // 10,000 CREATIVE EVOLUTION STAGES GENERATOR (25 GRAND EPOCHS WITH DIVERSE ARCHETYPES)
     const EPOCH_NAMES = [
-      { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null },
-      { epoch: "Индустриальный Смог", bg: "#334155", body: "#57534e", aura: "steam" },
-      { epoch: "Паровой Механизм", bg: "#475569", body: "#713f12", aura: "steam" },
-      { epoch: "Токсичные Реагенты", bg: "#064e3b", body: "#15803d", aura: "toxic" },
-      { epoch: "Кристаллическая Жеода", bg: "#701a75", body: "#d97706", aura: "crystal" },
-      { epoch: "Неоновый Киберпанк", bg: "#0f172a", body: "#06b6d4", aura: "cyber" },
-      { epoch: "Нанотехнологический Рой", bg: "#1e293b", body: "#38bdf8", aura: "cyber" },
-      { epoch: "Ядерно-Урановый Распад", bg: "#022c22", body: "#22c55e", aura: "toxic" },
-      { epoch: "Вулканическая Магма", bg: "#450a0a", body: "#ef4444", aura: "magma" },
-      { epoch: "Термоядерная Плазма", bg: "#7c2d12", body: "#f97316", aura: "magma" },
-      { epoch: "Лунно-Орбитальный Дрейф", bg: "#1e1b4b", body: "#94a3b8", aura: "stars" },
-      { epoch: "Гелиосферные Бури", bg: "#78350f", body: "#facc15", aura: "stars" },
-      { epoch: "Сверхновые Звезды", bg: "#31104b", body: "#ec4899", aura: "stars" },
-      { epoch: "Астральные Созвездия", bg: "#2e1065", body: "#a855f7", aura: "astral" },
-      { epoch: "Гравитационные Черные Дыры", bg: "#030712", body: "#475569", aura: "multiverse" },
-      { epoch: "11-Мерные Суперструны", bg: "#09090b", body: "#c084fc", aura: "multiverse" },
-      { epoch: "Темная Материя Космоса", bg: "#020617", body: "#6366f1", aura: "multiverse" },
-      { epoch: "Галактический Квазар", bg: "#172554", body: "#38bdf8", aura: "stars" },
-      { epoch: "Хроно-Временной Парадокс", bg: "#1c1917", body: "#eab308", aura: "astral" },
-      { epoch: "Мультивселенский Разлом", bg: "#050505", body: "#f43f5e", aura: "multiverse" },
-      { epoch: "Сакральный Серафим", bg: "#451a03", body: "#fbbf24", aura: "divine" },
-      { epoch: "Чистая Пси-Ноосфера", bg: "#1e1b4b", body: "#818cf8", aura: "divine" },
-      { epoch: "Гиперпространственный Тетраэдр", bg: "#18181b", body: "#34d399", aura: "astral" },
-      { epoch: "Творец Вселенского Разума", bg: "#020617", body: "#f472b6", aura: "divine" },
-      { epoch: "Точка Омега: Абсолютный Бог", bg: "#000000", body: "#ffd700", aura: "omega" }
+      { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
+      { epoch: "Индустриальный Смог", bg: "#334155", body: "#57534e", aura: "steam", archetype: "industrial" },
+      { epoch: "Паровой Механизм", bg: "#475569", body: "#713f12", aura: "steam", archetype: "steampunk" },
+      { epoch: "Токсичные Реагенты", bg: "#064e3b", body: "#15803d", aura: "toxic", archetype: "toxic" },
+      { epoch: "Кристаллическая Жеода", bg: "#701a75", body: "#d97706", aura: "crystal", archetype: "crystal" },
+      { epoch: "Неоновый Киберпанк", bg: "#0f172a", body: "#06b6d4", aura: "cyber", archetype: "cyber" },
+      { epoch: "Нанотехнологический Рой", bg: "#1e293b", body: "#38bdf8", aura: "cyber", archetype: "cyber" },
+      { epoch: "Ядерно-Урановый Распад", bg: "#022c22", body: "#22c55e", aura: "toxic", archetype: "toxic" },
+      { epoch: "Вулканическая Магма", bg: "#450a0a", body: "#ef4444", aura: "magma", archetype: "magma" },
+      { epoch: "Термоядерная Плазма", bg: "#7c2d12", body: "#f97316", aura: "magma", archetype: "magma" },
+      { epoch: "Лунно-Орбитальный Дрейф", bg: "#1e1b4b", body: "#94a3b8", aura: "stars", archetype: "cosmic" },
+      { epoch: "Гелиосферные Бури", bg: "#78350f", body: "#facc15", aura: "stars", archetype: "cosmic" },
+      { epoch: "Сверхновые Звезды", bg: "#31104b", body: "#ec4899", aura: "stars", archetype: "cosmic" },
+      { epoch: "Астральные Созвездия", bg: "#2e1065", body: "#a855f7", aura: "astral", archetype: "astral" },
+      { epoch: "Гравитационные Черные Дыры", bg: "#030712", body: "#475569", aura: "multiverse", archetype: "void" },
+      { epoch: "11-Мерные Суперструны", bg: "#09090b", body: "#c084fc", aura: "multiverse", archetype: "void" },
+      { epoch: "Темная Материя Космоса", bg: "#020617", body: "#6366f1", aura: "multiverse", archetype: "void" },
+      { epoch: "Галактический Квазар", bg: "#172554", body: "#38bdf8", aura: "stars", archetype: "cosmic" },
+      { epoch: "Хроно-Временной Парадокс", bg: "#1c1917", body: "#eab308", aura: "astral", archetype: "astral" },
+      { epoch: "Мультивселенский Разлом", bg: "#050505", body: "#f43f5e", aura: "multiverse", archetype: "void" },
+      { epoch: "Сакральный Серафим", bg: "#451a03", body: "#fbbf24", aura: "divine", archetype: "divine" },
+      { epoch: "Чистая Пси-Ноосфера", bg: "#1e1b4b", body: "#818cf8", aura: "divine", archetype: "divine" },
+      { epoch: "Гиперпространственный Тетраэдр", bg: "#18181b", body: "#34d399", aura: "astral", archetype: "astral" },
+      { epoch: "Творец Вселенского Разума", bg: "#020617", body: "#f472b6", aura: "divine", archetype: "divine" },
+      { epoch: "Точка Омега: Абсолютный Бог", bg: "#000000", body: "#ffd700", aura: "omega", archetype: "omega" }
     ];
 
     const PREFIXES = ["Микро", "Первичный", "Склизкий", "Шестеренчатый", "Паровой", "Чугунный", "Янтарный", "Рубиновый", "Алмазный", "Неоновый", "Квантовый", "Кибер", "Изотопный", "Гамма", "Магматический", "Плазменный", "Лунный", "Солнечный", "Звездный", "Астральный", "Сингулярный", "Струнный", "Темный", "Галактический", "Хроно", "Мультиверс", "Серафический", "Псионический", "Гиперпространственный", "Омега", "Титанический", "Эфирный", "Фотонный", "Гравитонный", "Божественный", "Абсолютный", "Трансцендентный", "Квазаровый", "Энергетический", "Имперский"];
@@ -594,6 +777,7 @@
         id: i,
         name: name,
         epoch: ep.epoch,
+        archetype: ep.archetype || "classic",
         cost: cost,
         mult: mult,
         bgColor: ep.bg,
@@ -601,6 +785,77 @@
         aura: ep.aura,
         desc: `Форма #${i + 1} [${ep.epoch}]. Умножает силу клика и доход в ${formatNumber(mult)}x раз!`
       });
+    }
+
+    // CS:GO LEGENDARY KNIVES DATASET
+    const KNIVES = [
+      { id: 'knife_gut', name: '★ Gut Knife | Патина', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 1.6, passiveMult: 1.3, icon: '🪝', bladeColor: '#94a3b8', handleColor: '#78350f', style: 'gut', desc: 'Удобный крюк для потрошения биомассы. +60% к клику и +30% к фабрикам!' },
+      { id: 'knife_flip', name: '★ Flip Knife | Ночь', rarity: 'mil-spec', rarityName: 'Армейское', clickMult: 2.2, passiveMult: 1.5, icon: '🗡️', bladeColor: '#1e293b', handleColor: '#0f172a', style: 'flip', desc: 'Скрытный складной клинок во тьме унитаза. x2.2 к клику!' },
+      { id: 'knife_huntsman', name: '★ Huntsman Knife | Камуфляж', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 3.2, passiveMult: 1.8, icon: '⚔️', bladeColor: '#cbd5e1', handleColor: '#334155', style: 'huntsman', desc: 'Тяжелый тесак для суровых охотников. x3.2 к клику!' },
+      { id: 'knife_falchion', name: '★ Falchion | Кровавая паутина', rarity: 'restricted', rarityName: 'Запрещенное', clickMult: 4.8, passiveMult: 2.2, icon: '🗡️', bladeColor: '#dc2626', handleColor: '#450a0a', style: 'falchion', desc: 'Алый узор паутины на изогнутом лезвии. x4.8 к клику!' },
+      { id: 'knife_bowie', name: '★ Bowie Knife | Зуб тигра', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 7.5, passiveMult: 2.8, icon: '🔪', bladeColor: '#f59e0b', handleColor: '#78350f', style: 'bowie', desc: 'Огромный свирепый клинок с золотыми полосами. x7.5 к клику!' },
+      { id: 'knife_daggers', name: '★ Shadow Daggers | Градиент (Fade)', rarity: 'classified', rarityName: 'Засекреченное', clickMult: 11.0, passiveMult: 3.5, icon: '✨', bladeColor: 'fade', handleColor: '#18181b', style: 'daggers', desc: 'Парные стилеты со спектральным сиянием Fade. x11.0 к клику!' },
+      { id: 'knife_butterfly', name: '★ Butterfly Knife | Doppler Phase 2', rarity: 'covert', rarityName: 'Тайное', clickMult: 20.0, passiveMult: 5.0, icon: '🦋', bladeColor: '#ec4899', handleColor: '#581c87', style: 'butterfly', desc: 'Культовый флип ножа-бабочки в розовом перламутре Doppler. x20 к клику!' },
+      { id: 'knife_m9', name: '★ M9 Bayonet | Marble Fade (3-Color)', rarity: 'covert', rarityName: 'Тайное', clickMult: 35.0, passiveMult: 8.0, icon: '🗡️', bladeColor: 'marble', handleColor: '#27272a', style: 'bayonet', desc: 'Тяжелый штык-нож с зубьями пилы и переливом Marble Fade. x35 к клику!' },
+      { id: 'knife_karambit', name: '★ Karambit | Fade 100% Max Purple', rarity: 'special', rarityName: '★ Необычайно редкий', clickMult: 60.0, passiveMult: 14.0, icon: '🌀', bladeColor: 'fade', handleColor: '#09090b', style: 'karambit', desc: 'Легендарный коготь тигра с кольцом под палец и чистым градиентом Fade. x60 к клику!' },
+      { id: 'knife_lore', name: '★ Karambit | Dragon Lore (Золотое пламя)', rarity: 'special', rarityName: '★ СУВЕНИРНЫЙ ГРААЛЬ', clickMult: 150.0, passiveMult: 35.0, icon: '🐉', bladeColor: '#ffd700', handleColor: '#451a03', style: 'lore', desc: 'Абсолютный божественный грааль CS:GO! x150 к силе клика и x35 к доходу всех заводов!' }
+    ];
+
+    // CS:GO CASES DATASET (Opened for rolls 🧻 and plungers 🪠)
+    const CSGO_CASES = [
+      {
+        id: 'case_weapon',
+        name: 'CS:GO Weapon Case #1',
+        icon: '📦',
+        currency: 'rolls',
+        cost: 3,
+        currencySymbol: '🧻',
+        borderClass: 'border-blue-500/70',
+        bgClass: 'from-blue-950 via-stone-900 to-stone-950',
+        pool: ['knife_gut', 'knife_flip', 'knife_huntsman', 'knife_falchion'],
+        desc: 'Классический первый кейс CS:GO. Шанс выбить Gut, Flip или Falchion!'
+      },
+      {
+        id: 'case_chroma',
+        name: 'Кейс «Хрома» (Chroma)',
+        icon: '🧰',
+        currency: 'rolls',
+        cost: 10,
+        currencySymbol: '🧻',
+        borderClass: 'border-purple-500/70',
+        bgClass: 'from-purple-950 via-stone-900 to-stone-950',
+        pool: ['knife_huntsman', 'knife_falchion', 'knife_bowie', 'knife_daggers', 'knife_butterfly'],
+        desc: 'Металлические хромированные лезвия, включая Bowie и нож-бабочку Doppler!'
+      },
+      {
+        id: 'case_gamma',
+        name: 'Кейс «Гамма» (Gamma Waves)',
+        icon: '🎁',
+        currency: 'rolls',
+        cost: 25,
+        currencySymbol: '🧻',
+        borderClass: 'border-emerald-500/70',
+        bgClass: 'from-emerald-950 via-stone-900 to-stone-950',
+        pool: ['knife_bowie', 'knife_daggers', 'knife_butterfly', 'knife_m9', 'knife_karambit'],
+        desc: 'Премиальный кейс Гамма: шанс достать M9 Bayonet Marble Fade или Керамбит!'
+      },
+      {
+        id: 'case_dragon',
+        name: 'Cobblestone Souvenir Case',
+        icon: '👑',
+        currency: 'plungers',
+        cost: 2,
+        currencySymbol: '🪠',
+        borderClass: 'border-yellow-500',
+        bgClass: 'from-yellow-950 via-stone-900 to-amber-950',
+        pool: ['knife_butterfly', 'knife_m9', 'knife_karambit', 'knife_lore'],
+        desc: 'Священный сувенирный кейс Астральных Вантузов. Шанс выбить Керамбит Dragon Lore x150!'
+      }
+    ];
+
+    function getEquippedKnife() {
+      if (!GAME.equippedKnife) return null;
+      return KNIVES.find(k => k.id === GAME.equippedKnife) || null;
     }
 
     // FACTORIES PRODUCTION UNITS (20 Balanced Tiers with Milestones up to God Tier)
@@ -985,9 +1240,21 @@
       const meteorBoost = meteorFrenzyTime > 0 ? 777.0 : 1.0;
 
       const hatMult = getHatClickMult();
-      const moodMult = GAME.happy >= 80 ? 1.3 : 1.0;
 
-      let power = Math.max(1, Math.round(1 * evo.mult * cosmicMult * rollsMult * synergyMult * hyperMult * plungersMult * turboBoost * meteorBoost * hatMult * moodMult));
+      // CS:GO Knife Click Multiplier
+      const knife = getEquippedKnife();
+      const knifeClickMult = knife ? knife.clickMult : 1.0;
+
+      // MEANINGFUL PET CARE ACTIVE BUFFS
+      // 1. Hunger gives up to +50% Click Power (0% at hunger=0 to +50% at hunger=100)
+      const hungerBoost = 1 + (Math.max(0, Math.min(100, GAME.hunger || 0)) / 100) * 0.50;
+      // 2. Happy gives 1.3x click boost when happy >= 70
+      const moodMult = GAME.happy >= 70 ? 1.35 : 1.0;
+      // 3. Ideal Pet: If all 3 needs >= 90%, get massive x2.0 ALL Multiplier!
+      const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
+      const idealMult = isIdealPet ? 2.0 : 1.0;
+
+      let power = Math.max(1, Math.round(1 * evo.mult * cosmicMult * rollsMult * synergyMult * hyperMult * plungersMult * turboBoost * meteorBoost * hatMult * knifeClickMult * hungerBoost * moodMult * idealMult));
 
       // Quantum Click Shop Item & Quantum Mastery Talent
       const qmTalent = TALENTS.find(t => t.id === 'quantum_mastery');
@@ -1033,7 +1300,18 @@
       const comboTalent = TALENTS.find(t => t.id === 'combo_master');
       const turboBoost = GAME.turboRushTime > 0 ? (10 + (comboTalent ? comboTalent.level * 0.5 : 0)) : 1.0;
 
-      return base * turboMult * goldRushMult * overclockMult * rollsMult * cosmicMult * plungersMult * turboBoost;
+      // CS:GO Knife Passive Multiplier
+      const knife = getEquippedKnife();
+      const knifePassiveMult = knife ? knife.passiveMult : 1.0;
+
+      // MEANINGFUL PET CARE ACTIVE BUFFS
+      // 1. Cleanliness gives up to +40% Factories passive yield!
+      const cleanBoost = 1 + (Math.max(0, Math.min(100, GAME.clean || 0)) / 100) * 0.40;
+      // 2. Ideal Pet: All x2.0
+      const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
+      const idealMult = isIdealPet ? 2.0 : 1.0;
+
+      return base * turboMult * goldRushMult * overclockMult * rollsMult * cosmicMult * plungersMult * turboBoost * knifePassiveMult * cleanBoost * idealMult;
     }
 
     // Handles extreme click spam (1ms clickers) safely without frame drop
@@ -1201,52 +1479,253 @@
       requestCloudSync(2500);
     }
 
+    let knifeSlashTimer = 0;
+    let lastAutoclickTime = performance.now();
+    let autoclickAccumulator = 0;
+
+    function updateAutoclickerEngine(now) {
+      if (!GAME.autoclickerActive) {
+        lastAutoclickTime = now;
+        return;
+      }
+      const dt = Math.min(0.2, (now - lastAutoclickTime) / 1000);
+      lastAutoclickTime = now;
+
+      const targetCps = GAME.autoclickerSpeed || 1000;
+      autoclickAccumulator += dt * targetCps;
+      const clicksToFire = Math.floor(autoclickAccumulator);
+      if (clicksToFire > 0) {
+        autoclickAccumulator -= clicksToFire;
+        pendingClicks += clicksToFire;
+        squashY = 0.88;
+        squashX = 1.12;
+        knifeSlashTimer = 1.0;
+      }
+    }
+
+    // DRAW CS:GO KNIFE IN PET HAND
+    function drawCSGOKnife(ctx, knife, time) {
+      if (!knife) return;
+      ctx.save();
+      ctx.translate(8, -2);
+
+      // Dynamic CS:GO Blade Gradients
+      let bladeFill = knife.bladeColor;
+      if (knife.bladeColor === 'fade') {
+        const fadeGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        fadeGrad.addColorStop(0, '#facc15'); // 100% Fade Gold
+        fadeGrad.addColorStop(0.35, '#f43f5e'); // Pink
+        fadeGrad.addColorStop(0.7, '#8b5cf6'); // Purple
+        fadeGrad.addColorStop(1, '#06b6d4'); // Electric Blue
+        bladeFill = fadeGrad;
+      } else if (knife.bladeColor === 'marble') {
+        const marbleGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        marbleGrad.addColorStop(0, '#ef4444'); // Red tip
+        marbleGrad.addColorStop(0.5, '#3b82f6'); // Blue center
+        marbleGrad.addColorStop(1, '#eab308'); // Yellow base
+        bladeFill = marbleGrad;
+      } else if (knife.bladeColor === 'lore') {
+        const loreGrad = ctx.createLinearGradient(0, -6, 50, 10);
+        loreGrad.addColorStop(0, '#fef08a');
+        loreGrad.addColorStop(0.4, '#eab308');
+        loreGrad.addColorStop(1, '#ca8a04');
+        bladeFill = loreGrad;
+      }
+
+      ctx.fillStyle = knife.handleColor || '#18181b';
+      ctx.strokeStyle = '#09090b';
+      ctx.lineWidth = 1.5;
+
+      if (knife.style === 'karambit' || knife.style === 'lore') {
+        // Finger safety ring at pommel
+        ctx.beginPath();
+        ctx.arc(-8, -3, 6.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(-8, -3, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ergonomic curved grip
+        ctx.fillStyle = knife.handleColor || '#18181b';
+        ctx.beginPath();
+        ctx.moveTo(-3, -5);
+        ctx.lineTo(12, -2);
+        ctx.lineTo(10, 6);
+        ctx.lineTo(-5, 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Curved predatory tiger claw blade
+        ctx.fillStyle = bladeFill;
+        ctx.beginPath();
+        ctx.moveTo(10, -3);
+        ctx.quadraticCurveTo(34, -7, 48, 14);
+        ctx.quadraticCurveTo(28, 8, 10, 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#18181b';
+        ctx.stroke();
+
+        // Blade spine highlight
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(12, -2);
+        ctx.quadraticCurveTo(30, -5, 46, 12);
+        ctx.stroke();
+
+        if (knife.style === 'lore') {
+          ctx.fillStyle = '#10b981';
+          ctx.beginPath();
+          ctx.arc(24, 2, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (knife.style === 'butterfly') {
+        // Split double handles
+        ctx.fillStyle = knife.handleColor || '#4c1d95';
+        ctx.fillRect(-6, -9, 17, 5);
+        ctx.fillRect(-6, 4, 17, 5);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath(); ctx.arc(10, -6, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(10, 6, 2, 0, Math.PI * 2); ctx.fill();
+
+        // Spearpoint blade
+        ctx.fillStyle = bladeFill;
+        ctx.beginPath();
+        ctx.moveTo(11, -4);
+        ctx.lineTo(44, -1);
+        ctx.lineTo(48, 0);
+        ctx.lineTo(44, 1);
+        ctx.lineTo(11, 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(38, 0); ctx.stroke();
+      } else if (knife.style === 'bayonet') {
+        // Crossguard & Ring
+        ctx.fillStyle = '#52525b';
+        ctx.fillRect(8, -10, 4, 20);
+        // Handle
+        ctx.fillStyle = knife.handleColor || '#27272a';
+        ctx.fillRect(-8, -4, 16, 8);
+        // Serrated Bayonet Blade
+        ctx.fillStyle = bladeFill;
+        ctx.beginPath();
+        ctx.moveTo(12, -5);
+        ctx.lineTo(44, -5);
+        ctx.lineTo(52, 0);
+        ctx.lineTo(12, 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        // Spine saw teeth
+        ctx.fillStyle = '#18181b';
+        for (let s = 16; s < 34; s += 4) {
+          ctx.beginPath();
+          ctx.moveTo(s, -5); ctx.lineTo(s + 2, -8); ctx.lineTo(s + 4, -5); ctx.fill();
+        }
+      } else if (knife.style === 'gut') {
+        ctx.fillStyle = knife.handleColor || '#78350f';
+        ctx.fillRect(-8, -4, 18, 8);
+        ctx.fillStyle = bladeFill;
+        ctx.beginPath();
+        ctx.moveTo(10, -5);
+        ctx.lineTo(34, -6);
+        ctx.quadraticCurveTo(40, -12, 44, -7);
+        ctx.quadraticCurveTo(38, -3, 46, 2);
+        ctx.lineTo(10, 6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        // Huntsman / Falchion / Bowie / Daggers
+        ctx.fillStyle = knife.handleColor || '#1c1917';
+        ctx.fillRect(-6, -4, 16, 8);
+        ctx.fillStyle = bladeFill;
+        ctx.beginPath();
+        ctx.moveTo(10, -5);
+        ctx.lineTo(38, -6);
+        ctx.lineTo(48, 2);
+        ctx.lineTo(10, 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
     function renderScene(time) {
+      updateAutoclickerEngine(time);
       processBatchedClicks();
 
       const w = canvas.width;
       const h = canvas.height;
       const currentEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
 
-      // DYNAMIC BACKGROUND BASED ON EVOLUTION EPOCH
-      ctx.fillStyle = currentEvo.bgColor;
-      ctx.fillRect(0, 0, w, h);
+      // DYNAMIC BACKGROUND BASED ON GIRLY MODE OR EPOCH
+      if (GAME.girlyMode) {
+        const pinkGrad = ctx.createLinearGradient(0, 0, 0, h);
+        pinkGrad.addColorStop(0, '#fdf2f8');
+        pinkGrad.addColorStop(0.5, '#fce7f3');
+        pinkGrad.addColorStop(1, '#fbcfe8');
+        ctx.fillStyle = pinkGrad;
+        ctx.fillRect(0, 0, w, h);
 
-      // Grid / Cosmic Particles in background
-      if (GAME.evoStage >= 100) {
-        // Multiverse Black Hole Whirlpool
-        ctx.save();
-        ctx.translate(w / 2, h / 2);
-        ctx.rotate(time * 0.0005);
-        for (let i = 0; i < 4; i++) {
-          ctx.strokeStyle = i % 2 === 0 ? 'rgba(244, 63, 94, 0.25)' : 'rgba(168, 85, 247, 0.25)';
-          ctx.lineWidth = 4;
+        // Cute floating pastel hearts & sparkles in background
+        ctx.fillStyle = 'rgba(244, 114, 182, 0.2)';
+        for (let i = 0; i < 6; i++) {
+          const hx = ((time * 0.02 + i * 85) % w);
+          const hy = ((h - (time * 0.03 + i * 65) % h));
           ctx.beginPath();
-          ctx.arc(0, 0, 80 + i * 40, 0, Math.PI * 1.5);
-          ctx.stroke();
+          ctx.arc(hx, hy, 8 + (i % 4) * 3, 0, Math.PI * 2);
+          ctx.fill();
         }
-        ctx.restore();
       } else {
-        // Classical tile background
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.lineWidth = 2;
-        const step = 45;
-        for (let x = 0; x < w; x += step) {
-          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+        ctx.fillStyle = currentEvo.bgColor;
+        ctx.fillRect(0, 0, w, h);
+
+        if (GAME.evoStage >= 100) {
+          // Multiverse Black Hole Whirlpool
+          ctx.save();
+          ctx.translate(w / 2, h / 2);
+          ctx.rotate(time * 0.0005);
+          for (let i = 0; i < 4; i++) {
+            ctx.strokeStyle = i % 2 === 0 ? 'rgba(244, 63, 94, 0.25)' : 'rgba(168, 85, 247, 0.25)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(0, 0, 80 + i * 40, 0, Math.PI * 1.5);
+            ctx.stroke();
+          }
+          ctx.restore();
+        } else {
+          // Classical tile background
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+          ctx.lineWidth = 2;
+          const step = 45;
+          for (let x = 0; x < w; x += step) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+          }
         }
       }
 
       // Porcelain Toilet Base
-      ctx.fillStyle = '#f8fafc';
+      ctx.fillStyle = GAME.girlyMode ? '#fff1f2' : '#f8fafc';
       ctx.beginPath();
       ctx.ellipse(w / 2, h * 0.76, 170, 70, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#cbd5e1';
+      ctx.strokeStyle = GAME.girlyMode ? '#f472b6' : '#cbd5e1';
       ctx.lineWidth = 4;
       ctx.stroke();
 
       // Toilet Water
-      ctx.fillStyle = '#38bdf8';
+      ctx.fillStyle = GAME.girlyMode ? '#f9a8d4' : '#38bdf8';
       ctx.beginPath();
       ctx.ellipse(w / 2, h * 0.77, 120, 44, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -1258,6 +1737,15 @@
       ctx.save();
       ctx.translate(w / 2, h * 0.63);
       ctx.scale(squashX, squashY);
+
+      // IDEAL PET GLOW AURA (Meaningful pet care!)
+      const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
+      if (isIdealPet) {
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.28)';
+        ctx.beginPath();
+        ctx.arc(0, -10, 92 + Math.sin(time * 0.008) * 8, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // TURBO RUSH FIERY AURA
       if (GAME.turboRushTime > 0) {
@@ -1281,12 +1769,23 @@
           ctx.fill();
         }
       } else if (currentEvo.aura === 'divine' || currentEvo.aura === 'omega') {
-        // Golden Divine Halo
         ctx.strokeStyle = '#facc15';
         ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.ellipse(0, -95, 45, 12, 0, 0, Math.PI * 2);
         ctx.stroke();
+
+        // Angel Wings
+        ctx.fillStyle = 'rgba(254, 240, 138, 0.7)';
+        const wingFlap = Math.sin(time * 0.006) * 10;
+        // Left Wing
+        ctx.beginPath();
+        ctx.ellipse(-65, -15 + wingFlap, 32, 14, -0.4, 0, Math.PI * 2);
+        ctx.fill();
+        // Right Wing
+        ctx.beginPath();
+        ctx.ellipse(65, -15 - wingFlap, 32, 14, 0.4, 0, Math.PI * 2);
+        ctx.fill();
       } else if (currentEvo.aura === 'multiverse' || currentEvo.aura === 'astral') {
         ctx.strokeStyle = '#ec4899';
         ctx.lineWidth = 3;
@@ -1295,45 +1794,213 @@
         ctx.stroke();
       }
 
-      // MAIN POOP GEOMETRY
-      ctx.fillStyle = currentEvo.bodyColor;
-      ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(0, -25, 36, 18, 0, 0, Math.PI * 2); ctx.fill();
-      // Curl Top
-      ctx.beginPath();
-      ctx.moveTo(-10, -32);
-      ctx.quadraticCurveTo(0, -62, 14, -48);
-      ctx.fill();
+      // =========================================================================
+      // DYNAMIC MORPHOLOGY: 10,000 FORMS & GIRLY MODE (Procedural visual richness)
+      // =========================================================================
+      const archetype = currentEvo.archetype || "classic";
+      const subVariant = GAME.evoStage % 10;
 
-      // BLINKING EYES & MOUTH
-      blinkTimer++;
-      const isBlinking = blinkTimer % 180 > 172;
-      ctx.fillStyle = '#1c1917';
-      if (isBlinking) {
+      if (GAME.girlyMode) {
+        // KAWAII PRINCESS STRAWBERRY SWIRL
+        const girlySwirlGrad = ctx.createLinearGradient(0, -50, 0, 50);
+        girlySwirlGrad.addColorStop(0, '#f472b6');
+        girlySwirlGrad.addColorStop(0.5, '#fb7185');
+        girlySwirlGrad.addColorStop(1, '#f43f5e');
+        ctx.fillStyle = girlySwirlGrad;
+
+        ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -25, 36, 18, 0, 0, Math.PI * 2); ctx.fill();
+        // Swirl top
+        ctx.beginPath();
+        ctx.moveTo(-10, -32);
+        ctx.quadraticCurveTo(0, -62, 14, -48);
+        ctx.fill();
+
+        // Cute Ribbon Bow on Head
+        ctx.fillStyle = '#fb7185';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        // Left loop
+        ctx.beginPath(); ctx.ellipse(-14, -50, 10, 6, -0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        // Right loop
+        ctx.beginPath(); ctx.ellipse(14, -50, 10, 6, 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        // Center knot
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(0, -50, 4, 0, Math.PI * 2); ctx.fill();
+
+        // Anime Blushing Cheeks
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.45)';
+        ctx.beginPath(); ctx.arc(-22, 2, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(22, 2, 7, 0, Math.PI * 2); ctx.fill();
+
+      } else if (archetype === 'crystal') {
+        // CRYSTAL GEODE MORPHOLOGY
+        ctx.fillStyle = currentEvo.bodyColor;
+        ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -25, 36, 18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-10, -32); ctx.quadraticCurveTo(0, -62, 14, -48); ctx.fill();
+
+        // Faceted Gem Spikes
+        ctx.fillStyle = '#fde047';
+        ctx.strokeStyle = '#ca8a04';
+        ctx.lineWidth = 2;
+        [-40, 0, 40].forEach((ox, i) => {
+          ctx.beginPath();
+          ctx.moveTo(ox - 6, -30);
+          ctx.lineTo(ox, -55 - (i % 2) * 12);
+          ctx.lineTo(ox + 6, -30);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        });
+      } else if (archetype === 'cyber') {
+        // CYBERNETIC MECHA FORM
+        ctx.fillStyle = currentEvo.bodyColor;
+        ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -25, 36, 18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-10, -32); ctx.quadraticCurveTo(0, -62, 14, -48); ctx.fill();
+
+        // Glowing Neon Circuit Lines
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-35, 15); ctx.lineTo(-10, 15); ctx.lineTo(0, 30);
+        ctx.moveTo(35, 15); ctx.lineTo(10, 15); ctx.lineTo(0, 30);
+        ctx.stroke();
+
+        // Futuristic Visor (Over eyes)
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(-26, -16, 52, 9);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-20, -14, 15, 3);
+      } else if (archetype === 'magma') {
+        // MOLTEN MAGMA CRUST
+        ctx.fillStyle = currentEvo.bodyColor;
+        ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -25, 36, 18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-10, -32); ctx.quadraticCurveTo(0, -62, 14, -48); ctx.fill();
+
+        // Glowing magma cracks
+        ctx.strokeStyle = '#f97316';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-20, 25); ctx.lineTo(-5, 10); ctx.lineTo(12, 18);
+        ctx.moveTo(15, -10); ctx.lineTo(5, 5); ctx.lineTo(-15, 0);
+        ctx.stroke();
+      } else if (archetype === 'cosmic' || archetype === 'void') {
+        // COSMIC NEBULA / VOID FORM
+        ctx.fillStyle = currentEvo.bodyColor;
+        ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -25, 36, 18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-10, -32); ctx.quadraticCurveTo(0, -62, 14, -48); ctx.fill();
+
+        // Saturnian Orbital Cosmic Ring
+        ctx.strokeStyle = 'rgba(216, 180, 254, 0.7)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(0, 5, 75, 16, -0.2, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        // CLASSIC / ORGANIC / INDUSTRIAL POOP GEOMETRY
+        ctx.fillStyle = currentEvo.bodyColor;
+        ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -25, 36, 18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-10, -32);
+        ctx.quadraticCurveTo(0, -62, 14, -48);
+        ctx.fill();
+
+        // Sub-variant horn / antenna decoration every 5 stages
+        if (subVariant >= 5) {
+          ctx.fillStyle = '#f59e0b';
+          ctx.beginPath();
+          ctx.arc(0, -56, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // BLINKING EYES & MOUTH (Skip eye drawing if cyber visor is drawn)
+      if (archetype !== 'cyber') {
+        blinkTimer++;
+        const isBlinking = blinkTimer % 180 > 172;
+        ctx.fillStyle = '#1c1917';
+        if (isBlinking) {
+          ctx.strokeStyle = '#1c1917';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(-16, -10, 6, 0.1 * Math.PI, 0.9 * Math.PI);
+          ctx.arc(16, -10, 6, 0.1 * Math.PI, 0.9 * Math.PI);
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.ellipse(-16, -10, GAME.girlyMode ? 8 : 7, GAME.girlyMode ? 12 : 10, 0, 0, Math.PI * 2);
+          ctx.ellipse(16, -10, GAME.girlyMode ? 8 : 7, GAME.girlyMode ? 12 : 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Shiny eye reflection highlights
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(-18, -13, 3, 0, Math.PI * 2);
+          ctx.arc(14, -13, 3, 0, Math.PI * 2);
+          if (GAME.girlyMode) {
+            // Extra kawaii star highlights!
+            ctx.arc(-14, -7, 1.8, 0, Math.PI * 2);
+            ctx.arc(18, -7, 1.8, 0, Math.PI * 2);
+          }
+          ctx.fill();
+        }
+
+        // Cute Mouth
         ctx.strokeStyle = '#1c1917';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(-16, -10, 6, 0.1 * Math.PI, 0.9 * Math.PI);
-        ctx.arc(16, -10, 6, 0.1 * Math.PI, 0.9 * Math.PI);
+        if (GAME.girlyMode) {
+          // Kawaii Kitty Smile
+          ctx.arc(-4, 8, 4, 0.1 * Math.PI, 0.9 * Math.PI);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(4, 8, 4, 0.1 * Math.PI, 0.9 * Math.PI);
+        } else {
+          ctx.arc(0, 8, 10, 0.15 * Math.PI, 0.85 * Math.PI);
+        }
         ctx.stroke();
-      } else {
-        ctx.beginPath();
-        ctx.ellipse(-16, -10, 7, 10, 0, 0, Math.PI * 2);
-        ctx.ellipse(16, -10, 7, 10, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(-18, -13, 3, 0, Math.PI * 2);
-        ctx.arc(14, -13, 3, 0, Math.PI * 2);
-        ctx.fill();
       }
-      // Smile
-      ctx.strokeStyle = '#1c1917';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(0, 8, 10, 0.15 * Math.PI, 0.85 * Math.PI);
-      ctx.stroke();
+
+      // =========================================================================
+      // DRAW EQUIPPED CS:GO KNIFE IN PET'S HAND (Visible weapon with slash swing!)
+      // =========================================================================
+      const equippedKnifeObj = getEquippedKnife();
+      if (equippedKnifeObj) {
+        ctx.save();
+        ctx.translate(42, 10);
+
+        // Slashing rotation arc on click / autoclicker
+        let slashAngle = 0.2;
+        if (knifeSlashTimer > 0) {
+          slashAngle = 0.2 + Math.sin(knifeSlashTimer * Math.PI) * 0.75;
+          knifeSlashTimer = Math.max(0, knifeSlashTimer - 0.12);
+        }
+        ctx.rotate(slashAngle);
+
+        // Cute pet hand holding the blade
+        ctx.fillStyle = GAME.girlyMode ? '#fbcfe8' : currentEvo.bodyColor;
+        ctx.strokeStyle = '#1c1917';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Draw CS:GO Vector Knife
+        drawCSGOKnife(ctx, equippedKnifeObj, time);
+
+        ctx.restore();
+      }
 
       // DRAW EQUIPPED WARDROBE HAT
       if (GAME.equippedHat) {
@@ -1449,52 +2116,55 @@
 
       pendingClicks++;
       squashX = 1.25; squashY = 0.8;
+      knifeSlashTimer = 1.0;
     }
     canvasBox.addEventListener('pointerdown', onPointerClick);
 
-    // FEED: Validated - strictly requires hunger < 90%
+    // FEED: Validated - gives meaningful click power boost and sparkles!
     document.getElementById('btnFeed').addEventListener('click', () => {
       if (GAME.hunger >= 90) return; // Prevent spam
       GAME.hunger = Math.min(100, GAME.hunger + 30);
       GAME.happy = Math.min(100, GAME.happy + 10);
-      GAME.biomass += 25;
+      GAME.sparkles += 1;
       feedCount++;
       squashY = 1.2;
-      visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '🍕 Вкусно!', color: '#f97316', scale: 1.2, life: 1, vy: -2 });
+      visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '🍔 Покушал! +50% к Клику! (+1✨)', color: '#f97316', scale: 1.25, life: 1.2, vy: -2 });
       checkAchievements();
       updateDashboardUI();
       saveLocal();
     });
 
-    // WASH: Validated - strictly requires clean < 85%
+    // WASH: Validated - gives meaningful factories passive yield boost!
     document.getElementById('btnWash').addEventListener('click', () => {
       if (GAME.clean >= 85) return; // Prevent spam
       GAME.clean = Math.min(100, GAME.clean + 35);
-      GAME.happy = Math.min(100, GAME.happy + 5);
+      GAME.happy = Math.min(100, GAME.happy + 8);
+      GAME.sparkles += 1;
       washCount++;
-      visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '🫧 Чистота!', color: '#38bdf8', scale: 1.2, life: 1, vy: -2 });
+      visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '🧼 Отмылся! +40% к Заводам! (+1✨)', color: '#38bdf8', scale: 1.25, life: 1.2, vy: -2 });
       checkAchievements();
       updateDashboardUI();
       saveLocal();
     });
 
-    // POLISH: Validated - strictly requires clean >= 70% to polish to a shine
+    // POLISH: Validated - rewards extra sparkles and maximum shine!
     document.getElementById('btnPolish').addEventListener('click', () => {
       if (GAME.clean < 70) return;
       polishCount++;
       GAME.clean = 100;
-      GAME.sparkles += 2;
-      visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '+2 ✨ Блеск!', color: '#facc15', scale: 1.3, life: 1, vy: -2 });
+      GAME.sparkles += 4;
+      visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '✨ Идеальный блеск! +4 ✨', color: '#facc15', scale: 1.35, life: 1.2, vy: -2 });
       checkAchievements();
       updateDashboardUI();
       saveLocal();
     });
 
-    // TICKLE
+    // TICKLE: Boosts happiness and builds combo rage for active frenzy!
     document.getElementById('btnTickle').addEventListener('click', () => {
-      GAME.happy = Math.min(100, GAME.happy + 20);
+      GAME.happy = Math.min(100, GAME.happy + 25);
+      GAME.comboHeat = Math.min(100, (GAME.comboHeat || 0) + 20);
       squashX = 1.2;
-      visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '😄 Хи-хи!', color: '#ec4899', scale: 1.1, life: 1, vy: -2 });
+      visualParticles.push({ x: canvasBox.clientWidth / 2, y: canvasBox.clientHeight * 0.5, text: '🪶 Щекотно! +20% Ярости (x2 Комбо)!', color: '#ec4899', scale: 1.25, life: 1.2, vy: -2 });
       updateDashboardUI();
       saveLocal();
     });
@@ -2013,6 +2683,372 @@
       document.getElementById('achievementsCountText').textContent = `${doneCount} / ${ACHIEVEMENTS.length}`;
     }
 
+    function updateAutoclickerUI() {
+      const btn = document.getElementById('btnToggleAutoclicker');
+      const led = document.getElementById('autoclickLed');
+      const label = document.getElementById('autoclickLabel');
+      if (!btn || !led || !label) return;
+
+      const spd = GAME.autoclickerSpeed || 1000;
+      const intervalMs = Math.round(1000 / spd);
+      const intervalText = intervalMs <= 1 ? '1мс' : `${intervalMs}мс`;
+
+      if (GAME.autoclickerActive) {
+        btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-amber-600 hover:bg-amber-500 border-yellow-400 text-white shadow-[0_0_10px_#f59e0b]';
+        led.className = 'w-2.5 h-2.5 rounded-full bg-yellow-300 shadow-[0_0_8px_#facc15] animate-ping';
+        label.textContent = `АВТОКЛИКЕР: ВКЛ (${intervalText} ⚡)`;
+      } else {
+        btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 hover:bg-stone-700 border-stone-600 text-stone-300';
+        led.className = 'w-2.5 h-2.5 rounded-full bg-stone-500';
+        label.textContent = 'АВТОКЛИКЕР: ВЫКЛ';
+      }
+
+      // Highlight active speed button
+      document.querySelectorAll('.autoclick-spd-btn').forEach(b => {
+        const cps = parseInt(b.dataset.cps);
+        if (cps === spd) {
+          b.className = 'autoclick-spd-btn px-2 py-0.5 rounded bg-amber-600 text-white font-bold border border-yellow-400 shadow';
+        } else {
+          b.className = 'autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700';
+        }
+      });
+    }
+
+    function toggleAutoclicker() {
+      GAME.autoclickerActive = !GAME.autoclickerActive;
+      updateAutoclickerUI();
+      saveLocal();
+    }
+
+    function applyGirlyModeUI() {
+      const btn = document.getElementById('btnGirlyMode');
+      if (GAME.girlyMode) {
+        document.body.classList.add('girly-mode');
+        if (btn) {
+          btn.innerHTML = '<span>💖</span> <span>Девочки: ВКЛ</span>';
+          btn.className = 'font-game text-xs px-2.5 py-1 rounded-xl border flex items-center gap-1 transition shadow jelly-btn bg-pink-500 hover:bg-pink-400 text-white border-pink-300 shadow-[0_0_10px_#f472b6]';
+        }
+      } else {
+        document.body.classList.remove('girly-mode');
+        if (btn) {
+          btn.innerHTML = '<span>🎀</span> <span>Девочки</span>';
+          btn.className = 'font-game text-xs px-2.5 py-1 rounded-xl border flex items-center gap-1 transition shadow jelly-btn bg-pink-900/60 hover:bg-pink-800 text-pink-200 border-pink-500/50';
+        }
+      }
+    }
+
+    function toggleGirlyMode() {
+      GAME.girlyMode = !GAME.girlyMode;
+      applyGirlyModeUI();
+      updateDashboardUI();
+      saveLocal();
+    }
+
+    // =========================================================================
+    // CS:GO CRATES & KNIVES ROULETTE OPENING ENGINE
+    // =========================================================================
+    let activeRouletteCase = null;
+    let rouletteWinningKnife = null;
+    let isRouletteSpinning = false;
+
+    function renderCasesSystem() {
+      // 1. Render Crates
+      const cratesList = document.getElementById('casesCratesList');
+      if (cratesList) {
+        cratesList.innerHTML = CSGO_CASES.map(c => {
+          const hasCurrency = c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost : (GAME.transcendPlungers || 0) >= c.cost;
+          return `
+            <div class="p-3 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-lg flex flex-col justify-between relative overflow-hidden">
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-2xl">${c.icon}</span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-900/80 text-yellow-300 border border-yellow-500/40">${c.cost} ${c.currencySymbol}</span>
+                </div>
+                <div class="font-game text-xs text-yellow-200 mt-1">${c.name}</div>
+                <div class="text-[10px] text-stone-300 mt-0.5 leading-snug">${c.desc}</div>
+              </div>
+              <button class="open-case-btn mt-3 w-full py-1.5 rounded-xl font-game text-xs transition jelly-btn ${hasCurrency ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${hasCurrency ? '' : 'disabled'}>
+                ОТКРЫТЬ КЕЙС 🎰
+              </button>
+            </div>
+          `;
+        }).join('');
+
+        cratesList.querySelectorAll('.open-case-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const cid = btn.dataset.case;
+            openCaseRoulette(cid);
+          });
+        });
+      }
+
+      // 2. Render Equipped Knife Card
+      const equippedCard = document.getElementById('equippedKnifeCard');
+      const equippedObj = getEquippedKnife();
+      if (equippedCard) {
+        if (equippedObj) {
+          equippedCard.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-3xl">${equippedObj.icon}</span>
+                <div>
+                  <div class="font-game text-sm text-yellow-300">${equippedObj.name}</div>
+                  <div class="text-[10px] text-pink-300 font-bold">${equippedObj.rarityName} ★ <span class="text-emerald-300">+${Math.round((equippedObj.clickMult - 1) * 100)}% Клик</span> ★ <span class="text-cyan-300">+${Math.round((equippedObj.passiveMult - 1) * 100)}% Заводы</span></div>
+                  <div class="text-[9px] text-stone-400 mt-0.5">${equippedObj.desc}</div>
+                </div>
+              </div>
+              <button id="btnUnequipKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-600 text-xs px-3 py-1.5 rounded-xl font-bold">Снять</button>
+            </div>
+          `;
+          const unequipBtn = document.getElementById('btnUnequipKnife');
+          if (unequipBtn) {
+            unequipBtn.addEventListener('click', () => {
+              GAME.equippedKnife = null;
+              updateDashboardUI();
+              saveLocal();
+            });
+          }
+        } else {
+          equippedCard.innerHTML = `
+            <div class="text-center py-2">
+              <span class="text-stone-400">Нож не экипирован. Выберите нож из инвентаря ниже или откройте CS:GO кейс!</span>
+            </div>
+          `;
+        }
+      }
+
+      // 3. Render Knives Inventory
+      const invContainer = document.getElementById('knivesInventoryContainer');
+      if (invContainer) {
+        if (!GAME.unlockedKnives || GAME.unlockedKnives.length === 0) {
+          invContainer.innerHTML = '<div class="col-span-2 text-center text-stone-500 py-6 text-xs">Коллекция ножей пуста. Открывайте кейсы за Золотые Втулки (🧻) или Астральные Вантузы (🪠)!</div>';
+        } else {
+          invContainer.innerHTML = GAME.unlockedKnives.map(kid => {
+            const kn = KNIVES.find(k => k.id === kid);
+            if (!kn) return '';
+            const isEquipped = GAME.equippedKnife === kn.id;
+            const rarityClass = kn.rarity === 'special' ? 'border-yellow-400 bg-yellow-950/30' : (kn.rarity === 'covert' ? 'border-red-500 bg-red-950/30' : (kn.rarity === 'classified' ? 'border-pink-500 bg-pink-950/30' : 'border-purple-500 bg-purple-950/30'));
+            return `
+              <div class="p-2.5 rounded-xl border-2 ${rarityClass} shadow flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xl">${kn.icon}</span>
+                    <span class="text-[9px] font-bold uppercase text-stone-400">${kn.rarityName}</span>
+                  </div>
+                  <div class="font-game text-xs text-yellow-300 mt-1 truncate">${kn.name}</div>
+                  <div class="text-[10px] text-emerald-400 font-bold mt-0.5">+${Math.round((kn.clickMult - 1) * 100)}% Клик</div>
+                </div>
+                <div class="flex gap-1.5 mt-2.5">
+                  <button class="equip-knife-btn flex-1 py-1 rounded-lg text-[10px] font-bold ${isEquipped ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-500 text-white jelly-btn'}" data-id="${kn.id}">
+                    ${isEquipped ? '✓ НАДЕТ' : 'НАДЕТЬ'}
+                  </button>
+                  <button class="sell-knife-btn bg-stone-800 hover:bg-stone-700 text-stone-300 px-2 py-1 rounded-lg text-[10px] border border-stone-700" data-id="${kn.id}" title="Продать за 3 Втулки">
+                    +3 🧻
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          invContainer.querySelectorAll('.equip-knife-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              GAME.equippedKnife = btn.dataset.id;
+              updateDashboardUI();
+              saveLocal();
+            });
+          });
+
+          invContainer.querySelectorAll('.sell-knife-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const kid = btn.dataset.id;
+              if (confirm('Продать этот нож за +3 Золотые Втулки (🧻)?')) {
+                const idx = GAME.unlockedKnives.indexOf(kid);
+                if (idx !== -1) {
+                  GAME.unlockedKnives.splice(idx, 1);
+                  if (GAME.equippedKnife === kid) GAME.equippedKnife = null;
+                  GAME.prestigeRolls += 3;
+                  updateDashboardUI();
+                  saveLocal();
+                }
+              }
+            });
+          });
+        }
+      }
+    }
+
+    function openCaseRoulette(caseId) {
+      if (isRouletteSpinning) return;
+      const caseObj = CSGO_CASES.find(c => c.id === caseId);
+      if (!caseObj) return;
+
+      // Currency check
+      if (caseObj.currency === 'rolls' && GAME.prestigeRolls < caseObj.cost) {
+        alert('Недостаточно Золотых Втулок Судьбы (🧻)! Совершите Смыв Судьбы для их получения.');
+        return;
+      }
+      if (caseObj.currency === 'plungers' && (GAME.transcendPlungers || 0) < caseObj.cost) {
+        alert('Недостаточно Астральных Вантузов (🪠)! Совершите Астральный Прорыв.');
+        return;
+      }
+
+      // Deduct cost immediately
+      if (caseObj.currency === 'rolls') {
+        GAME.prestigeRolls -= caseObj.cost;
+      } else {
+        GAME.transcendPlungers -= caseObj.cost;
+      }
+      saveLocal();
+
+      activeRouletteCase = caseObj;
+      const modal = document.getElementById('caseRouletteModal');
+      modal.classList.remove('hidden');
+
+      document.getElementById('rouletteCaseTitle').textContent = caseObj.name;
+      document.getElementById('rouletteResultBanner').classList.add('hidden');
+      document.getElementById('rouletteControlSection').classList.remove('hidden');
+
+      // Populate tape
+      const track = document.getElementById('rouletteTrack');
+      track.style.transition = 'none';
+      track.style.transform = 'translateX(0px)';
+
+      // Pick winning knife based on rarity chances
+      const poolKnives = caseObj.pool.map(id => KNIVES.find(k => k.id === id)).filter(Boolean);
+      const roll = Math.random();
+      // Weighted roll: special (4%), covert (14%), classified (24%), restricted (28%), mil-spec (30%)
+      const specials = poolKnives.filter(k => k.rarity === 'special');
+      const coverts = poolKnives.filter(k => k.rarity === 'covert');
+      const classifieds = poolKnives.filter(k => k.rarity === 'classified');
+      const restricteds = poolKnives.filter(k => k.rarity === 'restricted');
+      const milspecs = poolKnives.filter(k => k.rarity === 'mil-spec');
+
+      if (roll < 0.05 && specials.length > 0) {
+        rouletteWinningKnife = specials[Math.floor(Math.random() * specials.length)];
+      } else if (roll < 0.20 && coverts.length > 0) {
+        rouletteWinningKnife = coverts[Math.floor(Math.random() * coverts.length)];
+      } else if (roll < 0.45 && classifieds.length > 0) {
+        rouletteWinningKnife = classifieds[Math.floor(Math.random() * classifieds.length)];
+      } else if (roll < 0.72 && restricteds.length > 0) {
+        rouletteWinningKnife = restricteds[Math.floor(Math.random() * restricteds.length)];
+      } else {
+        rouletteWinningKnife = (milspecs.length > 0 ? milspecs : poolKnives)[Math.floor(Math.random() * (milspecs.length > 0 ? milspecs : poolKnives).length)];
+      }
+
+      // Generate 55 cards
+      const winnerIndex = 42;
+      const cards = [];
+      for (let i = 0; i < 55; i++) {
+        const itemKnife = (i === winnerIndex) ? rouletteWinningKnife : poolKnives[Math.floor(Math.random() * poolKnives.length)];
+        const rColor = itemKnife.rarity === 'special' ? 'border-yellow-400 text-yellow-300' : (itemKnife.rarity === 'covert' ? 'border-red-500 text-red-300' : (itemKnife.rarity === 'classified' ? 'border-pink-500 text-pink-300' : 'border-purple-500 text-purple-300'));
+        cards.push(`
+          <div class="w-32 h-24 shrink-0 bg-stone-900 rounded-xl border-2 ${rColor} p-2 flex flex-col items-center justify-center text-center shadow-lg relative select-none">
+            <span class="text-3xl">${itemKnife.icon}</span>
+            <div class="font-game text-[10px] mt-1 truncate w-full">${itemKnife.name}</div>
+            <div class="text-[8px] opacity-75">${itemKnife.rarityName}</div>
+          </div>
+        `);
+      }
+      track.innerHTML = cards.join('');
+
+      // Auto start roulette roll immediately
+      startRouletteSpin(winnerIndex);
+    }
+
+    function startRouletteSpin(winnerIndex) {
+      if (isRouletteSpinning) return;
+      isRouletteSpinning = true;
+
+      const track = document.getElementById('rouletteTrack');
+      document.getElementById('btnSpinRoulette').disabled = true;
+
+      // Card width (128px) + gap (8px) = 136px
+      const cardPitch = 136;
+      // Center needle offset with slight human randomization inside the winning card
+      const randomJitter = (Math.random() - 0.5) * 60;
+      const targetOffset = winnerIndex * cardPitch + randomJitter;
+
+      // Trigger high-speed sliding easing animation
+      setTimeout(() => {
+        track.style.transition = 'transform 5.2s cubic-bezier(0.12, 0.8, 0.22, 1)';
+        track.style.transform = `translateX(-${targetOffset}px)`;
+      }, 50);
+
+      // On spin finish
+      setTimeout(() => {
+        isRouletteSpinning = false;
+        document.getElementById('rouletteControlSection').classList.add('hidden');
+        const resBanner = document.getElementById('rouletteResultBanner');
+        resBanner.classList.remove('hidden');
+
+        document.getElementById('rouletteResultIcon').textContent = rouletteWinningKnife.icon;
+        document.getElementById('rouletteResultName').textContent = rouletteWinningKnife.name;
+        document.getElementById('rouletteResultRarity').textContent = `${rouletteWinningKnife.rarityName} ★ +${Math.round((rouletteWinningKnife.clickMult - 1) * 100)}% Клик`;
+
+        // Add to inventory
+        if (!GAME.unlockedKnives.includes(rouletteWinningKnife.id)) {
+          GAME.unlockedKnives.push(rouletteWinningKnife.id);
+        }
+        GAME.casesOpened = (GAME.casesOpened || 0) + 1;
+        saveLocal();
+        updateDashboardUI();
+        requestCloudSync(2000);
+      }, 5300);
+    }
+
+    // Modal Equip and Keep buttons
+    document.getElementById('btnEquipRouletteKnife').addEventListener('click', () => {
+      if (rouletteWinningKnife) {
+        GAME.equippedKnife = rouletteWinningKnife.id;
+        document.getElementById('caseRouletteModal').classList.add('hidden');
+        updateDashboardUI();
+        saveLocal();
+      }
+    });
+
+    document.getElementById('btnKeepRouletteKnife').addEventListener('click', () => {
+      document.getElementById('caseRouletteModal').classList.add('hidden');
+      updateDashboardUI();
+    });
+
+    document.getElementById('btnCloseCaseRoulette').addEventListener('click', () => {
+      if (!isRouletteSpinning) {
+        document.getElementById('caseRouletteModal').classList.add('hidden');
+        updateDashboardUI();
+      }
+    });
+
+    // Toggle Girly Mode Button Handler
+    const btnGirlyMode = document.getElementById('btnGirlyMode');
+    if (btnGirlyMode) {
+      btnGirlyMode.addEventListener('click', toggleGirlyMode);
+    }
+
+    // Toggle Autoclicker Button & Speed Listeners
+    const btnToggleAutoclick = document.getElementById('btnToggleAutoclicker');
+    if (btnToggleAutoclick) {
+      btnToggleAutoclick.addEventListener('click', toggleAutoclicker);
+    }
+
+    document.querySelectorAll('.autoclick-spd-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cps = parseInt(btn.dataset.cps);
+        if (cps) {
+          GAME.autoclickerSpeed = cps;
+          updateAutoclickerUI();
+          saveLocal();
+        }
+      });
+    });
+
+    // Space & KeyA Hotkeys for Autoclicker
+    window.addEventListener('keydown', (e) => {
+      if ((e.code === 'Space' || e.code === 'KeyA') && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+        e.preventDefault();
+        toggleAutoclicker();
+      }
+    });
+
     function updateDashboardUI() {
       document.getElementById('topBiomass').textContent = formatNumber(GAME.biomass);
       document.getElementById('topSparkles').textContent = formatNumber(GAME.sparkles);
@@ -2026,6 +3062,19 @@
       document.getElementById('barClean').style.width = GAME.clean + '%';
       document.getElementById('txtHappy').textContent = Math.round(GAME.happy) + '%';
       document.getElementById('barHappy').style.width = GAME.happy + '%';
+
+      // Meaningful Pet Care Active Buffs Display
+      const buffHunger = document.getElementById('buffHungerText');
+      if (buffHunger) buffHunger.textContent = `Сытость: ${Math.round(GAME.hunger)}% (+${Math.round((GAME.hunger/100)*50)}% Клик)`;
+      const buffClean = document.getElementById('buffCleanText');
+      if (buffClean) buffClean.textContent = `Чистота: ${Math.round(GAME.clean)}% (+${Math.round((GAME.clean/100)*40)}% Заводы)`;
+      const buffHappy = document.getElementById('buffHappyText');
+      if (buffHappy) buffHappy.textContent = `Счастье: ${Math.round(GAME.happy)}% (x2 Комбо ${GAME.happy >= 70 ? '🔥' : ''})`;
+      const buffIdeal = document.getElementById('buffIdealPill');
+      if (buffIdeal) {
+        const isIdeal = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
+        buffIdeal.classList.toggle('hidden', !isIdeal);
+      }
 
       // Button validation states
       document.getElementById('btnFeed').disabled = GAME.hunger >= 90;
@@ -2065,16 +3114,21 @@
       renderTalents();
       renderEvoChronicles();
       renderAchievements();
+      renderCasesSystem();
+      updateAutoclickerUI();
+      applyGirlyModeUI();
     }
 
-    // TAB NAVIGATION
+    // TAB NAVIGATION (6 Tabs)
     document.querySelectorAll('.dash-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         const target = tab.dataset.target;
-        ['panelEvo', 'panelFactories', 'panelShop', 'panelTalents', 'panelTrophies'].forEach(id => {
-          document.getElementById(id).classList.add('hidden');
+        ['panelEvo', 'panelFactories', 'panelShop', 'panelTalents', 'panelCases', 'panelTrophies'].forEach(id => {
+          const p = document.getElementById(id);
+          if (p) p.classList.add('hidden');
         });
-        document.getElementById(target).classList.remove('hidden');
+        const activePanel = document.getElementById(target);
+        if (activePanel) activePanel.classList.remove('hidden');
 
         document.querySelectorAll('.dash-tab').forEach(t => {
           t.className = 'dash-tab py-2.5 text-center text-stone-400 hover:text-white';
@@ -2094,6 +3148,8 @@
         if (tModal) tModal.classList.add('hidden');
         const oModal = document.getElementById('offlineModal');
         if (oModal) oModal.classList.add('hidden');
+        const cModal = document.getElementById('caseRouletteModal');
+        if (cModal && !isRouletteSpinning) cModal.classList.add('hidden');
       });
     });
 
