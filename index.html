@@ -62,6 +62,45 @@
       animation: pulseGlow 1.2s infinite ease-in-out;
     }
 
+    /* BOYS GAMER MODE (DEFAULT STANDARD THEME) */
+    body.boys-mode {
+      background: radial-gradient(circle at 50% 25%, #0f172a 0%, #090d16 55%, #020617 100%) !important;
+      color: #f1f5f9 !important;
+    }
+    .boys-mode header {
+      background: linear-gradient(90deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%) !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 4px 30px rgba(56, 189, 248, 0.22) !important;
+    }
+    .boys-mode section, .boys-mode aside {
+      border-color: #0284c7 !important;
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.16) !important;
+    }
+    .boys-mode .bg-stone-800 {
+      background-color: #0c1222 !important;
+    }
+    .boys-mode .bg-stone-900 {
+      background-color: #070a14 !important;
+    }
+    .boys-mode .bg-stone-950 {
+      background-color: #03060c !important;
+    }
+    .boys-mode .border-amber-900, .boys-mode .border-amber-700 {
+      border-color: #0369a1 !important;
+    }
+    .boys-mode .text-amber-400, .boys-mode .text-yellow-300 {
+      color: #38bdf8 !important;
+    }
+    .boys-mode .text-amber-200 {
+      color: #7dd3fc !important;
+    }
+    .boys-mode .text-emerald-400 {
+      color: #22d3ee !important;
+    }
+    .boys-mode .bg-amber-700 {
+      background-color: #0284c7 !important;
+    }
+
     /* GIRLY MODE CUTE KAWAII THEME */
     body.girly-mode {
       background: radial-gradient(circle at 50% 25%, #4a0433 0%, #1a0215 55%, #0d010a 100%) !important;
@@ -163,12 +202,19 @@
 
     <!-- DATABASE STATUS & ACTIONS -->
     <div class="flex items-center gap-1.5 sm:gap-2">
-      <!-- GIRLY MODE TOGGLE -->
-      <button id="btnGirlyMode"
-        class="bg-gradient-to-r from-pink-600 via-rose-500 to-pink-600 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-pink-300 text-xs jelly-btn flex items-center gap-1 shadow-lg"
-        title="Переключить милый девичий режим">
-        <span>🎀</span> <span id="girlyModeText">Девочки</span>
-      </button>
+      <!-- 2 GAME MODES SELECTOR: BOYS (STANDARD) vs GIRLS -->
+      <div class="flex items-center bg-stone-900/90 rounded-2xl p-0.5 border border-stone-700 shadow-md">
+        <button id="btnModeBoys"
+          class="font-game text-[11px] px-2.5 py-1 rounded-xl transition flex items-center gap-1 shadow jelly-btn bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white border border-cyan-400 font-bold"
+          title="Режим для мальчиков (Стандартный геймерский режим)">
+          <span>🎮</span> <span class="hidden sm:inline">Мальчики</span>
+        </button>
+        <button id="btnModeGirls"
+          class="font-game text-[11px] px-2.5 py-1 rounded-xl transition flex items-center gap-1 text-stone-400 hover:text-pink-300 jelly-btn"
+          title="Режим для девочек (Кавайный милый стиль)">
+          <span>🎀</span> <span class="hidden sm:inline">Девочки</span>
+        </button>
+      </div>
 
       <div id="cloudIndicator"
         class="hidden sm:flex items-center gap-1 text-[11px] bg-stone-800 px-2 py-1 rounded-lg border border-stone-600 font-bold text-stone-300">
@@ -534,7 +580,7 @@
       <div class="bg-purple-900/60 border border-yellow-400/60 rounded-2xl p-3 my-4 text-left text-xs space-y-1.5">
         <div class="flex justify-between">
           <span class="text-stone-300">Условие доступа:</span>
-          <span class="font-bold text-yellow-300">Форма 15 или 500,000 💨</span>
+          <span class="font-bold text-yellow-300">Форма 15 или 300,000 💨</span>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Награда за этот смыв:</span>
@@ -563,7 +609,7 @@
       <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex justify-between">
           <span class="text-stone-300">Условие доступа:</span>
-          <span class="font-bold text-cyan-300">Форма 100+ и 500+ 🧻</span>
+          <span class="font-bold text-cyan-300">Форма 100+ или 300+ 🧻</span>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Запас Втулок Судьбы:</span>
@@ -614,6 +660,8 @@
         ЗАБРАТЬ ДОБЫЧУ! 🚀
       </button>
     </div>
+  </div>
+
   <!-- CS:GO CASE ROULETTE MODAL -->
   <div id="caseRouletteModal"
     class="fixed inset-0 bg-black/92 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
@@ -763,6 +811,7 @@
       autoClickerActive: false,
       autoclickerActive: false,
       autoclickerSpeed: 1000, // target clicks per second (1ms = 1000 cps)
+      gameMode: 'boys', // Standard default mode
       girlyMode: false,
       equippedKnife: null,
       unlockedKnives: [],
@@ -1268,6 +1317,7 @@
             GAME[k] = data.game[k];
           }
         }
+        if (!GAME.gameMode) GAME.gameMode = GAME.girlyMode ? 'girls' : 'boys';
       }
       if (typeof data.feedCount === 'number') feedCount = data.feedCount;
       if (typeof data.washCount === 'number') washCount = data.washCount;
@@ -2439,13 +2489,19 @@
       }
     });
 
-    // PRESTIGE: Requires Stage >= 14 OR cycleBiomass >= 500,000
+    // PRESTIGE: Requires Stage >= 14 OR cycleBiomass >= 300,000
     function getPrestigeRollsReward() {
-      if (GAME.evoStage < 14 && GAME.cycleBiomass < 500000) return 0;
-      let baseRolls = Math.max(1, Math.floor(Math.pow(GAME.cycleBiomass / 100000, 0.48)));
+      if (GAME.evoStage < 14 && GAME.cycleBiomass < 300000) return 0;
+      // 1. Progressive Biomass Curve (scales smoothly with 1ms autoclicker)
+      const bioComponent = Math.floor(Math.pow(Math.max(1, GAME.cycleBiomass) / 45000, 0.50));
+      // 2. Stage Milestone Reward (rewards pushing deep into 10,000 forms!)
+      const stageBonus = Math.floor(Math.pow(Math.max(0, GAME.evoStage - 8), 1.45) * 1.6);
+
+      let baseRolls = Math.max(1, bioComponent + stageBonus);
+
       const infFlush = TALENTS.find(t => t.id === 'infinity_flush');
       if (infFlush && infFlush.level > 0) {
-        baseRolls = Math.round(baseRolls * (1 + infFlush.level * 0.10));
+        baseRolls = Math.round(baseRolls * (1 + infFlush.level * 0.15));
       }
       return baseRolls;
     }
@@ -2482,13 +2538,15 @@
       syncToNetlifyBlobs();
     });
 
-    // ASTRAL TRANSCENDENCE: Requires Stage >= 99 (Form 100) AND prestigeRolls >= 500
+    // ASTRAL TRANSCENDENCE: Requires Stage >= 99 (Form 100) OR prestigeRolls >= 300
     function getTranscendPlungersReward() {
-      if (GAME.evoStage < 99 && GAME.prestigeRolls < 500) return 0;
-      let base = Math.max(1, Math.floor(Math.pow(GAME.prestigeRolls / 300, 0.55)));
+      if (GAME.evoStage < 99 && (GAME.prestigeRolls || 0) < 300) return 0;
+      const rollsComp = Math.floor(Math.pow(Math.max(1, GAME.prestigeRolls || 0) / 100, 0.60));
+      const stageComp = Math.floor(Math.pow(Math.max(0, GAME.evoStage - 85), 1.2) * 0.08);
+      let base = Math.max(1, rollsComp + stageComp);
       const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');
       if (soulTalent && soulTalent.level > 0) {
-        base = Math.round(base * (1 + soulTalent.level * 0.20));
+        base = Math.round(base * (1 + soulTalent.level * 0.25));
       }
       return base;
     }
@@ -2508,7 +2566,8 @@
 
       GAME.transcendPlungers = (GAME.transcendPlungers || 0) + gain;
       GAME.totalTranscend = (GAME.totalTranscend || 0) + 1;
-      GAME.prestigeRolls = 0;
+      // Preserve 25% of rolls so player is never stalled after transcend
+      GAME.prestigeRolls = Math.floor((GAME.prestigeRolls || 0) * 0.25);
       GAME.cycleBiomass = 0;
       GAME.biomass = 0;
       GAME.evoStage = 0;
@@ -2948,28 +3007,38 @@
       saveLocal();
     }
 
-    function applyGirlyModeUI() {
-      const btn = document.getElementById('btnGirlyMode');
-      if (GAME.girlyMode) {
-        document.body.classList.add('girly-mode');
-        if (btn) {
-          btn.innerHTML = '<span>💖</span> <span>Девочки: ВКЛ</span>';
-          btn.className = 'font-game text-xs px-2.5 py-1 rounded-xl border flex items-center gap-1 transition shadow jelly-btn bg-pink-500 hover:bg-pink-400 text-white border-pink-300 shadow-[0_0_10px_#f472b6]';
-        }
-      } else {
-        document.body.classList.remove('girly-mode');
-        if (btn) {
-          btn.innerHTML = '<span>🎀</span> <span>Девочки</span>';
-          btn.className = 'font-game text-xs px-2.5 py-1 rounded-xl border flex items-center gap-1 transition shadow jelly-btn bg-pink-900/60 hover:bg-pink-800 text-pink-200 border-pink-500/50';
-        }
-      }
-    }
-
-    function toggleGirlyMode() {
-      GAME.girlyMode = !GAME.girlyMode;
-      applyGirlyModeUI();
+    function setGameMode(mode) {
+      GAME.gameMode = mode;
+      GAME.girlyMode = (mode === 'girls');
+      applyGameModeUI();
       updateDashboardUI();
       saveLocal();
+    }
+
+    function applyGameModeUI() {
+      const btnBoys = document.getElementById('btnModeBoys');
+      const btnGirls = document.getElementById('btnModeGirls');
+
+      if (GAME.girlyMode || GAME.gameMode === 'girls') {
+        document.body.classList.remove('boys-mode');
+        document.body.classList.add('girly-mode');
+        if (btnBoys) {
+          btnBoys.className = 'font-game text-[11px] px-2.5 py-1 rounded-xl transition flex items-center gap-1 text-stone-400 hover:text-white jelly-btn';
+        }
+        if (btnGirls) {
+          btnGirls.className = 'font-game text-[11px] px-2.5 py-1 rounded-xl transition flex items-center gap-1 shadow jelly-btn bg-gradient-to-r from-pink-600 via-rose-500 to-pink-600 text-white border border-pink-300 font-bold shadow-[0_0_12px_rgba(244,114,182,0.5)]';
+        }
+      } else {
+        // STANDARD DEFAULT: BOYS GAMER MODE
+        document.body.classList.remove('girly-mode');
+        document.body.classList.add('boys-mode');
+        if (btnBoys) {
+          btnBoys.className = 'font-game text-[11px] px-2.5 py-1 rounded-xl transition flex items-center gap-1 shadow jelly-btn bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white border border-cyan-400 font-bold shadow-[0_0_12px_rgba(56,189,248,0.5)]';
+        }
+        if (btnGirls) {
+          btnGirls.className = 'font-game text-[11px] px-2.5 py-1 rounded-xl transition flex items-center gap-1 text-stone-400 hover:text-pink-300 jelly-btn';
+        }
+      }
     }
 
     // =========================================================================
@@ -3082,8 +3151,8 @@
                   <button class="equip-knife-btn flex-1 py-1 rounded-lg text-[10px] font-bold ${isEquipped ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-500 text-white jelly-btn'}" data-id="${kn.id}">
                     ${isEquipped ? '✓ НАДЕТ' : 'НАДЕТЬ'}
                   </button>
-                  <button class="sell-knife-btn bg-stone-800 hover:bg-stone-700 text-stone-300 px-2 py-1 rounded-lg text-[10px] border border-stone-700" data-id="${kn.id}" title="Продать за 3 Втулки">
-                    +3 🧻
+                  <button class="sell-knife-btn bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold px-2 py-1 rounded-lg text-[10px] border border-stone-700" data-id="${kn.id}" data-price="${kn.rarity === 'special' ? 60 : (kn.rarity === 'covert' ? 25 : (kn.rarity === 'classified' ? 12 : (kn.rarity === 'restricted' ? 5 : 2)))}" title="Утилизировать за Втулки">
+                    +${kn.rarity === 'special' ? 60 : (kn.rarity === 'covert' ? 25 : (kn.rarity === 'classified' ? 12 : (kn.rarity === 'restricted' ? 5 : 2)))} 🧻
                   </button>
                 </div>
               </div>
@@ -3101,12 +3170,14 @@
           invContainer.querySelectorAll('.sell-knife-btn').forEach(btn => {
             btn.addEventListener('click', () => {
               const kid = btn.dataset.id;
-              if (confirm('Продать этот нож за +3 Золотые Втулки (🧻)?')) {
+              const kn = KNIVES.find(k => k.id === kid);
+              const price = parseInt(btn.dataset.price) || 2;
+              if (confirm(`Утилизировать нож "${kn ? kn.name : kid}" и получить +${price} 🧻 Втулок Судьбы?`)) {
                 const idx = GAME.unlockedKnives.indexOf(kid);
                 if (idx !== -1) {
                   GAME.unlockedKnives.splice(idx, 1);
                   if (GAME.equippedKnife === kid) GAME.equippedKnife = null;
-                  GAME.prestigeRolls += 3;
+                  GAME.prestigeRolls += price;
                   updateDashboardUI();
                   saveLocal();
                 }
@@ -3542,10 +3613,14 @@
       });
     }
 
-    // Toggle Girly Mode Button Handler
-    const btnGirlyMode = document.getElementById('btnGirlyMode');
-    if (btnGirlyMode) {
-      btnGirlyMode.addEventListener('click', toggleGirlyMode);
+    // 2 Game Modes Listeners: Boys (Standard) vs Girls
+    const btnModeBoys = document.getElementById('btnModeBoys');
+    if (btnModeBoys) {
+      btnModeBoys.addEventListener('click', () => setGameMode('boys'));
+    }
+    const btnModeGirls = document.getElementById('btnModeGirls');
+    if (btnModeGirls) {
+      btnModeGirls.addEventListener('click', () => setGameMode('girls'));
     }
 
     // Toggle Autoclicker Button & Speed Listeners
@@ -3640,7 +3715,7 @@
       renderAchievements();
       renderCasesSystem();
       updateAutoclickerUI();
-      applyGirlyModeUI();
+      applyGameModeUI();
     }
 
     // TAB NAVIGATION (6 Tabs)
