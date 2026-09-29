@@ -1117,6 +1117,7 @@
        ========================================================================= */
     const STORAGE_KEY = 'PoopSimulator_GodTier_Save';
     const BACKUP_KEY = 'PoopSimulator_Backup_Save';
+    let isWipingData = false;
 
     function formatNumber(num) {
       if (num === null || num === undefined || isNaN(num)) return '0';
@@ -4311,6 +4312,7 @@
 
     // Purely synchronous instant local storage (0ms delay, never rolled back)
     function saveLocal() {
+      if (isWipingData) return;
       try {
         if (!isFinite(GAME.biomass) || GAME.biomass < 0 || GAME.biomass > 1e160) GAME.biomass = 0;
         if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e160) GAME.cycleBiomass = 0;
@@ -4326,6 +4328,7 @@
 
     // Debounced cloud synchronization (saves without spamming network)
     function requestCloudSync(delayMs = 2500) {
+      if (isWipingData) return;
       if (cloudSyncDebounceTimer) clearTimeout(cloudSyncDebounceTimer);
       cloudSyncDebounceTimer = setTimeout(() => {
         syncToCloudDatabase();
@@ -4333,6 +4336,7 @@
     }
 
     async function syncToCloudDatabase() {
+      if (isWipingData) return;
       saveLocal(); // Always guarantee local storage is refreshed first
 
       const statusIndicator = document.getElementById('cloudStatusText');
@@ -7881,19 +7885,61 @@
     }
 
     document.getElementById('btnResetData').addEventListener('click', async () => {
-      if (confirm('ВНИМАНИЕ! Это полностью сотрет весь прогресс и перерождения как на устройстве, так и на сервере. Продолжить?')) {
+      if (confirm('ВНИМАНИЕ! Это полностью сотрет весь прогресс, сохранение и перерождения как на устройстве, так и на сервере. Продолжить?')) {
+        isWipingData = true;
+        window.removeEventListener('beforeunload', onPageLeave);
+        window.removeEventListener('pagehide', onPageLeave);
+
         try {
           if (PLAYER_ID) {
-            await fetch(`/api/cloud-save?action=wipe&playerId=${encodeURIComponent(PLAYER_ID)}`, { method: 'POST' });
+            await fetch(`/api/cloud-save?action=wipe&playerId=${encodeURIComponent(PLAYER_ID)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ playerId: PLAYER_ID })
+            });
           }
         } catch (e) {}
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(BACKUP_KEY);
-        localStorage.removeItem('PoopSim_PlayerId');
-        localStorage.removeItem('PoopSim_PlayerName');
-        location.reload();
+
+        localStorage.clear();
+        sessionStorage.clear();
+        location.href = location.pathname;
       }
     });
+
+    window.wipeMySave = async function () {
+      isWipingData = true;
+      window.removeEventListener('beforeunload', onPageLeave);
+      window.removeEventListener('pagehide', onPageLeave);
+      try {
+        if (PLAYER_ID) {
+          await fetch(`/api/cloud-save?action=wipe&playerId=${encodeURIComponent(PLAYER_ID)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ playerId: PLAYER_ID })
+          });
+        }
+      } catch (e) {}
+      localStorage.clear();
+      sessionStorage.clear();
+      location.href = location.pathname;
+    };
+
+    window.wipeAllPlayers = async function (key = 'poop2026_reset') {
+      if (!confirm('ВНИМАНИЕ! Стереть базу данных ВСЕХ игроков на сервере D1 и сбросить таблицу лидеров?')) return;
+      isWipingData = true;
+      window.removeEventListener('beforeunload', onPageLeave);
+      window.removeEventListener('pagehide', onPageLeave);
+      try {
+        const res = await fetch(`/api/cloud-save?action=wipe_all&key=${encodeURIComponent(key)}`);
+        const data = await res.json();
+        alert('Результат сервера: ' + JSON.stringify(data));
+      } catch (e) {
+        alert('Ошибка связи с сервером: ' + e);
+      }
+      localStorage.clear();
+      sessionStorage.clear();
+      location.href = location.pathname;
+    };
 
     document.getElementById('logoSecretClick').addEventListener('click', () => {
       const ach = ACHIEVEMENTS.find(a => a.id === 'ach_secret');
@@ -8045,6 +8091,7 @@
 
     // GUARANTEED INSTANT SAVE ON PAGE RELOAD / TAB CLOSE / MINIMIZE
     function onPageLeave() {
+      if (isWipingData) return;
       saveLocal();
       try {
         const payload = buildSavePayload();
@@ -8058,7 +8105,7 @@
     window.addEventListener('beforeunload', onPageLeave);
     window.addEventListener('pagehide', onPageLeave);
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') onPageLeave();
+      if (document.visibilityState === 'hidden' && !isWipingData) onPageLeave();
     });
 
     window.onload = async function () {
