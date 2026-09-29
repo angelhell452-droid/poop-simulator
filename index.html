@@ -44,9 +44,17 @@
     }
 
     @keyframes cosmicAura {
-      0% { transform: rotate(0deg) scale(1); }
-      50% { transform: rotate(180deg) scale(1.08); }
-      100% { transform: rotate(360deg) scale(1); }
+      0% {
+        transform: rotate(0deg) scale(1);
+      }
+
+      50% {
+        transform: rotate(180deg) scale(1.08);
+      }
+
+      100% {
+        transform: rotate(360deg) scale(1);
+      }
     }
 
     .animate-spin-slow {
@@ -54,8 +62,15 @@
     }
 
     @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 10px rgba(34, 197, 94, 0.6); }
-      50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.95); }
+
+      0%,
+      100% {
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+      }
+
+      50% {
+        box-shadow: 0 0 25px rgba(34, 197, 94, 0.95);
+      }
     }
 
     .autoclick-active-glow {
@@ -67,36 +82,49 @@
       background: radial-gradient(circle at 50% 25%, #0f172a 0%, #090d16 55%, #020617 100%) !important;
       color: #f1f5f9 !important;
     }
+
     .boys-mode header {
       background: linear-gradient(90deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%) !important;
       border-color: #38bdf8 !important;
       box-shadow: 0 4px 30px rgba(56, 189, 248, 0.22) !important;
     }
-    .boys-mode section, .boys-mode aside {
+
+    .boys-mode section,
+    .boys-mode aside {
       border-color: #0284c7 !important;
       box-shadow: 0 0 30px rgba(14, 165, 233, 0.16) !important;
     }
+
     .boys-mode .bg-stone-800 {
       background-color: #0c1222 !important;
     }
+
     .boys-mode .bg-stone-900 {
       background-color: #070a14 !important;
     }
+
     .boys-mode .bg-stone-950 {
       background-color: #03060c !important;
     }
-    .boys-mode .border-amber-900, .boys-mode .border-amber-700 {
+
+    .boys-mode .border-amber-900,
+    .boys-mode .border-amber-700 {
       border-color: #0369a1 !important;
     }
-    .boys-mode .text-amber-400, .boys-mode .text-yellow-300 {
+
+    .boys-mode .text-amber-400,
+    .boys-mode .text-yellow-300 {
       color: #38bdf8 !important;
     }
+
     .boys-mode .text-amber-200 {
       color: #7dd3fc !important;
     }
+
     .boys-mode .text-emerald-400 {
       color: #22d3ee !important;
     }
+
     .boys-mode .bg-amber-700 {
       background-color: #0284c7 !important;
     }
@@ -106,46 +134,79 @@
       background: radial-gradient(circle at 50% 25%, #4a0433 0%, #1a0215 55%, #0d010a 100%) !important;
       color: #fdf2f8 !important;
     }
+
     .girly-mode header {
       background: linear-gradient(90deg, #831843 0%, #9d174d 50%, #be185d 100%) !important;
       border-color: #f472b6 !important;
       box-shadow: 0 4px 30px rgba(236, 72, 153, 0.35) !important;
     }
-    .girly-mode section, .girly-mode aside {
+
+    .girly-mode section,
+    .girly-mode aside {
       border-color: #f472b6 !important;
       box-shadow: 0 0 30px rgba(244, 114, 182, 0.22) !important;
     }
+
     .girly-mode .bg-stone-800 {
       background-color: #2b0422 !important;
     }
+
     .girly-mode .bg-stone-900 {
       background-color: #20031a !important;
     }
+
     .girly-mode .bg-stone-950 {
       background-color: #140110 !important;
     }
-    .girly-mode .border-amber-900, .girly-mode .border-amber-700 {
+
+    .girly-mode .border-amber-900,
+    .girly-mode .border-amber-700 {
       border-color: #db2777 !important;
     }
-    .girly-mode .text-amber-400, .girly-mode .text-yellow-300 {
+
+    .girly-mode .text-amber-400,
+    .girly-mode .text-yellow-300 {
       color: #fbcfe8 !important;
     }
+
     .girly-mode .text-amber-200 {
       color: #f9a8d4 !important;
     }
+
     .girly-mode .text-emerald-400 {
       color: #f472b6 !important;
     }
+
     .girly-mode .bg-amber-700 {
       background-color: #ec4899 !important;
     }
 
     /* CS:GO RARITY COLOR STYLES */
-    .rarity-mil-spec { border-color: #4b69ff !important; background: linear-gradient(135deg, rgba(75,105,255,0.15), rgba(15,23,42,0.95)); }
-    .rarity-restricted { border-color: #8847ff !important; background: linear-gradient(135deg, rgba(136,71,255,0.18), rgba(15,23,42,0.95)); }
-    .rarity-classified { border-color: #d32ce6 !important; background: linear-gradient(135deg, rgba(211,44,230,0.22), rgba(15,23,42,0.95)); }
-    .rarity-covert { border-color: #eb4b4b !important; background: linear-gradient(135deg, rgba(235,75,75,0.25), rgba(15,23,42,0.95)); }
-    .rarity-special { border-color: #ffd700 !important; background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(24,18,3,0.98)); box-shadow: 0 0 16px rgba(255,215,0,0.4); }
+    .rarity-mil-spec {
+      border-color: #4b69ff !important;
+      background: linear-gradient(135deg, rgba(75, 105, 255, 0.15), rgba(15, 23, 42, 0.95));
+    }
+
+    .rarity-restricted {
+      border-color: #8847ff !important;
+      background: linear-gradient(135deg, rgba(136, 71, 255, 0.18), rgba(15, 23, 42, 0.95));
+    }
+
+    .rarity-classified {
+      border-color: #d32ce6 !important;
+      background: linear-gradient(135deg, rgba(211, 44, 230, 0.22), rgba(15, 23, 42, 0.95));
+    }
+
+    .rarity-covert {
+      border-color: #eb4b4b !important;
+      background: linear-gradient(135deg, rgba(235, 75, 75, 0.25), rgba(15, 23, 42, 0.95));
+    }
+
+    .rarity-special {
+      border-color: #ffd700 !important;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(24, 18, 3, 0.98));
+      box-shadow: 0 0 16px rgba(255, 215, 0, 0.4);
+    }
   </style>
 </head>
 
@@ -160,7 +221,8 @@
         <div class="flex items-center gap-2">
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
-            class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40" id="versionTag">v3.0 CS:GO & KAWAII</span>
+            class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40"
+            id="versionTag">v3.0 CS:GO & KAWAII</span>
         </div>
         <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
       </div>
@@ -273,21 +335,28 @@
       </div>
 
       <!-- COMBO HEAT & TURBO FRENZY BAR -->
-      <div class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between gap-2 z-10">
+      <div
+        class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between gap-2 z-10">
         <div class="flex items-center gap-1.5 shrink-0 text-[10px] font-bold text-amber-400">
           <span id="comboFlameIcon" class="text-xs">⚡</span>
           <span id="comboLabel">ЯРОСТЬ КЛИКОВ: 0%</span>
         </div>
         <div class="flex-1 bg-stone-800 h-2.5 rounded-full overflow-hidden relative border border-stone-700/80">
-          <div id="comboBar" class="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 transition-all duration-100" style="width: 0%"></div>
+          <div id="comboBar"
+            class="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 transition-all duration-100"
+            style="width: 0%"></div>
         </div>
-        <span id="turboRushTimer" class="text-[10px] font-game text-yellow-300 hidden bg-red-950/80 px-2 py-0.5 rounded border border-red-500 animate-pulse">🔥 ТУРБО x10!</span>
+        <span id="turboRushTimer"
+          class="text-[10px] font-game text-yellow-300 hidden bg-red-950/80 px-2 py-0.5 rounded border border-red-500 animate-pulse">🔥
+          ТУРБО x10!</span>
       </div>
 
       <!-- BUILT-IN AUTOCLICKER CONTROL DECK (1 ms Overdrive) -->
-      <div class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex flex-wrap items-center justify-between gap-2 z-10 text-xs">
+      <div
+        class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex flex-wrap items-center justify-between gap-2 z-10 text-xs">
         <div class="flex items-center gap-2">
-          <button id="btnToggleAutoclicker" class="font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 border-stone-600 text-stone-300">
+          <button id="btnToggleAutoclicker"
+            class="font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 border-stone-600 text-stone-300">
             <span id="autoclickLed" class="w-2.5 h-2.5 rounded-full bg-stone-500"></span>
             <span id="autoclickLabel">АВТОКЛИКЕР: ВЫКЛ</span>
           </button>
@@ -295,10 +364,15 @@
         </div>
         <div class="flex items-center gap-1 text-[10px] flex-wrap">
           <span class="text-stone-400 font-bold mr-1">Интервал:</span>
-          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700" data-cps="10">100мс</button>
-          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700" data-cps="50">20мс</button>
-          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700" data-cps="200">5мс</button>
-          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-amber-600 text-white font-bold border border-yellow-400" data-cps="1000">1мс ⚡</button>
+          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
+            data-cps="10">100мс</button>
+          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
+            data-cps="50">20мс</button>
+          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
+            data-cps="200">5мс</button>
+          <button
+            class="autoclick-spd-btn px-2 py-0.5 rounded bg-amber-600 text-white font-bold border border-yellow-400"
+            data-cps="1000">1мс ⚡</button>
         </div>
       </div>
 
@@ -322,41 +396,55 @@
       </div>
 
       <!-- ACTIVE PET CARE BUFFS BANNER (Meaningful pet care!) -->
-      <div id="petBuffsBanner" class="px-3 py-1.5 bg-stone-950/90 border-t border-amber-900/40 flex items-center justify-between gap-1 text-[10px] flex-wrap z-10">
-        <div id="buffHungerPill" class="flex items-center gap-1 px-2 py-0.5 rounded bg-orange-950/80 border border-orange-600/50 text-orange-200">
+      <div id="petBuffsBanner"
+        class="px-3 py-1.5 bg-stone-950/90 border-t border-amber-900/40 flex items-center justify-between gap-1 text-[10px] flex-wrap z-10">
+        <div id="buffHungerPill"
+          class="flex items-center gap-1 px-2 py-0.5 rounded bg-orange-950/80 border border-orange-600/50 text-orange-200">
           <span>🍗</span> <span id="buffHungerText">Сытость: 100% (+50% Клик)</span>
         </div>
-        <div id="buffCleanPill" class="flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-600/50 text-cyan-200">
+        <div id="buffCleanPill"
+          class="flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-600/50 text-cyan-200">
           <span>✨</span> <span id="buffCleanText">Чистота: 100% (+40% Заводы)</span>
         </div>
-        <div id="buffHappyPill" class="flex items-center gap-1 px-2 py-0.5 rounded bg-pink-950/80 border border-pink-600/50 text-pink-200">
+        <div id="buffHappyPill"
+          class="flex items-center gap-1 px-2 py-0.5 rounded bg-pink-950/80 border border-pink-600/50 text-pink-200">
           <span>💖</span> <span id="buffHappyText">Экстаз: x2 Комбо</span>
         </div>
-        <div id="buffIdealPill" class="hidden flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500/20 border border-yellow-400 text-yellow-300 font-bold animate-pulse">
+        <div id="buffIdealPill"
+          class="hidden flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500/20 border border-yellow-400 text-yellow-300 font-bold animate-pulse">
           <span>👑</span> <span>ИДЕАЛ x2 ВСЁ!</span>
         </div>
       </div>
 
       <!-- AUTO-CARE DECK (Авто-Кормление, Авто-Мытье, Авто-Щекотка) -->
-      <div class="px-3 py-1.5 bg-stone-950/95 border-t border-amber-900/60 flex items-center justify-between gap-1 flex-wrap z-10 text-[11px]">
+      <div
+        class="px-3 py-1.5 bg-stone-950/95 border-t border-amber-900/60 flex items-center justify-between gap-1 flex-wrap z-10 text-[11px]">
         <div class="flex items-center gap-1.5 font-bold text-amber-300">
           <span class="text-sm">🤖</span>
           <span class="text-[10px] uppercase font-bold text-stone-300">Авто-Уход:</span>
         </div>
         <div class="flex items-center gap-1.5 flex-wrap">
-          <button id="btnAutoFeed" class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700" title="Автоматически кормить при голоде < 75%">
+          <button id="btnAutoFeed"
+            class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
+            title="Автоматически кормить при голоде < 75%">
             <span id="autoFeedLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
             <span>🍔 Авто-Еда</span>
           </button>
-          <button id="btnAutoWash" class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700" title="Автоматически мыть и полировать при чистоте < 75%">
+          <button id="btnAutoWash"
+            class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
+            title="Автоматически мыть и полировать при чистоте < 75%">
             <span id="autoWashLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
             <span>🧼 Авто-Мытье</span>
           </button>
-          <button id="btnAutoTickle" class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700" title="Автоматически щекотать для комбо и счастья">
+          <button id="btnAutoTickle"
+            class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
+            title="Автоматически щекотать для комбо и счастья">
             <span id="autoTickleLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
             <span>🪶 Авто-Щекотка</span>
           </button>
-          <button id="btnAutoCareAll" class="px-2.5 py-1 rounded-xl border text-[10px] font-game bg-amber-900/60 hover:bg-amber-800 text-amber-200 border-amber-600 transition shadow jelly-btn" title="Переключить все авто-действия">
+          <button id="btnAutoCareAll"
+            class="px-2.5 py-1 rounded-xl border text-[10px] font-game bg-amber-900/60 hover:bg-amber-800 text-amber-200 border-amber-600 transition shadow jelly-btn"
+            title="Переключить все авто-действия">
             ⚡ Все ВКЛ
           </button>
         </div>
@@ -391,24 +479,38 @@
       <!-- Nav Tabs (6 Tabs) -->
       <div class="grid grid-cols-6 bg-stone-950 border-b border-amber-900/80 text-[10px] sm:text-[11px] font-black">
         <button class="dash-tab py-2.5 text-center bg-amber-700 text-white" data-target="panelEvo">🧬 Формы</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelFactories">🏭 Заводы</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelCases">🔪 Кейсы</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelShop">💎 Бутик</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTalents">🌟 Таланты</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTrophies">🏆 Подвиги</button>
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelFactories">🏭
+          Заводы</button>
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelCases">🔪
+          Кейсы</button>
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelShop">💎
+          Бутик</button>
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTalents">🌟
+          Таланты</button>
+        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTrophies">🏆
+          Подвиги</button>
       </div>
 
       <!-- Universal Multiplier Toolbar (x1 / x10 / x100 / xMAX) -->
-      <div id="buyMultiplierBar" class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between text-xs">
+      <div id="buyMultiplierBar"
+        class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between text-xs">
         <div class="flex items-center gap-1.5">
           <span class="text-amber-400 font-bold">🛒</span>
           <span class="text-[10px] uppercase font-bold text-stone-300">Режим покупки:</span>
         </div>
         <div class="flex items-center gap-1">
-          <button class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-amber-600 text-white font-bold border border-yellow-400 shadow jelly-btn" data-mult="1">x1</button>
-          <button class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn" data-mult="10">x10</button>
-          <button class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn" data-mult="100">x100</button>
-          <button class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn" data-mult="max">xМАКС</button>
+          <button
+            class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-amber-600 text-white font-bold border border-yellow-400 shadow jelly-btn"
+            data-mult="1">x1</button>
+          <button
+            class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn"
+            data-mult="10">x10</button>
+          <button
+            class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn"
+            data-mult="100">x100</button>
+          <button
+            class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn"
+            data-mult="max">xМАКС</button>
         </div>
       </div>
 
@@ -449,7 +551,8 @@
 
         <!-- 3. CS:GO KNIFE CASES & WEAPON LOADOUT -->
         <div id="panelCases" class="hidden space-y-3">
-          <div class="bg-gradient-to-r from-yellow-950/80 via-amber-900/80 to-stone-900 p-3 rounded-2xl border border-yellow-500/50 shadow">
+          <div
+            class="bg-gradient-to-r from-yellow-950/80 via-amber-900/80 to-stone-900 p-3 rounded-2xl border border-yellow-500/50 shadow">
             <div class="flex justify-between items-center">
               <span class="font-game text-yellow-300 text-sm">📦 Оружейные Кейсы CS:GO</span>
               <div class="flex items-center gap-2 text-xs">
@@ -457,20 +560,24 @@
                 <span class="text-cyan-300 font-game" id="casesPlungersLabel">0 🪠</span>
               </div>
             </div>
-            <p class="text-[10px] text-stone-300 mt-1">Открывайте кейсы за валюту перерождений (Втулки и Вантузы)! Выбитые ножи отображаются в руке какашечки и дают сокрушительные множители силы.</p>
+            <p class="text-[10px] text-stone-300 mt-1">Открывайте кейсы за валюту перерождений (Втулки и Вантузы)!
+              Выбитые ножи отображаются в руке какашечки и дают сокрушительные множители силы.</p>
           </div>
 
           <!-- Active Knife Display -->
-          <div id="equippedKnifeCard" class="p-3 rounded-2xl border-2 border-stone-700 bg-stone-950 flex items-center justify-between">
+          <div id="equippedKnifeCard"
+            class="p-3 rounded-2xl border-2 border-stone-700 bg-stone-950 flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="text-3xl p-2 rounded-xl bg-stone-900 border border-stone-800" id="equippedKnifeIcon">✊</div>
               <div>
                 <div class="text-[10px] text-stone-400 uppercase font-bold">Экипированный Нож:</div>
                 <div class="font-game text-sm text-stone-200" id="equippedKnifeName">Голые руки (Без ножа)</div>
-                <div class="text-[10px] text-emerald-400 font-semibold" id="equippedKnifeStats">Бонус: Стандартный урон</div>
+                <div class="text-[10px] text-emerald-400 font-semibold" id="equippedKnifeStats">Бонус: Стандартный урон
+                </div>
               </div>
             </div>
-            <button id="btnUnequipKnife" class="hidden text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-stone-300 px-2.5 py-1.5 rounded-xl border border-stone-600 jelly-btn">
+            <button id="btnUnequipKnife"
+              class="hidden text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-stone-300 px-2.5 py-1.5 rounded-xl border border-stone-600 jelly-btn">
               Снять
             </button>
           </div>
@@ -532,7 +639,8 @@
         class="p-2.5 bg-stone-950 border-t border-amber-900/60 text-[10px] text-stone-400 flex justify-between items-center">
         <div>
           <span>Доход: <b class="text-emerald-400" id="footPassiveRate">+0 /сек</b></span> |
-          <span>Клик: <b class="text-amber-300" id="footClickPower">1</b> <span id="footCpsRate" class="text-yellow-400 font-bold ml-1 hidden"></span></span>
+          <span>Клик: <b class="text-amber-300" id="footClickPower">1</b> <span id="footCpsRate"
+              class="text-yellow-400 font-bold ml-1 hidden"></span></span>
         </div>
         <button id="btnExportSave" class="text-stone-400 hover:text-white underline">Резервная копия</button>
       </div>
@@ -643,7 +751,8 @@
         class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
       <div class="text-5xl my-1 animate-pulse">🪠</div>
       <h3 class="font-game text-2xl text-cyan-300">АСТРАЛЬНЫЙ ПРОРЫВ</h3>
-      <p class="text-xs text-indigo-200 mt-1">Трансцендентное перерождение 2-го уровня! Получите священные <b>Астральные Вантузы</b> за накопленные Втулки Судьбы.</p>
+      <p class="text-xs text-indigo-200 mt-1">Трансцендентное перерождение 2-го уровня! Получите священные <b>Астральные
+          Вантузы</b> за накопленные Втулки Судьбы.</p>
 
       <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex justify-between">
@@ -706,24 +815,28 @@
     class="fixed inset-0 bg-black/92 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div
       class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-amber-600 max-w-2xl w-full p-4 sm:p-6 text-center shadow-[0_0_50px_rgba(245,158,11,0.25)] relative overflow-hidden">
-      
+
       <!-- Golden Flash Overlay on Jackpot Drop -->
-      <div id="rouletteFlashOverlay" class="absolute inset-0 bg-yellow-300 pointer-events-none opacity-0 z-50 transition-opacity duration-300"></div>
+      <div id="rouletteFlashOverlay"
+        class="absolute inset-0 bg-yellow-300 pointer-events-none opacity-0 z-50 transition-opacity duration-300"></div>
 
       <!-- Confetti Fireworks Overlay -->
       <canvas id="rouletteConfettiCanvas" class="absolute inset-0 pointer-events-none z-40 w-full h-full"></canvas>
 
       <!-- Audio Mute/Unmute Toggle & Close Button -->
       <div class="flex items-center justify-between mb-2">
-        <button id="btnToggleRouletteAudio" class="bg-stone-800/90 hover:bg-stone-700 text-yellow-400 font-game text-[11px] px-3 py-1 rounded-xl border border-stone-600 flex items-center gap-1.5 transition">
+        <button id="btnToggleRouletteAudio"
+          class="bg-stone-800/90 hover:bg-stone-700 text-yellow-400 font-game text-[11px] px-3 py-1 rounded-xl border border-stone-600 flex items-center gap-1.5 transition">
           <span id="rouletteAudioIcon">🔊</span> <span id="rouletteAudioText">ЗВУК CS:GO: ВКЛ</span>
         </button>
         <button id="btnCloseCaseRoulette"
           class="modal-close text-stone-400 hover:text-white text-2xl font-bold p-1 leading-none">&times;</button>
       </div>
 
-      <div class="text-[11px] font-bold text-amber-400 uppercase tracking-widest" id="rouletteCaseSubtitle">ОТКРЫТИЕ КОНТЕЙНЕРА CS:GO</div>
-      <h3 class="font-game text-2xl sm:text-3xl text-yellow-300 tracking-wide mt-0.5" id="rouletteCaseTitle">Weapon Case</h3>
+      <div class="text-[11px] font-bold text-amber-400 uppercase tracking-widest" id="rouletteCaseSubtitle">ОТКРЫТИЕ
+        КОНТЕЙНЕРА CS:GO</div>
+      <h3 class="font-game text-2xl sm:text-3xl text-yellow-300 tracking-wide mt-0.5" id="rouletteCaseTitle">Weapon Case
+      </h3>
 
       <!-- Key Unlocking Transition Screen -->
       <div id="rouletteUnlockScreen" class="hidden py-10 flex flex-col items-center justify-center animate-pulse">
@@ -733,31 +846,46 @@
       </div>
 
       <!-- Horizontal Roulette Wheel Viewport -->
-      <div id="rouletteWheelBox" class="relative my-4 mx-auto w-full max-w-[560px] h-36 bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 border-4 border-amber-800/90 rounded-2xl overflow-hidden shadow-[inset_0_0_25px_rgba(0,0,0,0.9)] flex items-center">
+      <div id="rouletteWheelBox"
+        class="relative my-4 mx-auto w-full max-w-[560px] h-36 bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 border-4 border-amber-800/90 rounded-2xl overflow-hidden shadow-[inset_0_0_25px_rgba(0,0,0,0.9)] flex items-center">
         <!-- CS:GO Center Target Needle with Mechanical Kick Physics -->
-        <div id="rouletteNeedle" class="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-300 via-amber-400 to-yellow-300 -translate-x-1/2 z-30 shadow-[0_0_16px_#facc15] pointer-events-none origin-top transition-transform duration-75">
-          <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-10 border-t-yellow-400 drop-shadow-[0_0_8px_#facc15]"></div>
-          <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-b-10 border-b-yellow-400 drop-shadow-[0_0_8px_#facc15]"></div>
+        <div id="rouletteNeedle"
+          class="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-300 via-amber-400 to-yellow-300 -translate-x-1/2 z-30 shadow-[0_0_16px_#facc15] pointer-events-none origin-top transition-transform duration-75">
+          <div
+            class="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-10 border-t-yellow-400 drop-shadow-[0_0_8px_#facc15]">
+          </div>
+          <div
+            class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-b-10 border-b-yellow-400 drop-shadow-[0_0_8px_#facc15]">
+          </div>
         </div>
 
         <!-- Sliding Reel of 80 Items -->
-        <div id="rouletteTrack" class="flex items-center gap-2 pl-[240px] will-change-transform" style="transform: translateX(0px);">
+        <div id="rouletteTrack" class="flex items-center gap-2 pl-[240px] will-change-transform"
+          style="transform: translateX(0px);">
           <!-- Items populated dynamically by JS -->
         </div>
       </div>
 
       <!-- Result Inspect Banner (CS:GO Weapon Showcase Revealed after spin) -->
-      <div id="rouletteResultBanner" class="hidden my-2 p-4 rounded-3xl bg-gradient-to-b from-stone-900/95 via-stone-950 to-stone-900 border-2 border-yellow-400 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
+      <div id="rouletteResultBanner"
+        class="hidden my-2 p-4 rounded-3xl bg-gradient-to-b from-stone-900/95 via-stone-950 to-stone-900 border-2 border-yellow-400 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
         <!-- Sunburst God Rays behind weapon -->
-        <div class="absolute w-96 h-96 rounded-full bg-gradient-to-tr from-yellow-500/10 via-amber-400/20 to-pink-500/10 animate-spin-slow pointer-events-none -z-0"></div>
+        <div
+          class="absolute w-96 h-96 rounded-full bg-gradient-to-tr from-yellow-500/10 via-amber-400/20 to-pink-500/10 animate-spin-slow pointer-events-none -z-0">
+        </div>
 
-        <div class="text-[11px] uppercase tracking-wider font-bold text-stone-400 z-10">Вам выпал легендарный предмет!</div>
-        
+        <div class="text-[11px] uppercase tracking-wider font-bold text-stone-400 z-10">Вам выпал легендарный предмет!
+        </div>
+
         <div class="flex flex-col sm:flex-row items-center gap-4 my-2.5 z-10">
-          <div id="rouletteResultIcon" class="text-6xl drop-shadow-[0_0_20px_rgba(250,204,21,0.5)] transform hover:scale-110 transition duration-300 cursor-pointer">🔪</div>
+          <div id="rouletteResultIcon"
+            class="text-6xl drop-shadow-[0_0_20px_rgba(250,204,21,0.5)] transform hover:scale-110 transition duration-300 cursor-pointer">
+            🔪</div>
           <div class="text-center sm:text-left">
-            <div id="rouletteResultName" class="font-game text-xl sm:text-2xl text-yellow-300 drop-shadow">★ Керамбит | Градиент</div>
-            <div id="rouletteResultRarity" class="text-xs font-bold text-pink-400 flex items-center justify-center sm:justify-start gap-2 mt-0.5">
+            <div id="rouletteResultName" class="font-game text-xl sm:text-2xl text-yellow-300 drop-shadow">★ Керамбит |
+              Градиент</div>
+            <div id="rouletteResultRarity"
+              class="text-xs font-bold text-pink-400 flex items-center justify-center sm:justify-start gap-2 mt-0.5">
               <span>★ Необычайно редкий</span>
               <span class="text-stone-500">•</span>
               <span id="rouletteResultStatTrak" class="text-orange-400 font-mono">StatTrak™: 0 кликов</span>
@@ -778,17 +906,22 @@
             </div>
             <!-- Boosts -->
             <div class="mt-2 flex flex-wrap gap-2 justify-center sm:justify-start text-xs font-bold">
-              <span id="rouletteResultClickBoost" class="px-2.5 py-0.5 rounded-lg bg-emerald-950 border border-emerald-500/50 text-emerald-300">+60% Клик</span>
-              <span id="rouletteResultPassiveBoost" class="px-2.5 py-0.5 rounded-lg bg-cyan-950 border border-cyan-500/50 text-cyan-300">+30% Заводы</span>
+              <span id="rouletteResultClickBoost"
+                class="px-2.5 py-0.5 rounded-lg bg-emerald-950 border border-emerald-500/50 text-emerald-300">+60%
+                Клик</span>
+              <span id="rouletteResultPassiveBoost"
+                class="px-2.5 py-0.5 rounded-lg bg-cyan-950 border border-cyan-500/50 text-cyan-300">+30% Заводы</span>
             </div>
           </div>
         </div>
 
         <div class="flex gap-2.5 w-full mt-3 z-10 max-w-md">
-          <button id="btnEquipRouletteKnife" class="flex-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-xs sm:text-sm py-2.5 rounded-2xl font-black shadow-lg jelly-btn">
+          <button id="btnEquipRouletteKnife"
+            class="flex-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-xs sm:text-sm py-2.5 rounded-2xl font-black shadow-lg jelly-btn">
             ⚔️ ЭКИПИРОВАТЬ НОЖ!
           </button>
-          <button id="btnKeepRouletteKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs px-5 py-2.5 rounded-2xl border border-stone-600">
+          <button id="btnKeepRouletteKnife"
+            class="bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs px-5 py-2.5 rounded-2xl border border-stone-600">
             В инвентарь
           </button>
         </div>
@@ -3154,8 +3287,8 @@
         const btnLabel = maxed
           ? 'МАКС'
           : (buyMultiplier === 'max'
-              ? `+${tlInfo.count} (МАКС): ${formatNumber(tlInfo.totalCost)} 🧻`
-              : (buyMultiplier > 1 ? `+${tlInfo.count}: ${formatNumber(tlInfo.totalCost)} 🧻` : `${formatNumber(tlInfo.totalCost)} 🧻`));
+            ? `+${tlInfo.count} (МАКС): ${formatNumber(tlInfo.totalCost)} 🧻`
+            : (buyMultiplier > 1 ? `+${tlInfo.count}: ${formatNumber(tlInfo.totalCost)} 🧻` : `${formatNumber(tlInfo.totalCost)} 🧻`));
 
         const row = document.createElement('div');
         row.className = 'flex items-center justify-between p-2 rounded-xl bg-stone-950 border border-purple-900/60';
@@ -3538,7 +3671,7 @@
         gain.connect(ctx.destination);
         osc.start(now);
         osc.stop(now + 0.025);
-      } catch(e) {}
+      } catch (e) { }
     }
 
     // CS:GO Key & Lock Opening Clack
@@ -3559,7 +3692,7 @@
         gain.connect(ctx.destination);
         osc.start(now);
         osc.stop(now + 0.09);
-      } catch(e) {}
+      } catch (e) { }
     }
 
     // CS:GO Celebratory Brass Fanfare Stinger
@@ -3585,7 +3718,7 @@
           osc.start(noteStart);
           osc.stop(noteStart + (idx === notes.length - 1 ? 1.7 : 0.4));
         });
-      } catch(e) {}
+      } catch (e) { }
     }
 
     // Fireworks & Confetti Canvas Engine
@@ -3600,8 +3733,8 @@
       const ctx = c.getContext('2d');
       confettiParticles = [];
 
-      const colors = isGold 
-        ? ['#facc15', '#fde047', '#ffd700', '#f59e0b', '#ffffff'] 
+      const colors = isGold
+        ? ['#facc15', '#fde047', '#ffd700', '#f59e0b', '#ffffff']
         : ['#ef4444', '#f43f5e', '#ec4899', '#a855f7', '#38bdf8', '#facc15'];
 
       for (let i = 0; i < 75; i++) {
@@ -3744,14 +3877,14 @@
 
         const isGold = itemKnife.rarity === 'special';
         const isRed = itemKnife.rarity === 'covert';
-        const rColor = isGold 
-          ? 'border-yellow-400 bg-gradient-to-b from-yellow-950/40 to-stone-900 shadow-[0_0_12px_rgba(250,204,21,0.35)]' 
-          : (isRed 
-            ? 'border-red-500 bg-gradient-to-b from-red-950/40 to-stone-900 shadow-[0_0_10px_rgba(239,68,68,0.25)]' 
-            : (itemKnife.rarity === 'classified' 
-              ? 'border-pink-500 bg-gradient-to-b from-pink-950/40 to-stone-900' 
-              : (itemKnife.rarity === 'restricted' 
-                ? 'border-purple-500 bg-gradient-to-b from-purple-950/30 to-stone-900' 
+        const rColor = isGold
+          ? 'border-yellow-400 bg-gradient-to-b from-yellow-950/40 to-stone-900 shadow-[0_0_12px_rgba(250,204,21,0.35)]'
+          : (isRed
+            ? 'border-red-500 bg-gradient-to-b from-red-950/40 to-stone-900 shadow-[0_0_10px_rgba(239,68,68,0.25)]'
+            : (itemKnife.rarity === 'classified'
+              ? 'border-pink-500 bg-gradient-to-b from-pink-950/40 to-stone-900'
+              : (itemKnife.rarity === 'restricted'
+                ? 'border-purple-500 bg-gradient-to-b from-purple-950/30 to-stone-900'
                 : 'border-blue-500 bg-gradient-to-b from-blue-950/30 to-stone-900')));
 
         const badgeColor = isGold ? 'bg-yellow-400 text-stone-950 font-black' : (isRed ? 'bg-red-600 text-white' : 'bg-stone-800 text-stone-300');
@@ -3869,7 +4002,7 @@
       document.getElementById('rouletteResultIcon').textContent = rouletteWinningKnife.icon;
       document.getElementById('rouletteResultName').textContent = rouletteWinningKnife.name;
       document.getElementById('rouletteResultRarity').textContent = `${rouletteWinningKnife.rarityName}`;
-      
+
       const stEl = document.getElementById('rouletteResultStatTrak');
       if (stEl) stEl.textContent = `★ StatTrak™: ${(rouletteWinningKnife.statTrak || 0)} кликов`;
 
@@ -3977,9 +4110,9 @@
 
       // Meaningful Pet Care Active Buffs Display
       const buffHunger = document.getElementById('buffHungerText');
-      if (buffHunger) buffHunger.textContent = `Сытость: ${Math.round(GAME.hunger)}% (+${Math.round((GAME.hunger/100)*50)}% Клик)`;
+      if (buffHunger) buffHunger.textContent = `Сытость: ${Math.round(GAME.hunger)}% (+${Math.round((GAME.hunger / 100) * 50)}% Клик)`;
       const buffClean = document.getElementById('buffCleanText');
-      if (buffClean) buffClean.textContent = `Чистота: ${Math.round(GAME.clean)}% (+${Math.round((GAME.clean/100)*40)}% Заводы)`;
+      if (buffClean) buffClean.textContent = `Чистота: ${Math.round(GAME.clean)}% (+${Math.round((GAME.clean / 100) * 40)}% Заводы)`;
       const buffHappy = document.getElementById('buffHappyText');
       if (buffHappy) buffHappy.textContent = `Счастье: ${Math.round(GAME.happy)}% (x2 Комбо ${GAME.happy >= 70 ? '🔥' : ''})`;
       const buffIdeal = document.getElementById('buffIdealPill');
@@ -4291,7 +4424,7 @@
           const blob = new Blob([dataStr], { type: 'application/json' });
           navigator.sendBeacon('/api/cloud-save', blob);
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     window.addEventListener('beforeunload', onPageLeave);
     window.addEventListener('pagehide', onPageLeave);
