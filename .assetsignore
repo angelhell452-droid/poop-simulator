@@ -1,0 +1,14 @@
+node_modules/
+.git/
+.wrangler/
+.netlify/
+scratch/
+functions/
+db/
+package.json
+package-lock.json
+drizzle.config.ts
+schema.sql
+worker.js
+_headers
+_redirects
