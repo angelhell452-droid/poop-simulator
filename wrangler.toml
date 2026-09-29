@@ -10,4 +10,4 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "poop_simulator_d1"
-database_id = "poop_simulator_d1"
+database_id = "a871d75b-228f-4dad-8bbb-0a9784b300b9"
