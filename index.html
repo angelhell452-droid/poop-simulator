@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v3.0 | 10,000 Мутаций, Кейсы CS:GO, Автокликер 1мс и Режим Девочек</title>
+  <title>Poop Simulator v3.0 | 20,000 Мутаций, Кейсы CS:GO, Автокликер 1мс и Режим Девочек</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -435,7 +435,7 @@
               <span id="poopSkinName" class="font-game text-xs text-yellow-300">Какашич-Новичок</span>
               <span id="poopSkinTierBadge" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500 text-stone-950 uppercase">Тир 1</span>
             </div>
-            <span id="poopSkinProgressHint" class="text-[9px] text-stone-400">Форма 1/10000</span>
+            <span id="poopSkinProgressHint" class="text-[9px] text-stone-400">Форма 1/20000</span>
           </div>
         </div>
 
@@ -575,14 +575,14 @@
       <!-- Panel Body -->
       <div class="flex-1 overflow-y-auto p-3 custom-scroll space-y-3 text-xs" id="dashPanels">
 
-        <!-- 1. EVOLUTIONS (10,000 FORMS) -->
+        <!-- 1. EVOLUTIONS (20,000 FORMS) -->
         <div id="panelEvo" class="space-y-3">
           <div
             class="bg-gradient-to-r from-amber-900/80 to-yellow-900/80 p-3 rounded-2xl border border-yellow-500/50 shadow">
             <div class="flex justify-between items-center mb-1">
               <span class="font-bold text-amber-200 uppercase text-[10px]">Текущая Ступень:</span>
               <span class="font-black bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded" id="evoProgressBadge">1 /
-                10,000</span>
+                20,000</span>
             </div>
             <div class="font-game text-base text-yellow-300" id="evoStageName">Форма 1: Исходная Кварк-Капля</div>
             <div class="text-[11px] text-stone-300 mt-0.5" id="evoStageDesc">Микроскопическое начало органической
@@ -596,7 +596,7 @@
             </div>
           </div>
 
-          <div class="font-bold text-stone-400 uppercase text-[10px] px-1">Хроники 10,000 Мутаций:</div>
+          <div class="font-bold text-stone-400 uppercase text-[10px] px-1">Хроники 20,000 Мутаций:</div>
           <div class="space-y-1.5 max-h-[360px] overflow-y-auto custom-scroll pr-1" id="evoListContainer"></div>
         </div>
 
@@ -1167,6 +1167,7 @@
       autoTickle: false,
       equippedKnife: null,
       unlockedKnives: [],
+      knifeStars: {},
       casesOpened: 0,
       comboHeat: 0,
       turboRushTime: 0,
@@ -1174,7 +1175,7 @@
       lastActiveTime: Date.now(),
       meteorsCaught: 0,
       turboCount: 0,
-      transcendUpgrades: { autoBuyer: false, passiveRolls: 0, omniMult: 0, afkCap: 0 }
+      transcendUpgrades: { autoBuyer: false, passiveRolls: 0, omniMult: 0, afkCap: 0, knifeForge: 0, factoryOverdrive: 0, plungerIncubator: 0, meteorStorm: 0, evoBlessing: 0, autoEvolution: false }
     };
 
     let feedCount = 0;
@@ -1182,7 +1183,7 @@
     let polishCount = 0;
     let flushCount = 0;
 
-    // 10,000 CREATIVE EVOLUTION STAGES GENERATOR (25 GRAND EPOCHS WITH DIVERSE ARCHETYPES)
+    // 20,000 CREATIVE EVOLUTION STAGES GENERATOR (40 GRAND EPOCHS WITH DIVERSE ARCHETYPES)
     const EPOCH_NAMES = [
       { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
       { epoch: "Индустриальный Смог", bg: "#334155", body: "#57534e", aura: "steam", archetype: "industrial" },
@@ -1208,6 +1209,21 @@
       { epoch: "Чистая Пси-Ноосфера", bg: "#1e1b4b", body: "#818cf8", aura: "divine", archetype: "divine" },
       { epoch: "Гиперпространственный Тетраэдр", bg: "#18181b", body: "#34d399", aura: "astral", archetype: "astral" },
       { epoch: "Творец Вселенского Разума", bg: "#020617", body: "#f472b6", aura: "divine", archetype: "divine" },
+      { epoch: "Эфирные Дворцы Вечности", bg: "#2e0854", body: "#e879f9", aura: "divine", archetype: "divine" },
+      { epoch: "Квантовый Абсолют", bg: "#082f49", body: "#38bdf8", aura: "cyber", archetype: "cyber" },
+      { epoch: "Первородный Хаос Омниверса", bg: "#1a0026", body: "#fb7185", aura: "multiverse", archetype: "void" },
+      { epoch: "Галактическая Сфера Дайсона", bg: "#422006", body: "#fef08a", aura: "stars", archetype: "cosmic" },
+      { epoch: "Сингулярность Бесконечности", bg: "#020617", body: "#a855f7", aura: "void", archetype: "void" },
+      { epoch: "Древо Измерений Иггдрасиль", bg: "#064e3b", body: "#86efac", aura: "astral", archetype: "astral" },
+      { epoch: "Звездный Архитектор Бытия", bg: "#1e1b4b", body: "#67e8f9", aura: "divine", archetype: "divine" },
+      { epoch: "Темпоральный Исток Вселенной", bg: "#292524", body: "#f59e0b", aura: "astral", archetype: "astral" },
+      { epoch: "Престол Небесных Архангелов", bg: "#431407", body: "#fde047", aura: "divine", archetype: "divine" },
+      { epoch: "Кольцо Мироздания", bg: "#14532d", body: "#4ade80", aura: "stars", archetype: "cosmic" },
+      { epoch: "Энергетический Океан Творения", bg: "#172554", body: "#60a5fa", aura: "astral", archetype: "astral" },
+      { epoch: "Врата Метавселенной", bg: "#3b0764", body: "#c084fc", aura: "multiverse", archetype: "void" },
+      { epoch: "Корона Первородного Бога", bg: "#312e81", body: "#fbbf24", aura: "divine", archetype: "divine" },
+      { epoch: "Око Вселенского Архитектора", bg: "#18181b", body: "#38bdf8", aura: "omega", archetype: "omega" },
+      { epoch: "Сверхсознание Омниверса", bg: "#030712", body: "#f43f5e", aura: "omega", archetype: "omega" },
       { epoch: "Точка Омега: Абсолютный Бог", bg: "#000000", body: "#ffd700", aura: "omega", archetype: "omega" }
     ];
 
@@ -1215,15 +1231,23 @@
     const ENTITIES = ["Капля", "Комочек", "Завиток", "Шлам", "Брусок", "Монолит", "Сгусток", "Самородок", "Поршень", "Бойлер", "Процессор", "Сервер", "Мутант", "Аномалия", "Фонтан", "Шторм", "Владыка", "Ореол", "Страж", "Титан", "Коллапс", "Сингуляр", "Суперструна", "Квазар", "Парадокс", "Создатель", "Архитектор", "Абсолют", "Вулкан", "Дракон", "Архангел", "Демиург"];
 
     const EVOLUTIONS = [];
-    for (let i = 0; i < 10000; i++) {
-      const epochIdx = Math.min(EPOCH_NAMES.length - 1, Math.floor(i / 400));
+    const costBase = 1.048;
+    const multBase = 1.043;
+    for (let i = 0; i < 20000; i++) {
+      const epochIdx = Math.min(EPOCH_NAMES.length - 1, Math.floor(i / 500));
       const ep = EPOCH_NAMES[epochIdx];
       const pfx = PREFIXES[i % PREFIXES.length];
       const ent = ENTITIES[(i * 3 + Math.floor(i / 7)) % ENTITIES.length];
       const tier = (i % 100) + 1;
-      const name = (i === 9999) ? 'Точка Омега: Абсолютный Бог Омниверса' : (i % 400 === 0 ? 'Владыка Эпохи: ' + ep.epoch : pfx + ' ' + ent + ' ' + tier);
-      const cost = i === 0 ? 0 : Math.floor(75 * Math.pow(1.066, i) * Math.pow(i + 1, 1.4));
-      const mult = (1 + i * 1.5 + Math.pow(i, 1.62) * 0.4) * Math.pow(1.042, i);
+      const name = (i === 19999) ? 'Точка Омега: Абсолютный Бог Омниверса' : (i % 500 === 0 ? 'Владыка Эпохи: ' + ep.epoch : pfx + ' ' + ent + ' ' + tier);
+      
+      const centuries = Math.floor(i / 100);
+      const epochs = Math.floor(i / 500);
+      const millenniums = Math.floor(i / 1000);
+      const milestoneBoost = Math.pow(2.0, centuries) * Math.pow(5.0, epochs) * Math.pow(10.0, millenniums);
+      
+      const cost = i === 0 ? 0 : Math.floor(60 * Math.pow(costBase, i) * Math.pow(i + 1, 1.5));
+      const mult = (1 + i * 2.0 + Math.pow(i, 1.7) * 0.5) * Math.pow(multBase, i) * milestoneBoost;
       EVOLUTIONS.push({
         id: i,
         name: name,
@@ -3814,7 +3838,7 @@
             "bladeColor": "godly",
             "handleColor": "#ffd700",
             "style": "katana",
-            "desc": "Меч Первородного Творца, сотворившего все 10,000 форм вселенной!"
+            "desc": "Меч Первородного Творца, сотворившего все 20,000 форм вселенной!"
       },
       {
             "id": "knife_godly_scythe",
@@ -3844,14 +3868,14 @@
       }
 ];
 
-    // CS:GO & ROBLOX CASES DATASET (9 Thematic Crates covering all 200 knives)
+    // CS:GO & ROBLOX CASES DATASET (11 Thematic Crates covering all 200 knives + End Game)
     const CSGO_CASES = [
       {
         id: 'case_classic',
         name: 'CS:GO Weapon Case #1',
         icon: '📦',
         currency: 'rolls',
-        cost: 3,
+        cost: 10,
         currencySymbol: '🧻',
         borderClass: 'border-blue-500/70',
         bgClass: 'from-blue-950 via-stone-900 to-stone-950',
@@ -3863,7 +3887,7 @@
         name: 'Кейс «Хрома 3» (Chroma)',
         icon: '🧰',
         currency: 'rolls',
-        cost: 8,
+        cost: 40,
         currencySymbol: '🧻',
         borderClass: 'border-purple-500/70',
         bgClass: 'from-purple-950 via-stone-900 to-stone-950',
@@ -3875,7 +3899,7 @@
         name: 'Кейс «Гамма 2» (Gamma Waves)',
         icon: '🎁',
         currency: 'rolls',
-        cost: 15,
+        cost: 150,
         currencySymbol: '🧻',
         borderClass: 'border-emerald-500/70',
         bgClass: 'from-emerald-950 via-stone-900 to-stone-950',
@@ -3887,7 +3911,7 @@
         name: 'Кейс «Призма» (Prisma Spectrum)',
         icon: '💎',
         currency: 'rolls',
-        cost: 25,
+        cost: 600,
         currencySymbol: '🧻',
         borderClass: 'border-cyan-500/70',
         bgClass: 'from-cyan-950 via-stone-900 to-stone-950',
@@ -3899,7 +3923,7 @@
         name: 'Кейс «Грёзы и Кошмары»',
         icon: '🔮',
         currency: 'rolls',
-        cost: 40,
+        cost: 2500,
         currencySymbol: '🧻',
         borderClass: 'border-pink-500/80',
         bgClass: 'from-pink-950 via-stone-900 to-stone-950',
@@ -3911,7 +3935,7 @@
         name: 'Кейс «Радужная Призма»',
         icon: '🌈',
         currency: 'rolls',
-        cost: 60,
+        cost: 10000,
         currencySymbol: '🧻',
         borderClass: 'border-amber-300',
         bgClass: 'from-red-950 via-purple-950 to-blue-950',
@@ -3923,7 +3947,7 @@
         name: 'Кейс «Кибер-Титан 2077»',
         icon: '⚙️',
         currency: 'rolls',
-        cost: 80,
+        cost: 50000,
         currencySymbol: '🧻',
         borderClass: 'border-teal-400',
         bgClass: 'from-stone-900 via-teal-950 to-stone-950',
@@ -3931,11 +3955,23 @@
         pool: ["knife_titanium_flip","knife_titanium_ursus","knife_titanium_stiletto","knife_titanium_huntsman","knife_titanium_bayonet","knife_titanium_m9","knife_titanium_talon","knife_titanium_skeleton","knife_titanium_butterfly","knife_titanium_karambit"]
       },
       {
+        id: 'case_singularity',
+        name: 'Кейс «Сингулярность Бездны»',
+        icon: '🌌',
+        currency: 'rolls',
+        cost: 250000,
+        currencySymbol: '🧻',
+        borderClass: 'border-violet-400 shadow-[0_0_15px_#8b5cf6]',
+        bgClass: 'from-violet-950 via-purple-950 to-black',
+        desc: 'Эндгейм-кейс гравитационной сингулярности: лучшие титановые и секретные клинки!',
+        pool: ["knife_titanium_butterfly","knife_titanium_karambit","knife_rainbow_butterfly","knife_rainbow_karambit","knife_rainbow_katana","knife_butterfly_lore","knife_m9_lore","knife_karambit_sapphire","knife_karambit_ruby","knife_m9_ruby","knife_m9_emerald","knife_scythe_hell","knife_katana_demon"]
+      },
+      {
         id: 'case_celestial',
         name: 'Кейс «Небесный Пантеон»',
         icon: '✨',
         currency: 'plungers',
-        cost: 3,
+        cost: 25,
         currencySymbol: '🪠',
         borderClass: 'border-cyan-400',
         bgClass: 'from-cyan-950 via-indigo-950 to-purple-950',
@@ -3947,74 +3983,113 @@
         name: 'Cobblestone & Omniverse Souvenir',
         icon: '👑',
         currency: 'plungers',
-        cost: 5,
+        cost: 100,
         currencySymbol: '🪠',
         borderClass: 'border-yellow-400 shadow-[0_0_20px_#facc15]',
         bgClass: 'from-yellow-950 via-amber-950 to-stone-950',
         desc: 'Сувенирный кейс Богов Омниверса. Шанс выбить Dragon Lore, Blue Gem #387 и Мечи Бесконечности!',
         pool: ["knife_nomad_bluegem","knife_bayonet_lore","knife_m9_lore","knife_butterfly_lore","knife_m9_emerald","knife_karambit_emerald","knife_butterfly_emerald","knife_m9_ruby","knife_butterfly_ruby","knife_karambit_fade","knife_karambit_ruby","knife_karambit_sapphire","knife_karambit_bluegem","knife_karambit_lore","knife_godly_katana","knife_godly_scythe","knife_godly_omega"]
+      },
+      {
+        id: 'case_demigod',
+        name: 'Кейс «Корона Демиурга Омниверса»',
+        icon: '🔱',
+        currency: 'plungers',
+        cost: 500,
+        currencySymbol: '🪠',
+        borderClass: 'border-amber-300 shadow-[0_0_25px_#f59e0b] animate-pulse',
+        bgClass: 'from-amber-950 via-yellow-950 to-black',
+        desc: 'Абсолютный венец эндгейма. Гарантирует только Божественные и Небесные реликтовые артефакты!',
+        pool: ["knife_godly_omega","knife_godly_katana","knife_godly_scythe","knife_celestial_daggers","knife_celestial_scythe","knife_celestial_katana","knife_celestial_karambit","knife_celestial_butterfly"]
       }
     ];
 
     // =========================================================================
-    // DYNAMIC POOP SKINS EVOLUTION SYSTEM (10,000 FORMS - BOYS & GIRLS)
+    // DYNAMIC POOP SKINS EVOLUTION SYSTEM (20,000 FORMS - BOYS & GIRLS)
     // =========================================================================
     function getPoopSkinInfo(stage, isGirly) {
       let tier = 1;
-      if (stage >= 8000) tier = 10;
-      else if (stage >= 5500) tier = 9;
-      else if (stage >= 3500) tier = 8;
-      else if (stage >= 2000) tier = 7;
-      else if (stage >= 1000) tier = 6;
-      else if (stage >= 600) tier = 5;
-      else if (stage >= 300) tier = 4;
-      else if (stage >= 150) tier = 3;
-      else if (stage >= 50) tier = 2;
+      if (stage >= 18000) tier = 10;
+      else if (stage >= 14500) tier = 9;
+      else if (stage >= 11000) tier = 8;
+      else if (stage >= 7500) tier = 7;
+      else if (stage >= 4500) tier = 6;
+      else if (stage >= 2500) tier = 5;
+      else if (stage >= 1200) tier = 4;
+      else if (stage >= 500) tier = 3;
+      else if (stage >= 150) tier = 2;
       else tier = 1;
 
       if (isGirly) {
         const girlyTiers = [
-          { id: 'girl_strawberry', name: 'Клубничная Кавайка', tier: 1, rank: 'Новичок', icon: '🍓', desc: 'Розовый клубничный завиток с милым бантиком', nextAt: 50 },
-          { id: 'girl_cupcake', name: 'Сахарный Капкейк', tier: 2, rank: 'Сладость', icon: '🧁', desc: 'Воздушный крем, карамельная посыпка и вишенка', nextAt: 150 },
-          { id: 'girl_fairy', name: 'Цветочная Фея', tier: 3, rank: 'Фея', icon: '🧚‍♀️', desc: 'Сияющие крылышки феи и корона из бутонов роз', nextAt: 300 },
-          { id: 'girl_magical', name: 'Аниме Махо-Сёдзё', tier: 4, rank: 'Волшебница', icon: '🪄', desc: 'Звездная палочка, золотое сердце и сияющие глазки', nextAt: 600 },
-          { id: 'girl_mermaid', name: 'Морская Русалочка', tier: 5, rank: 'Сирена', icon: '🧜‍♀️', desc: 'Перламутровый блеск жемчужин и тиара из ракушек', nextAt: 1000 },
-          { id: 'girl_cyber_idol', name: 'Кибер-Айдол Каваи', tier: 6, rank: 'Звезда Сети', icon: '🎧', desc: 'Неоновые кроличьи наушники и голографический визор', nextAt: 2000 },
-          { id: 'girl_valkyrie', name: 'Священная Валькирия', tier: 7, rank: 'Валькирия', icon: '🪽', desc: 'Четыре пастельных ангельских крыла и нимб', nextAt: 3500 },
-          { id: 'girl_empress', name: 'Звездная Императрица', tier: 8, rank: 'Императрица', icon: '👑', desc: 'Галактический шлейф и орбитальные планеты', nextAt: 5500 },
-          { id: 'girl_love_goddess', name: 'Богиня Вселенской Любви', tier: 9, rank: 'Богиня', icon: '💖', desc: 'Радужные крылья бабочки и бесконечные сердца', nextAt: 8000 },
-          { id: 'girl_omega_queen', name: 'Омега-Королева Омниверса', tier: 10, rank: 'Абсолют', icon: '🌟', desc: 'Священная корона бесконечности и сверхсветовая аура', nextAt: 10000 }
+          { id: 'girl_strawberry', name: 'Клубничная Кавайка', tier: 1, rank: 'Новичок', icon: '🍓', desc: 'Розовый клубничный завиток с милым бантиком', nextAt: 150 },
+          { id: 'girl_cupcake', name: 'Сахарный Капкейк', tier: 2, rank: 'Сладость', icon: '🧁', desc: 'Воздушный крем, карамельная посыпка и вишенка', nextAt: 500 },
+          { id: 'girl_fairy', name: 'Цветочная Фея', tier: 3, rank: 'Фея', icon: '🧚‍♀️', desc: 'Сияющие крылышки феи и корона из бутонов роз', nextAt: 1200 },
+          { id: 'girl_magical', name: 'Аниме Махо-Сёдзё', tier: 4, rank: 'Волшебница', icon: '🪄', desc: 'Звездная палочка, золотое сердце и сияющие глазки', nextAt: 2500 },
+          { id: 'girl_mermaid', name: 'Морская Русалочка', tier: 5, rank: 'Сирена', icon: '🧜‍♀️', desc: 'Перламутровый блеск жемчужин и тиара из ракушек', nextAt: 4500 },
+          { id: 'girl_cyber_idol', name: 'Кибер-Айдол Каваи', tier: 6, rank: 'Звезда Сети', icon: '🎧', desc: 'Неоновые кроличьи наушники и голографический визор', nextAt: 7500 },
+          { id: 'girl_valkyrie', name: 'Священная Валькирия', tier: 7, rank: 'Валькирия', icon: '🪽', desc: 'Четыре пастельных ангельских крыла и нимб', nextAt: 11000 },
+          { id: 'girl_empress', name: 'Звездная Императрица', tier: 8, rank: 'Императрица', icon: '👑', desc: 'Галактический шлейф и орбитальные планеты', nextAt: 14500 },
+          { id: 'girl_love_goddess', name: 'Богиня Вселенской Любви', tier: 9, rank: 'Богиня', icon: '💖', desc: 'Радужные крылья бабочки и бесконечные сердца', nextAt: 18000 },
+          { id: 'girl_omega_queen', name: 'Омега-Королева Омниверса', tier: 10, rank: 'Абсолют', icon: '🌟', desc: 'Священная корона бесконечности и сверхсветовая аура', nextAt: 20000 }
         ];
         return girlyTiers[tier - 1];
       } else {
         const boysTiers = [
-          { id: 'boy_rookie', name: 'Какашич-Новичок', tier: 1, rank: 'Новичок', icon: '💩', desc: 'Глянцевый классический завиток с выразительными глазами', nextAt: 50 },
-          { id: 'boy_gamer_pro', name: 'Геймер-Профи', tier: 2, rank: 'Стример', icon: '🎮', desc: 'Синяя бандана, игровые наушники с микрофоном', nextAt: 150 },
-          { id: 'boy_gladiator', name: 'Спартанский Гладиатор', tier: 3, rank: 'Воин', icon: '🛡️', desc: 'Золотой шлем с красным гребнем и боевой шрам', nextAt: 300 },
-          { id: 'boy_cyber_shinobi', name: 'Кибер-Синоби', tier: 4, rank: 'Ниндзя', icon: '🥷', desc: 'Маска скрытности, протектор Конохи и вихрь сюрикенов', nextAt: 600 },
-          { id: 'boy_mecha_terminator', name: 'Меха-Терминатор Т-8000', tier: 5, rank: 'Киборг', icon: '🤖', desc: 'Титановый экзоскелет, красный глаз-лазер и пушка', nextAt: 1000 },
-          { id: 'boy_molten_demon', name: 'Повелитель Лавы', tier: 6, rank: 'Демон Вулькана', icon: '🔥', desc: 'Изогнутые рога обсидиана и огненные трещины магмы', nextAt: 2000 },
-          { id: 'boy_shadow_monarch', name: 'Теневой Владыка Бездны', tier: 7, rank: 'Монарх Тьмы', icon: '🔮', desc: 'Фиолетовая теневая аура и горящие аметистовые очи', nextAt: 3500 },
-          { id: 'boy_dragon_sovereign', name: 'Галактический Дракон', tier: 8, rank: 'Повелитель Драконов', icon: '🐉', desc: 'Драконьи рога, энергетическое ядро и пламя звезд', nextAt: 5500 },
-          { id: 'boy_thunder_god', name: 'Титан Грома и Бури', tier: 9, rank: 'Бог Молний', icon: '⚡', desc: 'Корона из молний, электрические искры и синий разряд', nextAt: 8000 },
-          { id: 'boy_omega_god', name: 'Абсолютный Бог Омниверса', tier: 10, rank: 'Создатель Миров', icon: '🌌', desc: 'Вращающийся золотой нимб, 6 крыльев и вихрь творения', nextAt: 10000 }
+          { id: 'boy_rookie', name: 'Какашич-Новичок', tier: 1, rank: 'Новичок', icon: '💩', desc: 'Глянцевый классический завиток с выразительными глазами', nextAt: 150 },
+          { id: 'boy_gamer_pro', name: 'Геймер-Профи', tier: 2, rank: 'Стример', icon: '🎮', desc: 'Синяя бандана, игровые наушники с микрофоном', nextAt: 500 },
+          { id: 'boy_gladiator', name: 'Спартанский Гладиатор', tier: 3, rank: 'Воин', icon: '🛡️', desc: 'Золотой шлем с красным гребнем и боевой шрам', nextAt: 1200 },
+          { id: 'boy_cyber_shinobi', name: 'Кибер-Синоби', tier: 4, rank: 'Ниндзя', icon: '🥷', desc: 'Маска скрытности, протектор Конохи и вихрь сюрикенов', nextAt: 2500 },
+          { id: 'boy_mecha_terminator', name: 'Меха-Терминатор Т-8000', tier: 5, rank: 'Киборг', icon: '🤖', desc: 'Титановый экзоскелет, красный глаз-лазер и пушка', nextAt: 4500 },
+          { id: 'boy_molten_demon', name: 'Повелитель Лавы', tier: 6, rank: 'Демон Вулькана', icon: '🔥', desc: 'Изогнутые рога обсидиана и огненные трещины магмы', nextAt: 7500 },
+          { id: 'boy_shadow_monarch', name: 'Теневой Владыка Бездны', tier: 7, rank: 'Монарх Тьмы', icon: '🔮', desc: 'Фиолетовая теневая аура и горящие аметистовые очи', nextAt: 11000 },
+          { id: 'boy_dragon_sovereign', name: 'Галактический Дракон', tier: 8, rank: 'Повелитель Драконов', icon: '🐉', desc: 'Драконьи рога, энергетическое ядро и пламя звезд', nextAt: 14500 },
+          { id: 'boy_thunder_god', name: 'Титан Грома и Бури', tier: 9, rank: 'Бог Молний', icon: '⚡', desc: 'Корона из молний, электрические искры и синий разряд', nextAt: 18000 },
+          { id: 'boy_omega_god', name: 'Абсолютный Бог Омниверса', tier: 10, rank: 'Создатель Миров', icon: '🌌', desc: 'Вращающийся золотой нимб, 6 крыльев и вихрь творения', nextAt: 20000 }
         ];
         return boysTiers[tier - 1];
       }
     }
 
-    // KNIVES INDEX BOOK MILESTONE BONUSES
+    // KNIVES INDEX BOOK MILESTONE BONUSES & SHARPENING FORGE
     function getKnifeIndexMilestoneBonus() {
       const count = (GAME.unlockedKnives || []).length;
       let clickBonus = 1.0;
       let passiveBonus = 1.0;
-      if (count >= 10) clickBonus += 0.10;
-      if (count >= 25) passiveBonus += 0.25;
-      if (count >= 50) clickBonus += 0.50;
-      if (count >= 100) { clickBonus *= 2.0; passiveBonus *= 2.0; }
-      if (count >= 150) { clickBonus *= 1.5; passiveBonus *= 1.5; }
-      if (count >= 200) { clickBonus *= 2.0; passiveBonus *= 2.0; }
+      if (count >= 10) clickBonus += 0.15;
+      if (count >= 25) passiveBonus += 0.30;
+      if (count >= 50) clickBonus += 0.60;
+      if (count >= 100) { clickBonus *= 2.5; passiveBonus *= 2.5; }
+      if (count >= 150) { clickBonus *= 2.0; passiveBonus *= 2.0; }
+      if (count >= 200) { clickBonus *= 3.0; passiveBonus *= 3.0; }
       return { clickBonus, passiveBonus, count };
+    }
+
+    function getKnifeStar(knifeId) {
+      if (!GAME.knifeStars) GAME.knifeStars = {};
+      return GAME.knifeStars[knifeId] || 1;
+    }
+
+    function getKnifeSharpenCost(knife) {
+      const currentStar = getKnifeStar(knife.id);
+      if (currentStar >= 25) return { maxReached: true, cost: 0, currency: 'rolls', symbol: '🧻' };
+
+      if (knife.rarity === 'celestial' || knife.rarity === 'godly') {
+        const cost = Math.max(1, Math.floor(2 * Math.pow(1.35, currentStar - 1)));
+        return { maxReached: false, cost, currency: 'plungers', symbol: '🪠' };
+      } else {
+        let baseCost = 15;
+        let growth = 1.35;
+        if (knife.rarity === 'restricted') { baseCost = 35; growth = 1.38; }
+        if (knife.rarity === 'classified') { baseCost = 80; growth = 1.40; }
+        if (knife.rarity === 'covert') { baseCost = 250; growth = 1.42; }
+        if (knife.rarity === 'special') { baseCost = 800; growth = 1.45; }
+        if (knife.rarity === 'rainbow') { baseCost = 2500; growth = 1.48; }
+        if (knife.rarity === 'titanium') { baseCost = 7500; growth = 1.50; }
+
+        const cost = Math.max(1, Math.floor(baseCost * Math.pow(growth, currentStar - 1)));
+        return { maxReached: false, cost, currency: 'rolls', symbol: '🧻' };
+      }
     }
 
     function getEquippedKnife() {
@@ -4022,7 +4097,36 @@
       return KNIVES.find(k => k.id === GAME.equippedKnife) || null;
     }
 
-    // FACTORIES PRODUCTION UNITS (20 Balanced Tiers with Milestones up to God Tier)
+    function sharpenKnife(knifeId) {
+      const knife = KNIVES.find(k => k.id === knifeId);
+      if (!knife) return;
+      const costInfo = getKnifeSharpenCost(knife);
+      if (costInfo.maxReached) {
+        alert('Этот нож уже имеет максимальный уровень заточки (★ Lv.25)!');
+        return;
+      }
+      if (costInfo.currency === 'plungers') {
+        if ((GAME.transcendPlungers || 0) < costInfo.cost) {
+          alert(`Недостаточно Астральных Вантузов (🪠)! Требуется: ${costInfo.cost} 🪠`);
+          return;
+        }
+        GAME.transcendPlungers -= costInfo.cost;
+      } else {
+        if ((GAME.prestigeRolls || 0) < costInfo.cost) {
+          alert(`Недостаточно Золотых Втулок (🧻)! Требуется: ${costInfo.cost} 🧻`);
+          return;
+        }
+        GAME.prestigeRolls -= costInfo.cost;
+      }
+
+      if (!GAME.knifeStars) GAME.knifeStars = {};
+      GAME.knifeStars[knifeId] = (GAME.knifeStars[knifeId] || 1) + 1;
+      saveLocal();
+      updateDashboardUI();
+      if (typeof renderKnivesIndexBook === 'function') renderKnivesIndexBook();
+    }
+
+    // FACTORIES PRODUCTION UNITS (40 Deep Cosmic Tiers with Milestones up to Godhead)
     const FACTORIES = [
       { id: 'fly_squad', name: 'Эскадрилья Мух-Курьеров', cost: 15, baseCps: 1.5, count: 0, icon: '🪰' },
       { id: 'news_paper', name: 'Утренняя Пресса Со Скидкой', cost: 100, baseCps: 8.0, count: 0, icon: '📰' },
@@ -4043,7 +4147,27 @@
       { id: 'string_synthesizer', name: 'Синтезатор Суперструн', cost: 20000000000000000, baseCps: 450000000000000, count: 0, icon: '🎻' },
       { id: 'dyson_sphere', name: 'Астральная Сфера Дайсона', cost: 300000000000000000, baseCps: 6000000000000000, count: 0, icon: '🔮' },
       { id: 'omniverse_engine', name: 'Двигатель Омниверса', cost: 5000000000000000000, baseCps: 90000000000000000, count: 0, icon: '🚀' },
-      { id: 'absolute_throne', name: 'Трон Первозданного Бога Унитаза', cost: 100000000000000000000, baseCps: 1500000000000000000, count: 0, icon: '🚽' }
+      { id: 'absolute_throne', name: 'Трон Первозданного Бога Унитаза', cost: 1e20, baseCps: 1.5e18, count: 0, icon: '🚽' },
+      { id: 'astral_archipelago', name: 'Звездный Архипелаг Разума', cost: 2e22, baseCps: 2.5e19, count: 0, icon: '🌌' },
+      { id: 'quantum_singularity_matrix', name: 'Квантовая Матрица Сингулярностей', cost: 5e24, baseCps: 4e21, count: 0, icon: '⚛️' },
+      { id: 'chrono_factory_eternity', name: 'Хроно-Фабрика Вечности', cost: 1.5e27, baseCps: 7e23, count: 0, icon: '⏳' },
+      { id: 'neuro_cosmic_web', name: 'Нейросеть Абсолютного Космоса', cost: 5e29, baseCps: 1.2e26, count: 0, icon: '🕸️' },
+      { id: 'titanic_galaxy_drain', name: 'Титанический Дренаж Галактик', cost: 2e32, baseCps: 2.5e28, count: 0, icon: '🌀' },
+      { id: 'superstring_reality_weaver', name: 'Суперструнный Ткач Реальности', cost: 8e34, baseCps: 5e30, count: 0, icon: '🎻' },
+      { id: 'astral_infinity_well', name: 'Астральный Колодец Бесконечности', cost: 4e37, baseCps: 1.2e33, count: 0, icon: '🕳️' },
+      { id: 'omniverse_hyper_drive', name: 'Омниверсный Гипер-Двигатель', cost: 2e40, baseCps: 3e35, count: 0, icon: '🚀' },
+      { id: 'multiverse_mother_server', name: 'Материнский Сервер Мультивселенной', cost: 1e43, baseCps: 8e37, count: 0, icon: '🖥️' },
+      { id: 'cosmic_demiurge_nexus', name: 'Космический Нексус Демиурга', cost: 6e46, baseCps: 2e40, count: 0, icon: '🪐' },
+      { id: 'primordial_light_throne', name: 'Свет Престола Первозданных', cost: 4e50, baseCps: 6e43, count: 0, icon: '☀️' },
+      { id: 'space_collapse_paradox', name: 'Парадоксальный Коллапсор Пространств', cost: 3e54, baseCps: 2e47, count: 0, icon: '🔮' },
+      { id: 'absolute_zero_singularity', name: 'Сингулярность Абсолютного Нуля', cost: 2.5e58, baseCps: 7e50, count: 0, icon: '❄️' },
+      { id: 'sovereign_god_throne', name: 'Трон Вселенского Вседержителя', cost: 2e63, baseCps: 3e54, count: 0, icon: '👑' },
+      { id: 'omega_eternity_generator', name: 'Омега-Генератор Вечности', cost: 2e68, baseCps: 1.5e58, count: 0, icon: '⚡' },
+      { id: 'infinite_dimension_source', name: 'Источник Бесконечных Измерений', cost: 2e74, baseCps: 8e62, count: 0, icon: '💎' },
+      { id: 'architect_eye_omniscience', name: 'Око Архитектора Всеведения', cost: 2e80, baseCps: 4e67, count: 0, icon: '👁️' },
+      { id: 'supermassive_omniverse_pulsar', name: 'Сверхмассивный Пульсар Омниверса', cost: 3e87, baseCps: 2.5e73, count: 0, icon: '💫' },
+      { id: 'crown_of_creation', name: 'Венец Вселенского Творения', cost: 5e95, baseCps: 2e79, count: 0, icon: '🌟' },
+      { id: 'infinite_absolute_godhead', name: 'Бесконечный Трон Абсолютного Божества', cost: 1e105, baseCps: 2e86, count: 0, icon: '🌈' }
     ];
     const SPONSORS = FACTORIES;
 
@@ -4069,57 +4193,76 @@
       { id: 'upg_afk_booster', name: 'Капсула Гиперсна', type: 'perk', cost: 100000, icon: '💤', desc: 'Офлайн-доход работает со 100% максимальной эффективностью!' }
     ];
 
-    // PRESTIGE TALENTS (15 Deep Branching Talents)
+    // PRESTIGE TALENTS (22 Deep Branching Talents, Scaled for Hundreds of Hours)
     const TALENTS = [
-      { id: 'soft_rolls', name: 'Мягкость 4-х слоев', desc: '+25% ко всему доходу за каждый уровень', cost: 1, level: 0, max: 500, icon: '🧻' },
-      { id: 'crit_master', name: 'Ультра-Шмяк (Крит)', desc: '+0.2% шанс крита и +40% к урону крита за уровень', cost: 2, level: 0, max: 200, icon: '💥' },
-      { id: 'turbo_pipe', name: 'Трубопроводный Разгон Заводов', desc: '+35% к мощности всех заводов за уровень', cost: 2, level: 0, max: 250, icon: '⚡' },
-      { id: 'royal_gold', name: 'Стартовый Золотой Трон', desc: '+50,000 💨 стартовой биомассы после смыва за уровень', cost: 3, level: 0, max: 150, icon: '🚽' },
-      { id: 'sparkle_alchemy', name: 'Алхимия Блестяшек', desc: '+15% к выпадению блестяшек при каждом клике', cost: 3, level: 0, max: 150, icon: '✨' },
-      { id: 'cosmic_resonance', name: 'Космический Резонанс Мультиверса', desc: 'x1.5 к множителю всех форм мутации за каждые 2 уровня', cost: 5, level: 0, max: 150, icon: '🌌' },
-      { id: 'golden_synergy', name: 'Священный Синергизм Заводов', desc: '+150% к силе клика от каждых 10 купленных заводов', cost: 4, level: 0, max: 150, icon: '🏭' },
-      { id: 'infinity_flush', name: 'Вечный Смыв Судьбы', desc: '+10% к получению Золотых Втулок за каждый Смыв', cost: 5, level: 0, max: 150, icon: '🌀' },
-      { id: 'hyper_click', name: 'Гипер-Кликер (1ms Овердрайв)', desc: '+5% к силе клика за каждые 500 сделанных кликов', cost: 3, level: 0, max: 200, icon: '👆' },
-      { id: 'combo_master', name: 'Владыка Комбо-Ярости', desc: '+20% к длительности комбо и +50% к множителю Турбо', cost: 4, level: 0, max: 100, icon: '🔥' },
-      { id: 'meteor_hunter', name: 'Ловец Звездных Метеоритов', desc: 'Золотые метеориты падают на 20% чаще и дают x2 награду', cost: 5, level: 0, max: 100, icon: '🌠' },
-      { id: 'afk_slumber', name: 'Мастер Офлайн-Медитации', desc: '+25% к офлайн-добыче и +3 часа к лимиту AFK', cost: 4, level: 0, max: 100, icon: '💤' },
-      { id: 'transcend_soul', name: 'Астральная Трансценденция', desc: '+20% к получению Астральных Вантузов при Прорыве', cost: 6, level: 0, max: 100, icon: '🪠' },
-      { id: 'quantum_mastery', name: 'Квантовое Господство', desc: '+1% от пассивного дохода заводов переходит в клик', cost: 5, level: 0, max: 100, icon: '🔮' },
-      { id: 'omega_destiny', name: 'Печать Точки Омега', desc: 'Снижает стоимость эволюции всех 10,000 форм на 3% за уровень', cost: 8, level: 0, max: 100, icon: '👑' }
+      { id: 'soft_rolls', name: 'Мягкость 4-х слоев', desc: '+25% ко всему доходу за каждый уровень', cost: 1, level: 0, max: 2500, icon: '🧻' },
+      { id: 'crit_master', name: 'Ультра-Шмяк (Крит)', desc: '+0.2% шанс крита и +40% к урону крита за уровень', cost: 2, level: 0, max: 1500, icon: '💥' },
+      { id: 'turbo_pipe', name: 'Трубопроводный Разгон Заводов', desc: '+35% к мощности всех заводов за уровень', cost: 2, level: 0, max: 2000, icon: '⚡' },
+      { id: 'royal_gold', name: 'Стартовый Золотой Трон', desc: '+50,000 💨 стартовой биомассы после смыва за уровень', cost: 3, level: 0, max: 1000, icon: '🚽' },
+      { id: 'sparkle_alchemy', name: 'Алхимия Блестяшек', desc: '+15% к выпадению блестяшек при каждом клике', cost: 3, level: 0, max: 1000, icon: '✨' },
+      { id: 'cosmic_resonance', name: 'Космический Резонанс Мультиверса', desc: 'x1.5 к множителю всех форм мутации за каждые 2 уровня', cost: 5, level: 0, max: 1000, icon: '🌌' },
+      { id: 'golden_synergy', name: 'Священный Синергизм Заводов', desc: '+150% к силе клика от каждых 10 купленных заводов', cost: 4, level: 0, max: 1000, icon: '🏭' },
+      { id: 'infinity_flush', name: 'Вечный Смыв Судьбы', desc: '+15% к получению Золотых Втулок за каждый Смыв', cost: 5, level: 0, max: 1000, icon: '🌀' },
+      { id: 'hyper_click', name: 'Гипер-Кликер (1ms Овердрайв)', desc: '+5% к силе клика за каждые 500 сделанных кликов', cost: 3, level: 0, max: 1500, icon: '👆' },
+      { id: 'combo_master', name: 'Владыка Комбо-Ярости', desc: '+20% к длительности комбо и +50% к множителю Турбо', cost: 4, level: 0, max: 1000, icon: '🔥' },
+      { id: 'meteor_hunter', name: 'Ловец Звездных Метеоритов', desc: 'Золотые метеориты падают на 20% чаще и дают x2 награду', cost: 5, level: 0, max: 1000, icon: '🌠' },
+      { id: 'afk_slumber', name: 'Мастер Офлайн-Медитации', desc: '+25% к офлайн-добыче и +3 часа к лимиту AFK', cost: 4, level: 0, max: 1000, icon: '💤' },
+      { id: 'transcend_soul', name: 'Астральная Трансценденция', desc: '+25% к получению Астральных Вантузов при Прорыве', cost: 6, level: 0, max: 1000, icon: '🪠' },
+      { id: 'quantum_mastery', name: 'Квантовое Господство', desc: '+1% от пассивного дохода заводов переходит в клик', cost: 5, level: 0, max: 1000, icon: '🔮' },
+      { id: 'omega_destiny', name: 'Печать Точки Омега', desc: 'Снижает стоимость эволюции всех форм на 2% за уровень', cost: 8, level: 0, max: 1000, icon: '👑' },
+      // NEW LATE-GAME TALENTS FOR HUNDREDS OF HOURS
+      { id: 'omni_mastery', name: 'Омни-Мастерство Бытия', desc: '+30% ко ВСЕМУ доходу и силе клика за уровень', cost: 10, level: 0, max: 2000, icon: '🌟' },
+      { id: 'hyperspeed_flush', name: 'Сверхсветовой Смыв', desc: '+15% к получению Втулок Судьбы за Смыв', cost: 12, level: 0, max: 1000, icon: '🚀' },
+      { id: 'star_forge_master', name: 'Ковка Звездной Стали', desc: '+15% к силе всех заточенных ножей за уровень', cost: 15, level: 0, max: 1000, icon: '⚔️' },
+      { id: 'quantum_replication', name: 'Квантовая Био-Репликация', desc: '+50% к пассивному доходу фабрик старших тиров', cost: 15, level: 0, max: 1500, icon: '🧬' },
+      { id: 'time_sovereign', name: 'Повелитель Хроноса', desc: '+35% к офлайн-эффективности и скорости авто-кликов', cost: 20, level: 0, max: 500, icon: '⏳' },
+      { id: 'astral_splendor', name: 'Астральное Сияние', desc: '+2% шанс на удвоение Вантузов при Прорыве за уровень', cost: 25, level: 0, max: 250, icon: '✨' },
+      { id: 'unbreakable_evo', name: 'Несокрушимая Эволюция', desc: 'Снижает стоимость форм 5000+ на 1.5% за уровень', cost: 30, level: 0, max: 500, icon: '🛡️' }
     ];
 
     function getTalentCost(tl) {
-      return Math.floor(tl.cost * Math.pow(1.22, tl.level)) + tl.level;
+      return Math.floor(tl.cost * Math.pow(1.075, tl.level)) + tl.level;
     }
 
-    // ASTRAL TRANSCENDENCE ARTIFACTS
+    // ASTRAL TRANSCENDENCE ARTIFACTS (10 Deep Transcendental Artifacts)
     const TRANSCEND_UPGRADES = [
-      { id: 'art_autobuyer', name: '⚙️ Авто-Закупщик Заводов', desc: 'Автоматически покупает доступные заводы каждые 2 секунды', cost: 1, max: 1, owned: false },
-      { id: 'art_passive_rolls', name: '🧻 Хроно-Генератор Втулок', desc: '+1 Втулка Судьбы каждые 5 секунд пассивно без Смыва', cost: 2, max: 5, level: 0 },
-      { id: 'art_omni_mult', name: '🌌 Омни-Множитель Бытия', desc: '+100% ко ВСЕЙ биомассе и силе клика за уровень', cost: 3, max: 10, level: 0 },
-      { id: 'art_afk_god', name: '⏳ Сверх-Офлайн Модуль', desc: '+12 часов к максимальному времени офлайн-дохода', cost: 2, max: 3, level: 0 }
+      { id: 'art_autobuyer', key: 'autoBuyer', name: '⚙️ Авто-Закупщик Заводов', desc: 'Автоматически скупает доступные заводы каждые 2 секунды', cost: 1, max: 1 },
+      { id: 'art_passive_rolls', key: 'passiveRolls', name: '🧻 Хроно-Генератор Втулок', desc: '+1 Втулка Судьбы каждые 5 секунд пассивно без Смыва за уровень', cost: 2, max: 100, costStep: 1 },
+      { id: 'art_omni_mult', key: 'omniMult', name: '🌌 Омни-Множитель Бытия', desc: '+100% ко ВСЕЙ биомассе и силе клика за уровень', cost: 3, max: 500, costStep: 2 },
+      { id: 'art_afk_god', key: 'afkCap', name: '⏳ Сверх-Офлайн Модуль', desc: '+12 часов к максимальному лимиту времени офлайн-дохода', cost: 2, max: 50, costStep: 1 },
+      { id: 'art_knife_forge', key: 'knifeForge', name: '🗡️ Небесная Кузница Ножей', desc: '+30% к урону клика и пассивному доходу всех ножей за уровень', cost: 5, max: 250, costStep: 3 },
+      { id: 'art_factory_overdrive', key: 'factoryOverdrive', name: '⚡ Гипер-Ускоритель Заводов', desc: 'Удваивает CPS абсолютно всех фабрик за каждый уровень', cost: 8, max: 250, costStep: 4 },
+      { id: 'art_plunger_incubator', key: 'plungerIncubator', name: '🪠 Астральный Инкубатор Вантузов', desc: '+10% к получаемым Вантузам при каждом Прорыве за уровень', cost: 10, max: 100, costStep: 5 },
+      { id: 'art_golden_meteor_storm', key: 'meteorStorm', name: '🌠 Звездный Дождь Метеоритов', desc: 'Метеориты приносят в 3x больше биомассы за каждый уровень', cost: 15, max: 50, costStep: 5 },
+      { id: 'art_evo_blessing', key: 'evoBlessing', name: '🧬 Благословение Демиурга', desc: 'Умножает множитель ВСЕХ форм мутации в 1.5x за уровень', cost: 12, max: 250, costStep: 4 },
+      { id: 'art_auto_evolution', key: 'autoEvolution', name: '🌀 Авто-Эволюция Мутаций', desc: 'Автоматически совершает мутацию в новую форму при наличии биомассы!', cost: 25, max: 1 }
     ];
 
-    // ACHIEVEMENTS (SCALING ACROSS ALL 10,000 FORMS & SYSTEMS)
+    // ACHIEVEMENTS (SCALING ACROSS ALL 20,000 FORMS, 40 FACTORIES & SYSTEMS)
     const ACHIEVEMENTS = [];
-    const achClickGoals = [1, 50, 250, 1000, 5000, 25000, 100000, 500000, 2000000, 10000000];
+    const achClickGoals = [1, 50, 250, 1000, 5000, 25000, 100000, 500000, 2000000, 10000000, 50000000];
     achClickGoals.forEach((c, idx) => {
       ACHIEVEMENTS.push({ id: `ach_c_${c}`, title: `Шмяк-Мастер ${idx + 1}`, desc: `Совершить ${formatNumber(c)} кликов`, target: c, type: 'clicks', reward: 15 * (idx + 1), done: false, icon: '👆' });
     });
 
-    const achEvoGoals = [5, 25, 50, 100, 250, 500, 1000, 2000, 3500, 5000, 7500, 10000];
+    const achEvoGoals = [5, 25, 50, 100, 250, 500, 1000, 2000, 3500, 5000, 7500, 10000, 12500, 15000, 17500, 20000];
     achEvoGoals.forEach((e, idx) => {
       ACHIEVEMENTS.push({ id: `ach_e_${e}`, title: `Эволюция: Форма ${formatNumber(e)}`, desc: `Достичь ${formatNumber(e)}-й формы мутации`, target: e - 1, type: 'evo', reward: 30 * (idx + 1), done: false, icon: '🧬' });
     });
 
-    const achBioGoals = [1000, 50000, 1000000, 50000000, 1000000000, 50000000000, 1000000000000, 50000000000000, 1e18, 1e24, 1e33, 1e50, 1e75, 1e100];
+    const achBioGoals = [1000, 50000, 1000000, 50000000, 1000000000, 50000000000, 1000000000000, 50000000000000, 1e18, 1e24, 1e33, 1e50, 1e75, 1e100, 1e150, 1e200];
     achBioGoals.forEach((b, idx) => {
       ACHIEVEMENTS.push({ id: `ach_b_${idx}`, title: `Био-Магнат ${idx + 1}`, desc: `Накопить ${formatNumber(b)} биомассы за всё время`, target: b, type: 'allBiomass', reward: 25 * (idx + 1), done: false, icon: '💨' });
     });
 
-    const achFacGoals = [10, 50, 100, 250, 500, 1000, 2500, 5000];
+    const achFacGoals = [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000];
     achFacGoals.forEach((fg, idx) => {
       ACHIEVEMENTS.push({ id: `ach_f_${fg}`, title: `Промышленный Барон ${idx + 1}`, desc: `Построить суммарно ${formatNumber(fg)} заводов`, target: fg, type: 'factories', reward: 30 * (idx + 1), done: false, icon: '🏭' });
+    });
+
+    const achKnifeGoals = [1, 5, 10, 25, 50, 100, 150, 200];
+    achKnifeGoals.forEach((kg, idx) => {
+      ACHIEVEMENTS.push({ id: `ach_knife_${kg}`, title: `Оружейник: ${kg} Ножей`, desc: `Собрать коллекцию из ${kg} ножей`, target: kg, type: 'knives', reward: 50 * (idx + 1), done: false, icon: '🗡️' });
     });
 
     ACHIEVEMENTS.push(
@@ -4159,7 +4302,8 @@
         talents: TALENTS.map(t => ({ id: t.id, level: t.level })),
         achievements: ACHIEVEMENTS.map(a => ({ id: a.id, done: a.done })),
         purchasedItems: SHOP_ITEMS.filter(item => item.owned).map(i => i.id),
-        knifeStats: KNIVES.map(k => ({ id: k.id, statTrak: k.statTrak || 0 }))
+        knifeStats: KNIVES.map(k => ({ id: k.id, statTrak: k.statTrak || 0 })),
+        knifeStars: GAME.knifeStars || {}
       };
     }
 
@@ -4338,6 +4482,9 @@
           }
         }
         if (!GAME.gameMode) GAME.gameMode = GAME.girlyMode ? 'girls' : 'boys';
+        if (data.game.transcendUpgrades) {
+          GAME.transcendUpgrades = { ...GAME.transcendUpgrades, ...data.game.transcendUpgrades };
+        }
       }
       if (typeof data.feedCount === 'number') feedCount = data.feedCount;
       if (typeof data.washCount === 'number') washCount = data.washCount;
@@ -4374,6 +4521,9 @@
           const kn = KNIVES.find(k => k.id === ks.id);
           if (kn && typeof ks.statTrak === 'number') kn.statTrak = ks.statTrak;
         });
+      }
+      if (data.knifeStars && typeof data.knifeStars === 'object') {
+        GAME.knifeStars = { ...data.knifeStars };
       }
     }
 
@@ -4422,8 +4572,9 @@
       const hyperTalent = TALENTS.find(t => t.id === 'hyper_click');
       const hyperMult = 1 + (hyperTalent ? Math.floor(GAME.totalClicks / 500) * (hyperTalent.level * 0.05) : 0);
 
-      // Astral Plungers transcendence multiplier
-      const plungersMult = 1 + (GAME.transcendPlungers || 0) * (1 + (GAME.transcendUpgrades?.omniMult || 0));
+      // Astral Plungers transcendence multiplier + Omni-Multiplier Artifact
+      const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
+      const plungersMult = 1 + (GAME.transcendPlungers || 0) * (1 + omniLvl);
 
       // Turbo Frenzy Rush
       const comboTalent = TALENTS.find(t => t.id === 'combo_master');
@@ -4434,21 +4585,36 @@
 
       const hatMult = getHatClickMult();
 
-      // CS:GO Knife Click Multiplier
+      // CS:GO Knife Click Multiplier + Star Sharpening Level + Forge Artifact
       const knife = getEquippedKnife();
-      const knifeClickMult = knife ? knife.clickMult : 1.0;
+      const knifeStar = knife ? getKnifeStar(knife.id) : 1;
+      const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.30;
+      const knifeClickMult = knife ? (knife.clickMult * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost) : 1.0;
+
+      // Global Star Synergy: Every star across ALL owned knives boosts everything!
+      let totalAllStars = 0;
+      if (GAME.knifeStars) {
+        for (const k in GAME.knifeStars) totalAllStars += (GAME.knifeStars[k] || 1);
+      }
+      const starForgeTalent = TALENTS.find(t => t.id === 'star_forge_master');
+      const starForgeMult = 1 + (starForgeTalent ? starForgeTalent.level * 0.15 : 0);
+      const allStarsBonus = 1 + (totalAllStars * 0.005 * starForgeMult);
+
+      // Demiurge Evolution Blessing Artifact
+      const evoBlessingMult = Math.pow(1.5, GAME.transcendUpgrades?.evoBlessing || 0);
+
+      // Omni-Mastery Late-Game Talent
+      const omniTalent = TALENTS.find(t => t.id === 'omni_mastery');
+      const omniTalentMult = 1 + (omniTalent ? omniTalent.level * 0.30 : 0);
 
       // MEANINGFUL PET CARE ACTIVE BUFFS
-      // 1. Hunger gives up to +50% Click Power (0% at hunger=0 to +50% at hunger=100)
       const hungerBoost = 1 + (Math.max(0, Math.min(100, GAME.hunger || 0)) / 100) * 0.50;
-      // 2. Happy gives 1.3x click boost when happy >= 70
       const moodMult = GAME.happy >= 70 ? 1.35 : 1.0;
-      // 3. Ideal Pet: If all 3 needs >= 90%, get massive x2.0 ALL Multiplier!
       const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
       const idealMult = isIdealPet ? 2.0 : 1.0;
 
       const indexBonus = getKnifeIndexMilestoneBonus();
-      let power = Math.max(1, Math.round(1 * evo.mult * cosmicMult * rollsMult * synergyMult * hyperMult * plungersMult * turboBoost * meteorBoost * hatMult * knifeClickMult * hungerBoost * moodMult * idealMult * indexBonus.clickBonus));
+      let power = Math.max(1, Math.round(1 * evo.mult * evoBlessingMult * cosmicMult * rollsMult * synergyMult * hyperMult * plungersMult * turboBoost * meteorBoost * hatMult * knifeClickMult * allStarsBonus * omniTalentMult * hungerBoost * moodMult * idealMult * indexBonus.clickBonus));
 
       // Quantum Click Shop Item & Quantum Mastery Talent
       const qmTalent = TALENTS.find(t => t.id === 'quantum_mastery');
@@ -4472,13 +4638,22 @@
       const overclockActive = SHOP_ITEMS.find(i => i.id === 'upg_factory_overclock')?.owned;
       const overclockMult = overclockActive ? 2.0 : 1.0;
 
-      FACTORIES.forEach(fac => {
+      const qRepl = TALENTS.find(t => t.id === 'quantum_replication');
+      const qReplMult = 1 + (qRepl ? qRepl.level * 0.50 : 0);
+
+      FACTORIES.forEach((fac, idx) => {
         let facMilestoneMult = 1;
         if (fac.count >= 25) facMilestoneMult *= 2;
         if (fac.count >= 50) facMilestoneMult *= 2;
         if (fac.count >= 100) facMilestoneMult *= 4;
         if (fac.count >= 200) facMilestoneMult *= 4;
-        base += fac.count * fac.baseCps * facMilestoneMult;
+        if (fac.count >= 500) facMilestoneMult *= 8;
+        if (fac.count >= 1000) facMilestoneMult *= 16;
+        if (fac.count >= 2500) facMilestoneMult *= 32;
+        if (fac.count >= 5000) facMilestoneMult *= 64;
+
+        const highTierBonus = (idx >= 20) ? qReplMult : 1;
+        base += fac.count * fac.baseCps * facMilestoneMult * highTierBonus;
       });
 
       const softRolls = TALENTS.find(t => t.id === 'soft_rolls');
@@ -4487,25 +4662,44 @@
       const cosmicRes = TALENTS.find(t => t.id === 'cosmic_resonance');
       const cosmicMult = cosmicRes ? Math.pow(1.5, Math.floor(cosmicRes.level / 2)) : 1;
 
-      // Astral Plungers transcendence multiplier
-      const plungersMult = 1 + (GAME.transcendPlungers || 0) * (1 + (GAME.transcendUpgrades?.omniMult || 0));
+      // Astral Plungers transcendence multiplier + Omni-Multiplier Artifact
+      const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
+      const plungersMult = 1 + (GAME.transcendPlungers || 0) * (1 + omniLvl);
+
+      // Transcendence Artifact: Factory Overdrive
+      const facOverdriveMult = Math.pow(2.0, GAME.transcendUpgrades?.factoryOverdrive || 0);
 
       // Turbo Frenzy Rush
       const comboTalent = TALENTS.find(t => t.id === 'combo_master');
       const turboBoost = GAME.turboRushTime > 0 ? (10 + (comboTalent ? comboTalent.level * 0.5 : 0)) : 1.0;
 
-      // CS:GO Knife Passive Multiplier
+      // CS:GO Knife Passive Multiplier + Star Sharpening Level + Forge Artifact
       const knife = getEquippedKnife();
-      const knifePassiveMult = knife ? knife.passiveMult : 1.0;
+      const knifeStar = knife ? getKnifeStar(knife.id) : 1;
+      const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.30;
+      const knifePassiveMult = knife ? (knife.passiveMult * (1 + (knifeStar - 1) * 0.25) * knifeForgeBoost) : 1.0;
+
+      // Global Star Synergy: All stars across all knives
+      let totalAllStars = 0;
+      if (GAME.knifeStars) {
+        for (const k in GAME.knifeStars) totalAllStars += (GAME.knifeStars[k] || 1);
+      }
+      const starForgeTalent = TALENTS.find(t => t.id === 'star_forge_master');
+      const starForgeMult = 1 + (starForgeTalent ? starForgeTalent.level * 0.15 : 0);
+      const allStarsBonus = 1 + (totalAllStars * 0.005 * starForgeMult);
+
+      // Omni-Mastery Late-Game Talent
+      const omniTalent = TALENTS.find(t => t.id === 'omni_mastery');
+      const omniTalentMult = 1 + (omniTalent ? omniTalent.level * 0.30 : 0);
 
       // MEANINGFUL PET CARE ACTIVE BUFFS
-      // 1. Cleanliness gives up to +40% Factories passive yield!
       const cleanBoost = 1 + (Math.max(0, Math.min(100, GAME.clean || 0)) / 100) * 0.40;
-      // 2. Ideal Pet: All x2.0
       const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
       const idealMult = isIdealPet ? 2.0 : 1.0;
 
-      return base * turboMult * goldRushMult * overclockMult * rollsMult * cosmicMult * plungersMult * turboBoost * knifePassiveMult * cleanBoost * idealMult;
+      const indexBonus = getKnifeIndexMilestoneBonus();
+
+      return base * turboMult * goldRushMult * overclockMult * rollsMult * cosmicMult * plungersMult * facOverdriveMult * turboBoost * knifePassiveMult * allStarsBonus * omniTalentMult * cleanBoost * idealMult * indexBonus.passiveBonus;
     }
 
     // Handles extreme click spam (1ms clickers) safely without frame drop
@@ -5684,7 +5878,11 @@
 
     function getAffordableEvoInfo() {
       const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');
-      const costDiscount = omegaTalent ? Math.pow(0.97, omegaTalent.level) : 1.0;
+      let costDiscount = omegaTalent ? Math.pow(0.98, omegaTalent.level) : 1.0;
+      const unbreakEvo = TALENTS.find(t => t.id === 'unbreakable_evo');
+      if (unbreakEvo && unbreakEvo.level > 0) {
+        costDiscount *= Math.pow(0.985, unbreakEvo.level);
+      }
 
       if (GAME.evoStage >= EVOLUTIONS.length - 1) {
         return { count: 0, totalCost: 0, canBuy: false, maxReached: true };
@@ -5693,7 +5891,7 @@
       let targetCount = 1;
       if (buyMultiplier === 10) targetCount = 10;
       else if (buyMultiplier === 100) targetCount = 100;
-      else if (buyMultiplier === 'max') targetCount = 10000;
+      else if (buyMultiplier === 'max') targetCount = 20000;
 
       let totalCost = 0;
       let count = 0;
@@ -5731,7 +5929,7 @@
       let targetCount = 1;
       if (buyMultiplier === 10) targetCount = 10;
       else if (buyMultiplier === 100) targetCount = 100;
-      else if (buyMultiplier === 'max') targetCount = 10000;
+      else if (buyMultiplier === 'max') targetCount = 25000;
 
       let totalCost = 0;
       let count = 0;
@@ -5779,7 +5977,7 @@
 
       for (let i = 0; i < targetCount; i++) {
         const lvl = tl.level + i;
-        const cost = Math.floor(tl.cost * Math.pow(1.22, lvl)) + lvl;
+        const cost = Math.floor(tl.cost * Math.pow(1.075, lvl)) + lvl;
         if (buyMultiplier === 'max') {
           if (currRolls >= cost) {
             currRolls -= cost;
@@ -5795,7 +5993,7 @@
       }
 
       if (buyMultiplier === 'max' && count === 0) {
-        totalCost = Math.floor(tl.cost * Math.pow(1.22, tl.level)) + tl.level;
+        totalCost = Math.floor(tl.cost * Math.pow(1.075, tl.level)) + tl.level;
       }
 
       const canBuy = count > 0 && GAME.prestigeRolls >= totalCost;
@@ -5921,16 +6119,20 @@
     // PRESTIGE: Requires Stage >= 14 OR cycleBiomass >= 300,000
     function getPrestigeRollsReward() {
       if (GAME.evoStage < 14 && GAME.cycleBiomass < 300000) return 0;
-      // 1. Progressive Biomass Curve (scales smoothly with 1ms autoclicker)
-      const bioComponent = Math.floor(Math.pow(Math.max(1, GAME.cycleBiomass) / 45000, 0.50));
-      // 2. Stage Milestone Reward (rewards pushing deep into 10,000 forms!)
-      const stageBonus = Math.floor(Math.pow(Math.max(0, GAME.evoStage - 8), 1.45) * 1.6);
+      // Progressive logarithmic + stage milestone formula calibrated for steady progression
+      const stageComp = Math.floor(Math.pow(Math.max(0, GAME.evoStage - 10), 1.35) * 1.5);
+      const bioDigits = Math.max(0, Math.log10(Math.max(1, GAME.cycleBiomass)) - 4);
+      const bioComp = Math.floor(Math.pow(bioDigits, 3.2) * 1.8);
 
-      let baseRolls = Math.max(1, bioComponent + stageBonus);
+      let baseRolls = Math.max(1, stageComp + bioComp);
 
       const infFlush = TALENTS.find(t => t.id === 'infinity_flush');
       if (infFlush && infFlush.level > 0) {
         baseRolls = Math.round(baseRolls * (1 + infFlush.level * 0.15));
+      }
+      const hyperFlush = TALENTS.find(t => t.id === 'hyperspeed_flush');
+      if (hyperFlush && hyperFlush.level > 0) {
+        baseRolls = Math.round(baseRolls * (1 + hyperFlush.level * 0.15));
       }
       return baseRolls;
     }
@@ -5970,12 +6172,21 @@
     // ASTRAL TRANSCENDENCE: Requires Stage >= 99 (Form 100) OR prestigeRolls >= 300
     function getTranscendPlungersReward() {
       if (GAME.evoStage < 99 && (GAME.prestigeRolls || 0) < 300) return 0;
-      const rollsComp = Math.floor(Math.pow(Math.max(1, GAME.prestigeRolls || 0) / 100, 0.60));
-      const stageComp = Math.floor(Math.pow(Math.max(0, GAME.evoStage - 85), 1.2) * 0.08);
+      const rollsComp = Math.floor(Math.pow(Math.max(0, Math.log10(Math.max(1, GAME.prestigeRolls || 0)) - 1), 2.2) * 2.0);
+      const stageComp = Math.floor(Math.pow(Math.max(0, GAME.evoStage - 99), 1.15) * 0.15);
       let base = Math.max(1, rollsComp + stageComp);
       const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');
       if (soulTalent && soulTalent.level > 0) {
         base = Math.round(base * (1 + soulTalent.level * 0.25));
+      }
+      const incubator = GAME.transcendUpgrades?.plungerIncubator || 0;
+      if (incubator > 0) {
+        base = Math.round(base * (1 + incubator * 0.10));
+      }
+      const astralTalent = TALENTS.find(t => t.id === 'astral_splendor');
+      if (astralTalent && astralTalent.level > 0) {
+        const doubleChance = astralTalent.level * 0.02;
+        if (Math.random() < doubleChance) base *= 2;
       }
       return base;
     }
@@ -6021,24 +6232,23 @@
       if (!listEl) return;
       listEl.innerHTML = '';
 
+      if (!GAME.transcendUpgrades) {
+        GAME.transcendUpgrades = { autoBuyer: false, passiveRolls: 0, omniMult: 0, afkCap: 0, knifeForge: 0, factoryOverdrive: 0, plungerIncubator: 0, meteorStorm: 0, evoBlessing: 0, autoEvolution: false };
+      }
+
       TRANSCEND_UPGRADES.forEach(upg => {
         let isMax = false;
         let lvl = 0;
-        if (upg.id === 'art_autobuyer') {
-          isMax = !!GAME.transcendUpgrades?.autoBuyer;
+        if (typeof GAME.transcendUpgrades[upg.key] === 'boolean') {
+          isMax = !!GAME.transcendUpgrades[upg.key];
           lvl = isMax ? 1 : 0;
-        } else if (upg.id === 'art_passive_rolls') {
-          lvl = GAME.transcendUpgrades?.passiveRolls || 0;
-          isMax = lvl >= upg.max;
-        } else if (upg.id === 'art_omni_mult') {
-          lvl = GAME.transcendUpgrades?.omniMult || 0;
-          isMax = lvl >= upg.max;
-        } else if (upg.id === 'art_afk_god') {
-          lvl = GAME.transcendUpgrades?.afkCap || 0;
+        } else {
+          lvl = GAME.transcendUpgrades[upg.key] || 0;
           isMax = lvl >= upg.max;
         }
 
-        const canBuy = (GAME.transcendPlungers || 0) >= upg.cost && !isMax;
+        const cost = upg.costStep ? (upg.cost + lvl * upg.costStep) : upg.cost;
+        const canBuy = (GAME.transcendPlungers || 0) >= cost && !isMax;
 
         const row = document.createElement('div');
         row.className = 'p-2 rounded-xl bg-stone-900 border border-cyan-800/60 flex items-center justify-between text-xs';
@@ -6048,7 +6258,7 @@
             <div class="text-[10px] text-stone-400">${upg.desc}</div>
           </div>
           <button class="buy-art-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 ml-2 transition ${isMax ? 'bg-stone-800 text-stone-500 border-stone-700' : (canBuy ? 'bg-cyan-500 hover:bg-cyan-400 text-stone-950 border-cyan-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed')}" data-id="${upg.id}" ${canBuy ? '' : 'disabled'}>
-            ${isMax ? 'МАКС' : `${upg.cost} 🪠`}
+            ${isMax ? 'МАКС' : `${cost} 🪠`}
           </button>
         `;
         listEl.appendChild(row);
@@ -6057,22 +6267,21 @@
       listEl.querySelectorAll('.buy-art-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const upg = TRANSCEND_UPGRADES.find(u => u.id === btn.dataset.id);
-          if (!upg || (GAME.transcendPlungers || 0) < upg.cost) return;
+          if (!upg) return;
 
-          if (!GAME.transcendUpgrades) GAME.transcendUpgrades = { autoBuyer: false, passiveRolls: 0, omniMult: 0, afkCap: 0 };
+          let lvl = typeof GAME.transcendUpgrades[upg.key] === 'boolean'
+            ? (GAME.transcendUpgrades[upg.key] ? 1 : 0)
+            : (GAME.transcendUpgrades[upg.key] || 0);
 
-          if (upg.id === 'art_autobuyer' && !GAME.transcendUpgrades.autoBuyer) {
-            GAME.transcendPlungers -= upg.cost;
-            GAME.transcendUpgrades.autoBuyer = true;
-          } else if (upg.id === 'art_passive_rolls' && (GAME.transcendUpgrades.passiveRolls || 0) < upg.max) {
-            GAME.transcendPlungers -= upg.cost;
-            GAME.transcendUpgrades.passiveRolls = (GAME.transcendUpgrades.passiveRolls || 0) + 1;
-          } else if (upg.id === 'art_omni_mult' && (GAME.transcendUpgrades.omniMult || 0) < upg.max) {
-            GAME.transcendPlungers -= upg.cost;
-            GAME.transcendUpgrades.omniMult = (GAME.transcendUpgrades.omniMult || 0) + 1;
-          } else if (upg.id === 'art_afk_god' && (GAME.transcendUpgrades.afkCap || 0) < upg.max) {
-            GAME.transcendPlungers -= upg.cost;
-            GAME.transcendUpgrades.afkCap = (GAME.transcendUpgrades.afkCap || 0) + 1;
+          if (lvl >= upg.max) return;
+          const cost = upg.costStep ? (upg.cost + lvl * upg.costStep) : upg.cost;
+          if ((GAME.transcendPlungers || 0) < cost) return;
+
+          GAME.transcendPlungers -= cost;
+          if (typeof GAME.transcendUpgrades[upg.key] === 'boolean') {
+            GAME.transcendUpgrades[upg.key] = true;
+          } else {
+            GAME.transcendUpgrades[upg.key] = (GAME.transcendUpgrades[upg.key] || 0) + 1;
           }
           updateDashboardUI();
           renderTranscendUpgrades();
@@ -6094,6 +6303,7 @@
         if (ach.type === 'allBiomass' && GAME.allTimeBiomass >= ach.target) met = true;
         if (ach.type === 'feed' && feedCount >= ach.target) met = true;
         if (ach.type === 'wash' && washCount >= ach.target) met = true;
+        if (ach.type === 'knives' && (GAME.unlockedKnives || []).length >= ach.target) met = true;
         if (ach.type === 'polish' && polishCount >= ach.target) met = true;
         if (ach.type === 'flush' && flushCount >= ach.target) met = true;
         if (ach.type === 'prestige' && GAME.totalPrestiges >= ach.target) met = true;
@@ -6131,9 +6341,23 @@
       const rollsMult = 1 + (softRolls ? softRolls.level * 0.25 : 0) + (GAME.totalPrestiges * 0.35);
       const cosmicRes = TALENTS.find(t => t.id === 'cosmic_resonance');
       const cosmicMult = cosmicRes ? Math.pow(1.5, Math.floor(cosmicRes.level / 2)) : 1;
-      const globalFacMultiplier = turboMult * goldRushMult * overclockMult * rollsMult * cosmicMult;
+      const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
+      const plungersMult = 1 + (GAME.transcendPlungers || 0) * (1 + omniLvl);
+      const facOverdriveMult = Math.pow(2.0, GAME.transcendUpgrades?.factoryOverdrive || 0);
+      const omniTalent = TALENTS.find(t => t.id === 'omni_mastery');
+      const omniTalentMult = 1 + (omniTalent ? omniTalent.level * 0.30 : 0);
+      const globalFacMultiplier = turboMult * goldRushMult * overclockMult * rollsMult * cosmicMult * plungersMult * facOverdriveMult * omniTalentMult;
 
-      FACTORIES.forEach(fac => {
+      const qRepl = TALENTS.find(t => t.id === 'quantum_replication');
+      const qReplMult = 1 + (qRepl ? qRepl.level * 0.50 : 0);
+
+      let unownedCount = 0;
+      FACTORIES.forEach((fac, idx) => {
+        if (fac.count === 0) {
+          unownedCount++;
+          if (unownedCount > 3) return; // Keep list clean and focused on immediate upcoming goals
+        }
+
         const facInfo = getAffordableFactoryInfo(fac);
         const canBuy = facInfo.canBuy;
 
@@ -6142,14 +6366,24 @@
         if (fac.count >= 50) mMult *= 2;
         if (fac.count >= 100) mMult *= 4;
         if (fac.count >= 200) mMult *= 4;
+        if (fac.count >= 500) mMult *= 8;
+        if (fac.count >= 1000) mMult *= 16;
+        if (fac.count >= 2500) mMult *= 32;
+        if (fac.count >= 5000) mMult *= 64;
 
         let nextMilestone = 25;
-        if (fac.count >= 25) nextMilestone = 50;
-        if (fac.count >= 50) nextMilestone = 100;
-        if (fac.count >= 100) nextMilestone = 200;
-        if (fac.count >= 200) nextMilestone = null;
+        let milestoneMultiplierDesc = 'x2';
+        if (fac.count >= 25) { nextMilestone = 50; milestoneMultiplierDesc = 'x2'; }
+        if (fac.count >= 50) { nextMilestone = 100; milestoneMultiplierDesc = 'x4'; }
+        if (fac.count >= 100) { nextMilestone = 200; milestoneMultiplierDesc = 'x4'; }
+        if (fac.count >= 200) { nextMilestone = 500; milestoneMultiplierDesc = 'x8'; }
+        if (fac.count >= 500) { nextMilestone = 1000; milestoneMultiplierDesc = 'x16'; }
+        if (fac.count >= 1000) { nextMilestone = 2500; milestoneMultiplierDesc = 'x32'; }
+        if (fac.count >= 2500) { nextMilestone = 5000; milestoneMultiplierDesc = 'x64'; }
+        if (fac.count >= 5000) nextMilestone = null;
 
-        const effectiveCpsPerUnit = fac.baseCps * mMult * globalFacMultiplier;
+        const highTierBonus = (idx >= 20) ? qReplMult : 1;
+        const effectiveCpsPerUnit = fac.baseCps * mMult * globalFacMultiplier * highTierBonus;
         const totalIncomeThisType = fac.count * effectiveCpsPerUnit;
 
         const btnLabel = buyMultiplier === 'max'
@@ -6181,7 +6415,7 @@
           ${nextMilestone ? `
             <div class="mt-1 flex items-center justify-between text-[9px] text-stone-500 border-t border-stone-900 pt-1">
               <span>Рубеж: ${fac.count} / ${nextMilestone} шт</span>
-              <span class="text-amber-400/80">бонус x${nextMilestone >= 100 ? '4' : '2'} при достижении</span>
+              <span class="text-amber-400/80">бонус ${milestoneMultiplierDesc} при достижении</span>
             </div>
           ` : `
             <div class="mt-1 text-[9px] text-yellow-400 font-bold text-right border-t border-stone-900 pt-1">🏆 Все рубежи разблокированы!</div>
@@ -6514,7 +6748,7 @@
       if (skinTierEl) skinTierEl.textContent = `Тир ${skinInfo.tier}`;
       const skinHintEl = document.getElementById('poopSkinProgressHint');
       if (skinHintEl) {
-        if (skinInfo.nextAt < 10000) {
+        if (skinInfo.nextAt < 20000) {
           skinHintEl.textContent = `Форма #${GAME.evoStage + 1} • След. скин на Форме #${skinInfo.nextAt}`;
         } else {
           skinHintEl.textContent = `Форма #${GAME.evoStage + 1} • ВЫСШАЯ ФОРМА ОМНИВЕРСА!`;
@@ -6556,13 +6790,16 @@
       const equippedObj = getEquippedKnife();
       if (equippedCard) {
         if (equippedObj) {
+          const eqStar = getKnifeStar(equippedObj.id);
+          const eqClickPct = Math.round((equippedObj.clickMult * (1 + (eqStar - 1) * 0.35) - 1) * 100);
+          const eqPassPct = Math.round((equippedObj.passiveMult * (1 + (eqStar - 1) * 0.25) - 1) * 100);
           equippedCard.innerHTML = `
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <span class="text-3xl">${equippedObj.icon}</span>
                 <div>
-                  <div class="font-game text-sm text-yellow-300">${equippedObj.name}</div>
-                  <div class="text-[10px] text-pink-300 font-bold">${equippedObj.rarityName} ★ <span class="text-emerald-300">+${Math.round((equippedObj.clickMult - 1) * 100)}% Клик</span> ★ <span class="text-cyan-300">+${Math.round((equippedObj.passiveMult - 1) * 100)}% Заводы</span></div>
+                  <div class="font-game text-sm text-yellow-300">${equippedObj.name} <span class="text-amber-400 font-black">★ Lv.${eqStar}</span></div>
+                  <div class="text-[10px] text-pink-300 font-bold">${equippedObj.rarityName} ★ <span class="text-emerald-300">+${eqClickPct}% Клик</span> ★ <span class="text-cyan-300">+${eqPassPct}% Заводы</span></div>
                   <div class="text-[10px] text-orange-400 font-mono font-bold mt-0.5">★ StatTrak™: ${(equippedObj.statTrak || 0).toLocaleString()} кликов</div>
                   <div class="text-[9px] text-stone-400 mt-0.5">${equippedObj.desc}</div>
                 </div>
@@ -6597,26 +6834,36 @@
             const kn = KNIVES.find(k => k.id === kid);
             if (!kn) return '';
             const isEquipped = GAME.equippedKnife === kn.id;
+            const star = getKnifeStar(kn.id);
+            const costInfo = getKnifeSharpenCost(kn);
+            const clickBonusPct = Math.round((kn.clickMult * (1 + (star - 1) * 0.35) - 1) * 100);
             const rarityClass = kn.rarity === 'special' ? 'border-yellow-400 bg-yellow-950/30' : (kn.rarity === 'covert' ? 'border-red-500 bg-red-950/30' : (kn.rarity === 'classified' ? 'border-pink-500 bg-pink-950/30' : 'border-purple-500 bg-purple-950/30'));
+            const sharpenBtnTxt = costInfo.maxReached ? '★ МАКС' : `⭐ Заточить (${costInfo.cost} ${costInfo.symbol})`;
             return `
               <div class="p-2.5 rounded-xl border-2 ${rarityClass} shadow flex flex-col justify-between">
                 <div>
                   <div class="flex items-center justify-between">
                     <span class="text-xl">${kn.icon}</span>
                     <span class="text-[9px] font-bold uppercase text-stone-400">${kn.rarityName}</span>
+                    <span class="text-[10px] font-black text-amber-400">★ Lv.${star}</span>
                   </div>
                   <div class="font-game text-xs text-yellow-300 mt-1 truncate">${kn.name}</div>
                   <div class="flex items-center justify-between mt-0.5">
-                    <span class="text-[10px] text-emerald-400 font-bold">+${Math.round((kn.clickMult - 1) * 100)}% Клик</span>
+                    <span class="text-[10px] text-emerald-400 font-bold">+${clickBonusPct}% Клик</span>
                     <span class="text-[9px] text-orange-400 font-mono font-bold">★ ${(kn.statTrak || 0).toLocaleString()}</span>
                   </div>
                 </div>
-                <div class="flex gap-1.5 mt-2.5">
-                  <button class="equip-knife-btn flex-1 py-1 rounded-lg text-[10px] font-bold ${isEquipped ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-500 text-white jelly-btn'}" data-id="${kn.id}">
-                    ${isEquipped ? '✓ НАДЕТ' : 'НАДЕТЬ'}
-                  </button>
-                  <button class="sell-knife-btn bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold px-2 py-1 rounded-lg text-[10px] border border-stone-700" data-id="${kn.id}" data-price="${kn.rarity === 'special' ? 60 : (kn.rarity === 'covert' ? 25 : (kn.rarity === 'classified' ? 12 : (kn.rarity === 'restricted' ? 5 : 2)))}" title="Утилизировать за Втулки">
-                    +${kn.rarity === 'special' ? 60 : (kn.rarity === 'covert' ? 25 : (kn.rarity === 'classified' ? 12 : (kn.rarity === 'restricted' ? 5 : 2)))} 🧻
+                <div class="flex flex-col gap-1.5 mt-2.5">
+                  <div class="flex gap-1.5">
+                    <button class="equip-knife-btn flex-1 py-1 rounded-lg text-[10px] font-bold ${isEquipped ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-500 text-white jelly-btn'}" data-id="${kn.id}">
+                      ${isEquipped ? '✓ НАДЕТ' : 'НАДЕТЬ'}
+                    </button>
+                    <button class="sell-knife-btn bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold px-2 py-1 rounded-lg text-[10px] border border-stone-700" data-id="${kn.id}" data-price="${kn.rarity === 'special' ? 60 : (kn.rarity === 'covert' ? 25 : (kn.rarity === 'classified' ? 12 : (kn.rarity === 'restricted' ? 5 : 2)))}" title="Утилизировать за Втулки">
+                      +${kn.rarity === 'special' ? 60 : (kn.rarity === 'covert' ? 25 : (kn.rarity === 'classified' ? 12 : (kn.rarity === 'restricted' ? 5 : 2)))} 🧻
+                    </button>
+                  </div>
+                  <button class="sharpen-knife-btn w-full py-1 rounded-lg text-[10px] font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition ${costInfo.maxReached ? 'opacity-50 cursor-not-allowed' : ''}" data-id="${kn.id}" ${costInfo.maxReached ? 'disabled' : ''}>
+                    ${sharpenBtnTxt}
                   </button>
                 </div>
               </div>
@@ -6628,6 +6875,13 @@
               GAME.equippedKnife = btn.dataset.id;
               updateDashboardUI();
               saveLocal();
+            });
+          });
+
+          invContainer.querySelectorAll('.sharpen-knife-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              sharpenKnife(btn.dataset.id);
             });
           });
 
@@ -7077,24 +7331,39 @@
 
       document.getElementById('rouletteResultIcon').textContent = rouletteWinningKnife.icon;
       document.getElementById('rouletteResultName').textContent = rouletteWinningKnife.name;
-      document.getElementById('rouletteResultRarity').textContent = `${rouletteWinningKnife.rarityName}`;
-
-      const stEl = document.getElementById('rouletteResultStatTrak');
-      if (stEl) stEl.textContent = `★ StatTrak™: ${(rouletteWinningKnife.statTrak || 0)} кликов`;
-
-      const flEl = document.getElementById('rouletteResultFloatText');
-      if (flEl) flEl.textContent = `${qualityName} (${floatVal})`;
-
-      const cbEl = document.getElementById('rouletteResultClickBoost');
-      if (cbEl) cbEl.textContent = `+${Math.round((rouletteWinningKnife.clickMult - 1) * 100)}% Клик`;
-
-      const pbEl = document.getElementById('rouletteResultPassiveBoost');
-      if (pbEl) pbEl.textContent = `+${Math.round((rouletteWinningKnife.passiveMult - 1) * 100)}% Заводы`;
-
-      // Add to inventory (if not owned)
+      if (!GAME.knifeStars) GAME.knifeStars = {};
+      let isDuplicate = false;
+      let star = 1;
       if (!GAME.unlockedKnives.includes(rouletteWinningKnife.id)) {
         GAME.unlockedKnives.push(rouletteWinningKnife.id);
+        GAME.knifeStars[rouletteWinningKnife.id] = 1;
+        star = 1;
+      } else {
+        isDuplicate = true;
+        const cur = GAME.knifeStars[rouletteWinningKnife.id] || 1;
+        if (cur < 25) {
+          GAME.knifeStars[rouletteWinningKnife.id] = cur + 1;
+          star = cur + 1;
+        } else {
+          star = 25;
+        }
       }
+
+      const rarityEl = document.getElementById('rouletteResultRarity');
+      if (rarityEl) {
+        if (isDuplicate) {
+          rarityEl.textContent = `${rouletteWinningKnife.rarityName} (ДУБЛИКАТ! ★ Звезда повышена до Lv.${star})`;
+        } else {
+          rarityEl.textContent = `${rouletteWinningKnife.rarityName} (НОВЫЙ НОЖ! ★ Lv.1)`;
+        }
+      }
+
+      const cbEl = document.getElementById('rouletteResultClickBoost');
+      if (cbEl) cbEl.textContent = `+${Math.round((rouletteWinningKnife.clickMult * (1 + (star - 1) * 0.35) - 1) * 100)}% Клик`;
+
+      const pbEl = document.getElementById('rouletteResultPassiveBoost');
+      if (pbEl) pbEl.textContent = `+${Math.round((rouletteWinningKnife.passiveMult * (1 + (star - 1) * 0.25) - 1) * 100)}% Заводы`;
+
       GAME.casesOpened = (GAME.casesOpened || 0) + 1;
       saveLocal();
       updateDashboardUI();
@@ -7194,20 +7463,29 @@
         const rarityClass = 'rarity-' + k.rarity;
 
         if (isUnlocked) {
+          const star = getKnifeStar(k.id);
+          const costInfo = getKnifeSharpenCost(k);
+          const clickBonusPct = Math.round((k.clickMult * (1 + (star - 1) * 0.35) - 1) * 100);
           return `
             <div class="p-2.5 rounded-2xl border-2 ${rarityClass} shadow flex flex-col justify-between text-left relative transition hover:scale-[1.02]">
               <div>
                 <div class="flex items-center justify-between">
                   <span class="text-2xl filter drop-shadow">${k.icon}</span>
-                  <span class="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-black/60 text-yellow-300 border border-yellow-400/40">${k.rarityName}</span>
+                  <div class="flex items-center gap-1">
+                    <span class="text-[9px] font-black text-amber-300">★ Lv.${star}</span>
+                    <span class="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-black/60 text-yellow-300 border border-yellow-400/40">${k.rarityName}</span>
+                  </div>
                 </div>
                 <div class="font-game text-xs text-yellow-200 mt-1 truncate" title="${k.name}">${k.name}</div>
-                <div class="text-[10px] text-emerald-400 font-bold mt-0.5">+${Math.round((k.clickMult - 1) * 100)}% Клик</div>
+                <div class="text-[10px] text-emerald-400 font-bold mt-0.5">+${clickBonusPct}% Клик</div>
                 <div class="text-[9px] text-stone-400 font-mono mt-0.5">★ StatTrak™: ${(k.statTrak || 0)}</div>
               </div>
-              <div class="mt-2">
+              <div class="mt-2 flex flex-col gap-1">
                 <button class="index-equip-btn w-full py-1 rounded-lg text-[10px] font-bold ${isEquipped ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-500 text-white jelly-btn'}" data-id="${k.id}">
                   ${isEquipped ? '✓ НАДЕТ' : 'НАДЕТЬ'}
+                </button>
+                <button class="index-sharpen-btn w-full py-0.5 rounded text-[9px] font-bold bg-amber-500/80 hover:bg-amber-400 text-stone-950 ${costInfo.maxReached ? 'opacity-40 cursor-not-allowed' : ''}" data-id="${k.id}" ${costInfo.maxReached ? 'disabled' : ''}>
+                  ${costInfo.maxReached ? '★ МАКС' : `⭐ Заточить (${costInfo.cost} ${costInfo.symbol})`}
                 </button>
               </div>
             </div>
@@ -7234,13 +7512,21 @@
         }
       }).join('');
 
-      // Attach equip buttons
+      // Attach equip and sharpen buttons
       grid.querySelectorAll('.index-equip-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           GAME.equippedKnife = btn.dataset.id;
           updateDashboardUI();
           renderKnivesIndexBook();
           saveLocal();
+        });
+      });
+
+      grid.querySelectorAll('.index-sharpen-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          sharpenKnife(btn.dataset.id);
+          renderKnivesIndexBook();
         });
       });
     }
@@ -7398,7 +7684,7 @@
 
       const currEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
       document.getElementById('topStageTitle').textContent = `Форма ${(currEvo.id + 1).toLocaleString()}: ${currEvo.name}`;
-      document.getElementById('evoProgressBadge').textContent = `${(currEvo.id + 1).toLocaleString()} / 10,000`;
+      document.getElementById('evoProgressBadge').textContent = `${(currEvo.id + 1).toLocaleString()} / 20,000`;
       document.getElementById('evoStageName').textContent = currEvo.name;
       document.getElementById('evoStageDesc').textContent = currEvo.desc;
 
@@ -7578,6 +7864,16 @@
         if (passiveRollTick >= 5) {
           passiveRollTick = 0;
           GAME.prestigeRolls += GAME.transcendUpgrades.passiveRolls;
+        }
+      }
+
+      // Transcendence Artifact: Auto-Evolution
+      if (GAME.transcendUpgrades?.autoEvolution && GAME.evoStage < EVOLUTIONS.length - 1) {
+        const evoInfo = getAffordableEvoInfo();
+        if (evoInfo.canBuy && evoInfo.count > 0) {
+          GAME.biomass -= evoInfo.totalCost;
+          GAME.evoStage += evoInfo.count;
+          checkAchievements();
         }
       }
 
