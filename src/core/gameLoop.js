@@ -8,6 +8,7 @@ import { checkAchievements } from '../systems/achievementsService.js';
 import { saveLocal } from '../save/saveManager.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
+import { triggerPetSquash } from '../ui/petCanvasView.js';
 import { events } from './events.js';
 
 let lastTickTime = performance.now();
@@ -44,6 +45,7 @@ export function gameEngineTick() {
   }
   if (targetCps > 0) {
     addPendingClicks(targetCps * dt);
+    triggerPetSquash(1.12, 0.9);
   }
   processBatchedClicks();
 

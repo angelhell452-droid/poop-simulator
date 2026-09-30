@@ -13,7 +13,7 @@ import { initKnivesIndexListeners } from './ui/knivesIndexView.js';
 import { initPetCanvas, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js';
 import { initModals } from './ui/modalManager.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
-import { addPendingClicks } from './systems/clickService.js';
+import { addPendingClicks, processBatchedClicks } from './systems/clickService.js';
 import { performEvolution } from './progression/evolutionService.js';
 import { checkAchievements } from './systems/achievementsService.js';
 import { getPassiveIncome } from './economy/production.js';
@@ -159,6 +159,7 @@ export async function bootstrap() {
       }
       addPendingClicks(1);
       triggerPetSquash(1.25, 0.8);
+      processBatchedClicks(e.clientX, e.clientY);
     });
   }
 

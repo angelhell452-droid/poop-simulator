@@ -10,6 +10,7 @@ import { checkAchievements } from '../systems/achievementsService.js';
 import { updateHUD } from './hudView.js';
 import { saveLocal } from '../save/saveManager.js';
 import { requestCloudSync } from '../save/cloudSync.js';
+import { events } from '../core/events.js';
 
 let canvas = null;
 let ctx = null;
@@ -29,6 +30,7 @@ export let goldenMeteor = {
   rotation: 0
 };
 let nextMeteorSpawn = Date.now() + 25000;
+let listenersInitialized = false;
 
 export function initPetCanvas() {
   canvas = document.getElementById('petCanvas');
@@ -36,6 +38,42 @@ export function initPetCanvas() {
   ctx = canvas.getContext('2d');
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
+
+  if (!listenersInitialized) {
+    listenersInitialized = true;
+    events.on('click:processed', (res) => {
+      if (!res || res.totalEarned <= 0) return;
+      if (visualParticles.length >= 25) return;
+
+      const { clicks, totalEarned, critsCount, clientX, clientY } = res;
+      const textLabel = clicks > 1
+        ? (critsCount > 0 ? `💥 КРИТ x${critsCount}! +${formatNumber(totalEarned)} 💨` : `⚡ +${formatNumber(totalEarned)} 💨 (x${clicks})`)
+        : (critsCount > 0 ? `💥 КРИТ! +${formatNumber(totalEarned)} 💨` : `+${formatNumber(totalEarned)} 💨`);
+
+      let spawnX = null;
+      let spawnY = null;
+      if (clientX !== null && clientX !== undefined && clientY !== null && clientY !== undefined && canvas) {
+        const rect = canvas.getBoundingClientRect();
+        spawnX = clientX - rect.left;
+        spawnY = clientY - rect.top;
+      }
+
+      addVisualParticle(
+        textLabel,
+        critsCount > 0 ? '#f97316' : '#22c55e',
+        critsCount > 0 ? 1.35 : 1.15,
+        1.1,
+        -2.8,
+        spawnX,
+        spawnY
+      );
+    });
+
+    events.on('turbo:activated', () => {
+      addVisualParticle('🔥 ТУРБО-РЕЖИМ x10! 🔥', '#ef4444', 1.8, 1.8, -3.0);
+    });
+  }
+
   requestAnimationFrame(renderPetLoop);
 }
 
@@ -51,11 +89,14 @@ export function triggerPetSquash(sx = 1.25, sy = 0.8) {
   knifeSlashTimer = 1.0;
 }
 
-export function addVisualParticle(text, color = '#facc15', scale = 1.4, life = 1.5, vy = -2.5) {
+export function addVisualParticle(text, color = '#facc15', scale = 1.4, life = 1.5, vy = -2.5, x = null, y = null) {
+  if (!canvas) canvas = document.getElementById('petCanvas');
   if (!canvas) return;
+  const w = canvas.width || 360;
+  const h = canvas.height || 480;
   visualParticles.push({
-    x: canvas.width / 2 + (Math.random() * 80 - 40),
-    y: canvas.height * 0.45,
+    x: (x !== null && x !== undefined && !isNaN(x)) ? x : (w / 2 + (Math.random() * 80 - 40)),
+    y: (y !== null && y !== undefined && !isNaN(y)) ? y : (h * 0.48 + (Math.random() * 20 - 10)),
     text,
     color,
     scale,
@@ -169,14 +210,30 @@ function renderPetLoop(time) {
   ctx.arc(0, 8, 10, 0.1 * Math.PI, 0.9 * Math.PI);
   ctx.stroke();
 
-  // Equipped Knife in hand
+  // Equipped CS:GO Knife in pet hand
   const knife = getEquippedKnife();
   if (knife) {
     ctx.save();
-    ctx.translate(45, 15);
-    ctx.rotate(knifeSlashTimer > 0 ? Math.sin(time * 0.05) * 0.4 : 0);
-    ctx.fillStyle = knife.bladeColor === 'rainbow' ? '#f43f5e' : (knife.bladeColor || '#94a3b8');
-    ctx.fillRect(0, -3, 30, 6);
+    ctx.translate(42, 10);
+
+    // Slashing rotation arc on click / autoclicker
+    let slashAngle = 0.2;
+    if (knifeSlashTimer > 0) {
+      slashAngle = 0.2 + Math.sin(knifeSlashTimer * Math.PI) * 0.75;
+      knifeSlashTimer = Math.max(0, knifeSlashTimer - 0.12);
+    }
+    ctx.rotate(slashAngle);
+
+    // Cute pet hand holding the blade
+    ctx.fillStyle = GAME.girlyMode ? '#fbcfe8' : currentEvo.bodyColor;
+    ctx.strokeStyle = '#1c1917';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    drawCSGOKnife(ctx, knife, time);
     ctx.restore();
   }
 
@@ -229,9 +286,18 @@ function renderPetLoop(time) {
     p.life -= 0.025;
 
     ctx.save();
-    ctx.font = `bold ${Math.round(15 * p.scale)}px "Fredoka One", cursive`;
+    ctx.font = `900 ${Math.round(16 * p.scale)}px "Fredoka One", system-ui, -apple-system, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+
+    // Dark stroke outline for crisp readability over any background
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.lineWidth = Math.max(3, Math.round(3.5 * p.scale));
+    ctx.strokeText(p.text, p.x, p.y);
+
+    // Punchy vibrant text fill
     ctx.fillStyle = p.color;
-    ctx.globalAlpha = Math.max(0, p.life);
     ctx.fillText(p.text, p.x, p.y);
     ctx.restore();
 
@@ -291,4 +357,256 @@ export function checkMeteorClick(clientX, clientY) {
     return true;
   }
   return false;
+}
+
+// DRAW CS:GO KNIFE IN PET HAND WITH DYNAMIC SHADERS & VECTOR MODELS
+function drawCSGOKnife(ctx, knife, time) {
+  if (!knife) return;
+  ctx.save();
+  ctx.translate(8, -2);
+
+  // Dynamic CS:GO Blade Gradients & Shaders
+  let bladeFill = knife.bladeColor;
+  if (knife.bladeColor === 'fade') {
+    const fadeGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    fadeGrad.addColorStop(0, '#facc15'); // 100% Fade Gold
+    fadeGrad.addColorStop(0.35, '#f43f5e'); // Pink
+    fadeGrad.addColorStop(0.7, '#8b5cf6'); // Purple
+    fadeGrad.addColorStop(1, '#06b6d4'); // Electric Blue
+    bladeFill = fadeGrad;
+  } else if (knife.bladeColor === 'marble') {
+    const marbleGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    marbleGrad.addColorStop(0, '#ef4444');
+    marbleGrad.addColorStop(0.5, '#3b82f6');
+    marbleGrad.addColorStop(1, '#eab308');
+    bladeFill = marbleGrad;
+  } else if (knife.bladeColor === 'fire_ice') {
+    const fiGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    fiGrad.addColorStop(0, '#ef4444'); // Max Fire
+    fiGrad.addColorStop(0.5, '#3b82f6'); // Max Ice
+    fiGrad.addColorStop(1, '#06b6d4');
+    bladeFill = fiGrad;
+  } else if (knife.bladeColor === 'lore') {
+    const loreGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    loreGrad.addColorStop(0, '#fef08a');
+    loreGrad.addColorStop(0.4, '#eab308');
+    loreGrad.addColorStop(1, '#ca8a04');
+    bladeFill = loreGrad;
+  } else if (knife.bladeColor === 'ruby') {
+    const rubyGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    rubyGrad.addColorStop(0, '#f87171');
+    rubyGrad.addColorStop(0.5, '#dc2626');
+    rubyGrad.addColorStop(1, '#991b1b');
+    bladeFill = rubyGrad;
+  } else if (knife.bladeColor === 'sapphire') {
+    const saphGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    saphGrad.addColorStop(0, '#60a5fa');
+    saphGrad.addColorStop(0.5, '#2563eb');
+    saphGrad.addColorStop(1, '#1e3a8a');
+    bladeFill = saphGrad;
+  } else if (knife.bladeColor === 'emerald') {
+    const emGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    emGrad.addColorStop(0, '#34d399');
+    emGrad.addColorStop(0.5, '#059669');
+    emGrad.addColorStop(1, '#064e3b');
+    bladeFill = emGrad;
+  } else if (knife.bladeColor === 'bluegem') {
+    const bgGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    bgGrad.addColorStop(0, '#38bdf8');
+    bgGrad.addColorStop(0.7, '#0284c7');
+    bgGrad.addColorStop(1, '#ca8a04');
+    bladeFill = bgGrad;
+  } else if (knife.bladeColor === 'tiger') {
+    const tigerGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    tigerGrad.addColorStop(0, '#fef08a');
+    tigerGrad.addColorStop(0.5, '#f59e0b');
+    tigerGrad.addColorStop(1, '#b45309');
+    bladeFill = tigerGrad;
+  } else if (knife.bladeColor === 'slaughter') {
+    const slGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    slGrad.addColorStop(0, '#f87171');
+    slGrad.addColorStop(0.5, '#b91c1c');
+    slGrad.addColorStop(1, '#7f1d1d');
+    bladeFill = slGrad;
+  } else if (knife.bladeColor === 'crimson') {
+    const cwGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    cwGrad.addColorStop(0, '#ef4444');
+    cwGrad.addColorStop(1, '#7f1d1d');
+    bladeFill = cwGrad;
+  } else if (knife.bladeColor === 'autotronic') {
+    const atGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    atGrad.addColorStop(0, '#e4e4e7');
+    atGrad.addColorStop(0.6, '#71717a');
+    atGrad.addColorStop(1, '#ef4444');
+    bladeFill = atGrad;
+  } else if (knife.bladeColor === 'damascus') {
+    const damGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    damGrad.addColorStop(0, '#f4f4f5');
+    damGrad.addColorStop(0.3, '#71717a');
+    damGrad.addColorStop(0.6, '#d4d4d8');
+    damGrad.addColorStop(1, '#52525b');
+    bladeFill = damGrad;
+  } else if (knife.bladeColor === 'hyper') {
+    const hypGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    hypGrad.addColorStop(0, '#06b6d4');
+    hypGrad.addColorStop(0.5, '#ec4899');
+    hypGrad.addColorStop(1, '#8b5cf6');
+    bladeFill = hypGrad;
+  } else if (knife.bladeColor === 'printstream') {
+    const psGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    psGrad.addColorStop(0, '#ffffff');
+    psGrad.addColorStop(0.5, '#f1f5f9');
+    psGrad.addColorStop(1, '#e2e8f0');
+    bladeFill = psGrad;
+  } else if (knife.bladeColor === 'doppler_pink') {
+    const dpGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    dpGrad.addColorStop(0, '#f472b6');
+    dpGrad.addColorStop(0.6, '#db2777');
+    dpGrad.addColorStop(1, '#581c87');
+    bladeFill = dpGrad;
+  } else if (knife.bladeColor === 'doppler_blue') {
+    const dbGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    dbGrad.addColorStop(0, '#38bdf8');
+    dbGrad.addColorStop(0.6, '#1d4ed8');
+    dbGrad.addColorStop(1, '#0f172a');
+    bladeFill = dbGrad;
+  } else if (knife.bladeColor === 'rainbow') {
+    const rbGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    rbGrad.addColorStop(0, '#ef4444');
+    rbGrad.addColorStop(0.18, '#f97316');
+    rbGrad.addColorStop(0.36, '#eab308');
+    rbGrad.addColorStop(0.54, '#22c55e');
+    rbGrad.addColorStop(0.72, '#06b6d4');
+    rbGrad.addColorStop(0.9, '#8b5cf6');
+    rbGrad.addColorStop(1, '#ec4899');
+    bladeFill = rbGrad;
+  } else if (knife.bladeColor === 'celestial') {
+    const celGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    celGrad.addColorStop(0, '#ffffff');
+    celGrad.addColorStop(0.4, '#67e8f9');
+    celGrad.addColorStop(0.8, '#0284c7');
+    celGrad.addColorStop(1, '#facc15');
+    bladeFill = celGrad;
+  } else if (knife.bladeColor === 'titanium') {
+    const titGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    titGrad.addColorStop(0, '#f1f5f9');
+    titGrad.addColorStop(0.5, '#64748b');
+    titGrad.addColorStop(0.85, '#2dd4bf');
+    titGrad.addColorStop(1, '#0f766e');
+    bladeFill = titGrad;
+  } else if (knife.bladeColor === 'godly') {
+    const godGrad = ctx.createLinearGradient(0, -6, 50, 10);
+    godGrad.addColorStop(0, '#fef08a');
+    godGrad.addColorStop(0.4, '#f59e0b');
+    godGrad.addColorStop(0.7, '#7e22ce');
+    godGrad.addColorStop(1, '#000000');
+    bladeFill = godGrad;
+  }
+
+  ctx.fillStyle = knife.handleColor || '#18181b';
+  ctx.strokeStyle = '#09090b';
+  ctx.lineWidth = 1.5;
+
+  if (knife.style === 'karambit' || knife.style === 'talon') {
+    ctx.beginPath();
+    ctx.arc(-8, -3, 6.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.arc(-8, -3, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = knife.handleColor || '#18181b';
+    ctx.beginPath();
+    ctx.moveTo(-3, -5);
+    ctx.lineTo(12, -2);
+    ctx.lineTo(10, 6);
+    ctx.lineTo(-5, 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = bladeFill;
+    ctx.beginPath();
+    ctx.moveTo(10, -3);
+    ctx.quadraticCurveTo(34, -7, 48, 14);
+    ctx.quadraticCurveTo(28, 8, 10, 5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#18181b';
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(12, -2);
+    ctx.quadraticCurveTo(30, -5, 46, 12);
+    ctx.stroke();
+  } else if (knife.style === 'butterfly') {
+    ctx.fillStyle = knife.handleColor || '#4c1d95';
+    ctx.fillRect(-6, -9, 17, 5);
+    ctx.fillRect(-6, 4, 17, 5);
+    ctx.fillStyle = '#e2e8f0';
+    ctx.beginPath(); ctx.arc(10, -6, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(10, 6, 2, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = bladeFill;
+    ctx.beginPath();
+    ctx.moveTo(11, -4);
+    ctx.lineTo(44, -1);
+    ctx.lineTo(48, 0);
+    ctx.lineTo(44, 1);
+    ctx.lineTo(11, 4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else if (knife.style === 'katana') {
+    ctx.fillStyle = '#facc15';
+    ctx.beginPath(); ctx.arc(10, 0, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = knife.handleColor || '#18181b';
+    ctx.fillRect(-12, -3.5, 20, 7);
+    ctx.fillStyle = '#ffd700';
+    ctx.fillRect(-11, -2, 2, 4);
+    ctx.fillRect(-6, -2, 2, 4);
+    ctx.fillRect(-1, -2, 2, 4);
+
+    ctx.fillStyle = bladeFill;
+    ctx.beginPath();
+    ctx.moveTo(10, -3);
+    ctx.quadraticCurveTo(38, -7, 60, -3);
+    ctx.lineTo(62, -1);
+    ctx.quadraticCurveTo(38, 2, 10, 3);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+  } else if (knife.style === 'bayonet' || knife.style === 'm9') {
+    ctx.fillStyle = '#52525b';
+    ctx.fillRect(8, -10, 4, 20);
+    ctx.fillStyle = knife.handleColor || '#27272a';
+    ctx.fillRect(-8, -4, 16, 8);
+    ctx.fillStyle = bladeFill;
+    ctx.beginPath();
+    ctx.moveTo(12, -5); ctx.lineTo(44, -5); ctx.lineTo(52, 0); ctx.lineTo(12, 5); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#18181b';
+    for (let s = 16; s < 34; s += 4) {
+      ctx.beginPath(); ctx.moveTo(s, -5); ctx.lineTo(s + 2, -8); ctx.lineTo(s + 4, -5); ctx.fill();
+    }
+  } else {
+    // Bowie / Huntsman / Skeleton / Stiletto / Classic / Navaja
+    ctx.fillStyle = knife.handleColor || '#1c1917';
+    ctx.fillRect(-6, -4, 16, 8);
+    ctx.fillStyle = bladeFill;
+    ctx.beginPath();
+    ctx.moveTo(10, -5); ctx.lineTo(38, -6); ctx.lineTo(48, 2); ctx.lineTo(10, 5); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+  }
+
+  // Specular Shine Glint
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.beginPath();
+  ctx.arc(36, -1, 1.8, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
 }

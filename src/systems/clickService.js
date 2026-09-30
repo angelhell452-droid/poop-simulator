@@ -10,7 +10,7 @@ export function addPendingClicks(n = 1) {
   pendingClicks += n;
 }
 
-export function processBatchedClicks() {
+export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   if (pendingClicks <= 0) return null;
 
   const basePower = getClickPower();
@@ -86,7 +86,9 @@ export function processBatchedClicks() {
     clicks: clicksToProcess,
     totalEarned,
     sparklesEarned,
-    critsCount
+    critsCount,
+    clientX: clickClientX,
+    clientY: clickClientY
   };
 
   events.emit('click:processed', result);
