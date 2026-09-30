@@ -7,6 +7,7 @@ import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife } fro
 import { saveLocal } from '../save/saveManager.js';
 import { requestCloudSync } from '../save/cloudSync.js';
 import { updateHUD } from './hudView.js';
+import { events } from '../core/events.js';
 
 let csgoAudioEnabled = true;
 let audioCtx = null;
@@ -683,4 +684,33 @@ export function initCasesListeners() {
       if (text) text.textContent = csgoAudioEnabled ? 'ЗВУК CS:GO: ВКЛ' : 'ЗВУК CS:GO: ВЫКЛ';
     });
   }
+
+  events.on('prestige:completed', () => {
+    renderCasesSystem();
+  });
+  events.on('transcend:completed', () => {
+    renderCasesSystem();
+  });
+}
+
+export function updateCasesButtons() {
+  const rollsLabel = document.getElementById('casesRollsLabel');
+  if (rollsLabel) rollsLabel.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+  const plungersLabel = document.getElementById('casesPlungersLabel');
+  if (plungersLabel) plungersLabel.textContent = `${formatNumber(GAME.transcendPlungers || 0)} 🪠`;
+
+  const cratesList = document.getElementById('casesCratesList');
+  if (!cratesList) return;
+
+  cratesList.querySelectorAll('.open-case-btn').forEach(btn => {
+    const c = CSGO_CASES.find(cs => cs.id === btn.dataset.case);
+    if (!c) return;
+    const hasCurrency = c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost : (GAME.transcendPlungers || 0) >= c.cost;
+    btn.disabled = !hasCurrency;
+    if (hasCurrency) {
+      btn.className = 'open-case-btn mt-3 w-full py-1.5 rounded-xl font-game text-xs transition jelly-btn bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md';
+    } else {
+      btn.className = 'open-case-btn mt-3 w-full py-1.5 rounded-xl font-game text-xs transition jelly-btn bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700';
+    }
+  });
 }

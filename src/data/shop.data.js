@@ -1,12 +1,25 @@
 export const SHOP_ITEMS = [
+  // --- CHEAP TIER (100 - 2,500 ✨) ---
   { id: 'hat_cap', name: 'Кепка Новичка', type: 'hat', cost: 100, clickBoost: 1.15, icon: '🧢', desc: '+15% к клику' },
-  { id: 'hat_shades', name: 'Крутые Очки', type: 'hat', cost: 500, clickBoost: 1.35, icon: '🕶️', desc: '+35% к клику' },
-  { id: 'hat_cowboy', name: 'Ковбойская Шляпа', type: 'hat', cost: 2500, clickBoost: 1.7, icon: '🤠', desc: '+70% к клику' },
-  { id: 'hat_viking', name: 'Шлем Викинга', type: 'hat', cost: 12000, clickBoost: 2.5, icon: '🪖', desc: 'x2.5 к клику' },
-  { id: 'hat_crown', name: 'Корона Императора Унитаза', type: 'hat', cost: 60000, clickBoost: 5.0, icon: '👑', desc: 'x5.0 к клику' },
-  { id: 'hat_cosmic', name: 'Ореол Повелителя Времени', type: 'hat', cost: 500000, clickBoost: 25.0, icon: '🌌', desc: 'Для элиты: x25 к клику!' },
-  { id: 'hat_multiverse', name: 'Корона Мультиверса (Billionaire)', type: 'hat', cost: 5000000, clickBoost: 150.0, icon: '✨', desc: 'Абсолютный flex богачей: x150 к клику и радужный нимб!' },
-  { id: 'hat_godly_apex', name: 'Венец Демиурга Омниверса', type: 'hat', cost: 50000000, clickBoost: 1000.0, icon: '🔱', desc: 'Абсолютная реликвия: x1000 к клику и сияние сверхновой!' },
+  { id: 'hat_party', name: 'Праздничный Колпак', type: 'hat', cost: 300, clickBoost: 1.25, icon: '🥳', desc: '+25% к клику' },
+  { id: 'hat_shades', name: 'Крутые Очки Thug Life', type: 'hat', cost: 750, clickBoost: 1.40, icon: '🕶️', desc: '+40% к клику' },
+  { id: 'hat_cowboy', name: 'Ковбойская Шляпа Шерифа', type: 'hat', cost: 2500, clickBoost: 1.75, icon: '🤠', desc: '+75% к клику' },
+
+  // --- MEDIUM TIER (15,000 - 200,000 ✨) ---
+  { id: 'hat_viking', name: 'Шлем Викинга-Берсерка', type: 'hat', cost: 15000, clickBoost: 2.5, icon: '🪖', desc: 'x2.5 к силе клика' },
+  { id: 'hat_chef', name: 'Колпак Шеф-Повара Мишлен', type: 'hat', cost: 45000, clickBoost: 3.5, icon: '👨‍🍳', desc: 'x3.5 к силе клика' },
+  { id: 'hat_crown', name: 'Корона Императора Унитаза', type: 'hat', cost: 100000, clickBoost: 5.0, icon: '👑', desc: 'x5.0 к силе клика' },
+  { id: 'hat_ninja', name: 'Повязка Мастера Синоби', type: 'hat', cost: 200000, clickBoost: 7.5, icon: '🥷', desc: 'x7.5 к силе клика' },
+
+  // --- EXPENSIVE TIER (500,000 - 5,000,000 ✨) ---
+  { id: 'hat_cosmic', name: 'Ореол Повелителя Времени', type: 'hat', cost: 500000, clickBoost: 25.0, icon: '🌌', desc: 'Для элиты: x25 к силе клика!' },
+  { id: 'hat_cyber', name: 'Киберпанк Голо-Визор 2077', type: 'hat', cost: 1500000, clickBoost: 60.0, icon: '🥽', desc: 'Неоновый стиль: x60 к силе клика!' },
+  { id: 'hat_multiverse', name: 'Корона Мультиверса (Billionaire)', type: 'hat', cost: 5000000, clickBoost: 150.0, icon: '✨', desc: 'Флекс миллиардеров: x150 к клику и радужный нимб!' },
+
+  // --- ULTRA LUXURY WHALE TIER (25,000,000 - 250,000,000 ✨) ---
+  { id: 'hat_black_hole', name: 'Гравитационный Нимб Сингулярности', type: 'hat', cost: 25000000, clickBoost: 500.0, icon: '🕳️', desc: 'Черная дыра: x500 к клику и искажение пространства!' },
+  { id: 'hat_godly_apex', name: 'Венец Демиурга Омниверса', type: 'hat', cost: 100000000, clickBoost: 2000.0, icon: '🔱', desc: 'Священная реликвия: x2,000 к клику и сияние сверхновой!' },
+  { id: 'hat_celestial_infinity', name: 'Абсолютные Кольца Бесконечности', type: 'hat', cost: 250000000, clickBoost: 10000.0, icon: '🪐', desc: 'Пик могущества: x10,000 к клику и орбитальные планеты!' },
 
   { id: 'upg_autoclick', name: 'Нано-Автошмякалка 60 FPS', type: 'perk', cost: 500, icon: '⚡', desc: 'Автоматически делает 20 кликов в секунду!' },
   { id: 'upg_magnet', name: 'Магнит Блестяшек', type: 'perk', cost: 1500, icon: '🧲', desc: '+30% к шансу выпадения блестяшек при клике!' },

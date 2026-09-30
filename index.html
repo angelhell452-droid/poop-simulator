@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40"
-            id="versionTag">v4.5.1 PRO</span>
+            id="versionTag">v4.6.0 PRO</span>
         </div>
         <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
       </div>
@@ -47,14 +47,14 @@
           <span class="font-game text-sm sm:text-base text-yellow-300 tracking-wide font-mono tabular-nums min-w-[40px] inline-block" id="topSparkles">0</span>
         </div>
       </div>
-      <div class="flex items-center gap-1.5 bg-purple-950/90 px-3 py-1 rounded-xl border-2 border-yellow-400 shadow">
+      <div id="currencyPrestigeBox" class="flex items-center gap-1.5 bg-purple-950/90 hover:bg-purple-900 px-3 py-1 rounded-xl border-2 border-yellow-400 shadow cursor-pointer transition" title="Открыть Смыв Судьбы">
         <span class="text-lg">🧻</span>
         <div>
           <div class="text-[9px] text-yellow-300 font-bold uppercase">Втулки</div>
           <span class="font-game text-sm sm:text-base text-yellow-200 tracking-wide font-mono tabular-nums min-w-[45px] inline-block" id="topPrestige">0</span>
         </div>
       </div>
-      <div class="flex items-center gap-1.5 bg-indigo-950/90 px-3 py-1 rounded-xl border-2 border-cyan-400 shadow">
+      <div id="currencyPlungersBox" class="flex items-center gap-1.5 bg-indigo-950/90 hover:bg-indigo-900 px-3 py-1 rounded-xl border-2 border-cyan-400 shadow cursor-pointer transition" title="Открыть Астральный Прорыв">
         <span class="text-lg">🪠</span>
         <div>
           <div class="text-[9px] text-cyan-300 font-bold uppercase">Вантузы</div>
@@ -238,6 +238,21 @@
           </div>
         </div>
 
+        <!-- Canvas Quick Prestige & Transcend Badges (Prominent immediate access) -->
+        <div class="absolute top-3 right-3 flex items-center gap-1.5 z-10 select-none">
+          <button id="btnCanvasPrestige"
+            class="bg-purple-950/85 hover:bg-purple-900 backdrop-blur-md text-yellow-300 border-2 border-yellow-400/80 rounded-2xl px-2.5 py-1 text-xs font-game flex items-center gap-1 shadow-lg jelly-btn transition"
+            title="Открыть Смыв Судьбы (Престиж 1-го уровня)">
+            <span>🌀</span>
+            <span class="hidden xs:inline">Смыв</span>
+          </button>
+          <button id="btnCanvasTranscend"
+            class="bg-indigo-950/85 hover:bg-indigo-900 backdrop-blur-md text-cyan-300 border-2 border-cyan-400/80 rounded-2xl px-2.5 py-1 text-xs font-game flex items-center gap-1 shadow-lg jelly-btn transition"
+            title="Открыть Астральный Прорыв (Престиж 2-го уровня)">
+            <span class="animate-pulse">🪠</span>
+            <span class="hidden xs:inline">Прорыв</span>
+          </button>
+        </div>
 
         <!-- Flush Overlay -->
         <div id="flushOverlay"

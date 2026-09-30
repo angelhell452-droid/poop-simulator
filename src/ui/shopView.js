@@ -15,9 +15,10 @@ export function buyBoutiqueRepeatable(itemId) {
   const item = BOUTIQUE_REPEATABLES.find(i => i.id === itemId);
   if (!item) return false;
   const cost = getBoutiqueRepeatableCost(item);
-  if ((GAME.sparkles || 0) < cost) return false;
+  const curSp = Number(GAME.sparkles) || 0;
+  if (curSp < cost) return false;
 
-  GAME.sparkles -= cost;
+  GAME.sparkles = Math.max(0, curSp - cost);
   if (!GAME.boutiqueLevels) GAME.boutiqueLevels = {};
   GAME.boutiqueLevels[itemId] = (GAME.boutiqueLevels[itemId] || 0) + 1;
   return true;
@@ -115,8 +116,9 @@ export function renderShop() {
   container.querySelectorAll('.buy-shop-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const item = SHOP_ITEMS.find(i => i.id === btn.dataset.id);
-      if (item && GAME.sparkles >= item.cost && !item.owned) {
-        GAME.sparkles -= item.cost;
+      const curSp = Number(GAME.sparkles) || 0;
+      if (item && curSp >= item.cost && !item.owned) {
+        GAME.sparkles = Math.max(0, curSp - item.cost);
         item.owned = true;
         if (item.type === 'hat') GAME.equippedHat = item.id;
         checkAchievements();
@@ -135,5 +137,41 @@ export function renderShop() {
       updateHUD();
       saveLocal();
     });
+  });
+}
+
+export function updateShopButtons() {
+  const container = document.getElementById('shopItemsContainer');
+  if (!container) return;
+
+  const sparkleLabel = document.getElementById('shopSparkleLabel');
+  if (sparkleLabel) sparkleLabel.textContent = `${formatNumber(GAME.sparkles)} ✨`;
+
+  const curSparkles = Number(GAME.sparkles) || 0;
+
+  container.querySelectorAll('.buy-repeatable-btn').forEach(btn => {
+    const it = BOUTIQUE_REPEATABLES.find(i => i.id === btn.dataset.id);
+    if (!it) return;
+    const cost = getBoutiqueRepeatableCost(it);
+    const canBuy = curSparkles >= cost;
+    btn.disabled = !canBuy;
+    if (canBuy) {
+      btn.className = 'buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-bold border-yellow-300 jelly-btn shadow';
+    } else {
+      btn.className = 'buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
+    }
+    btn.textContent = `${formatNumber(cost)} ✨`;
+  });
+
+  container.querySelectorAll('.buy-shop-btn').forEach(btn => {
+    const it = SHOP_ITEMS.find(i => i.id === btn.dataset.id);
+    if (!it) return;
+    const canBuy = curSparkles >= it.cost && !it.owned;
+    btn.disabled = !canBuy;
+    if (canBuy) {
+      btn.className = 'buy-shop-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-yellow-500 hover:bg-yellow-400 text-stone-950 font-bold border-yellow-300 jelly-btn shadow';
+    } else {
+      btn.className = 'buy-shop-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
+    }
   });
 }

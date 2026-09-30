@@ -19,7 +19,10 @@ let blinkTimer = 0;
 let knifeSlashTimer = 0;
 export const visualParticles = [];
 export const sparkParticles = [];
-let activeComboParticle = null;
+let pendingAutoEarned = 0;
+let pendingAutoCrits = 0;
+let pendingAutoSparkles = 0;
+let lastFloatingTextTime = 0;
 
 export let goldenMeteor = {
   active: false,
@@ -34,8 +37,6 @@ export let goldenMeteor = {
 let nextMeteorSpawn = Date.now() + 25000;
 let listenersInitialized = false;
 
-let lastAutoclickParticleTime = 0;
-
 export function initPetCanvas() {
   canvas = document.getElementById('petCanvas');
   if (!canvas) return;
@@ -49,15 +50,19 @@ export function initPetCanvas() {
       if (!res || res.totalEarned <= 0) return;
 
       const isManual = !!res.isManual;
-      const { clicks, totalEarned, critsCount, clientX, clientY } = res;
+      const { clicks, totalEarned, sparklesEarned, critsCount, clientX, clientY } = res;
 
       const w = canvas ? canvas.width : 360;
       const h = canvas ? canvas.height : 480;
 
-      let clickX = (clientX !== null && clientX !== undefined && canvas) ? (clientX - canvas.getBoundingClientRect().left) : (w / 2);
-      let clickY = (clientY !== null && clientY !== undefined && canvas) ? (clientY - canvas.getBoundingClientRect().top) : (h * 0.48);
+      let clickX = (clientX !== null && clientX !== undefined && canvas) 
+        ? (clientX - canvas.getBoundingClientRect().left) 
+        : (w / 2 + (Math.random() * 40 - 20));
+      let clickY = (clientY !== null && clientY !== undefined && canvas) 
+        ? (clientY - canvas.getBoundingClientRect().top) 
+        : (h * 0.46 + (Math.random() * 30 - 15));
 
-      // 1. Lightweight atmospheric spark burst (fast circle batch, zero font cost)
+      // 1. Lightweight atmospheric spark burst (max 3 circles, zero lag)
       const sparkCount = Math.min(3, Math.max(1, Math.floor(clicks / 3) || 1));
       for (let s = 0; s < sparkCount; s++) {
         if (sparkParticles.length < 16) {
@@ -75,71 +80,98 @@ export function initPetCanvas() {
         }
       }
 
-      // 2. High-Speed Click Consolidation (The Combo Nexus)
-      // When rapid clicks / autoclick occurs, consolidate damage into ONE punchy combo counter!
-      if (!isManual) {
-        if (activeComboParticle && activeComboParticle.life > 0.25) {
-          // Accumulate ongoing stream
-          activeComboParticle.totalEarned += totalEarned;
-          activeComboParticle.clicks += clicks;
-          activeComboParticle.text = `⚡ +${formatNumber(activeComboParticle.totalEarned)} 💨 (x${activeComboParticle.clicks})`;
-          activeComboParticle.life = 0.95; // refresh duration while firing
-          activeComboParticle.scale = Math.min(1.4, activeComboParticle.scale + 0.04);
-          activeComboParticle.y = Math.max(h * 0.35, activeComboParticle.y - 0.5);
-          if (activeComboParticle.clicks >= 200 || GAME.turboRushTime > 0) {
-            activeComboParticle.color = '#ef4444';
-          } else if (activeComboParticle.clicks >= 50) {
-            activeComboParticle.color = '#f59e0b';
-          }
-        } else {
-          // Start a new clean combo float
-          activeComboParticle = {
-            x: w / 2,
-            y: h * 0.44,
-            vx: 0,
-            vy: -0.8,
-            totalEarned: totalEarned,
-            clicks: clicks,
-            text: clicks > 1 ? `⚡ +${formatNumber(totalEarned)} 💨 (x${clicks})` : `+${formatNumber(totalEarned)} 💨`,
-            color: critsCount > 0 ? '#f59e0b' : '#38bdf8',
-            scale: 1.25,
-            life: 1.0,
-            isCombo: true
-          };
-          addManagedTextParticle(activeComboParticle);
-        }
-
-        // Spawn a standalone big crit number only if a crit occurred and not overwhelmed
-        if (critsCount > 0 && visualParticles.length < 4) {
+      // 2. Discrete Floating Labels (Max 4, short format only, NO infinite stack)
+      const now = performance.now();
+      if (isManual) {
+        if (critsCount > 0) {
           addManagedTextParticle({
-            x: clickX + (Math.random() * 50 - 25),
-            y: clickY - 20,
-            vx: (Math.random() - 0.5) * 1.5,
-            vy: -2.4,
+            x: clickX,
+            y: clickY,
+            vx: (Math.random() - 0.5) * 1.4,
+            vy: -2.2,
             text: `💥 КРИТ! +${formatNumber(totalEarned)} 💨`,
-            color: '#fbbf24',
+            color: '#facc15',
             scale: 1.35,
-            life: 0.9
+            life: 0.85
+          });
+        } else {
+          addManagedTextParticle({
+            x: clickX,
+            y: clickY,
+            vx: (Math.random() - 0.5) * 1.0,
+            vy: -1.9,
+            text: `+${formatNumber(totalEarned)} 💨`,
+            color: '#4ade80',
+            scale: 1.15,
+            life: 0.80
           });
         }
-        return;
+
+        if (sparklesEarned > 0) {
+          addManagedTextParticle({
+            x: clickX + (Math.random() * 30 - 15),
+            y: clickY - 14,
+            vx: (Math.random() - 0.5) * 1.2,
+            vy: -2.4,
+            text: `+${formatNumber(sparklesEarned)} ✨`,
+            color: '#fde047',
+            scale: 1.2,
+            life: 0.85
+          });
+        }
+      } else {
+        // Autoclicker bursts: throttled to ~200ms interval to keep screen elegant, maximum 4 on screen!
+        pendingAutoEarned += totalEarned;
+        pendingAutoCrits += critsCount;
+        pendingAutoSparkles += (sparklesEarned || 0);
+
+        if (now - lastFloatingTextTime >= 200) {
+          const spawnX = w / 2 + (Math.random() * 50 - 25);
+          const spawnY = h * 0.44 + (Math.random() * 30 - 15);
+
+          if (pendingAutoCrits > 0) {
+            addManagedTextParticle({
+              x: spawnX,
+              y: spawnY,
+              vx: (Math.random() - 0.5) * 1.2,
+              vy: -2.3,
+              text: `💥 КРИТ! +${formatNumber(pendingAutoEarned)} 💨`,
+              color: '#facc15',
+              scale: 1.35,
+              life: 0.85
+            });
+          } else {
+            addManagedTextParticle({
+              x: spawnX,
+              y: spawnY,
+              vx: (Math.random() - 0.5) * 0.9,
+              vy: -1.8,
+              text: `+${formatNumber(pendingAutoEarned)} 💨`,
+              color: '#38bdf8',
+              scale: 1.15,
+              life: 0.80
+            });
+          }
+
+          if (pendingAutoSparkles > 0) {
+            addManagedTextParticle({
+              x: spawnX + (Math.random() * 30 - 15),
+              y: spawnY - 12,
+              vx: (Math.random() - 0.5) * 1.0,
+              vy: -2.4,
+              text: `+${formatNumber(pendingAutoSparkles)} ✨`,
+              color: '#fde047',
+              scale: 1.2,
+              life: 0.85
+            });
+          }
+
+          pendingAutoEarned = 0;
+          pendingAutoCrits = 0;
+          pendingAutoSparkles = 0;
+          lastFloatingTextTime = now;
+        }
       }
-
-      // 3. Manual Player Clicks (Punchy, responsive feedback directly at cursor)
-      const manualLabel = critsCount > 0 
-        ? `💥 КРИТ! +${formatNumber(totalEarned)} 💨` 
-        : `+${formatNumber(totalEarned)} 💨`;
-
-      addManagedTextParticle({
-        x: clickX,
-        y: clickY,
-        vx: (Math.random() - 0.5) * 1.2,
-        vy: -2.0,
-        text: manualLabel,
-        color: critsCount > 0 ? '#fbbf24' : '#4ade80',
-        scale: critsCount > 0 ? 1.4 : 1.2,
-        life: 1.0
-      });
     });
 
     events.on('turbo:activated', () => {
@@ -163,13 +195,8 @@ export function triggerPetSquash(sx = 1.25, sy = 0.8) {
 }
 
 export function addManagedTextParticle(p) {
-  if (visualParticles.length >= 4) {
-    const nonComboIdx = visualParticles.findIndex(vp => !vp.isCombo);
-    if (nonComboIdx >= 0) {
-      visualParticles.splice(nonComboIdx, 1);
-    } else {
-      visualParticles.shift();
-    }
+  while (visualParticles.length >= 4) {
+    visualParticles.shift();
   }
   visualParticles.push(p);
 }
@@ -333,6 +360,11 @@ function renderPetLoop(time) {
   ctx.beginPath();
   ctx.arc(0, 8, 10, 0.1 * Math.PI, 0.9 * Math.PI);
   ctx.stroke();
+
+  // Draw Equipped Wardrobe Hat
+  if (GAME.equippedHat) {
+    drawEquippedHat(ctx, GAME.equippedHat, time, isGirly);
+  }
 
   // Equipped CS:GO Knife in pet hand
   const knife = getEquippedKnife();
@@ -517,6 +549,357 @@ export function checkMeteorClick(clientX, clientY) {
     return true;
   }
   return false;
+}
+
+// DRAW EQUIPPED WARDROBE HATS WITH RICH PROCEDURAL CANVAS VECTORS
+function drawEquippedHat(ctx, hatId, time, isGirly) {
+  if (!hatId) return;
+  ctx.save();
+
+  if (hatId === 'hat_cap') {
+    // 🧢 Кепка Новичка (Baseball cap with visor)
+    ctx.translate(0, -48);
+    ctx.fillStyle = '#2563eb';
+    ctx.beginPath();
+    ctx.arc(0, -2, 17, Math.PI, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#1d4ed8';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Top button
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(0, -18, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    // Visor bill
+    ctx.fillStyle = '#1e40af';
+    ctx.beginPath();
+    ctx.moveTo(4, -2);
+    ctx.quadraticCurveTo(28, -6, 26, 3);
+    ctx.lineTo(10, 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+  } else if (hatId === 'hat_party') {
+    // 🥳 Праздничный Колпак (Party Cone)
+    ctx.translate(0, -50);
+    ctx.beginPath();
+    ctx.moveTo(-13, 0);
+    ctx.lineTo(0, -32);
+    ctx.lineTo(13, 0);
+    ctx.closePath();
+    const partyGrad = ctx.createLinearGradient(-13, 0, 13, -32);
+    partyGrad.addColorStop(0, '#ec4899');
+    partyGrad.addColorStop(0.33, '#facc15');
+    partyGrad.addColorStop(0.66, '#06b6d4');
+    partyGrad.addColorStop(1, '#a855f7');
+    ctx.fillStyle = partyGrad;
+    ctx.fill();
+    ctx.strokeStyle = '#18181b';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Pom-pom on tip
+    ctx.fillStyle = '#fde047';
+    ctx.beginPath();
+    ctx.arc(0, -34, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+
+  } else if (hatId === 'hat_shades') {
+    // 🕶️ Крутые Очки Thug Life (Sunglasses over eyes)
+    ctx.translate(0, -6);
+    ctx.fillStyle = '#09090b';
+    ctx.strokeStyle = '#27272a';
+    ctx.lineWidth = 1.2;
+    ctx.fillRect(-24, -5, 20, 11);
+    ctx.fillRect(4, -5, 20, 11);
+    ctx.fillRect(-4, -2, 8, 3);
+    ctx.strokeRect(-24, -5, 20, 11);
+    ctx.strokeRect(4, -5, 20, 11);
+    // Glare shine
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.beginPath();
+    ctx.moveTo(-20, -3); ctx.lineTo(-14, 4); ctx.lineTo(-12, 4); ctx.lineTo(-18, -3);
+    ctx.moveTo(8, -3); ctx.lineTo(14, 4); ctx.lineTo(16, 4); ctx.lineTo(10, -3);
+    ctx.fill();
+
+  } else if (hatId === 'hat_cowboy') {
+    // 🤠 Ковбойская Шляпа Шерифа (Stetson cowboy hat)
+    ctx.translate(0, -46);
+    ctx.fillStyle = '#78350f';
+    ctx.beginPath();
+    ctx.ellipse(0, 1, 33, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#451a03';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#92400e';
+    ctx.beginPath();
+    ctx.moveTo(-15, 1);
+    ctx.lineTo(-13, -18);
+    ctx.quadraticCurveTo(0, -14, 13, -18);
+    ctx.lineTo(15, 1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(-14, -2, 28, 3.5);
+    ctx.beginPath();
+    ctx.arc(0, -0.5, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+  } else if (hatId === 'hat_viking') {
+    // 🪖 Шлем Викинга-Берсерка (Steel helm with horns)
+    ctx.translate(0, -46);
+    ctx.fillStyle = '#f8fafc';
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-15, -4);
+    ctx.quadraticCurveTo(-30, -10, -29, -28);
+    ctx.quadraticCurveTo(-22, -18, -13, -8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(15, -4);
+    ctx.quadraticCurveTo(30, -10, 29, -28);
+    ctx.quadraticCurveTo(22, -18, 13, -8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    const ironGrad = ctx.createLinearGradient(-18, -14, 18, 0);
+    ironGrad.addColorStop(0, '#64748b');
+    ironGrad.addColorStop(0.5, '#94a3b8');
+    ironGrad.addColorStop(1, '#475569');
+    ctx.fillStyle = ironGrad;
+    ctx.beginPath();
+    ctx.arc(0, -2, 17, Math.PI, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#d97706';
+    ctx.fillRect(-2.5, -18, 5, 17);
+
+  } else if (hatId === 'hat_chef') {
+    // 👨‍🍳 Колпак Шеф-Повара Мишлен (Toque)
+    ctx.translate(0, -48);
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(-15, -4, 30, 8);
+    ctx.strokeRect(-15, -4, 30, 8);
+    ctx.beginPath();
+    ctx.arc(-11, -16, 11, 0, Math.PI * 2);
+    ctx.arc(0, -21, 13, 0, Math.PI * 2);
+    ctx.arc(11, -16, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+  } else if (hatId === 'hat_crown') {
+    // 👑 Корона Императора Унитаза (Royal golden crown)
+    ctx.translate(0, -48);
+    const crownGrad = ctx.createLinearGradient(-22, -22, 22, 0);
+    crownGrad.addColorStop(0, '#fde047');
+    crownGrad.addColorStop(0.5, '#eab308');
+    crownGrad.addColorStop(1, '#ca8a04');
+    ctx.fillStyle = crownGrad;
+    ctx.strokeStyle = '#713f12';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(-22, 0);
+    ctx.lineTo(-22, -18);
+    ctx.lineTo(-11, -7);
+    ctx.lineTo(0, -24);
+    ctx.lineTo(11, -7);
+    ctx.lineTo(22, -18);
+    ctx.lineTo(22, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath(); ctx.arc(0, -9, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#06b6d4';
+    ctx.beginPath(); ctx.arc(-11, -2, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(11, -2, 2.5, 0, Math.PI * 2); ctx.fill();
+
+  } else if (hatId === 'hat_ninja') {
+    // 🥷 Повязка Мастера Синоби (Headband + ribbon)
+    ctx.translate(0, -18);
+    ctx.fillStyle = '#18181b';
+    ctx.fillRect(-28, -5, 56, 10);
+    ctx.fillStyle = '#94a3b8';
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.2;
+    ctx.fillRect(-11, -4, 22, 8);
+    ctx.strokeRect(-11, -4, 22, 8);
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, 2.5, 0, Math.PI * 1.5);
+    ctx.stroke();
+    const wave = Math.sin(time * 0.008) * 4;
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.moveTo(-26, -1);
+    ctx.quadraticCurveTo(-38, -6 + wave, -46, -1 + wave * 1.5);
+    ctx.lineTo(-44, 4 + wave * 1.5);
+    ctx.quadraticCurveTo(-36, 1 + wave, -26, 3);
+    ctx.closePath();
+    ctx.fill();
+
+  } else if (hatId === 'hat_cosmic') {
+    // 🌌 Ореол Повелителя Времени (Glowing halo)
+    ctx.translate(0, -56);
+    const pulse = Math.sin(time * 0.005) * 3;
+    ctx.save();
+    ctx.shadowColor = '#06b6d4';
+    ctx.shadowBlur = 14;
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 32 + pulse, 9, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = '#c084fc';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 26 + pulse * 0.5, 7, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+  } else if (hatId === 'hat_cyber') {
+    // 🥽 Киберпанк Голо-Визор 2077 (Visor)
+    ctx.translate(0, -7);
+    const cyberGrad = ctx.createLinearGradient(-26, -5, 26, 7);
+    cyberGrad.addColorStop(0, 'rgba(6, 182, 212, 0.9)');
+    cyberGrad.addColorStop(0.5, 'rgba(168, 85, 247, 0.85)');
+    cyberGrad.addColorStop(1, 'rgba(244, 63, 94, 0.9)');
+    ctx.fillStyle = cyberGrad;
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-26, -5, 52, 12, 4);
+    else ctx.rect(-26, -5, 52, 12);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(14, -2, 4, 1.5);
+    ctx.fillRect(15, -3, 1.5, 4);
+
+  } else if (hatId === 'hat_multiverse') {
+    // ✨ Корона Мультиверса (Rainbow spectrum)
+    ctx.translate(0, -52);
+    const rainbowGrad = ctx.createLinearGradient(-24, 0, 24, -24);
+    const tShift = (time * 0.001) % 1;
+    rainbowGrad.addColorStop(0, `hsl(${(tShift * 360) % 360}, 100%, 65%)`);
+    rainbowGrad.addColorStop(0.33, `hsl(${((tShift + 0.33) * 360) % 360}, 100%, 65%)`);
+    rainbowGrad.addColorStop(0.66, `hsl(${((tShift + 0.66) * 360) % 360}, 100%, 65%)`);
+    rainbowGrad.addColorStop(1, `hsl(${((tShift + 1.0) * 360) % 360}, 100%, 65%)`);
+    ctx.fillStyle = rainbowGrad;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-24, 0); ctx.lineTo(-24, -18); ctx.lineTo(-12, -8);
+    ctx.lineTo(0, -26); ctx.lineTo(12, -8); ctx.lineTo(24, -18);
+    ctx.lineTo(24, 0); ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.save();
+    ctx.shadowColor = '#f43f5e';
+    ctx.shadowBlur = 16;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.beginPath();
+    ctx.ellipse(0, -26, 36, 8, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+  } else if (hatId === 'hat_black_hole') {
+    // 🕳️ Гравитационный Нимб Сингулярности (Black hole)
+    ctx.translate(0, -56);
+    const rot = time * 0.003;
+    ctx.save();
+    ctx.rotate(rot);
+    const holeGrad = ctx.createRadialGradient(0, 0, 6, 0, 0, 28);
+    holeGrad.addColorStop(0, '#000000');
+    holeGrad.addColorStop(0.35, '#7c3aed');
+    holeGrad.addColorStop(0.7, '#ea580c');
+    holeGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = holeGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, 28, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(0, 0, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fdba74';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+  } else if (hatId === 'hat_godly_apex') {
+    // 🔱 Венец Демиурга Омниверса (Demigod trident crown)
+    ctx.translate(0, -54);
+    ctx.save();
+    ctx.rotate(time * 0.001);
+    ctx.strokeStyle = 'rgba(250, 204, 21, 0.35)';
+    ctx.lineWidth = 2;
+    for (let r = 0; r < 8; r++) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      const ang = (r * Math.PI) / 4;
+      ctx.lineTo(Math.cos(ang) * 34, Math.sin(ang) * 34);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.fillStyle = '#facc15';
+    ctx.strokeStyle = '#78350f';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-18, 0);
+    ctx.lineTo(-20, -26);
+    ctx.lineTo(-14, -20);
+    ctx.lineTo(0, -34);
+    ctx.lineTo(14, -20);
+    ctx.lineTo(20, -26);
+    ctx.lineTo(18, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(-20, -27, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, -35, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(20, -27, 3, 0, Math.PI * 2); ctx.fill();
+
+  } else if (hatId === 'hat_celestial_infinity') {
+    // 🪐 Абсолютные Кольца Бесконечности (Diamond planetary rings)
+    ctx.translate(0, -54);
+    ctx.save();
+    ctx.rotate(0.35);
+    ctx.strokeStyle = 'rgba(253, 224, 71, 0.9)';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 36, 10, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    const pAng = time * 0.004;
+    const px = Math.cos(pAng) * 36;
+    const py = Math.sin(pAng) * 10;
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(px, py, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(0, 0, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  ctx.restore();
 }
 
 // DRAW CS:GO KNIFE IN PET HAND WITH DYNAMIC SHADERS & VECTOR MODELS

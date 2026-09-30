@@ -1,5 +1,5 @@
 export const TRANSCEND_UPGRADES = [
-      { id: 'art_autobuyer', key: 'autoBuyer', name: '⚙️ Авто-Закупщик Заводов', desc: 'Автоматически скупает доступные заводы каждые 2 секунды', cost: 1, max: 1 },
+      { id: 'art_cosmic_synergy', key: 'cosmicSynergy', name: '🪐 Космический Резонатор', desc: '+50% к пассивному доходу всех заводов и клику за уровень', cost: 1, max: 100, costStep: 1 },
       { id: 'art_passive_rolls', key: 'passiveRolls', name: '🧻 Хроно-Генератор Втулок', desc: '+1 Втулка Судьбы каждые 5 секунд пассивно без Смыва за уровень', cost: 2, max: 100, costStep: 1 },
       { id: 'art_omni_mult', key: 'omniMult', name: '🌌 Омни-Множитель Бытия', desc: '+100% ко ВСЕЙ биомассе и силе клика за уровень', cost: 3, max: 500, costStep: 2 },
       { id: 'art_afk_god', key: 'afkCap', name: '⏳ Сверх-Офлайн Модуль', desc: '+12 часов к максимальному лимиту времени офлайн-дохода', cost: 2, max: 50, costStep: 1 },

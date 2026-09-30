@@ -2,7 +2,6 @@ import { GAME } from './state.js';
 import { getPassiveIncome } from '../economy/production.js';
 import { processBatchedClicks, addPendingClicks } from '../systems/clickService.js';
 import { decayNeeds, runAutoCare } from '../systems/petCareService.js';
-import { runAutoBuyer } from '../systems/factoryService.js';
 import { performEvolution } from '../progression/evolutionService.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { saveLocal } from '../save/saveManager.js';
@@ -12,7 +11,7 @@ import { triggerPetSquash } from '../ui/petCanvasView.js';
 import { events } from './events.js';
 
 let lastTickTime = performance.now();
-let autoBuyerTimer = 0;
+let autoEvoTimer = 0;
 let autoCareTimer = 0;
 let autoSaveTimer = 0;
 let passiveRollAccumulator = 0;
@@ -49,12 +48,10 @@ export function gameEngineTick() {
   }
   processBatchedClicks();
 
-  // 3. Transcendence Artifact: AutoBuyer & Auto-Evolution (every 1.0s)
-  autoBuyerTimer += dt;
-  if (autoBuyerTimer >= 1.0) {
-    autoBuyerTimer = 0;
-    runAutoBuyer();
-
+  // 3. Transcendence Artifact: Auto-Evolution (every 1.0s)
+  autoEvoTimer += dt;
+  if (autoEvoTimer >= 1.0) {
+    autoEvoTimer = 0;
     if (GAME.transcendUpgrades?.autoEvolution && GAME.evoStage < EVOLUTIONS.length - 1) {
       performEvolution();
     }

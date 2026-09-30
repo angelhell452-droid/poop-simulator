@@ -90,9 +90,11 @@ export function getClickPower() {
 
   // Boutique Repeatable: Singularity Spark (+25% all income per level)
   const sparkLvl = GAME.boutiqueLevels?.singularity_spark || 0;
-  const sparkMult = 1 + sparkLvl * 0.25;
+  // Transcendence Artifact: Cosmic Synergy (+50% per level)
+  const cosmicSynergyLvl = GAME.transcendUpgrades?.cosmicSynergy || 0;
+  const cosmicSynergyMult = 1 + cosmicSynergyLvl * 0.50;
 
-  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult * sparkMult;
+  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult * sparkMult * cosmicSynergyMult;
 
   // Quantum Mastery talent + Quantum Click upgrade: direct transfer of passive GPS to click
   const qMastery = TALENTS.find(t => t.id === 'quantum_mastery');
@@ -213,7 +215,11 @@ export function getPassiveIncome() {
   const sparkLvl = GAME.boutiqueLevels?.singularity_spark || 0;
   const sparkMult = 1 + sparkLvl * 0.25;
 
-  const finalGPS = Math.max(0, Math.round(base * crystalMult * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult * omniWealthMult * sparkMult));
+  // Transcendence Artifact: Cosmic Synergy (+50% per level)
+  const cosmicSynergyLvl = GAME.transcendUpgrades?.cosmicSynergy || 0;
+  const cosmicSynergyMult = 1 + cosmicSynergyLvl * 0.50;
+
+  const finalGPS = Math.max(0, Math.round(base * crystalMult * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult));
   if (finalGPS > (GAME.currentRunPeakGPS || 0)) {
     GAME.currentRunPeakGPS = finalGPS;
   }

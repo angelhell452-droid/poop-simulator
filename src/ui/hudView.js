@@ -8,6 +8,9 @@ import { liveCps } from '../core/gameLoop.js';
 import { saveLocal } from '../save/saveManager.js';
 import { updateFactoryButtons } from './factoryView.js';
 import { updateTalentButtons } from './talentView.js';
+import { updateShopButtons } from './shopView.js';
+import { updateCasesButtons } from './casesView.js';
+import { getPoopSkinInfo } from '../progression/evolutionService.js';
 
 const FLUSH_COOLDOWN = 35000;
 
@@ -155,6 +158,27 @@ export function updateHUD() {
   // Dynamic real-time buy multiplier & price responsiveness
   updateFactoryButtons();
   updateTalentButtons();
+  updateShopButtons();
+  updateCasesButtons();
+
+  // Dynamic Poop Skin Badge (Ensures accurate form & tier without tab dependency)
+  const skinInfo = getPoopSkinInfo(GAME.evoStage, GAME.girlyMode);
+  if (skinInfo) {
+    const skinIconEl = document.getElementById('poopSkinIcon');
+    if (skinIconEl) skinIconEl.textContent = skinInfo.icon;
+    const skinNameEl = document.getElementById('poopSkinName');
+    if (skinNameEl) skinNameEl.textContent = skinInfo.name;
+    const skinTierEl = document.getElementById('poopSkinTierBadge');
+    if (skinTierEl) skinTierEl.textContent = `Тир ${skinInfo.tier}`;
+    const skinHintEl = document.getElementById('poopSkinProgressHint');
+    if (skinHintEl) {
+      if (skinInfo.nextAt < 20000) {
+        skinHintEl.textContent = `Форма #${GAME.evoStage + 1} • След. скин на Форме #${skinInfo.nextAt}`;
+      } else {
+        skinHintEl.textContent = `Форма #${GAME.evoStage + 1} • ВЫСШАЯ ФОРМА ОМНИВЕРСА!`;
+      }
+    }
+  }
 }
 
 export function updateAutocareUI() {

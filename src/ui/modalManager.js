@@ -5,6 +5,10 @@ import { getTranscendPlungersReward, executeTranscend, buyTranscendUpgrade } fro
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
 import { TALENTS } from '../data/talents.data.js';
 import { updateHUD } from './hudView.js';
+import { renderCasesSystem } from './casesView.js';
+import { renderTalents } from './talentView.js';
+import { renderFactories } from './factoryView.js';
+import { renderShop } from './shopView.js';
 
 let pendingPrestigeArchetype = 'balanced';
 
@@ -25,28 +29,29 @@ export function initModals() {
   });
 
   // Open Prestige Modal
-  const btnPrestigeModal = document.getElementById('btnPrestigeModal');
-  if (btnPrestigeModal) {
-    btnPrestigeModal.addEventListener('click', () => {
-      pendingPrestigeArchetype = GAME.archetype || 'balanced';
-      renderArchetypeButtons();
+  const openPrestigeModal = () => {
+    pendingPrestigeArchetype = GAME.archetype || 'balanced';
+    renderArchetypeButtons();
 
-      const gain = getPrestigeRollsReward();
-      const calcEl = document.getElementById('prestigeCalcRolls');
-      if (calcEl) {
-        const bonusPerRoll = 0.02 * (1 + (TALENTS.find(t => t.id === 'golden_leaf')?.level || 0) * 0.05);
-        const currentBoost = ((GAME.prestigeRolls || 0) * bonusPerRoll * 100).toFixed(0);
-        const postBoost = (((GAME.prestigeRolls || 0) + gain) * bonusPerRoll * 100).toFixed(0);
-        calcEl.innerHTML = `
-          <div class="font-game text-yellow-300 text-base mb-1">+${formatNumber(gain)} 🧻 Втулок Судьбы</div>
-          <div class="text-[11px] text-purple-200">Текущий пассивный бонус: <b class="text-white">+${currentBoost}%</b> ➔ После смыва: <b class="text-emerald-300">+${postBoost}%</b> к доходу</div>
-        `;
-      }
-      const execBtn = document.getElementById('btnExecutePrestige');
-      if (execBtn) execBtn.disabled = gain <= 0;
-      document.getElementById('prestigeModal')?.classList.remove('hidden');
-    });
-  }
+    const gain = getPrestigeRollsReward();
+    const calcEl = document.getElementById('prestigeCalcRolls');
+    if (calcEl) {
+      const bonusPerRoll = 0.02 * (1 + (TALENTS.find(t => t.id === 'golden_leaf')?.level || 0) * 0.05);
+      const currentBoost = ((GAME.prestigeRolls || 0) * bonusPerRoll * 100).toFixed(0);
+      const postBoost = (((GAME.prestigeRolls || 0) + gain) * bonusPerRoll * 100).toFixed(0);
+      calcEl.innerHTML = `
+        <div class="font-game text-yellow-300 text-base mb-1">+${formatNumber(gain)} 🧻 Втулок Судьбы</div>
+        <div class="text-[11px] text-purple-200">Текущий пассивный бонус: <b class="text-white">+${currentBoost}%</b> ➔ После смыва: <b class="text-emerald-300">+${postBoost}%</b> к доходу</div>
+      `;
+    }
+    const execBtn = document.getElementById('btnExecutePrestige');
+    if (execBtn) execBtn.disabled = gain <= 0;
+    document.getElementById('prestigeModal')?.classList.remove('hidden');
+  };
+
+  document.getElementById('btnPrestigeModal')?.addEventListener('click', openPrestigeModal);
+  document.getElementById('btnCanvasPrestige')?.addEventListener('click', openPrestigeModal);
+  document.getElementById('currencyPrestigeBox')?.addEventListener('click', openPrestigeModal);
 
   // Execute Prestige
   const btnExecutePrestige = document.getElementById('btnExecutePrestige');
@@ -54,26 +59,31 @@ export function initModals() {
     btnExecutePrestige.addEventListener('click', () => {
       if (executePrestige(pendingPrestigeArchetype)) {
         document.getElementById('prestigeModal')?.classList.add('hidden');
+        renderCasesSystem();
+        renderTalents();
+        renderFactories();
+        renderShop();
         updateHUD();
       }
     });
   }
 
-  // Open Transcend Modal
-  const btnTranscendModal = document.getElementById('btnTranscendModal');
-  if (btnTranscendModal) {
-    btnTranscendModal.addEventListener('click', () => {
-      const gain = getTranscendPlungersReward();
-      const rollsEl = document.getElementById('transcendCurrentRolls');
-      if (rollsEl) rollsEl.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
-      const plungersEl = document.getElementById('transcendCalcPlungers');
-      if (plungersEl) plungersEl.textContent = `+${formatNumber(gain)} 🪠 Вантузов`;
-      const execBtn = document.getElementById('btnExecuteTranscend');
-      if (execBtn) execBtn.disabled = gain <= 0;
-      renderTranscendUpgrades();
-      document.getElementById('transcendModal')?.classList.remove('hidden');
-    });
-  }
+  // Open Transcend Modal (accessible from header button, canvas button, and plungers currency bar)
+  const openTranscendModal = () => {
+    const gain = getTranscendPlungersReward();
+    const rollsEl = document.getElementById('transcendCurrentRolls');
+    if (rollsEl) rollsEl.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+    const plungersEl = document.getElementById('transcendCalcPlungers');
+    if (plungersEl) plungersEl.textContent = `+${formatNumber(gain)} 🪠 Вантузов`;
+    const execBtn = document.getElementById('btnExecuteTranscend');
+    if (execBtn) execBtn.disabled = gain <= 0;
+    renderTranscendUpgrades();
+    document.getElementById('transcendModal')?.classList.remove('hidden');
+  };
+
+  document.getElementById('btnTranscendModal')?.addEventListener('click', openTranscendModal);
+  document.getElementById('btnCanvasTranscend')?.addEventListener('click', openTranscendModal);
+  document.getElementById('currencyPlungersBox')?.addEventListener('click', openTranscendModal);
 
   // Execute Transcend
   const btnExecuteTranscend = document.getElementById('btnExecuteTranscend');
@@ -81,6 +91,10 @@ export function initModals() {
     btnExecuteTranscend.addEventListener('click', () => {
       if (executeTranscend()) {
         document.getElementById('transcendModal')?.classList.add('hidden');
+        renderCasesSystem();
+        renderTalents();
+        renderFactories();
+        renderShop();
         updateHUD();
       }
     });
