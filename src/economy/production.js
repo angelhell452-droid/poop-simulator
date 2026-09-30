@@ -90,6 +90,7 @@ export function getClickPower() {
 
   // Boutique Repeatable: Singularity Spark (+25% all income per level)
   const sparkLvl = GAME.boutiqueLevels?.singularity_spark || 0;
+  const sparkMult = 1 + sparkLvl * 0.25;
   // Transcendence Artifact: Cosmic Synergy (+50% per level)
   const cosmicSynergyLvl = GAME.transcendUpgrades?.cosmicSynergy || 0;
   const cosmicSynergyMult = 1 + cosmicSynergyLvl * 0.50;
