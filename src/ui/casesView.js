@@ -577,7 +577,10 @@ export function renderCasesSystem() {
         <div class="p-3 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-lg flex flex-col justify-between relative overflow-hidden ${!isUnlocked ? 'opacity-70 grayscale-[25%]' : ''}">
           <div>
             <div class="flex items-center justify-between mb-1">
-              <span class="text-2xl">${c.icon}</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-2xl">${c.icon}</span>
+                <button class="case-info-btn w-6 h-6 rounded-full bg-stone-900/90 hover:bg-stone-800 text-yellow-300 border border-yellow-400/70 flex items-center justify-center text-xs font-black transition shadow jelly-btn cursor-pointer" data-case="${c.id}" title="Просмотреть шансы выпадения и список ножей">!</button>
+              </div>
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-900/80 text-yellow-300 border border-yellow-500/40 inline-flex items-center gap-1">${formatNumber(c.cost)} ${currIcon}</span>
             </div>
             <div class="font-game text-xs text-yellow-200 mt-1">${c.name}</div>
@@ -597,8 +600,124 @@ export function renderCasesSystem() {
         openCaseRoulette(cid);
       });
     });
+
+    cratesList.querySelectorAll('.case-info-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const cid = btn.dataset.case;
+        openCasePreviewModal(cid);
+      });
+    });
   }
 
+}
+
+export function openCasePreviewModal(caseId) {
+  const caseObj = CSGO_CASES.find(c => c.id === caseId);
+  if (!caseObj) return;
+
+  const modal = document.getElementById('casePreviewModal');
+  if (!modal) return;
+
+  const titleEl = document.getElementById('casePreviewTitle');
+  const iconEl = document.getElementById('casePreviewIcon');
+  const descEl = document.getElementById('casePreviewDesc');
+  const costEl = document.getElementById('casePreviewCostBadge');
+  const listEl = document.getElementById('casePreviewKnivesList');
+
+  if (titleEl) titleEl.textContent = caseObj.name;
+  if (iconEl) iconEl.textContent = caseObj.icon;
+  if (descEl) descEl.textContent = caseObj.desc;
+  const currIcon = caseObj.currency === 'plungers' ? '<span class="plunger-icon"></span>' : '<span class="roll-icon"></span>';
+  if (costEl) costEl.innerHTML = `${formatNumber(caseObj.cost)} ${currIcon} ${caseObj.currency === 'plungers' ? 'Вантузов' : 'Втулок'}`;
+
+  if (listEl) {
+    listEl.innerHTML = '';
+    const poolKnives = caseObj.pool.map(id => KNIVES.find(k => k.id === id)).filter(Boolean);
+
+    // Tier weights matching roulette probability model
+    const tierWeights = {
+      godly: 4,
+      special: 4,
+      titanium: 5,
+      celestial: 7,
+      rainbow: 9,
+      covert: 13,
+      classified: 16,
+      epic: 16,
+      very_rare: 15,
+      restricted: 15,
+      rare: 15,
+      common: 15,
+      'mil-spec': 15
+    };
+
+    let totalWeight = 0;
+    poolKnives.forEach(k => {
+      totalWeight += (tierWeights[k.rarity] || 10);
+    });
+
+    // Sort by power descending
+    poolKnives.sort((a, b) => (b.power || 0) - (a.power || 0));
+
+    poolKnives.forEach(knife => {
+      const w = tierWeights[knife.rarity] || 10;
+      const pct = totalWeight > 0 ? ((w / totalWeight) * 100).toFixed(1) : (100 / poolKnives.length).toFixed(1);
+
+      let rColor = 'border-stone-700 bg-stone-900/80';
+      let badgeColor = 'bg-stone-800 text-stone-300';
+      if (['godly', 'special'].includes(knife.rarity)) {
+        rColor = 'border-amber-400 bg-gradient-to-r from-amber-950/60 to-purple-950/60 shadow-[0_0_10px_rgba(245,158,11,0.3)]';
+        badgeColor = 'bg-yellow-400 text-stone-950 font-black';
+      } else if (knife.rarity === 'titanium') {
+        rColor = 'border-teal-400 bg-teal-950/50';
+        badgeColor = 'bg-teal-400 text-stone-950 font-black';
+      } else if (knife.rarity === 'celestial') {
+        rColor = 'border-cyan-300 bg-indigo-950/60 shadow-[0_0_8px_rgba(103,232,249,0.3)]';
+        badgeColor = 'bg-cyan-400 text-stone-950 font-black';
+      } else if (knife.rarity === 'rainbow') {
+        rColor = 'border-pink-500 bg-purple-950/50';
+        badgeColor = 'bg-gradient-to-r from-pink-500 to-indigo-500 text-white font-black';
+      } else if (knife.rarity === 'covert') {
+        rColor = 'border-red-500 bg-red-950/40';
+        badgeColor = 'bg-red-600 text-white font-bold';
+      } else if (knife.rarity === 'classified') {
+        rColor = 'border-pink-500 bg-pink-950/30';
+        badgeColor = 'bg-pink-600 text-white font-bold';
+      } else if (knife.rarity === 'epic') {
+        rColor = 'border-purple-500 bg-purple-950/30';
+        badgeColor = 'bg-purple-600 text-white font-bold';
+      } else {
+        rColor = 'border-stone-700 bg-stone-900/90';
+        badgeColor = 'bg-stone-800 text-stone-300';
+      }
+
+      const itemRow = document.createElement('div');
+      itemRow.className = `p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition ${rColor}`;
+      itemRow.innerHTML = `
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <span class="text-3xl shrink-0 filter drop-shadow">${knife.icon}</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="font-bold text-xs text-stone-100 truncate">${knife.name}</span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${badgeColor}">${knife.rarityName}</span>
+            </div>
+            <div class="text-[10px] text-stone-400 mt-0.5 flex items-center gap-2 flex-wrap">
+              <span>Сила клика: <b class="text-amber-300">+${formatNumber(knife.clickPower || 0)}</b></span>
+              <span>Пассивный CPS: <b class="text-emerald-300">+${formatNumber(knife.passiveBoost || 0)}/с</b></span>
+            </div>
+          </div>
+        </div>
+        <div class="text-right shrink-0">
+          <span class="text-[10px] text-stone-400 block">Шанс:</span>
+          <span class="font-game text-xs font-bold text-yellow-300 px-2 py-0.5 rounded-lg bg-stone-950 border border-yellow-500/40">${pct}%</span>
+        </div>
+      `;
+      listEl.appendChild(itemRow);
+    });
+  }
+
+  modal.classList.remove('hidden');
 }
 
 export function initCasesListeners() {

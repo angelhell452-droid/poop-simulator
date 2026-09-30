@@ -30,13 +30,13 @@ export function updateHUD() {
   const topPl = document.getElementById('topPlungers');
   if (topPl) topPl.textContent = formatNumber(GAME.transcendPlungers || 0);
 
-  const lvlPrestigeTxt = `Ур. ${GAME.totalPrestiges || 0}`;
+  const lvlPrestigeTxt = `Ур. ${formatNumber(GAME.totalPrestiges || 0)}`;
   const headerPrestige = document.getElementById('headerPrestigeLvl');
   if (headerPrestige) headerPrestige.textContent = lvlPrestigeTxt;
   const masterPrestige = document.getElementById('masterPrestigeLvl');
   if (masterPrestige) masterPrestige.textContent = lvlPrestigeTxt;
 
-  const lvlTranscendTxt = `Ур. ${GAME.totalTranscend || 0}`;
+  const lvlTranscendTxt = `Ур. ${formatNumber(GAME.totalTranscend || 0)}`;
   const headerTranscend = document.getElementById('headerTranscendLvl');
   if (headerTranscend) headerTranscend.textContent = lvlTranscendTxt;
   const masterTranscend = document.getElementById('masterTranscendLvl');

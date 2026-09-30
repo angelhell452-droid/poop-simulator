@@ -29,10 +29,24 @@ export function checkAchievements() {
     if (ach.type === 'meteor' && (GAME.meteorsCaught || 0) >= ach.target) met = true;
     if (ach.type === 'turbo' && (GAME.turboCount || 0) >= ach.target) met = true;
     if (ach.type === 'transcend' && (GAME.totalTranscend || 0) >= ach.target) met = true;
+    if (ach.type === 'ideal' && (GAME.petHunger >= 90 && GAME.petClean >= 90 && GAME.petHappy >= 90)) met = true;
+    if (ach.type === 'sharpen') {
+      const maxStar = Object.values(GAME.knifeStars || {}).reduce((mx, cur) => Math.max(mx, cur), 0);
+      if (maxStar >= ach.target) met = true;
+    }
 
     if (met) {
       ach.done = true;
-      GAME.sparkles += ach.reward;
+      if (ach.reward) {
+        GAME.sparkles = (GAME.sparkles || 0) + ach.reward;
+      }
+      if (ach.rewardRolls) {
+        GAME.prestigeRolls = (GAME.prestigeRolls || 0) + ach.rewardRolls;
+        GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + ach.rewardRolls;
+      }
+      if (ach.rewardPlungers) {
+        GAME.transcendPlungers = (GAME.transcendPlungers || 0) + ach.rewardPlungers;
+      }
       completed.push(ach);
       events.emit('achievement:unlocked', { achievement: ach });
     }

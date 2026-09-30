@@ -47,26 +47,27 @@ export function getTranscendRequirement() {
 export function getTranscendRewardBreakdown() {
   const req = getTranscendRequirement();
 
-  // 1. Rolls Contribution (Smooth sqrt scaling: +1 plunger per ~100-500 rolls)
-  // At 2,500 rolls = 5 plungers. At 3,600 rolls = 6 plungers. Each flush pushes progress!
-  const rolls = Math.max(0, req.currentRolls || 0);
-  const rollsPart = Math.max(1, Math.floor(Math.sqrt(rolls / 100)));
+  // 1. Direct Flush Contribution: Every flush completed guarantees +1 Plunger!
+  const currentPrestiges = Math.max(0, req.currentPrestiges || 0);
+  const flushPart = Math.floor(currentPrestiges * 1.0);
 
-  // Next rolls needed for +1 plunger
-  const nextRollsPart = rollsPart + 1;
-  const nextTargetRolls = nextRollsPart * nextRollsPart * 100;
+  // 2. Rolls Contribution: Linear scaling (+1 Plunger per 500 rolls)
+  // At 2,500 rolls = 5 plungers. At 3,000 rolls = 6 plungers!
+  const rolls = Math.max(0, req.currentRolls || 0);
+  const rollsPart = Math.max(1, Math.floor(rolls / 500));
+  const nextTargetRolls = (rollsPart + 1) * 500;
   const nextPlungerRollsNeeded = Math.max(0, nextTargetRolls - rolls);
 
-  // 2. Form Evolution Contribution (Every 10 forms of poop evolution yields +1 plunger)
+  // 3. Form Evolution Contribution: Every 10 forms of poop evolution yields +1 Plunger
   const currentForm = Math.max(1, req.currentForm || 1);
   const stagePart = Math.max(0, Math.floor(currentForm / 10));
   const nextFormThreshold = (stagePart + 1) * 10;
   const nextPlungerFormsNeeded = Math.max(0, nextFormThreshold - currentForm);
 
-  // 3. Base Plungers
-  const basePlungers = Math.max(1, rollsPart + stagePart);
+  // 4. Base Plungers: sum of all three progression pillars
+  const basePlungers = Math.max(1, flushPart + rollsPart + stagePart);
 
-  // 4. Talents and Multipliers
+  // 5. Talents and Multipliers
   let mult = 1.0;
   const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');
   const soulBonus = soulTalent && soulTalent.level > 0 ? soulTalent.level * 0.20 : 0;
@@ -86,6 +87,7 @@ export function getTranscendRewardBreakdown() {
 
   return {
     ...req,
+    flushPart,
     rollsPart,
     stagePart,
     basePlungers,

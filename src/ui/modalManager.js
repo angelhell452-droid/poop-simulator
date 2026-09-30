@@ -8,7 +8,7 @@ import { TALENTS } from '../data/talents.data.js';
 import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
 import { renderCharacterInventory } from './characterInventoryView.js';
-import { renderTalents } from './talentView.js';
+import { renderTalents, switchTalentSubTab } from './talentView.js';
 import { renderFactories } from './factoryView.js';
 import { renderShop } from './shopView.js';
 
@@ -88,8 +88,8 @@ export function initModals() {
             <span class="font-game text-sm text-yellow-300 font-bold">+${formatNumber(gain)} <span class="roll-icon"></span></span>
           </div>
           <div class="text-[10px] text-purple-200 space-y-0.5 font-mono">
-            <div>├─ 💨 От биомассы забега: <b class="text-white">+${b.bioPart}</b> втулок</div>
-            <div>├─ 🧬 От эволюции формы: <b class="text-white">+${b.stagePart}</b> втулок ${b.extraForms > 0 ? `(+${b.extraForms} сверх цели)` : ''}</div>
+            <div>├─ 💨 От биомассы забега: <b class="text-white">+${formatNumber(b.bioPart)}</b> втулок</div>
+            <div>├─ 🧬 От эволюции формы: <b class="text-white">+${formatNumber(b.stagePart)}</b> втулок ${b.extraForms > 0 ? `(+${formatNumber(b.extraForms)} сверх цели)` : ''}</div>
             <div>├─ 🗡️ Бонус оружия (Коса): <b class="${b.scytheActive ? 'text-emerald-300' : 'text-stone-400'}">${b.scytheActive ? '+25% (АКТИВЕН)' : '0%'}</b></div>
             <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${Math.round((b.flushTalentBonus - 1) * 100)}%</b></div>
           </div>
@@ -109,7 +109,7 @@ export function initModals() {
           Бонус ко ВСЕМУ доходу: <b class="text-white">+${formatNumber(currentBoost)}%</b> ➔ После смыва: <b class="text-emerald-300">+${formatNumber(postBoost)}%</b>
         </div>
         <div class="mt-1.5 pt-1.5 border-t border-yellow-400/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px]">
-          <span class="text-yellow-400 font-bold">Смыв: Ранг ${flushes}</span>
+          <span class="text-yellow-400 font-bold">Смыв: Ранг ${formatNumber(flushes)}</span>
           <span class="text-stone-300 font-semibold">${nextMilestoneText}</span>
         </div>
       `;
@@ -167,18 +167,18 @@ export function initModals() {
         <div class="space-y-1.5">
           <div class="flex items-center justify-between text-xs">
             <span class="${t.meetsPrestiges ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-              🌀 Смывы: ${t.currentPrestiges} / ${t.reqPrestiges}
+              🌀 Смывы: ${formatNumber(t.currentPrestiges)} / ${formatNumber(t.reqPrestiges)}
             </span>
             <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsPrestiges ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-              ${t.meetsPrestiges ? '✓ Выполнено' : `Нужно еще ${t.reqPrestiges - t.currentPrestiges} смывов`}
+              ${t.meetsPrestiges ? '✓ Выполнено' : `Нужно еще ${formatNumber(t.reqPrestiges - t.currentPrestiges)} смывов`}
             </span>
           </div>
           <div class="flex items-center justify-between text-xs">
             <span class="${t.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-              🧬 Форма: #${t.currentForm} / #${t.reqForm}
+              🧬 Форма: #${formatNumber(t.currentForm)} / #${formatNumber(t.reqForm)}
             </span>
             <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsStage ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-              ${t.meetsStage ? '✓ Достигнуто' : `Нужно еще +${Math.max(0, t.reqForm - t.currentForm)} форм`}
+              ${t.meetsStage ? '✓ Достигнуто' : `Нужно еще +${formatNumber(Math.max(0, t.reqForm - t.currentForm))} форм`}
             </span>
           </div>
           <div class="flex items-center justify-between text-xs">
@@ -197,8 +197,9 @@ export function initModals() {
             <span class="font-game text-sm text-cyan-300 font-bold">+${formatNumber(gain)} <span class="plunger-icon"></span></span>
           </div>
           <div class="text-[10px] text-indigo-200 space-y-0.5 font-mono">
-            <div>├─ <span class="roll-icon"></span> От накопленных Втулок (${formatNumber(t.currentRolls)}): <b class="text-white">+${t.rollsPart}</b> вантузов</div>
-            <div>├─ 🧬 От эволюции формы (Форма #${t.currentForm}): <b class="text-white">+${t.stagePart}</b> вантузов (+1 за каждые 10 форм)</div>
+            <div>├─ 🌀 От числа Смывов (${formatNumber(t.currentPrestiges)}): <b class="text-white">+${formatNumber(t.flushPart)}</b> вантузов (+1 за каждый смыв)</div>
+            <div>├─ <span class="roll-icon"></span> От накопленных Втулок (${formatNumber(t.currentRolls)}): <b class="text-white">+${formatNumber(t.rollsPart)}</b> вантузов (+1 за 500 втулок)</div>
+            <div>├─ 🧬 От эволюции формы (Форма #${formatNumber(t.currentForm)}): <b class="text-white">+${formatNumber(t.stagePart)}</b> вантузов (+1 за каждые 10 форм)</div>
             <div>├─ <span class="plunger-icon"></span> Астральный Инкубатор: <b class="${t.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${Math.round(t.incubatorBonus * 100)}%</b></div>
             <div>└─ 🔮 Душа Прорыва (Талант): <b class="${t.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${Math.round(t.soulBonus * 100)}%</b></div>
           </div>
@@ -208,9 +209,10 @@ export function initModals() {
               <span>Как получить больше Вантузов?</span>
             </div>
             <div class="text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
-              <div>• <b>Втулки</b>: делайте больше Смывов! До следующего +1 вантуза нужно ещё: <b>${formatNumber(t.nextPlungerRollsNeeded)}</b> <span class="roll-icon"></span></div>
-              <div>• <b>Формы</b>: развивайте какашку дальше (до следующего +1 вантуза ещё <b>${t.nextPlungerFormsNeeded}</b> форм)</div>
-              <div>• <b>Таланты</b>: качайте "Душа Прорыва" в Древе Смыва (+20% за уровень) и "Астральный Инкубатор" в Прорыве (+10% за уровень)</div>
+              <div>• <b>Смывы</b>: делайте больше Смывов! Каждый Смыв гарантирует <b>+1 Вантуз</b> (+${formatNumber(t.flushPart)} сейчас)</div>
+              <div>• <b>Втулки</b>: копите больше Втулок! До следующего +1 вантуза нужно ещё: <b>${formatNumber(t.nextPlungerRollsNeeded)}</b> <span class="roll-icon"></span></div>
+              <div>• <b>Формы</b>: развивайте какашку дальше (до следующего +1 вантуза ещё <b>${formatNumber(t.nextPlungerFormsNeeded)}</b> форм)</div>
+              <div>• <b>Таланты</b>: качайте "Душа Прорыва" в Древе Смыва (+20% за ур.) и "Астральный Инкубатор" в Прорыве (+10% за ур.)</div>
             </div>
           </div>
         </div>
@@ -222,15 +224,15 @@ export function initModals() {
       const transcends = t.transcends;
       let tMilestoneText = '';
       if (transcends < 1) tMilestoneText = '🎯 Прорыв #1: Вантузы и Базовые Реликвии (Тир 1)';
-      else if (transcends < 2) tMilestoneText = `🎯 Прорыв #2: 🤖 Авто-Уход за Питомцем & Авто-Заводы [${transcends}/2]`;
-      else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: 🌀 Авто-Эволюция Мутаций [${transcends}/3]`;
-      else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⏳ Временной Разлом (+25% к CPS) [${transcends}/5]`;
-      else if (transcends < 10) tMilestoneText = `🎯 Прорыв #10: 🌌 Сингулярность & Корона Демиурга [${transcends}/10]`;
-      else tMilestoneText = `🏆 Повелитель Астральной Сингулярности (${transcends} прорывов)!`;
+      else if (transcends < 2) tMilestoneText = `🎯 Прорыв #2: 🤖 Авто-Уход за Питомцем & Авто-Заводы [${formatNumber(transcends)}/2]`;
+      else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: 🌀 Авто-Эволюция Мутаций [${formatNumber(transcends)}/3]`;
+      else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⏳ Временной Разлом (+25% к CPS) [${formatNumber(transcends)}/5]`;
+      else if (transcends < 10) tMilestoneText = `🎯 Прорыв #10: 🌌 Сингулярность & Корона Демиурга [${formatNumber(transcends)}/10]`;
+      else tMilestoneText = `🏆 Повелитель Астральной Сингулярности (${formatNumber(transcends)} прорывов)!`;
 
       milestoneEl.innerHTML = `
         <div class="flex items-center justify-between text-[10px] text-cyan-300 font-bold px-1 py-0.5">
-          <span>Прорыв: Ранг ${transcends}</span>
+          <span>Прорыв: Ранг ${formatNumber(transcends)}</span>
           <span class="text-indigo-200">${tMilestoneText}</span>
         </div>
       `;
@@ -241,9 +243,9 @@ export function initModals() {
       if (!t.isMet) {
         execBtn.disabled = true;
         if (!t.meetsPrestiges) {
-          execBtn.textContent = `ТРЕБУЕТСЯ ${t.reqPrestiges} СМЫВОВ (${t.currentPrestiges}/${t.reqPrestiges}) 🔒`;
+          execBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(t.reqPrestiges)} СМЫВОВ (${formatNumber(t.currentPrestiges)}/${formatNumber(t.reqPrestiges)}) 🔒`;
         } else if (!t.meetsStage) {
-          execBtn.textContent = `ТРЕБУЕТСЯ ФОРМА #${t.reqForm} (СЕЙЧАС #${t.currentForm}) 🔒`;
+          execBtn.textContent = `ТРЕБУЕТСЯ ФОРМА #${formatNumber(t.reqForm)} (СЕЙЧАС #${formatNumber(t.currentForm)}) 🔒`;
         } else {
           execBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(t.reqRolls)} ВТУЛОК 🔒`;
         }
@@ -257,10 +259,20 @@ export function initModals() {
     document.getElementById('transcendModal')?.classList.remove('hidden');
   };
 
-
   document.getElementById('btnTranscendModal')?.addEventListener('click', openTranscendModal);
   document.getElementById('btnCanvasTranscend')?.addEventListener('click', openTranscendModal);
   document.getElementById('currencyPlungersBox')?.addEventListener('click', openTranscendModal);
+
+  // Quick navigation to Transcend Relics sub-tab in dashboard
+  const navigateToTranscendRelics = () => {
+    document.getElementById('transcendModal')?.classList.add('hidden');
+    const talentDashBtn = document.querySelector('.dash-tab[data-target="panelTalents"]');
+    if (talentDashBtn) talentDashBtn.click();
+    switchTalentSubTab('transcend');
+  };
+
+  document.getElementById('btnOpenTranscendRelicsFromModal')?.addEventListener('click', navigateToTranscendRelics);
+  document.getElementById('btnTranscendAutoInfo')?.addEventListener('click', navigateToTranscendRelics);
 
   // Execute Transcend
   const btnExecuteTranscend = document.getElementById('btnExecuteTranscend');

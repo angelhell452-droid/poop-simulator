@@ -4,7 +4,7 @@ import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, wipePlayerData, requ
 import { saveLocal } from './save/saveManager.js';
 import { updateHUD, initAutocareListeners, initAutomationToggleListeners } from './ui/hudView.js';
 import { renderFactories } from './ui/factoryView.js';
-import { renderTalents } from './ui/talentView.js';
+import { renderTalents, initTalentsListeners } from './ui/talentView.js';
 import { renderShop } from './ui/shopView.js';
 import { renderAchievements } from './ui/achievementsView.js';
 import { renderEvoChronicles } from './ui/evoChroniclesView.js';
@@ -107,6 +107,7 @@ export async function bootstrap() {
   initModals();
   initCasesListeners();
   initKnivesIndexListeners();
+  initTalentsListeners();
   initAutocareListeners();
   initAutomationToggleListeners();
   initAuthModal();

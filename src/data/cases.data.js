@@ -144,7 +144,7 @@ export const CSGO_CASES = [
     cost: 250000,
     reqTranscend: 5,
     currencySymbol: '🪠',
-    borderClass: 'border-amber-300 shadow-[0_0_25px_#f59e0b] animate-pulse',
+    borderClass: 'border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.6)]',
     bgClass: 'from-amber-950 via-yellow-950 to-black',
     desc: 'Абсолютный венец эндгейма. Гарантирует только Божественные и Небесные реликтовые артефакты!',
     pool: ["knife_godly_omega", "knife_godly_katana", "knife_godly_scythe", "knife_celestial_daggers", "knife_celestial_scythe", "knife_celestial_katana", "knife_celestial_karambit", "knife_celestial_butterfly"]
@@ -157,7 +157,7 @@ export const CSGO_CASES = [
     cost: 1000000,
     reqTranscend: 10,
     currencySymbol: '🪠',
-    borderClass: 'border-fuchsia-400 shadow-[0_0_30px_#d946ef] animate-pulse',
+    borderClass: 'border-fuchsia-400 shadow-[0_0_25px_rgba(217,70,239,0.6)]',
     bgClass: 'from-fuchsia-950 via-purple-950 to-black',
     desc: 'Священный грааль Омниверса. Доступен после 10 Прорывов! Только мифические ножи Omega, Excalibur и Void Scythe!',
     pool: ["knife_godly_omega", "knife_godly_katana", "knife_godly_scythe", "knife_karambit_lore", "knife_karambit_sapphire", "knife_karambit_ruby", "knife_celestial_butterfly", "knife_titanium_karambit"]

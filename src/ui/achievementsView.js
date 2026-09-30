@@ -34,6 +34,10 @@ export function renderAchievements() {
       current = GAME.totalTranscend || 0;
     } else if (ach.type === 'knives') {
       current = (GAME.unlockedKnives || []).length;
+    } else if (ach.type === 'ideal') {
+      current = (GAME.petHunger >= 90 && GAME.petClean >= 90 && GAME.petHappy >= 90) ? 1 : 0;
+    } else if (ach.type === 'sharpen') {
+      current = Object.values(GAME.knifeStars || {}).reduce((mx, cur) => Math.max(mx, cur), 0);
     }
 
     let progressHtml = '';
@@ -53,18 +57,31 @@ export function renderAchievements() {
       `;
     }
 
+    const rewards = [];
+    if (ach.reward) {
+      rewards.push(`<span class="text-yellow-400 font-bold">+${formatNumber(ach.reward)} ✨</span>`);
+    }
+    if (ach.rewardRolls) {
+      rewards.push(`<span class="text-purple-300 font-bold inline-flex items-center gap-0.5">+${formatNumber(ach.rewardRolls)} <span class="roll-icon"></span></span>`);
+    }
+    if (ach.rewardPlungers) {
+      rewards.push(`<span class="text-cyan-300 font-bold inline-flex items-center gap-0.5">+${formatNumber(ach.rewardPlungers)} <span class="plunger-icon"></span></span>`);
+    }
+
     const row = document.createElement('div');
-    row.className = `p-2 rounded-xl border flex items-center justify-between ${ach.done ? 'bg-emerald-950/40 border-emerald-600' : 'bg-stone-950 border-stone-800'}`;
+    row.className = `p-2.5 rounded-2xl border flex items-center justify-between gap-2 shadow-sm transition ${ach.done ? 'bg-emerald-950/40 border-emerald-600/70' : 'bg-stone-950/90 border-stone-800'}`;
     row.innerHTML = `
-      <div class="flex items-center gap-2">
-        <span class="text-xl">${ach.icon}</span>
-        <div>
-          <div class="font-bold text-xs ${ach.done ? 'text-emerald-300' : 'text-stone-300'}">${ach.title} ${ach.done ? '✓' : ''}</div>
-          <div class="text-[10px] text-stone-500">${ach.desc}</div>
+      <div class="flex items-center gap-2.5 min-w-0 flex-1">
+        <span class="text-2xl shrink-0">${ach.icon}</span>
+        <div class="min-w-0 flex-1">
+          <div class="font-bold text-xs ${ach.done ? 'text-emerald-300' : 'text-stone-200'}">${ach.title} ${ach.done ? '✓' : ''}</div>
+          <div class="text-[10px] text-stone-400 leading-snug mt-0.5">${ach.desc}</div>
           ${progressHtml}
         </div>
       </div>
-      <span class="text-xs font-bold text-yellow-400 shrink-0 ml-2">+${formatNumber(ach.reward)} ✨</span>
+      <div class="flex flex-col items-end shrink-0 gap-0.5 text-xs">
+        ${rewards.join('')}
+      </div>
     `;
     container.appendChild(row);
   });
