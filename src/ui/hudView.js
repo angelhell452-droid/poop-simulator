@@ -40,13 +40,13 @@ export function updateHUD() {
   const barHp = document.getElementById('barHappy');
   if (barHp) barHp.style.width = GAME.happy + '%';
 
-  // Buff texts
+  // Buff texts (Concise & zero jitter)
   const buffH = document.getElementById('buffHungerText');
-  if (buffH) buffH.textContent = `Сытость: ${Math.round(GAME.hunger)}% (+${Math.round((GAME.hunger / 100) * 50)}% Клик)`;
+  if (buffH) buffH.textContent = `Сытость: ${Math.round(GAME.hunger)}% (+${Math.round((GAME.hunger / 100) * 50)}%)`;
   const buffC = document.getElementById('buffCleanText');
-  if (buffC) buffC.textContent = `Чистота: ${Math.round(GAME.clean)}% (+${Math.round((GAME.clean / 100) * 40)}% Заводы)`;
+  if (buffC) buffC.textContent = `Чистота: ${Math.round(GAME.clean)}% (+${Math.round((GAME.clean / 100) * 40)}%)`;
   const buffHp = document.getElementById('buffHappyText');
-  if (buffHp) buffHp.textContent = `Счастье: ${Math.round(GAME.happy)}% (x2 Комбо ${GAME.happy >= 70 ? '🔥' : ''})`;
+  if (buffHp) buffHp.textContent = `Счастье: ${Math.round(GAME.happy)}% (x2${GAME.happy >= 70 ? '🔥' : ''})`;
 
   const buffIdeal = document.getElementById('buffIdealPill');
   if (buffIdeal) {

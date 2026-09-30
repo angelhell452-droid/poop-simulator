@@ -14,15 +14,18 @@ export function renderFactories() {
   let unownedCount = 0;
   const buyMultiplier = GAME.buyMultiplier || 1;
 
-  FACTORIES.forEach((fac, idx) => {
+  FACTORIES.forEach((fac) => {
     const currentCount = fac.count || 0;
+    const isLocked = fac.reqStage !== undefined && (GAME.evoStage || 0) < fac.reqStage;
+
     if (currentCount === 0) {
       unownedCount++;
-      if (unownedCount > 3) return; // Keep UI clean: show up to 3 unowned upcoming tiers
+      // Show up to 2 unowned upcoming tiers, plus the next locked goal
+      if (unownedCount > 3) return;
     }
 
     const facInfo = getAffordableFactoryInfo(fac);
-    const canBuy = facInfo.canBuy;
+    const canBuy = !isLocked && facInfo.canBuy;
 
     let nextMilestone = 25;
     let milestoneMultiplierDesc = 'x2';
@@ -42,14 +45,22 @@ export function renderFactories() {
       ? `+${facInfo.count} (МАКС)`
       : (buyMultiplier > 1 ? `+${facInfo.count}` : `+1`);
 
+    let buttonLabel = `${countTxt}: ${formatNumber(facInfo.totalCost)} 💨`;
+    if (isLocked) {
+      buttonLabel = `🔒 Требуется Форма #${fac.reqStage + 1}`;
+    }
+
     const row = document.createElement('div');
-    row.className = 'p-3 rounded-2xl bg-stone-900 border border-stone-800 hover:border-amber-600 transition flex flex-col gap-2 shadow-sm';
+    row.className = `p-3 rounded-2xl bg-stone-900 border ${isLocked ? 'border-stone-800/60 opacity-75' : 'border-stone-800 hover:border-amber-600'} transition flex flex-col gap-2 shadow-sm`;
     row.innerHTML = `
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
           <span class="text-2xl">${fac.icon}</span>
           <div>
-            <div class="font-bold text-xs text-stone-200">${fac.name}</div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-xs text-stone-200">${fac.name}</span>
+              ${isLocked ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-red-950/80 text-red-300 border border-red-700/50 font-bold">Форма #${fac.reqStage + 1}</span>` : ''}
+            </div>
             <div class="text-[11px] text-emerald-400 font-game">+${formatNumber(fac.baseCps * (currentCount || 1))} /сек</div>
           </div>
         </div>
@@ -66,7 +77,7 @@ export function renderFactories() {
       </div>
 
       <button class="buy-factory-btn w-full py-1.5 px-3 rounded-xl border text-xs font-game transition ${canBuy ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 border-yellow-300 hover:brightness-110 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${fac.id}" ${canBuy ? '' : 'disabled'}>
-        ${countTxt}: ${formatNumber(facInfo.totalCost)} 💨
+        ${buttonLabel}
       </button>
     `;
 
@@ -93,19 +104,25 @@ export function updateFactoryButtons() {
     const fac = FACTORIES.find(f => f.id === facId);
     if (!fac) return;
 
+    const isLocked = fac.reqStage !== undefined && (GAME.evoStage || 0) < fac.reqStage;
     const facInfo = getAffordableFactoryInfo(fac);
+    const canBuy = !isLocked && facInfo.canBuy;
+
     const countTxt = buyMultiplier === 'max'
       ? `+${facInfo.count} (МАКС)`
       : (buyMultiplier > 1 ? `+${facInfo.count}` : `+1`);
 
-    const newLabel = `${countTxt}: ${formatNumber(facInfo.totalCost)} 💨`;
+    const newLabel = isLocked
+      ? `🔒 Требуется Форма #${fac.reqStage + 1}`
+      : `${countTxt}: ${formatNumber(facInfo.totalCost)} 💨`;
+
     if (btn.textContent.trim() !== newLabel) {
       btn.textContent = newLabel;
     }
 
-    if (btn.disabled !== !facInfo.canBuy) {
-      btn.disabled = !facInfo.canBuy;
-      btn.className = facInfo.canBuy
+    if (btn.disabled !== !canBuy) {
+      btn.disabled = !canBuy;
+      btn.className = canBuy
         ? 'buy-factory-btn w-full py-1.5 px-3 rounded-xl border text-xs font-game transition bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 border-yellow-300 hover:brightness-110 jelly-btn'
         : 'buy-factory-btn w-full py-1.5 px-3 rounded-xl border text-xs font-game transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
     }

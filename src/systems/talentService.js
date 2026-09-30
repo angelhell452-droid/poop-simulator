@@ -33,13 +33,14 @@ export function getAffordableTalentInfo(tl) {
     }
   }
 
+  const nextCost = Math.floor(tl.cost * Math.pow(growth, tl.level)) + tl.level;
+
   if (count === 0) {
-    totalCost = Math.floor(tl.cost * Math.pow(growth, tl.level)) + tl.level;
-    return { count: 1, totalCost, canBuy: false, maxed: false };
+    return { count: 1, totalCost: nextCost, canBuy: false, maxed: false, nextCost };
   }
 
   const canBuy = count > 0 && GAME.prestigeRolls >= totalCost;
-  return { count, totalCost, canBuy: canBuy && count > 0, maxed: false };
+  return { count, totalCost, canBuy: canBuy && count > 0, maxed: false, nextCost };
 }
 
 export function buyTalent(talentId) {

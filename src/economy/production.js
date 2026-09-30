@@ -18,9 +18,9 @@ export function getKnifeStar(knifeId) {
 export function getClickPower() {
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
 
-  // Permanent prestige passive boost based on all rolls earned (never drops when spending rolls!)
+  // Permanent prestige passive boost based on all rolls earned (power-law curve: no runaway snowball)
   const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
-  const prestigePassiveBoost = 1 + (totalRolls * 0.02);
+  const prestigePassiveBoost = 1 + Math.pow(Math.max(0, totalRolls), 0.45) * 0.25;
   const totalPrestigesBoost = 1 + (GAME.totalPrestiges * 0.35);
   const rollsMult = prestigePassiveBoost * totalPrestigesBoost;
 
@@ -164,9 +164,9 @@ export function getPassiveIncome() {
   // Evolution Stage multiplier
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
 
-  // Permanent prestige passive boost based on all rolls earned (never drops when spending rolls!)
+  // Permanent prestige passive boost based on all rolls earned (power-law curve: no runaway snowball)
   const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
-  const prestigePassiveBoost = 1 + (totalRolls * 0.02);
+  const prestigePassiveBoost = 1 + Math.pow(Math.max(0, totalRolls), 0.45) * 0.25;
   const totalPrestigesBoost = 1 + (GAME.totalPrestiges * 0.35);
   const rollsMult = prestigePassiveBoost * totalPrestigesBoost;
 

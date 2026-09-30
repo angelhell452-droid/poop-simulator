@@ -20,11 +20,12 @@ export function renderTalents() {
     const maxed = tl.level >= tl.max;
     const canBuy = tlInfo.canBuy && !maxed;
 
+    const nextCost = tlInfo.nextCost || tl.cost;
     const btnLabel = maxed
       ? 'МАКС'
       : (buyMultiplier === 'max'
-        ? `+${tlInfo.count} (МАКС): ${formatNumber(tlInfo.totalCost)} 🧻`
-        : (buyMultiplier > 1 ? `+${tlInfo.count}: ${formatNumber(tlInfo.totalCost)} 🧻` : `${formatNumber(tlInfo.totalCost)} 🧻`));
+        ? `+${tlInfo.count} (${formatNumber(tlInfo.totalCost)} 🧻)`
+        : (buyMultiplier > 1 ? `+${tlInfo.count} (${formatNumber(tlInfo.totalCost)} 🧻)` : `${formatNumber(tlInfo.totalCost)} 🧻`));
 
     let tierBadgeClass = 'bg-stone-800 text-stone-300 border-stone-700';
     if (tl.tier === 2) tierBadgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40';
@@ -42,7 +43,10 @@ export function renderTalents() {
             <span class="text-[9px] px-1.5 py-0.5 rounded-full border font-bold ${tierBadgeClass}">${tl.tierName || 'Базовый'}</span>
             <span class="text-yellow-400 font-game text-[11px]">(${tl.level.toLocaleString()}/${tl.max.toLocaleString()})</span>
           </div>
-          <div class="text-[10px] text-stone-400 mt-0.5">${tl.desc}</div>
+          <div class="text-[10px] text-stone-400 mt-0.5">
+            ${tl.desc}
+            ${!maxed ? `<span class="text-purple-300 font-semibold font-game ml-1.5">След: ${formatNumber(nextCost)} 🧻</span>` : ''}
+          </div>
         </div>
       </div>
       <button class="buy-talent-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 ml-2 transition ${maxed ? 'bg-stone-800 text-stone-500 border-stone-700' : (canBuy ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-110 text-white border-purple-400 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed')}" data-id="${tl.id}" ${canBuy ? '' : 'disabled'}>
@@ -83,8 +87,8 @@ export function updateTalentButtons() {
     const btnLabel = maxed
       ? 'МАКС'
       : (buyMultiplier === 'max'
-        ? `+${tlInfo.count} (МАКС): ${formatNumber(tlInfo.totalCost)} 🧻`
-        : (buyMultiplier > 1 ? `+${tlInfo.count}: ${formatNumber(tlInfo.totalCost)} 🧻` : `${formatNumber(tlInfo.totalCost)} 🧻`));
+        ? `+${tlInfo.count} (${formatNumber(tlInfo.totalCost)} 🧻)`
+        : (buyMultiplier > 1 ? `+${tlInfo.count} (${formatNumber(tlInfo.totalCost)} 🧻)` : `${formatNumber(tlInfo.totalCost)} 🧻`));
 
     if (btn.textContent.trim() !== btnLabel) {
       btn.textContent = btnLabel;

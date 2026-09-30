@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40"
-            id="versionTag">v4.4 PRO CS:GO</span>
+            id="versionTag">v4.5.0 PRO</span>
         </div>
         <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
       </div>
@@ -36,7 +36,7 @@
         <span class="text-lg" id="iconBiomass">💨</span>
         <div>
           <div class="text-[9px] text-amber-400 font-bold uppercase" id="labelBiomass">Биомасса</div>
-          <span class="font-game text-sm sm:text-base text-emerald-400 tracking-wide" id="topBiomass">0</span>
+          <span class="font-game text-sm sm:text-base text-emerald-400 tracking-wide font-mono tabular-nums min-w-[50px] inline-block" id="topBiomass">0</span>
         </div>
       </div>
       <div
@@ -44,21 +44,21 @@
         <span class="text-lg" id="iconSparkles">✨</span>
         <div>
           <div class="text-[9px] text-yellow-400 font-bold uppercase" id="labelSparkles">Блестяшки</div>
-          <span class="font-game text-sm sm:text-base text-yellow-300 tracking-wide" id="topSparkles">0</span>
+          <span class="font-game text-sm sm:text-base text-yellow-300 tracking-wide font-mono tabular-nums min-w-[40px] inline-block" id="topSparkles">0</span>
         </div>
       </div>
       <div class="flex items-center gap-1.5 bg-purple-950/90 px-3 py-1 rounded-xl border-2 border-yellow-400 shadow">
         <span class="text-lg">🧻</span>
         <div>
           <div class="text-[9px] text-yellow-300 font-bold uppercase">Втулки</div>
-          <span class="font-game text-sm sm:text-base text-yellow-200 tracking-wide" id="topPrestige">0</span>
+          <span class="font-game text-sm sm:text-base text-yellow-200 tracking-wide font-mono tabular-nums min-w-[45px] inline-block" id="topPrestige">0</span>
         </div>
       </div>
       <div class="flex items-center gap-1.5 bg-indigo-950/90 px-3 py-1 rounded-xl border-2 border-cyan-400 shadow">
         <span class="text-lg">🪠</span>
         <div>
           <div class="text-[9px] text-cyan-300 font-bold uppercase">Вантузы</div>
-          <span class="font-game text-sm sm:text-base text-cyan-200 tracking-wide" id="topPlungers">0</span>
+          <span class="font-game text-sm sm:text-base text-cyan-200 tracking-wide font-mono tabular-nums min-w-[40px] inline-block" id="topPlungers">0</span>
         </div>
       </div>
     </div>
@@ -247,24 +247,24 @@
         </div>
       </div>
 
-      <!-- ACTIVE PET CARE BUFFS BANNER (Meaningful pet care!) -->
+      <!-- ACTIVE PET CARE BUFFS BANNER (Zero-jitter fixed height) -->
       <div id="petBuffsBanner"
-        class="px-3 py-1.5 bg-stone-950/90 border-t border-amber-900/40 flex items-center justify-between gap-1 text-[10px] flex-wrap z-10">
+        class="px-3 py-1 bg-stone-950/90 border-t border-amber-900/40 flex items-center justify-between gap-1 text-[10px] overflow-x-auto overflow-y-hidden whitespace-nowrap h-[34px] min-h-[34px] max-h-[34px] z-10 custom-scroll">
         <div id="buffHungerPill"
-          class="flex items-center gap-1 px-2 py-0.5 rounded bg-orange-950/80 border border-orange-600/50 text-orange-200">
-          <span>🍗</span> <span id="buffHungerText">Сытость: 100% (+50% Клик)</span>
+          class="flex items-center gap-1 px-2 py-0.5 rounded bg-orange-950/80 border border-orange-600/50 text-orange-200 shrink-0">
+          <span>🍗</span> <span id="buffHungerText">Сытость: 100% (+50%)</span>
         </div>
         <div id="buffCleanPill"
-          class="flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-600/50 text-cyan-200">
-          <span>✨</span> <span id="buffCleanText">Чистота: 100% (+40% Заводы)</span>
+          class="flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-600/50 text-cyan-200 shrink-0">
+          <span>✨</span> <span id="buffCleanText">Чистота: 100% (+40%)</span>
         </div>
         <div id="buffHappyPill"
-          class="flex items-center gap-1 px-2 py-0.5 rounded bg-pink-950/80 border border-pink-600/50 text-pink-200">
-          <span>💖</span> <span id="buffHappyText">Экстаз: x2 Комбо</span>
+          class="flex items-center gap-1 px-2 py-0.5 rounded bg-pink-950/80 border border-pink-600/50 text-pink-200 shrink-0">
+          <span>💖</span> <span id="buffHappyText">Счастье: 100% (x2)</span>
         </div>
         <div id="buffIdealPill"
-          class="hidden flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500/20 border border-yellow-400 text-yellow-300 font-bold animate-pulse">
-          <span>👑</span> <span>ИДЕАЛ x2 ВСЁ!</span>
+          class="hidden flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500/20 border border-yellow-400 text-yellow-300 font-bold animate-pulse shrink-0">
+          <span>👑</span> <span>ИДЕАЛ x2!</span>
         </div>
       </div>
 
@@ -503,15 +503,15 @@
 
       </div>
 
-      <!-- Performance Rate Footer -->
+      <!-- Performance Rate Footer (Locked height zero-jitter) -->
       <div
-        class="p-2.5 bg-stone-950 border-t border-amber-900/60 text-[10px] text-stone-400 flex justify-between items-center">
-        <div>
-          <span>Доход: <b class="text-emerald-400" id="footPassiveRate">+0 /сек</b></span> |
-          <span>Клик: <b class="text-amber-300" id="footClickPower">1</b> <span id="footCpsRate"
+        class="p-2.5 bg-stone-950 border-t border-amber-900/60 text-[10px] text-stone-400 flex justify-between items-center h-[38px] min-h-[38px] overflow-hidden whitespace-nowrap">
+        <div class="truncate">
+          <span>Доход: <b class="text-emerald-400 font-mono tabular-nums" id="footPassiveRate">+0 /сек</b></span> |
+          <span>Клик: <b class="text-amber-300 font-mono tabular-nums" id="footClickPower">1</b> <span id="footCpsRate"
               class="text-yellow-400 font-bold ml-1 hidden"></span></span>
         </div>
-        <button id="btnExportSave" class="text-stone-400 hover:text-white underline">Резервная копия</button>
+        <button id="btnExportSave" class="text-stone-400 hover:text-white underline shrink-0 ml-2">Резервная копия</button>
       </div>
     </aside>
   </main>

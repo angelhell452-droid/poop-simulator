@@ -49,13 +49,13 @@ export function initPetCanvas() {
       const now = Date.now();
       const isManual = !!res.isManual;
 
-      // Throttle automated background clicks to prevent FPS drops
+      // Responsive background clicks with low-overhead 75ms throttle
       if (!isManual) {
-        if (now - lastAutoclickParticleTime < 350) return;
+        if (now - lastAutoclickParticleTime < 75) return;
         lastAutoclickParticleTime = now;
       }
 
-      if (visualParticles.length >= 6) {
+      if (visualParticles.length >= 30) {
         visualParticles.shift();
       }
 
@@ -72,12 +72,16 @@ export function initPetCanvas() {
         spawnY = clientY - rect.top;
       }
 
+      const particleColor = critsCount > 0 
+        ? '#fbbf24' 
+        : (isManual ? '#4ade80' : '#38bdf8');
+
       addVisualParticle(
         textLabel,
-        critsCount > 0 ? '#f97316' : '#22c55e',
-        critsCount > 0 ? 1.35 : 1.15,
-        0.9,
-        -2.2,
+        particleColor,
+        critsCount > 0 ? 1.4 : 1.2,
+        1.0,
+        critsCount > 0 ? -2.6 : -2.0,
         spawnX,
         spawnY
       );
@@ -103,10 +107,10 @@ export function triggerPetSquash(sx = 1.25, sy = 0.8) {
   knifeSlashTimer = 1.0;
 }
 
-export function addVisualParticle(text, color = '#facc15', scale = 1.3, life = 0.9, vy = -2.2, x = null, y = null) {
+export function addVisualParticle(text, color = '#facc15', scale = 1.2, life = 1.0, vy = -2.2, x = null, y = null) {
   if (!canvas) canvas = document.getElementById('petCanvas');
   if (!canvas) return;
-  if (visualParticles.length >= 6) {
+  if (visualParticles.length >= 30) {
     visualParticles.shift();
   }
   const w = canvas.width || 360;
@@ -114,6 +118,7 @@ export function addVisualParticle(text, color = '#facc15', scale = 1.3, life = 0
   visualParticles.push({
     x: (x !== null && x !== undefined && !isNaN(x)) ? x : (w / 2 + (Math.random() * 60 - 30)),
     y: (y !== null && y !== undefined && !isNaN(y)) ? y : (h * 0.48 + (Math.random() * 20 - 10)),
+    vx: (Math.random() - 0.5) * 0.9,
     text,
     color,
     scale,
@@ -128,8 +133,10 @@ function renderPetLoop(time) {
   const h = canvas.height;
   const currentEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
 
+  const isGirly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
+
   // Background
-  if (GAME.girlyMode) {
+  if (isGirly) {
     const pinkGrad = ctx.createLinearGradient(0, 0, 0, h);
     pinkGrad.addColorStop(0, '#fdf2f8');
     pinkGrad.addColorStop(0.5, '#fce7f3');
@@ -149,16 +156,16 @@ function renderPetLoop(time) {
   }
 
   // Porcelain Toilet Base
-  ctx.fillStyle = GAME.girlyMode ? '#fff1f2' : '#f8fafc';
+  ctx.fillStyle = isGirly ? '#fff1f2' : '#f8fafc';
   ctx.beginPath();
   ctx.ellipse(w / 2, h * 0.76, 170, 70, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = GAME.girlyMode ? '#f472b6' : '#cbd5e1';
+  ctx.strokeStyle = isGirly ? '#f472b6' : '#cbd5e1';
   ctx.lineWidth = 4;
   ctx.stroke();
 
   // Toilet Water
-  ctx.fillStyle = GAME.girlyMode ? '#f9a8d4' : '#38bdf8';
+  ctx.fillStyle = isGirly ? '#f9a8d4' : '#38bdf8';
   ctx.beginPath();
   ctx.ellipse(w / 2, h * 0.77, 120, 44, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -187,12 +194,29 @@ function renderPetLoop(time) {
     ctx.fill();
   }
 
-  // Poop Body Swirls
-  ctx.fillStyle = currentEvo.bodyColor || '#78350f';
+  // Poop Body Swirls (Girly Mode Kawaii pastel gradient vs Boy/Default evolution color)
+  let bodyFill = currentEvo.bodyColor || '#78350f';
+  if (isGirly) {
+    const bodyGrad = ctx.createLinearGradient(0, -50, 0, 50);
+    bodyGrad.addColorStop(0, '#f472b6');
+    bodyGrad.addColorStop(0.5, '#fb7185');
+    bodyGrad.addColorStop(1, '#f43f5e');
+    bodyFill = bodyGrad;
+  }
+
+  ctx.fillStyle = bodyFill;
   ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(0, -25, 36, 18, 0, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.moveTo(-10, -32); ctx.quadraticCurveTo(0, -62, 14, -48); ctx.fill();
+
+  // Girly Mode Ribbon Bow on Head Curl
+  if (isGirly) {
+    ctx.fillStyle = '#fb7185';
+    ctx.beginPath(); ctx.ellipse(-12, -48, 9, 5, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(12, -48, 9, 5, 0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, -48, 3.5, 0, Math.PI * 2); ctx.fill();
+  }
 
   // Eyes & Blink
   blinkTimer += 0.016;
@@ -204,20 +228,39 @@ function renderPetLoop(time) {
     ctx.beginPath(); ctx.ellipse(14, -6, 10, 13, 0, 0, Math.PI * 2); ctx.fill();
 
     // Pupils
-    ctx.fillStyle = '#18181b';
+    ctx.fillStyle = isGirly ? '#3b0764' : '#18181b';
     ctx.beginPath(); ctx.arc(-13, -5, 5, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(15, -5, 5, 0, Math.PI * 2); ctx.fill();
 
-    // Shine highlights
+    // Shine highlights (Kawaii double star sparkle in Girly Mode)
     ctx.fillStyle = '#ffffff';
     ctx.beginPath(); ctx.arc(-15, -8, 2.5, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(13, -8, 2.5, 0, Math.PI * 2); ctx.fill();
+
+    if (isGirly) {
+      // Extra bottom sparkle
+      ctx.beginPath(); ctx.arc(-11, -3, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(17, -3, 1.5, 0, Math.PI * 2); ctx.fill();
+
+      // Cute eyelashes
+      ctx.strokeStyle = '#18181b';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.moveTo(-22, -10); ctx.lineTo(-27, -15); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(22, -10); ctx.lineTo(27, -15); ctx.stroke();
+    }
   } else {
     // Closed happy eye curves
     ctx.strokeStyle = '#18181b';
     ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(-14, -6, 8, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
     ctx.beginPath(); ctx.arc(14, -6, 8, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
+  }
+
+  // Cute blushing cheeks in Girly Mode
+  if (isGirly) {
+    ctx.fillStyle = 'rgba(251, 113, 133, 0.65)';
+    ctx.beginPath(); ctx.ellipse(-25, 3, 7, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(25, 3, 7, 4.5, 0, 0, Math.PI * 2); ctx.fill();
   }
 
   // Smile
@@ -242,7 +285,7 @@ function renderPetLoop(time) {
     ctx.rotate(slashAngle);
 
     // Cute pet hand holding the blade
-    ctx.fillStyle = GAME.girlyMode ? '#fbcfe8' : currentEvo.bodyColor;
+    ctx.fillStyle = isGirly ? '#fbcfe8' : (currentEvo.bodyColor || '#78350f');
     ctx.strokeStyle = '#1c1917';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -296,14 +339,16 @@ function renderPetLoop(time) {
     goldenMeteor.vy = (Math.random() - 0.5) * 0.8;
   }
 
-  // Floating text particles (Optimized lightweight batch for solid 60 FPS)
+  // Floating text particles (Atmospheric, juicy & smooth 60 FPS cascade)
   if (visualParticles.length > 0) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (let i = visualParticles.length - 1; i >= 0; i--) {
       const p = visualParticles[i];
+      p.x += (p.vx || 0);
       p.y += p.vy;
-      p.life -= 0.035;
+      p.vy *= 0.98;
+      p.life -= 0.016;
 
       if (p.life <= 0) {
         visualParticles.splice(i, 1);
