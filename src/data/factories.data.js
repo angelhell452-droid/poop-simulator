@@ -37,6 +37,15 @@ export const FACTORIES = [
   { id: 'infinite_dimension_source', name: 'Исток Бесконечных Измерений', cost: 1e47, baseCps: 1.2e42, count: 0, icon: '🌌', tier: 'endgame' },
   { id: 'architect_eye_omniscience', name: 'Око Всезнания Архитектора', cost: 5e48, baseCps: 4.5e43, count: 0, icon: '👁️', tier: 'endgame' },
   { id: 'supermassive_omniverse_pulsar', name: 'Пульсар Мета-Галактик', cost: 2.5e50, baseCps: 1.8e45, count: 0, icon: '💫', tier: 'endgame' },
-  { id: 'crown_of_creation', name: 'Венец Первозданного Творения', cost: 1.5e52, baseCps: 8e46, count: 0, icon: '💎', tier: 'endgame' },
-  { id: 'infinite_absolute_godhead', name: 'Абсолютная Божественная Сущность', cost: 1e54, baseCps: 4e48, count: 0, icon: '🔱', tier: 'endgame' }
+  { id: 'infinite_absolute_godhead', name: 'Абсолютная Божественная Сущность', cost: 1e54, baseCps: 4e48, count: 0, icon: '🔱', tier: 'endgame' },
+  { id: 'cosmic_multiverse_loom', name: 'Ткацкий Станок Мультивселенных', cost: 1e65, baseCps: 1e60, count: 0, icon: '🪐', tier: 'singularity' },
+  { id: 'eternal_singularity_core', name: 'Ядро Вечной Сингулярности', cost: 1e80, baseCps: 1e75, count: 0, icon: '💠', tier: 'singularity' },
+  { id: 'googol_quantum_engine', name: 'Квантовый Двигатель Гугола', cost: 1e100, baseCps: 1e95, count: 0, icon: '🌌', tier: 'singularity' },
+  { id: 'transcendent_reality_forge', name: 'Горн Трансцендентной Реальности', cost: 1e125, baseCps: 1e120, count: 0, icon: '🔨', tier: 'singularity' },
+  { id: 'chrono_matrix_prime', name: 'Хроно-Матрица Первоначала', cost: 1e150, baseCps: 1e145, count: 0, icon: '⏳', tier: 'singularity' },
+  { id: 'infinite_pantheon_well', name: 'Источник Бесконечного Пантеона', cost: 1e180, baseCps: 1e175, count: 0, icon: '⛲', tier: 'singularity' },
+  { id: 'hyper_dimension_architect', name: 'Архитектор Гиперизмерений', cost: 1e210, baseCps: 1e205, count: 0, icon: '📐', tier: 'singularity' },
+  { id: 'omni_singularity_matrix', name: 'Матрица Омни-Сингулярности', cost: 1e250, baseCps: 1e245, count: 0, icon: '🔮', tier: 'singularity' },
+  { id: 'alpha_omega_apex', name: 'Вершина Альфа и Омега Бытия', cost: 1e300, baseCps: 1e295, count: 0, icon: '👑', tier: 'singularity' }
 ];
+

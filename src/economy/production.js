@@ -78,12 +78,22 @@ export function getClickPower() {
 
   const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.50;
 
-  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult;
+  // Hat click boost from Boutique
+  const equippedHatItem = GAME.equippedHat ? SHOP_ITEMS.find(i => i.id === GAME.equippedHat) : null;
+  const hatClickBoost = equippedHatItem ? (equippedHatItem.clickBoost || 1.0) : 1.0;
 
-  // Quantum Mastery talent: +1% of passive factory income per level transferred directly to click
+  // Boutique Perk: Omniversal Wealth (+100% all income)
+  const omniWealthActive = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned;
+  const omniWealthMult = omniWealthActive ? 2.0 : 1.0;
+
+  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult;
+
+  // Quantum Mastery talent + Quantum Click upgrade: direct transfer of passive GPS to click
   const qMastery = TALENTS.find(t => t.id === 'quantum_mastery');
-  if (qMastery && qMastery.level > 0) {
-    basePower += getPassiveIncome() * (qMastery.level * 0.01);
+  const qClickActive = SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned;
+  const syncRate = (qMastery ? qMastery.level * 0.01 : 0) + (qClickActive ? 0.02 : 0);
+  if (syncRate > 0) {
+    basePower += getPassiveIncome() * syncRate;
   }
 
   return Math.max(1, Math.round(basePower));
@@ -122,14 +132,25 @@ export function getPassiveIncome() {
     if (fac.count >= 100) facMilestoneMult *= 4;
     if (fac.count >= 200) facMilestoneMult *= 4;
     if (fac.count >= 500) facMilestoneMult *= 8;
-    if (fac.count >= 1000) facMilestoneMult *= 16;
+    if (fac.count >= 1000) {
+      facMilestoneMult *= 16;
+      const extraThousands = Math.floor((fac.count - 1000) / 1000);
+      if (extraThousands > 0) {
+        facMilestoneMult *= Math.pow(10, extraThousands);
+      }
+    }
 
     let tierKnifeMult = 1.0;
     if (idx < 5) tierKnifeMult = earlyBladeBonus;
     else if (idx >= 5 && idx < 12) tierKnifeMult = heavyBladeBonus;
 
     const tierQuantumMult = idx >= 10 ? qReplMult : 1.0;
-    base += (fac.count || 0) * fac.baseCps * facMilestoneMult * tierKnifeMult * tierQuantumMult;
+
+    // Singularity Core Boutique Perk: x3 to cosmic and singularity tier factories
+    const singularityCoreActive = SHOP_ITEMS.find(i => i.id === 'upg_singularity_core')?.owned;
+    const singularityCoreMult = (singularityCoreActive && (fac.tier === 'cosmic' || fac.tier === 'singularity' || fac.tier === 'endgame')) ? 3.0 : 1.0;
+
+    base += (fac.count || 0) * fac.baseCps * facMilestoneMult * tierKnifeMult * tierQuantumMult * singularityCoreMult;
   });
 
   base *= turboMult * goldRushMult * overclockMult * butterflyBladeBonus;
@@ -174,7 +195,11 @@ export function getPassiveIncome() {
 
   const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.50;
 
-  const finalGPS = Math.max(0, Math.round(base * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult));
+  // Omniversal Wealth Boutique Perk: x2 to all passive income
+  const omniWealthActive = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned;
+  const omniWealthMult = omniWealthActive ? 2.0 : 1.0;
+
+  const finalGPS = Math.max(0, Math.round(base * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult * omniWealthMult));
   if (finalGPS > (GAME.currentRunPeakGPS || 0)) {
     GAME.currentRunPeakGPS = finalGPS;
   }

@@ -16,5 +16,7 @@ export const SHOP_ITEMS = [
       { id: 'upg_meteor_magnet', name: 'Радар Золотых Метеоритов', type: 'perk', cost: 15000, icon: '🌠', desc: 'Золотые метеориты прилетают на 40% чаще!' },
       { id: 'upg_zen_master', name: 'Дзен-Гармония Потребностей', type: 'perk', cost: 25000, icon: '🧘', desc: 'Голод и чистота падают в 3 раза медленнее!' },
       { id: 'upg_infinite_sparkles', name: 'Рог Изобилия Блестяшек', type: 'perk', cost: 60000, icon: '✨', desc: 'Утраивает выпадение всех блестяшек навсегда!' },
-      { id: 'upg_afk_booster', name: 'Капсула Гиперсна', type: 'perk', cost: 100000, icon: '💤', desc: 'Офлайн-доход работает со 100% максимальной эффективностью!' }
+      { id: 'upg_afk_booster', name: 'Капсула Гиперсна', type: 'perk', cost: 100000, icon: '💤', desc: 'Офлайн-доход работает со 100% максимальной эффективностью!' },
+      { id: 'upg_singularity_core', name: 'Ядро Сингулярности', type: 'perk', cost: 150000, icon: '💠', desc: 'Утраивает мощность заводов космического тира и выше (x3)!' },
+      { id: 'upg_omniversal_wealth', name: 'Эссенция Омниверса', type: 'perk', cost: 250000, icon: '👑', desc: 'Удваивает абсолютно весь пассивный доход и силу клика навсегда (x2)!' }
     ];
