@@ -17,10 +17,44 @@ let rouletteWinningKnife = null;
 let isRouletteSpinning = false;
 let confettiParticles = [];
 let confettiAnimId = null;
+let spinAnimFrameId = null;
+let unlockTimeoutId = null;
+let currentWinnerIndex = 48;
+let currentWinningOffset = 0;
 
 let knifeFilterRarity = 'all';
 let knifeSearchQuery = '';
 let knifeSortMode = 'power';
+
+export function skipRouletteSpin() {
+  if (unlockTimeoutId) {
+    clearTimeout(unlockTimeoutId);
+    unlockTimeoutId = null;
+    const unlockScreen = document.getElementById('rouletteUnlockScreen');
+    const wheelBox = document.getElementById('rouletteWheelBox');
+    if (unlockScreen) unlockScreen.classList.add('hidden');
+    if (wheelBox) wheelBox.classList.remove('opacity-40');
+    if (activeRouletteCase) {
+      setupAndRunRouletteTape(activeRouletteCase, true);
+      return;
+    }
+  }
+
+  if (isRouletteSpinning) {
+    if (spinAnimFrameId) {
+      cancelAnimationFrame(spinAnimFrameId);
+      spinAnimFrameId = null;
+    }
+    const track = document.getElementById('rouletteTrack');
+    if (track) {
+      track.style.transition = 'none';
+      track.style.filter = 'none';
+      track.style.transform = `translateX(-${currentWinningOffset || (currentWinnerIndex * 152)}px)`;
+    }
+    onRouletteFinished();
+  }
+}
+
 
 function getAudioCtx() {
   if (!audioCtx) {
@@ -208,14 +242,15 @@ export function openCaseRoulette(caseId) {
   if (wheelBox) wheelBox.classList.add('opacity-40');
   playCsgoUnlock();
 
-  setTimeout(() => {
+  unlockTimeoutId = setTimeout(() => {
+    unlockTimeoutId = null;
     if (unlockScreen) unlockScreen.classList.add('hidden');
     if (wheelBox) wheelBox.classList.remove('opacity-40');
     setupAndRunRouletteTape(caseObj);
   }, 750);
 }
 
-export function setupAndRunRouletteTape(caseObj) {
+export function setupAndRunRouletteTape(caseObj, instantSkip = false) {
   const track = document.getElementById('rouletteTrack');
   if (!track) return;
   track.style.transition = 'none';
@@ -259,6 +294,8 @@ export function setupAndRunRouletteTape(caseObj) {
   }
 
   const winnerIndex = 48;
+  currentWinnerIndex = winnerIndex;
+  currentWinningOffset = winnerIndex * 152;
   const cards = [];
 
   for (let i = 0; i < 65; i++) {
@@ -342,6 +379,15 @@ export function setupAndRunRouletteTape(caseObj) {
     `);
   }
   track.innerHTML = cards.join('');
+
+  if (instantSkip || GAME.fastCaseOpen) {
+    track.style.transition = 'none';
+    track.style.filter = 'none';
+    track.style.transform = `translateX(-${currentWinningOffset}px)`;
+    onRouletteFinished();
+    return;
+  }
+
   runPhysicalRouletteSpin(winnerIndex);
 }
 
@@ -354,6 +400,7 @@ export function runPhysicalRouletteSpin(winnerIndex) {
   const cardPitch = 152;
   const randomJitter = (Math.random() - 0.5) * 70;
   const targetOffset = winnerIndex * cardPitch + randomJitter;
+  currentWinningOffset = targetOffset;
 
   const durationMs = 6200;
   const startTime = performance.now();
@@ -393,17 +440,23 @@ export function runPhysicalRouletteSpin(winnerIndex) {
     }
 
     if (progress < 1.0) {
-      requestAnimationFrame(frame);
+      spinAnimFrameId = requestAnimationFrame(frame);
     } else {
+      spinAnimFrameId = null;
       onRouletteFinished();
     }
   }
 
-  requestAnimationFrame(frame);
+  spinAnimFrameId = requestAnimationFrame(frame);
 }
 
 function onRouletteFinished() {
+  if (spinAnimFrameId) {
+    cancelAnimationFrame(spinAnimFrameId);
+    spinAnimFrameId = null;
+  }
   isRouletteSpinning = false;
+
   const ctrlSec = document.getElementById('rouletteControlSection');
   if (ctrlSec) ctrlSec.classList.add('hidden');
 
@@ -472,7 +525,7 @@ function onRouletteFinished() {
 
 export function renderCasesSystem() {
   const rollsLabel = document.getElementById('casesRollsLabel');
-  if (rollsLabel) rollsLabel.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+  if (rollsLabel) rollsLabel.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
   const plungersLabel = document.getElementById('casesPlungersLabel');
   if (plungersLabel) plungersLabel.innerHTML = `${formatNumber(GAME.transcendPlungers || 0)} <span class="plunger-icon"></span>`;
   
@@ -515,7 +568,7 @@ export function renderCasesSystem() {
         ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 Требуется: ${c.reqTranscend ? `${c.reqTranscend} Прорывов` : `${c.reqPrestiges} Смывов`}</div>`
         : '';
 
-      const currIcon = c.currency === 'plungers' ? '<span class="plunger-icon"></span>' : '🧻';
+      const currIcon = c.currency === 'plungers' ? '<span class="plunger-icon"></span>' : '<span class="roll-icon"></span>';
       const btnText = !isUnlocked
         ? `🔒 ЗАБЛОКИРОВАНО`
         : (hasCurrency ? `ОТКРЫТЬ КЕЙС 🎰` : `НЕ ХВАТАЕТ ${c.currency === 'plungers' ? 'ВАНТУЗОВ' : 'ВТУЛОК'}`);
@@ -550,6 +603,22 @@ export function renderCasesSystem() {
 
 export function initCasesListeners() {
   document.getElementById('btnOpenCharacterInventoryFromCases')?.addEventListener('click', openCharacterInventoryModal);
+
+  const btnSkip = document.getElementById('btnSkipRoulette');
+  if (btnSkip) {
+    btnSkip.addEventListener('click', () => {
+      skipRouletteSpin();
+    });
+  }
+
+  const fastToggle = document.getElementById('toggleFastCaseOpen');
+  if (fastToggle) {
+    fastToggle.checked = !!GAME.fastCaseOpen;
+    fastToggle.addEventListener('change', () => {
+      GAME.fastCaseOpen = fastToggle.checked;
+      saveLocal();
+    });
+  }
 
   const btnEquip = document.getElementById('btnEquipRouletteKnife');
   if (btnEquip) {
@@ -606,9 +675,10 @@ export function initCasesListeners() {
 
 export function updateCasesButtons() {
   const rollsLabel = document.getElementById('casesRollsLabel');
-  if (rollsLabel) rollsLabel.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+  if (rollsLabel) rollsLabel.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
   const plungersLabel = document.getElementById('casesPlungersLabel');
   if (plungersLabel) plungersLabel.innerHTML = `${formatNumber(GAME.transcendPlungers || 0)} <span class="plunger-icon"></span>`;
+
 
   const cratesList = document.getElementById('casesCratesList');
   if (!cratesList) return;

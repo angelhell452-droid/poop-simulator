@@ -8,7 +8,8 @@ import { updateHUD } from './hudView.js';
 import { renderShop } from './shopView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { formatNumber } from '../utils/numberFormatter.js';
-import { getPlungerIcon } from '../utils/icons.js';
+import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
+
 
 let currentInvTab = 'knives'; // 'knives' | 'hats'
 let knifeFilterRarity = 'all';
@@ -175,9 +176,10 @@ function renderKnivesGrid() {
   if (!invContainer) return;
 
   if (!GAME.unlockedKnives || GAME.unlockedKnives.length === 0) {
-    invContainer.innerHTML = '<div class="col-span-2 text-center text-stone-500 py-8 text-xs">Коллекция ножей пуста. Открывайте оружейные кейсы за Золотые Втулки (🧻) или Астральные Вантузы (' + getPlungerIcon() + ')!</div>';
+    invContainer.innerHTML = '<div class="col-span-2 text-center text-stone-500 py-8 text-xs">Коллекция ножей пуста. Открывайте оружейные кейсы за Золотые Втулки (' + getRollIcon() + ') или Астральные Вантузы (' + getPlungerIcon() + ')!</div>';
     return;
   }
+
 
   let filteredKnives = (GAME.unlockedKnives || [])
     .map(kid => KNIVES.find(k => k.id === kid))
@@ -301,16 +303,17 @@ function renderKnivesGrid() {
         `}
         ${!starCostInfo.maxReached ? `
           <button class="sharpen-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold border border-stone-600 jelly-btn flex items-center gap-1" data-id="${kn.id}" title="Повысить уровень заточки">
-            <span>⭐</span> <span>${formatNumber(starCostInfo.cost)} ${starCostInfo.currency === 'plungers' ? getPlungerIcon() : '🧻'}</span>
+            <span>⭐</span> <span>${formatNumber(starCostInfo.cost)} ${starCostInfo.currency === 'plungers' ? getPlungerIcon() : getRollIcon()}</span>
           </button>
         ` : ''}
         ${!isEq ? `
-          <button class="sell-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 hover:bg-red-950 text-stone-400 hover:text-red-300 border border-stone-700 jelly-btn" data-id="${kn.id}" data-price="${recyclePrice}" title="Утилизировать за +${recyclePrice} 🧻">
-            +${recyclePrice} 🧻
+          <button class="sell-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 hover:bg-red-950 text-stone-400 hover:text-red-300 border border-stone-700 jelly-btn flex items-center gap-1" data-id="${kn.id}" data-price="${recyclePrice}" title="Утилизировать за +${recyclePrice} Втулок">
+            +${recyclePrice} ${getRollIcon()}
           </button>
         ` : ''}
       </div>
     `;
+
     invContainer.appendChild(card);
   });
 

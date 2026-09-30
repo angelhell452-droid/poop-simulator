@@ -4,6 +4,7 @@ import { formatNumber } from '../utils/numberFormatter.js';
 import { getAffordableTalentInfo, buyTalent } from '../systems/talentService.js';
 import { updateHUD } from './hudView.js';
 import { saveLocal } from '../save/saveManager.js';
+import { getRollIcon } from '../utils/icons.js';
 
 export function renderTalents() {
   const container = document.getElementById('talentsContainer');
@@ -11,7 +12,8 @@ export function renderTalents() {
   container.innerHTML = '';
 
   const label = document.getElementById('talentRollsLabel');
-  if (label) label.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+  if (label) label.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
+
 
   const buyMultiplier = GAME.buyMultiplier || 1;
 
@@ -45,7 +47,7 @@ export function renderTalents() {
           </div>
           <div class="text-[10px] text-stone-400 mt-0.5">
             ${tl.desc}
-            ${!maxed ? `<span class="text-purple-300 font-semibold font-game ml-1.5">След: ${formatNumber(nextCost)} 🧻</span>` : ''}
+            ${!maxed ? `<span class="text-purple-300 font-semibold font-game ml-1.5 flex-inline items-center gap-0.5">След: ${formatNumber(nextCost)} <span class="roll-icon"></span></span>` : ''}
           </div>
         </div>
       </div>
@@ -71,7 +73,8 @@ export function updateTalentButtons() {
   if (!panel || panel.classList.contains('hidden')) return;
 
   const label = document.getElementById('talentRollsLabel');
-  if (label) label.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+  if (label) label.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
+
 
   const buyMultiplier = GAME.buyMultiplier || 1;
   const buttons = panel.querySelectorAll('.buy-talent-btn');

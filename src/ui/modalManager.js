@@ -1,9 +1,10 @@
 import { GAME } from '../core/state.js';
 import { formatNumber } from '../utils/numberFormatter.js';
-import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement } from '../prestige/prestigeService.js';
-import { getTranscendPlungersReward, executeTranscend, buyTranscendUpgrade, getTranscendRequirement } from '../prestige/transcendService.js';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js';
+import { getTranscendPlungersReward, executeTranscend, buyTranscendUpgrade, getTranscendRequirement, getTranscendRewardBreakdown } from '../prestige/transcendService.js';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
 import { TALENTS } from '../data/talents.data.js';
+
 import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
 import { renderCharacterInventory } from './characterInventoryView.js';
@@ -39,20 +40,29 @@ export function initModals() {
     pendingPrestigeArchetype = GAME.archetype || 'balanced';
     renderArchetypeButtons();
 
-    const req = getPrestigeRequirement();
-    const gain = getPrestigeRollsReward();
+    const b = getPrestigeRewardBreakdown();
+    const gain = b.totalGain;
 
     const reqLabel = document.getElementById('prestigeReqLabel');
     if (reqLabel) {
-      const stageOk = req.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300';
-      const bioOk = req.meetsBiomass ? 'text-emerald-300 font-bold' : 'text-stone-300';
-      const statusBadge = req.isMet 
-        ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/50 font-bold">✓ ГОТОВО К СМЫВУ</span>'
-        : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-red-950 text-red-300 border border-red-500/50 font-bold">🔒 НУЖЕН РОСТ</span>';
       reqLabel.innerHTML = `
-        <div class="flex items-center justify-between gap-1 flex-wrap">
-          <div><span class="${stageOk}">Форма #${req.reqForm}</span> (сейчас #${req.currentForm}) или <span class="${bioOk}">${formatNumber(req.reqBiomass)} 💨</span></div>
-          ${statusBadge}
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="${b.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
+              🧬 Форма: #${b.currentForm} / #${b.reqForm}
+            </span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${b.meetsStage ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+              ${b.meetsStage ? '✓ Достигнуто' : `Нужно еще +${Math.max(0, b.reqForm - b.currentForm)} форм`}
+            </span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="${b.meetsBiomass ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
+              💨 Биомасса: ${formatNumber(b.currentBiomass)} / ${formatNumber(b.reqBiomass)} 💨
+            </span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${b.meetsBiomass ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+              ${b.meetsBiomass ? '✓ Накоплено' : `Нужно еще ${formatNumber(Math.max(0, b.reqBiomass - b.currentBiomass))} 💨`}
+            </span>
+          </div>
         </div>
       `;
     }
@@ -66,25 +76,46 @@ export function initModals() {
 
       let nextMilestoneText = '';
       if (flushes < 1) nextMilestoneText = '🎯 Смыв #1: Втулки Судьбы и Древо Талантов';
-      else if (flushes < 5) nextMilestoneText = `🎯 Смыв #5: 🪠 Открытие Астрального Прорыва (Transcend) [${flushes}/5]`;
-      else if (flushes < 10) nextMilestoneText = `🎯 Смыв #10: 🌠 Золотая Лихорадка (x2 Метеориты, +50% Блестяшки) [${flushes}/10]`;
-      else if (flushes < 25) nextMilestoneText = `🎯 Смыв #25: 👑 Втулочная Империя (удвоенный бонус за втулку) [${flushes}/25]`;
-      else if (flushes < 50) nextMilestoneText = `🎯 Смыв #50: 🌌 Сингулярность Бездны (Кейс 50B 🧻) [${flushes}/50]`;
-      else nextMilestoneText = `🏆 Высший Магистр Смыва Омниверса (${flushes} смывов)!`;
+      else if (flushes < 5) nextMilestoneText = `🎯 Смыв #5: 🪠 Открытие Астрального Прорыва [${flushes}/5]`;
+      else if (flushes < 10) nextMilestoneText = `🎯 Смыв #10: 🌠 Золотая Лихорадка (x2 Метеориты) [${flushes}/10]`;
+      else if (flushes < 25) nextMilestoneText = `🎯 Смыв #25: 👑 Втулочная Империя (удвоенный бонус) [${flushes}/25]`;
+      else nextMilestoneText = `🏆 Высший Магистр Смыва (${flushes} смывов)!`;
 
       calcEl.innerHTML = `
-        <div class="font-game text-yellow-300 text-base mb-1">+${formatNumber(gain)} 🧻 Втулок Судьбы</div>
-        <div class="text-[11px] text-purple-200">
-          Бонус ко ВСЕМУ доходу (Клики + Заводы): <b class="text-white">+${formatNumber(currentBoost)}%</b> ➔ После смыва: <b class="text-emerald-300">+${formatNumber(postBoost)}%</b>
+        <div class="mt-2 p-2.5 rounded-xl bg-purple-950/80 border border-yellow-400/40 text-left space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] text-yellow-300 uppercase font-black tracking-wider">💰 Расчет награды Втулок:</span>
+            <span class="font-game text-sm text-yellow-300 font-bold">+${formatNumber(gain)} <span class="roll-icon"></span></span>
+          </div>
+          <div class="text-[10px] text-purple-200 space-y-0.5 font-mono">
+            <div>├─ 💨 От биомассы забега: <b class="text-white">+${b.bioPart}</b> втулок</div>
+            <div>├─ 🧬 От эволюции формы: <b class="text-white">+${b.stagePart}</b> втулок ${b.extraForms > 0 ? `(+${b.extraForms} сверх цели)` : ''}</div>
+            <div>├─ 🗡️ Бонус оружия (Коса): <b class="${b.scytheActive ? 'text-emerald-300' : 'text-stone-400'}">${b.scytheActive ? '+25% (АКТИВЕН)' : '0%'}</b></div>
+            <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${Math.round((b.flushTalentBonus - 1) * 100)}%</b></div>
+          </div>
+          <div class="pt-1.5 border-t border-purple-800/60 text-[10px] text-amber-300 font-sans space-y-0.5">
+            <div class="font-bold flex items-center gap-1">
+              <span>💡</span>
+              <span>Как получить больше Втулок?</span>
+            </div>
+            <div class="text-purple-200/90 text-[9px] leading-tight">
+              • Копите больше биомассы (до +1 втулки еще: <b>${formatNumber(b.nextRollBiomassNeeded)} 💨</b>)<br/>
+              • Развивайте форму выше цели (каждая форма увеличивает награду!)<br/>
+              • Качайте таланты "Бесконечный Смыв" и "Гипер-Смыв"
+            </div>
+          </div>
         </div>
-        <div class="mt-2 pt-2 border-t border-yellow-400/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px]">
-          <span class="text-yellow-400 font-bold">Смывов совершено: ${flushes}</span>
+        <div class="text-[11px] text-purple-200 mt-2">
+          Бонус ко ВСЕМУ доходу: <b class="text-white">+${formatNumber(currentBoost)}%</b> ➔ После смыва: <b class="text-emerald-300">+${formatNumber(postBoost)}%</b>
+        </div>
+        <div class="mt-1.5 pt-1.5 border-t border-yellow-400/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px]">
+          <span class="text-yellow-400 font-bold">Смыв: Ранг ${flushes}</span>
           <span class="text-stone-300 font-semibold">${nextMilestoneText}</span>
         </div>
       `;
     }
     const execBtn = document.getElementById('btnExecutePrestige');
-    if (execBtn) execBtn.disabled = !req.isMet || gain <= 0;
+    if (execBtn) execBtn.disabled = !b.isMet || gain <= 0;
     document.getElementById('prestigeModal')?.classList.remove('hidden');
   };
 
@@ -110,16 +141,16 @@ export function initModals() {
 
   // Open Transcend Modal (accessible from header button, canvas button, and plungers currency bar)
   const openTranscendModal = () => {
-    const tReq = getTranscendRequirement();
-    const gain = getTranscendPlungersReward();
+    const t = getTranscendRewardBreakdown();
+    const gain = t.totalGain;
 
     const rollsEl = document.getElementById('transcendCurrentRolls');
-    if (rollsEl) rollsEl.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+    if (rollsEl) rollsEl.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
 
     const plungersEl = document.getElementById('transcendCalcPlungers');
     if (plungersEl) {
-      if (!tReq.meetsPrestiges) {
-        plungersEl.innerHTML = `<span class="text-red-400 font-bold text-xs">🔒 Требуется ${tReq.reqPrestiges} Смывов! (${tReq.currentPrestiges}/${tReq.reqPrestiges})</span>`;
+      if (!t.meetsPrestiges) {
+        plungersEl.innerHTML = `<span class="text-red-400 font-bold text-xs">🔒 Требуется ${t.reqPrestiges} Смывов! (${t.currentPrestiges}/${t.reqPrestiges})</span>`;
       } else {
         plungersEl.innerHTML = `+${formatNumber(gain)} <span class="plunger-icon"></span> Вантузов`;
       }
@@ -127,21 +158,55 @@ export function initModals() {
 
     const tReqLabel = document.getElementById('transcendReqLabel');
     if (tReqLabel) {
-      const formOk = tReq.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300';
-      const pOk = tReq.meetsPrestiges ? 'text-emerald-300 font-bold' : 'text-stone-300';
-      const rOk = tReq.meetsRolls ? 'text-emerald-300 font-bold' : 'text-stone-300';
-      const statusBadge = tReq.isMet 
-        ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/50 font-bold">✓ ГОТОВ К ПРОРЫВУ</span>'
-        : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-red-950 text-red-300 border border-red-500/50 font-bold">🔒 ТРЕБУЮТСЯ РЕСУРСЫ</span>';
       tReqLabel.innerHTML = `
-        <div class="space-y-1">
-          <div class="flex items-center justify-between">
-            <span class="${pOk}">• Смывы: ${tReq.currentPrestiges} / ${tReq.reqPrestiges}</span>
-            ${statusBadge}
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="${t.meetsPrestiges ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
+              🌀 Смывы: ${t.currentPrestiges} / ${t.reqPrestiges}
+            </span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsPrestiges ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+              ${t.meetsPrestiges ? '✓ Выполнено' : `Нужно еще ${t.reqPrestiges - t.currentPrestiges} смывов`}
+            </span>
           </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="${t.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
+              🧬 Форма: #${t.currentForm} / #${t.reqForm}
+            </span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsStage ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+              ${t.meetsStage ? '✓ Достигнуто' : `Нужно еще +${Math.max(0, t.reqForm - t.currentForm)} форм`}
+            </span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="${t.meetsRolls ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
+              <span class="roll-icon"></span> Запас Втулок: ${formatNumber(t.currentRolls)} / ${formatNumber(t.reqRolls)}
+            </span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsRolls ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+              ${t.meetsRolls ? '✓ Накоплено' : `Нужно еще ${formatNumber(Math.max(0, t.reqRolls - t.currentRolls))} втулок`}
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-2 p-2.5 rounded-xl bg-indigo-950/80 border border-cyan-400/40 text-left space-y-1.5">
           <div class="flex items-center justify-between">
-            <span class="${formOk}">• Форма: #${tReq.currentForm} / #${tReq.reqForm}</span>
-            <span class="${rOk}">• Втулки: ${formatNumber(tReq.currentRolls)} / ${formatNumber(tReq.reqRolls)} 🧻</span>
+            <span class="text-[10px] text-cyan-300 uppercase font-black tracking-wider">🪠 Расчет награды Вантузов:</span>
+            <span class="font-game text-sm text-cyan-300 font-bold">+${formatNumber(gain)} <span class="plunger-icon"></span></span>
+          </div>
+          <div class="text-[10px] text-indigo-200 space-y-0.5 font-mono">
+            <div>├─ <span class="roll-icon"></span> От накопленных Втулок: <b class="text-white">+${t.rollsPart}</b> вантузов (основной источник!)</div>
+            <div>├─ 🧬 От сверх-эволюции формы: <b class="text-white">+${t.stagePart}</b> вантузов</div>
+            <div>├─ <span class="plunger-icon"></span> Астральный Инкубатор: <b class="${t.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${Math.round(t.incubatorBonus * 100)}%</b></div>
+            <div>└─ 🔮 Душа Прорыва (Талант): <b class="${t.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${Math.round(t.soulBonus * 100)}%</b></div>
+          </div>
+          <div class="pt-1.5 border-t border-indigo-800/60 text-[10px] text-cyan-300 font-sans space-y-0.5">
+            <div class="font-bold flex items-center gap-1">
+              <span>💡</span>
+              <span>Как получить больше Вантузов?</span>
+            </div>
+            <div class="text-indigo-200/90 text-[9px] leading-tight">
+              • Копите как можно больше Втулок Судьбы перед Прорывом! (до +1 вантуза еще: <b>${formatNumber(t.nextPlungerRollsNeeded)}</b> <span class="roll-icon"></span>)<br/>
+              • Прокачивайте Астральный Инкубатор в Прорыве (+10% за уровень)<br/>
+              • Качайте талант "Душа Прорыва" в Древе Смыва (+20% за уровень)
+            </div>
           </div>
         </div>
       `;
@@ -149,18 +214,18 @@ export function initModals() {
 
     const milestoneEl = document.getElementById('transcendMilestoneHint');
     if (milestoneEl) {
-      const transcends = tReq.transcends;
+      const transcends = t.transcends;
       let tMilestoneText = '';
       if (transcends < 1) tMilestoneText = '🎯 Прорыв #1: Вантузы и Базовые Реликвии (Тир 1)';
       else if (transcends < 2) tMilestoneText = `🎯 Прорыв #2: 🤖 Авто-Уход за Питомцем & Авто-Заводы [${transcends}/2]`;
       else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: 🌀 Авто-Эволюция Мутаций [${transcends}/3]`;
-      else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⏳ Временной Разлом (+25% к CPS всех фабрик) [${transcends}/5]`;
+      else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⏳ Временной Разлом (+25% к CPS) [${transcends}/5]`;
       else if (transcends < 10) tMilestoneText = `🎯 Прорыв #10: 🌌 Сингулярность & Корона Демиурга [${transcends}/10]`;
       else tMilestoneText = `🏆 Повелитель Астральной Сингулярности (${transcends} прорывов)!`;
 
       milestoneEl.innerHTML = `
         <div class="flex items-center justify-between text-[10px] text-cyan-300 font-bold px-1 py-0.5">
-          <span>Прорывов: ${transcends}</span>
+          <span>Прорыв: Ранг ${transcends}</span>
           <span class="text-indigo-200">${tMilestoneText}</span>
         </div>
       `;
@@ -168,12 +233,14 @@ export function initModals() {
 
     const execBtn = document.getElementById('btnExecuteTranscend');
     if (execBtn) {
-      if (!tReq.isMet) {
+      if (!t.isMet) {
         execBtn.disabled = true;
-        if (!tReq.meetsPrestiges) {
-          execBtn.textContent = `ТРЕБУЕТСЯ ${tReq.reqPrestiges} СМЫВОВ (${tReq.currentPrestiges}/${tReq.reqPrestiges}) 🔒`;
+        if (!t.meetsPrestiges) {
+          execBtn.textContent = `ТРЕБУЕТСЯ ${t.reqPrestiges} СМЫВОВ (${t.currentPrestiges}/${t.reqPrestiges}) 🔒`;
+        } else if (!t.meetsStage) {
+          execBtn.textContent = `ТРЕБУЕТСЯ ФОРМА #${t.reqForm} (СЕЙЧАС #${t.currentForm}) 🔒`;
         } else {
-          execBtn.textContent = `ТРЕБУЕТСЯ ФОРМА #${tReq.reqForm} ИЛИ ${formatNumber(tReq.reqRolls)} 🧻 🔒`;
+          execBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(t.reqRolls)} ВТУЛОК 🔒`;
         }
       } else {
         execBtn.disabled = gain <= 0;
@@ -184,6 +251,7 @@ export function initModals() {
     renderTranscendUpgrades();
     document.getElementById('transcendModal')?.classList.remove('hidden');
   };
+
 
   document.getElementById('btnTranscendModal')?.addEventListener('click', openTranscendModal);
   document.getElementById('btnCanvasTranscend')?.addEventListener('click', openTranscendModal);

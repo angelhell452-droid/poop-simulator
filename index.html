@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.4 PRO | Экономика Clicker Heroes, Баланс Талантов, Бутик Омниверса</title>
+  <title>Poop Simulator v4.8.0 PRO | Ребаланс Смыва, Астральная Автоматизация, Скип Рулетки, Втулки</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -22,9 +22,10 @@
         <div class="flex items-center gap-2">
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
-            class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40"
-            id="versionTag">v4.7.3 PRO</span>
+            class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
+            id="versionTag" title="Открыть журнал обновлений">v4.8.0 PRO</span>
         </div>
+
         <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
       </div>
     </div>
@@ -48,7 +49,7 @@
         </div>
       </div>
       <div id="currencyPrestigeBox" class="flex items-center gap-1.5 bg-purple-950/90 hover:bg-purple-900 px-3 py-1 rounded-xl border-2 border-yellow-400 shadow cursor-pointer transition" title="Открыть Смыв Судьбы">
-        <span class="text-lg">🧻</span>
+        <span class="roll-icon text-xl"></span>
         <div>
           <div class="text-[9px] text-yellow-300 font-bold uppercase">Втулки</div>
           <span class="font-game text-sm sm:text-base text-yellow-200 tracking-wide font-mono tabular-nums min-w-[45px] inline-block" id="topPrestige">0</span>
@@ -61,6 +62,7 @@
           <span class="font-game text-sm sm:text-base text-cyan-200 tracking-wide font-mono tabular-nums min-w-[40px] inline-block" id="topPlungers">0</span>
         </div>
       </div>
+
     </div>
 
     <!-- DATABASE STATUS & ACTIONS -->
@@ -112,14 +114,16 @@
           class="text-yellow-300 font-bold">0/200</span>
       </button>
       <button id="btnPrestigeModal"
-        class="bg-gradient-to-r from-purple-700 to-indigo-700 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-400 text-xs jelly-btn">
-        🌀 Смыв
+        class="bg-gradient-to-r from-purple-700 to-indigo-700 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-400 text-xs jelly-btn flex items-center gap-1 shadow"
+        title="Смыв Судьбы (Престиж 1-го ранга: Втулки и Таланты)">
+        <span class="roll-icon"></span> <span>Смыв</span> <span id="headerPrestigeLvl" class="text-yellow-300 font-black ml-0.5">Ур. 0</span>
       </button>
       <button id="btnTranscendModal"
-        class="bg-gradient-to-r from-cyan-600 via-indigo-700 to-purple-800 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-cyan-400 text-xs jelly-btn flex items-center gap-1"
-        title="Астральный Прорыв (Престиж 2-го ранга)">
-        <span class="plunger-icon"></span> <span>Прорыв</span>
+        class="bg-gradient-to-r from-cyan-600 via-indigo-700 to-purple-800 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-cyan-400 text-xs jelly-btn flex items-center gap-1 shadow"
+        title="Астральный Прорыв (Престиж 2-го ранга: Вантузы и Артефакты)">
+        <span class="plunger-icon"></span> <span>Прорыв</span> <span id="headerTranscendLvl" class="text-cyan-300 font-black ml-0.5">Ур. 0</span>
       </button>
+
       <button id="btnAccountModal"
         class="bg-stone-900 hover:bg-stone-800 text-amber-200 px-2 sm:px-2.5 py-1 rounded-xl border border-amber-600/70 text-xs font-bold flex items-center gap-1.5 shadow jelly-btn"
         title="Облачный аккаунт и база данных Cloudflare D1">
@@ -256,24 +260,40 @@
 
       <!-- ASTRAL TRANSCENDENCE AUTOMATION DECK -->
       <div id="transcendAutomationsDeck"
-        class="hidden px-3 py-1.5 bg-indigo-950/90 border-b border-indigo-500/50 flex flex-wrap items-center justify-between gap-2 z-10 text-xs">
-        <div class="flex items-center gap-1.5 text-cyan-300 font-game text-[11px]">
-          <span>🌌</span>
-          <span class="tracking-wide">Астральный Авто-Контроль:</span>
+        class="px-3 py-1.5 bg-indigo-950/90 border-b border-indigo-500/50 flex flex-wrap items-center justify-between gap-2 z-10 text-xs">
+        
+        <!-- Locked State Notice (Before midgame Astral Transcendence) -->
+        <div id="transcendAutoLockedNotice" class="w-full flex items-center justify-between gap-2 py-0.5 text-[11px] text-stone-300">
+          <div class="flex items-center gap-1.5 text-cyan-200">
+            <span class="text-sm">🔒</span>
+            <span>Астральный Авто-Контроль (Авто-Заводы и Мутации) открывается в <strong>Астральном Прорыве</strong> (Тир II)</span>
+          </div>
+          <button id="btnTranscendAutoInfo" class="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold underline cursor-pointer bg-transparent border-0 flex items-center gap-1 shrink-0">
+            <span>К Прорыву</span> <span class="plunger-icon"></span>
+          </button>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="btnToggleAutoBuyer"
-            class="hidden px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700">
-            <span id="autoBuyerLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
-            <span id="autoBuyerLabel">Заводы: ВЫКЛ</span>
-          </button>
-          <button id="btnToggleAutoEvolution"
-            class="hidden px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700">
-            <span id="autoEvolutionLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
-            <span id="autoEvolutionLabel">Мутации: ВЫКЛ</span>
-          </button>
+
+        <!-- Unlocked Controls (After Astral Transcendence purchase) -->
+        <div id="transcendAutoControls" class="w-full hidden flex items-center justify-between gap-1 flex-wrap">
+          <div class="flex items-center gap-1.5 text-cyan-300 font-game text-[11px]">
+            <span>🌌</span>
+            <span class="tracking-wide">Астральный Авто-Контроль:</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnToggleAutoBuyer"
+              class="hidden px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700">
+              <span id="autoBuyerLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+              <span id="autoBuyerLabel">Заводы: ВЫКЛ</span>
+            </button>
+            <button id="btnToggleAutoEvolution"
+              class="hidden px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700">
+              <span id="autoEvolutionLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+              <span id="autoEvolutionLabel">Мутации: ВЫКЛ</span>
+            </button>
+          </div>
         </div>
       </div>
+
 
       <!-- Canvas Viewport with Adaptive Background -->
       <div class="relative flex-1 flex items-center justify-center cursor-pointer select-none overflow-hidden"
@@ -811,12 +831,13 @@
       <div class="bg-purple-900/60 border border-yellow-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex flex-col gap-0.5">
           <span class="text-stone-300 text-[10px] uppercase font-bold">Условие доступа:</span>
-          <div id="prestigeReqLabel" class="text-yellow-300 font-bold">Форма 15 или 100,000 💨</div>
+          <div id="prestigeReqLabel" class="text-yellow-300 font-bold">Форма 15 и 100,000 💨</div>
         </div>
         <div id="prestigeCalcRolls">
-          <span class="font-game text-yellow-300 text-sm">+0 🧻</span>
+          <span class="font-game text-yellow-300 text-sm">+0 <span class="roll-icon"></span></span>
         </div>
       </div>
+
 
       <!-- ARCHETYPE PATH SELECTOR -->
       <div class="mb-4 text-left">
@@ -872,17 +893,18 @@
       <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex flex-col gap-0.5">
           <span class="text-stone-300 text-[10px] uppercase font-bold">Условие доступа:</span>
-          <div id="transcendReqLabel" class="text-cyan-300 font-bold">Форма 50+, 5+ Смывов и 2,500+ 🧻</div>
+          <div id="transcendReqLabel" class="text-cyan-300 font-bold">Форма 50+, 5+ Смывов и 2,500+ <span class="roll-icon"></span></div>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Запас Втулок Судьбы:</span>
-          <span class="font-game text-yellow-300" id="transcendCurrentRolls">0 🧻</span>
+          <span class="font-game text-yellow-300" id="transcendCurrentRolls">0 <span class="roll-icon"></span></span>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Награда за Прорыв:</span>
-          <span class="font-game text-cyan-300 text-sm" id="transcendCalcPlungers">+0 🪠 Вантузов</span>
+          <span class="font-game text-cyan-300 text-sm" id="transcendCalcPlungers">+0 <span class="plunger-icon"></span> Вантузов</span>
         </div>
       </div>
+
 
       <div id="transcendMilestoneHint" class="bg-indigo-950/80 border border-indigo-400/50 rounded-2xl p-2.5 my-2 text-left">
       </div>
@@ -1176,9 +1198,19 @@
       </div>
 
       <!-- Action Section during roulette -->
-      <div id="rouletteControlSection" class="mt-3 flex gap-3 justify-center">
-        <span class="text-xs text-stone-400 font-bold animate-pulse">Рулетка крутится... Испытайте удачу CS:GO!</span>
+      <div id="rouletteControlSection" class="mt-3 flex flex-wrap items-center gap-3 justify-center">
+        <span class="text-xs text-stone-400 font-bold animate-pulse">Рулетка крутится...</span>
+        <button id="btnSkipRoulette"
+          class="bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-stone-950 font-game text-xs px-4 py-1.5 rounded-xl border border-yellow-300 font-bold shadow jelly-btn flex items-center gap-1.5 cursor-pointer"
+          title="Мгновенно остановить рулетку и открыть нож">
+          <span>⏩</span> <span>Пропустить (Скип)</span>
+        </button>
+        <label class="flex items-center gap-1.5 text-[11px] text-stone-300 cursor-pointer select-none hover:text-yellow-300 transition ml-2">
+          <input type="checkbox" id="toggleFastCaseOpen" class="rounded accent-amber-500 cursor-pointer" />
+          <span>Быстрое открытие (Скипать всегда)</span>
+        </label>
       </div>
+
     </div>
   </div>
 

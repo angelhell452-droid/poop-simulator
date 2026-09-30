@@ -12,8 +12,10 @@ import { updateShopButtons } from './shopView.js';
 import { updateCasesButtons } from './casesView.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js';
 import { updateSmartAssistant } from './smartAssistantView.js';
+import { ARCHETYPES } from '../progression/archetypes.js';
 
 const FLUSH_COOLDOWN = 35000;
+
 
 export function updateHUD() {
   const topBio = document.getElementById('topBiomass');
@@ -27,6 +29,13 @@ export function updateHUD() {
 
   const topPl = document.getElementById('topPlungers');
   if (topPl) topPl.textContent = formatNumber(GAME.transcendPlungers || 0);
+
+  const headerPrestige = document.getElementById('headerPrestigeLvl');
+  if (headerPrestige) headerPrestige.textContent = `Ур. ${GAME.totalPrestiges || 0}`;
+
+  const headerTranscend = document.getElementById('headerTranscendLvl');
+  if (headerTranscend) headerTranscend.textContent = `Ур. ${GAME.totalTranscend || 0}`;
+
 
   // Needs bars & numbers
   const txtH = document.getElementById('txtHunger');
@@ -156,8 +165,14 @@ export function updateHUD() {
   if (mBar) mBar.style.width = `${mGoal.percent.toFixed(1)}%`;
   const mText = document.getElementById('milestoneProgressText');
   if (mText) mText.textContent = mGoal.progressText;
+  const arch = ARCHETYPES[GAME.archetype] || ARCHETYPES.balanced;
   const mBadge = document.getElementById('archetypeBadge');
-  if (mBadge) mBadge.textContent = mGoal.archetypeBadge;
+  if (mBadge) {
+    mBadge.textContent = arch.badge;
+    mBadge.title = `Активная специализация: ${arch.name} (${arch.desc}). Кликните для выбора при Смыве.`;
+    mBadge.style.cursor = 'pointer';
+  }
+
 
   // Auto-care UI state update
   updateAutocareUI();
@@ -278,10 +293,12 @@ export function initAutocareListeners() {
 export function updateAutomationTogglesUI() {
   const hasAutoBuyer = !!GAME.transcendUpgrades?.autoBuyer;
   const hasAutoEvo = !!GAME.transcendUpgrades?.autoEvolution;
-  const deck = document.getElementById('transcendAutomationsDeck');
-  if (deck) {
-    deck.classList.toggle('hidden', !hasAutoBuyer && !hasAutoEvo);
-  }
+  const hasAnyAuto = hasAutoBuyer || hasAutoEvo;
+
+  const lockedNotice = document.getElementById('transcendAutoLockedNotice');
+  const controls = document.getElementById('transcendAutoControls');
+  if (lockedNotice) lockedNotice.classList.toggle('hidden', hasAnyAuto);
+  if (controls) controls.classList.toggle('hidden', !hasAnyAuto);
 
   const buyerBtn = document.getElementById('btnToggleAutoBuyer');
   const buyerLed = document.getElementById('autoBuyerLed');
@@ -329,4 +346,11 @@ export function initAutomationToggleListeners() {
     updateAutomationTogglesUI();
     saveLocal();
   });
+  document.getElementById('btnTranscendAutoInfo')?.addEventListener('click', () => {
+    document.getElementById('btnTranscendModal')?.click();
+  });
+  document.getElementById('archetypeBadge')?.addEventListener('click', () => {
+    document.getElementById('btnPrestigeModal')?.click();
+  });
 }
+

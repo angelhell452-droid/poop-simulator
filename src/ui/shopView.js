@@ -5,6 +5,7 @@ import { saveLocal } from '../save/saveManager.js';
 import { updateHUD } from './hudView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { requestCloudSync } from '../save/cloudSync.js';
+import { openCharacterInventoryModal } from './characterInventoryView.js';
 
 export function getBoutiqueRepeatableCost(item) {
   const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[item.id]) || 0;
@@ -32,7 +33,29 @@ export function renderShop() {
   const sparkleLabel = document.getElementById('shopSparkleLabel');
   if (sparkleLabel) sparkleLabel.textContent = `${formatNumber(GAME.sparkles)} ✨`;
 
-  // 1. REPEATABLE ENDLESS SPARKLE SINKS
+  // 1. WARDROBE REDIRECT BANNER
+  const wardrobeBanner = document.createElement('div');
+  wardrobeBanner.className = 'p-3 rounded-2xl bg-gradient-to-r from-purple-950/70 via-pink-950/60 to-stone-900 border border-pink-500/50 flex items-center justify-between gap-3 shadow-md mb-2';
+  wardrobeBanner.innerHTML = `
+    <div class="flex items-center gap-2.5">
+      <span class="text-3xl">🎩</span>
+      <div class="text-left">
+        <div class="font-game text-xs text-pink-300">Гардероб и Головные Уборы</div>
+        <div class="text-[10px] text-pink-200/80">Покупка, примерка и управление шапками находятся в Инвентаре</div>
+      </div>
+    </div>
+    <button id="btnShopGoToWardrobe" class="font-game text-xs px-3 py-1.5 rounded-xl border transition bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 text-white font-bold border-pink-300 jelly-btn shadow shrink-0">
+      В гардероб 🎒
+    </button>
+  `;
+  container.appendChild(wardrobeBanner);
+
+  wardrobeBanner.querySelector('#btnShopGoToWardrobe')?.addEventListener('click', () => {
+    document.getElementById('shopModal')?.classList.add('hidden');
+    openCharacterInventoryModal('hats');
+  });
+
+  // 2. REPEATABLE ENDLESS SPARKLE SINKS
   const repHeader = document.createElement('div');
   repHeader.className = 'font-game text-xs text-yellow-300 uppercase tracking-wider py-1 border-b border-amber-800/40 flex items-center justify-between';
   repHeader.innerHTML = '<span>💎 Реликвии Омниверса (Многоуровневые)</span><span class="text-[9px] text-amber-400 font-normal">Бесконечные улучшения</span>';
@@ -64,14 +87,15 @@ export function renderShop() {
     container.appendChild(row);
   });
 
-  // 2. EXCLUSIVE ONE-OFF ITEMS & HATS
+  // 3. EXCLUSIVE ONE-OFF PERKS (WITHOUT HATS)
   const oneOffHeader = document.createElement('div');
   oneOffHeader.className = 'font-game text-xs text-amber-400 uppercase tracking-wider py-1 mt-3 border-b border-stone-800 flex items-center justify-between';
-  oneOffHeader.innerHTML = '<span>✨ Эксклюзивные Шляпы и Перки</span><span class="text-[9px] text-stone-400 font-normal">Разовые покупки</span>';
+  oneOffHeader.innerHTML = '<span>✨ Эксклюзивные Пассивные Перки</span><span class="text-[9px] text-stone-400 font-normal">Разовые покупки</span>';
   container.appendChild(oneOffHeader);
 
-  SHOP_ITEMS.forEach(it => {
-    const isEquipped = GAME.equippedHat === it.id;
+  const perkItems = SHOP_ITEMS.filter(it => it.type !== 'hat');
+
+  perkItems.forEach(it => {
     const canBuy = GAME.sparkles >= it.cost && !it.owned;
 
     const row = document.createElement('div');
@@ -85,17 +109,13 @@ export function renderShop() {
         </div>
       </div>
       <div class="shrink-0 ml-2">
-        ${it.type === 'hat' && it.owned ? `
-          <button class="equip-btn font-game text-xs px-3 py-1.5 rounded-xl border ${isEquipped ? 'bg-emerald-600 border-emerald-400 text-white' : 'bg-stone-800 border-stone-600 text-stone-300'}" data-id="${it.id}">
-            ${isEquipped ? 'Надето ✓' : 'Надеть'}
-          </button>
-        ` : (it.owned ? `
+        ${it.owned ? `
           <span class="text-xs font-bold text-emerald-400">Куплено ✓</span>
         ` : `
           <button class="buy-shop-btn font-game text-xs px-3 py-1.5 rounded-xl border transition ${canBuy ? 'bg-yellow-500 hover:bg-yellow-400 text-stone-950 border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${it.id}" ${canBuy ? '' : 'disabled'}>
             ${formatNumber(it.cost)} ✨
           </button>
-        `)}
+        `}
       </div>
     `;
     container.appendChild(row);
@@ -120,7 +140,6 @@ export function renderShop() {
       if (item && curSp >= item.cost && !item.owned) {
         GAME.sparkles = Math.max(0, curSp - item.cost);
         item.owned = true;
-        if (item.type === 'hat') GAME.equippedHat = item.id;
         checkAchievements();
         renderShop();
         updateHUD();
@@ -129,16 +148,8 @@ export function renderShop() {
       }
     });
   });
-
-  container.querySelectorAll('.equip-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      GAME.equippedHat = GAME.equippedHat === btn.dataset.id ? null : btn.dataset.id;
-      renderShop();
-      updateHUD();
-      saveLocal();
-    });
-  });
 }
+
 
 export function updateShopButtons() {
   const container = document.getElementById('shopItemsContainer');

@@ -25,7 +25,7 @@ export function getTranscendRequirement() {
   const meetsPrestiges = currentPrestiges >= reqPrestiges;
   const meetsRolls = currentRolls >= reqRolls;
 
-  const isMet = meetsPrestiges && (meetsStage || meetsRolls);
+  const isMet = meetsPrestiges && meetsStage && meetsRolls;
 
   return {
     transcends: t,
@@ -44,31 +44,68 @@ export function getTranscendRequirement() {
   };
 }
 
-export function getTranscendPlungersReward() {
+export function getTranscendRewardBreakdown() {
   const req = getTranscendRequirement();
-  if (!req.isMet) return 0;
+  if (!req.isMet) {
+    return {
+      ...req,
+      rollsPart: 0,
+      stagePart: 0,
+      basePlungers: 0,
+      soulBonus: 0,
+      incubatorBonus: 0,
+      totalGain: 0,
+      nextPlungerRollsNeeded: 0
+    };
+  }
 
   // Master Economy Dual Prestige Tier 2
-  const rollsRatio = Math.max(1, req.currentRolls / req.reqRolls);
-  const rollsPart = Math.floor(2.0 * Math.pow(rollsRatio, 0.22));
-  const stagePart = Math.floor(Math.max(0, req.currentForm - req.reqForm) / 25);
-  let base = Math.max(1, rollsPart + stagePart);
+  const rollsRatio = Math.max(1, req.currentRolls / Math.max(1, req.reqRolls));
+  const rollsPart = Math.floor(2.0 * Math.pow(rollsRatio, 0.25));
+  const extraForms = Math.max(0, req.currentForm - req.reqForm);
+  const stagePart = Math.floor(extraForms / 10);
+  const basePlungers = Math.max(1, rollsPart + stagePart);
 
+  let mult = 1.0;
   const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');
-  if (soulTalent && soulTalent.level > 0) {
-    base = Math.round(base * (1 + soulTalent.level * 0.20));
-  }
+  const soulBonus = soulTalent && soulTalent.level > 0 ? soulTalent.level * 0.20 : 0;
+  mult += soulBonus;
+
   const incubator = GAME.transcendUpgrades?.plungerIncubator || 0;
-  if (incubator > 0) {
-    base = Math.round(base * (1 + incubator * 0.10));
-  }
+  const incubatorBonus = incubator * 0.10;
+  mult += incubatorBonus;
+
+  let totalGain = Math.max(1, Math.round(basePlungers * mult));
+
   const astralTalent = TALENTS.find(t => t.id === 'astral_splendor');
   if (astralTalent && astralTalent.level > 0) {
     const doubleChance = Math.min(0.50, astralTalent.level * 0.02);
-    if (Math.random() < doubleChance) base *= 2;
+    if (Math.random() < doubleChance) totalGain *= 2;
   }
-  return base;
+
+  // Calculate rolls needed for +1 next plunger from rollsPart
+  const nextRollsPart = rollsPart + 1;
+  const nextTargetRatio = Math.pow(nextRollsPart / 2.0, 1 / 0.25);
+  const nextRollsThreshold = Math.ceil(req.reqRolls * nextTargetRatio);
+  const nextPlungerRollsNeeded = Math.max(0, nextRollsThreshold - req.currentRolls);
+
+  return {
+    ...req,
+    extraForms,
+    rollsPart,
+    stagePart,
+    basePlungers,
+    soulBonus,
+    incubatorBonus,
+    totalGain,
+    nextPlungerRollsNeeded
+  };
 }
+
+export function getTranscendPlungersReward() {
+  return getTranscendRewardBreakdown().totalGain;
+}
+
 
 export function executeTranscend() {
   const gain = getTranscendPlungersReward();
