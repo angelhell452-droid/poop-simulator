@@ -161,6 +161,15 @@ export function openCaseRoulette(caseId) {
   const caseObj = CSGO_CASES.find(c => c.id === caseId);
   if (!caseObj) return;
 
+  if (caseObj.reqPrestiges && (GAME.totalPrestiges || 0) < caseObj.reqPrestiges) {
+    alert(`Этот кейс откроется после ${caseObj.reqPrestiges} Смывов! У вас выполнено: ${GAME.totalPrestiges || 0}.`);
+    return;
+  }
+  if (caseObj.reqTranscend && (GAME.totalTranscend || 0) < caseObj.reqTranscend) {
+    alert(`Этот кейс откроется после ${caseObj.reqTranscend} Прорывов! У вас выполнено: ${GAME.totalTranscend || 0}.`);
+    return;
+  }
+
   if (caseObj.currency === 'rolls' && GAME.prestigeRolls < caseObj.cost) {
     alert('Недостаточно Золотых Втулок Судьбы (🧻)! Совершите Смыв Судьбы для их получения.');
     return;
@@ -490,19 +499,33 @@ export function renderCasesSystem() {
   const cratesList = document.getElementById('casesCratesList');
   if (cratesList) {
     cratesList.innerHTML = CSGO_CASES.map(c => {
+      const meetsPrestige = !c.reqPrestiges || (GAME.totalPrestiges || 0) >= c.reqPrestiges;
+      const meetsTranscend = !c.reqTranscend || (GAME.totalTranscend || 0) >= c.reqTranscend;
+      const isUnlocked = meetsPrestige && meetsTranscend;
       const hasCurrency = c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost : (GAME.transcendPlungers || 0) >= c.cost;
+      const canOpen = isUnlocked && hasCurrency;
+
+      const lockBadge = !isUnlocked
+        ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 Требуется: ${c.reqTranscend ? `${c.reqTranscend} Прорывов` : `${c.reqPrestiges} Смывов`}</div>`
+        : '';
+
+      const btnText = !isUnlocked
+        ? `🔒 ЗАБЛОКИРОВАНО`
+        : (hasCurrency ? `ОТКРЫТЬ КЕЙС 🎰` : `НЕ ХВАТАЕТ ${c.currencySymbol}`);
+
       return `
-        <div class="p-3 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-lg flex flex-col justify-between relative overflow-hidden">
+        <div class="p-3 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-lg flex flex-col justify-between relative overflow-hidden ${!isUnlocked ? 'opacity-70 grayscale-[25%]' : ''}">
           <div>
             <div class="flex items-center justify-between mb-1">
               <span class="text-2xl">${c.icon}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-900/80 text-yellow-300 border border-yellow-500/40">${c.cost} ${c.currencySymbol}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-900/80 text-yellow-300 border border-yellow-500/40">${formatNumber(c.cost)} ${c.currencySymbol}</span>
             </div>
             <div class="font-game text-xs text-yellow-200 mt-1">${c.name}</div>
             <div class="text-[10px] text-stone-300 mt-0.5 leading-snug">${c.desc}</div>
+            ${lockBadge}
           </div>
-          <button class="open-case-btn mt-3 w-full py-1.5 rounded-xl font-game text-xs transition jelly-btn ${hasCurrency ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${hasCurrency ? '' : 'disabled'}>
-            ОТКРЫТЬ КЕЙС 🎰
+          <button class="open-case-btn mt-3 w-full py-1.5 rounded-xl font-game text-xs transition jelly-btn ${canOpen ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${canOpen ? '' : 'disabled'}>
+            ${btnText}
           </button>
         </div>
       `;

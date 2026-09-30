@@ -20,7 +20,8 @@ export function getClickPower() {
 
   // Permanent prestige passive boost based on all rolls earned (power-law curve: no runaway snowball)
   const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
-  const prestigePassiveBoost = 1 + Math.pow(Math.max(0, totalRolls), 0.45) * 0.25;
+  const rollPower = (GAME.totalPrestiges >= 25) ? 0.50 : 0.25; // Смыв #25: Втулочная Империя (удвоенный бонус)
+  const prestigePassiveBoost = 1 + Math.pow(Math.max(0, totalRolls), 0.45) * rollPower;
   const totalPrestigesBoost = 1 + (GAME.totalPrestiges * 0.35);
   const rollsMult = prestigePassiveBoost * totalPrestigesBoost;
 
@@ -94,8 +95,10 @@ export function getClickPower() {
   // Transcendence Artifact: Cosmic Synergy (+50% per level)
   const cosmicSynergyLvl = GAME.transcendUpgrades?.cosmicSynergy || 0;
   const cosmicSynergyMult = 1 + cosmicSynergyLvl * 0.50;
+  // Transcendence Artifact: Singularity Rift (x2 all income)
+  const riftMult = GAME.transcendUpgrades?.singularityRift ? 2.0 : 1.0;
 
-  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult * sparkMult * cosmicSynergyMult;
+  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult;
 
   // Quantum Mastery talent + Quantum Click upgrade: direct transfer of passive GPS to click
   const qMastery = TALENTS.find(t => t.id === 'quantum_mastery');
@@ -169,7 +172,8 @@ export function getPassiveIncome() {
 
   // Permanent prestige passive boost based on all rolls earned (power-law curve: no runaway snowball)
   const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
-  const prestigePassiveBoost = 1 + Math.pow(Math.max(0, totalRolls), 0.45) * 0.25;
+  const rollPower = (GAME.totalPrestiges >= 25) ? 0.50 : 0.25; // Смыв #25: Втулочная Империя (удвоенный бонус)
+  const prestigePassiveBoost = 1 + Math.pow(Math.max(0, totalRolls), 0.45) * rollPower;
   const totalPrestigesBoost = 1 + (GAME.totalPrestiges * 0.35);
   const rollsMult = prestigePassiveBoost * totalPrestigesBoost;
 
@@ -219,8 +223,12 @@ export function getPassiveIncome() {
   // Transcendence Artifact: Cosmic Synergy (+50% per level)
   const cosmicSynergyLvl = GAME.transcendUpgrades?.cosmicSynergy || 0;
   const cosmicSynergyMult = 1 + cosmicSynergyLvl * 0.50;
+  // Transcendence Milestone #5: Time Warp (+25% factory speed)
+  const timeWarpMult = (GAME.totalTranscend >= 5) ? 1.25 : 1.0;
+  // Transcendence Artifact: Singularity Rift (x2 all income)
+  const riftMult = GAME.transcendUpgrades?.singularityRift ? 2.0 : 1.0;
 
-  const finalGPS = Math.max(0, Math.round(base * crystalMult * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult));
+  const finalGPS = Math.max(0, Math.round(base * crystalMult * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult));
   if (finalGPS > (GAME.currentRunPeakGPS || 0)) {
     GAME.currentRunPeakGPS = finalGPS;
   }

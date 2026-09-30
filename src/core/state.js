@@ -61,7 +61,11 @@ export function getDefaultGameState() {
     lastSaveTime: Date.now(),
     lastActiveTime: Date.now(),
     
+    autoBuyerEnabled: true,
+    autoEvolutionEnabled: true,
+    
     transcendUpgrades: {
+      cosmicSynergy: 0,
       autoBuyer: false,
       passiveRolls: 0,
       omniMult: 0,
@@ -71,7 +75,8 @@ export function getDefaultGameState() {
       plungerIncubator: 0,
       meteorStorm: 0,
       evoBlessing: 0,
-      autoEvolution: false
+      autoEvolution: false,
+      singularityRift: false
     }
   };
 }

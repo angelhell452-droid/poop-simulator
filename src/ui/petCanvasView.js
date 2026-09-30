@@ -196,7 +196,7 @@ export function triggerPetSquash(sx = 1.25, sy = 0.8) {
 }
 
 export function addManagedTextParticle(p) {
-  while (visualParticles.length >= 4) {
+  while (visualParticles.length >= 7) {
     visualParticles.shift();
   }
   visualParticles.push(p);

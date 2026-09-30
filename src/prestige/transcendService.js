@@ -8,6 +8,7 @@ export const TRANSCEND_REQ_ROLLS = 2500;
 export const TRANSCEND_REQ_STAGE = 50;
 
 export function getTranscendPlungersReward() {
+  if ((GAME.totalPrestiges || 0) < 5) return 0;
   const lifetimeRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
   if (GAME.evoStage < TRANSCEND_REQ_STAGE && lifetimeRolls < TRANSCEND_REQ_ROLLS) return 0;
 
@@ -64,6 +65,9 @@ export function buyTranscendUpgrade(upgId) {
   let lvl = typeof GAME.transcendUpgrades[upg.key] === 'boolean'
     ? (GAME.transcendUpgrades[upg.key] ? 1 : 0)
     : (GAME.transcendUpgrades[upg.key] || 0);
+
+  if (upg.reqTranscend && (GAME.totalTranscend || 0) < upg.reqTranscend) return false;
+  if (upg.max && lvl >= upg.max) return false;
 
   const cost = upg.cost + (lvl * (upg.costStep || 0));
   if ((GAME.transcendPlungers || 0) < cost) return false;

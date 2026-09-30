@@ -7,11 +7,14 @@ import { checkAchievements } from '../systems/achievementsService.js';
 import { saveLocal } from '../save/saveManager.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
+import { FACTORIES } from '../data/factories.data.js';
+import { buyFactory } from '../systems/factoryService.js';
 import { triggerPetSquash } from '../ui/petCanvasView.js';
 import { events } from './events.js';
 
 let lastTickTime = performance.now();
 let autoEvoTimer = 0;
+let autoBuyerTimer = 0;
 let autoCareTimer = 0;
 let autoSaveTimer = 0;
 let passiveRollAccumulator = 0;
@@ -52,8 +55,22 @@ export function gameEngineTick() {
   autoEvoTimer += dt;
   if (autoEvoTimer >= 1.0) {
     autoEvoTimer = 0;
-    if (GAME.transcendUpgrades?.autoEvolution && GAME.evoStage < EVOLUTIONS.length - 1) {
+    if (GAME.transcendUpgrades?.autoEvolution && GAME.autoEvolutionEnabled !== false && GAME.evoStage < EVOLUTIONS.length - 1) {
       performEvolution();
+    }
+  }
+
+  // 3.5 Transcendence Artifact: Auto-Buyer (every 1.2s)
+  autoBuyerTimer += dt;
+  if (autoBuyerTimer >= 1.2) {
+    autoBuyerTimer = 0;
+    if (GAME.transcendUpgrades?.autoBuyer && GAME.autoBuyerEnabled !== false) {
+      for (let i = FACTORIES.length - 1; i >= 0; i--) {
+        const fac = FACTORIES[i];
+        if (fac.reqStage === undefined || GAME.evoStage >= fac.reqStage) {
+          if (buyFactory(fac.id)) break;
+        }
+      }
     }
   }
 

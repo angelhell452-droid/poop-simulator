@@ -179,6 +179,7 @@ export function updateHUD() {
       }
     }
   }
+  updateAutomationTogglesUI();
 }
 
 export function updateAutocareUI() {
@@ -250,6 +251,62 @@ export function initAutocareListeners() {
     GAME.autoWash = !allOn;
     GAME.autoTickle = !allOn;
     updateAutocareUI();
+    saveLocal();
+  });
+}
+
+export function updateAutomationTogglesUI() {
+  const hasAutoBuyer = !!GAME.transcendUpgrades?.autoBuyer;
+  const hasAutoEvo = !!GAME.transcendUpgrades?.autoEvolution;
+  const deck = document.getElementById('transcendAutomationsDeck');
+  if (deck) {
+    deck.classList.toggle('hidden', !hasAutoBuyer && !hasAutoEvo);
+  }
+
+  const buyerBtn = document.getElementById('btnToggleAutoBuyer');
+  const buyerLed = document.getElementById('autoBuyerLed');
+  const buyerLbl = document.getElementById('autoBuyerLabel');
+  if (buyerBtn && buyerLed && buyerLbl) {
+    buyerBtn.classList.toggle('hidden', !hasAutoBuyer);
+    const isOn = GAME.autoBuyerEnabled !== false;
+    if (isOn) {
+      buyerBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-emerald-950 border-emerald-500 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
+      buyerLed.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse';
+      buyerLbl.textContent = 'Заводы: ВКЛ';
+    } else {
+      buyerBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700';
+      buyerLed.className = 'w-2 h-2 rounded-full bg-stone-500';
+      buyerLbl.textContent = 'Заводы: ВЫКЛ';
+    }
+  }
+
+  const evoBtn = document.getElementById('btnToggleAutoEvolution');
+  const evoLed = document.getElementById('autoEvolutionLed');
+  const evoLbl = document.getElementById('autoEvolutionLabel');
+  if (evoBtn && evoLed && evoLbl) {
+    evoBtn.classList.toggle('hidden', !hasAutoEvo);
+    const isOn = GAME.autoEvolutionEnabled !== false;
+    if (isOn) {
+      evoBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-indigo-950 border-indigo-400 text-cyan-200 shadow-[0_0_8px_rgba(99,102,241,0.35)]';
+      evoLed.className = 'w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee] animate-pulse';
+      evoLbl.textContent = 'Мутации: ВКЛ';
+    } else {
+      evoBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700';
+      evoLed.className = 'w-2 h-2 rounded-full bg-stone-500';
+      evoLbl.textContent = 'Мутации: ВЫКЛ';
+    }
+  }
+}
+
+export function initAutomationToggleListeners() {
+  document.getElementById('btnToggleAutoBuyer')?.addEventListener('click', () => {
+    GAME.autoBuyerEnabled = !(GAME.autoBuyerEnabled !== false);
+    updateAutomationTogglesUI();
+    saveLocal();
+  });
+  document.getElementById('btnToggleAutoEvolution')?.addEventListener('click', () => {
+    GAME.autoEvolutionEnabled = !(GAME.autoEvolutionEnabled !== false);
+    updateAutomationTogglesUI();
     saveLocal();
   });
 }

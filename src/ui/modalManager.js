@@ -23,9 +23,14 @@ export function initModals() {
   // Archetype selection in Prestige Modal
   document.querySelectorAll('.arch-select-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      pendingPrestigeArchetype = btn.dataset.arch || 'balanced';
+      pendingPrestigeArchetype = btn.dataset.arch;
       renderArchetypeButtons();
     });
+  });
+
+  // Guide Modal
+  document.getElementById('btnGuideModal')?.addEventListener('click', () => {
+    document.getElementById('guideModal')?.classList.remove('hidden');
   });
 
   // Open Prestige Modal
@@ -36,12 +41,28 @@ export function initModals() {
     const gain = getPrestigeRollsReward();
     const calcEl = document.getElementById('prestigeCalcRolls');
     if (calcEl) {
-      const bonusPerRoll = 0.02 * (1 + (TALENTS.find(t => t.id === 'golden_leaf')?.level || 0) * 0.05);
-      const currentBoost = ((GAME.prestigeRolls || 0) * bonusPerRoll * 100).toFixed(0);
-      const postBoost = (((GAME.prestigeRolls || 0) + gain) * bonusPerRoll * 100).toFixed(0);
+      const flushes = GAME.totalPrestiges || 0;
+      const bonusPerRoll = (flushes >= 25 ? 0.04 : 0.02) * (1 + (TALENTS.find(t => t.id === 'golden_leaf')?.level || 0) * 0.05);
+      const currentBoost = ((GAME.prestigeRolls || 0) * bonusPerRoll * 100);
+      const postBoost = (((GAME.prestigeRolls || 0) + gain) * bonusPerRoll * 100);
+
+      let nextMilestoneText = '';
+      if (flushes < 1) nextMilestoneText = '🎯 Смыв #1: Втулки Судьбы и Древо Талантов';
+      else if (flushes < 5) nextMilestoneText = `🎯 Смыв #5: 🪠 Открытие Астрального Прорыва (Transcend) [${flushes}/5]`;
+      else if (flushes < 10) nextMilestoneText = `🎯 Смыв #10: 🌠 Золотая Лихорадка (x2 Метеориты, +50% Блестяшки) [${flushes}/10]`;
+      else if (flushes < 25) nextMilestoneText = `🎯 Смыв #25: 👑 Втулочная Империя (удвоенный бонус за втулку) [${flushes}/25]`;
+      else if (flushes < 50) nextMilestoneText = `🎯 Смыв #50: 🌌 Сингулярность Бездны (Кейс 50B 🧻) [${flushes}/50]`;
+      else nextMilestoneText = `🏆 Высший Магистр Смыва Омниверса (${flushes} смывов)!`;
+
       calcEl.innerHTML = `
         <div class="font-game text-yellow-300 text-base mb-1">+${formatNumber(gain)} 🧻 Втулок Судьбы</div>
-        <div class="text-[11px] text-purple-200">Текущий пассивный бонус: <b class="text-white">+${currentBoost}%</b> ➔ После смыва: <b class="text-emerald-300">+${postBoost}%</b> к доходу</div>
+        <div class="text-[11px] text-purple-200">
+          Бонус ко ВСЕМУ доходу (Клики + Заводы): <b class="text-white">+${formatNumber(currentBoost)}%</b> ➔ После смыва: <b class="text-emerald-300">+${formatNumber(postBoost)}%</b>
+        </div>
+        <div class="mt-2 pt-2 border-t border-yellow-400/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px]">
+          <span class="text-yellow-400 font-bold">Смывов совершено: ${flushes}</span>
+          <span class="text-stone-300 font-semibold">${nextMilestoneText}</span>
+        </div>
       `;
     }
     const execBtn = document.getElementById('btnExecutePrestige');
@@ -70,13 +91,50 @@ export function initModals() {
 
   // Open Transcend Modal (accessible from header button, canvas button, and plungers currency bar)
   const openTranscendModal = () => {
+    const flushes = GAME.totalPrestiges || 0;
+    const transcends = GAME.totalTranscend || 0;
     const gain = getTranscendPlungersReward();
+
     const rollsEl = document.getElementById('transcendCurrentRolls');
     if (rollsEl) rollsEl.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+
     const plungersEl = document.getElementById('transcendCalcPlungers');
-    if (plungersEl) plungersEl.textContent = `+${formatNumber(gain)} 🪠 Вантузов`;
+    if (plungersEl) {
+      if (flushes < 5) {
+        plungersEl.innerHTML = `<span class="text-red-400 font-bold text-xs">🔒 Требуется 5 Смывов! (${flushes}/5)</span>`;
+      } else {
+        plungersEl.textContent = `+${formatNumber(gain)} 🪠 Вантузов`;
+      }
+    }
+
+    const milestoneEl = document.getElementById('transcendMilestoneHint');
+    if (milestoneEl) {
+      let tMilestoneText = '';
+      if (transcends < 1) tMilestoneText = '🎯 Прорыв #1: Вантузы и Базовые Реликвии (Тир 1)';
+      else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: Астральная Автоматизация (Авто-Заводы & Мутации) [${transcends}/3]`;
+      else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⏳ Временной Разлом (+25% к CPS всех фабрик) [${transcends}/5]`;
+      else if (transcends < 10) tMilestoneText = `🎯 Прорыв #10: 🌌 Сингулярность & Корона Демиурга [${transcends}/10]`;
+      else tMilestoneText = `🏆 Повелитель Астральной Сингулярности (${transcends} прорывов)!`;
+
+      milestoneEl.innerHTML = `
+        <div class="flex items-center justify-between text-[10px] text-cyan-300 font-bold px-1 py-0.5">
+          <span>Прорывов: ${transcends}</span>
+          <span class="text-indigo-200">${tMilestoneText}</span>
+        </div>
+      `;
+    }
+
     const execBtn = document.getElementById('btnExecuteTranscend');
-    if (execBtn) execBtn.disabled = gain <= 0;
+    if (execBtn) {
+      if (flushes < 5) {
+        execBtn.disabled = true;
+        execBtn.textContent = `ТРЕБУЕТСЯ 5 СМЫВОВ (${flushes}/5) 🔒`;
+      } else {
+        execBtn.disabled = gain <= 0;
+        execBtn.textContent = `СОВЕРШИТЬ АСТРАЛЬНЫЙ ПРОРЫВ! 🌌`;
+      }
+    }
+
     renderTranscendUpgrades();
     document.getElementById('transcendModal')?.classList.remove('hidden');
   };
@@ -125,39 +183,75 @@ export function renderTranscendUpgrades() {
   if (!listEl) return;
   listEl.innerHTML = '';
 
-  TRANSCEND_UPGRADES.forEach(upg => {
-    let isMax = false;
-    let lvl = 0;
-    if (typeof GAME.transcendUpgrades?.[upg.key] === 'boolean') {
-      isMax = !!GAME.transcendUpgrades[upg.key];
-      lvl = isMax ? 1 : 0;
-    } else {
-      lvl = GAME.transcendUpgrades?.[upg.key] || 0;
-      isMax = lvl >= upg.max;
-    }
+  const transcends = GAME.totalTranscend || 0;
 
-    const cost = upg.costStep ? (upg.cost + lvl * upg.costStep) : upg.cost;
-    const canBuy = (GAME.transcendPlungers || 0) >= cost && !isMax;
+  // Group by Tiers
+  const tiers = [
+    { tier: 1, name: '⭐ Тир 1: Базовые Реликвии (1+ Прорыв)' },
+    { tier: 2, name: '⚡ Тир 2: Продвинутая Автоматизация (3+ Прорывов)' },
+    { tier: 3, name: '🔮 Тир 3: Мастер-Реликвии (5+ Прорывов)' },
+    { tier: 4, name: '🌌 Тир 4: Космическая Сингулярность (10+ Прорывов)' }
+  ];
 
-    const row = document.createElement('div');
-    row.className = 'p-3 rounded-2xl bg-indigo-950/60 border border-cyan-500/40 flex items-center justify-between shadow-sm';
-    row.innerHTML = `
-      <div>
-        <div class="font-bold text-xs text-cyan-200">${upg.name} <span class="text-yellow-400 font-game">(${lvl}/${upg.max})</span></div>
-        <div class="text-[10px] text-stone-400">${upg.desc}</div>
-      </div>
-      <button class="buy-art-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 ml-2 transition ${isMax ? 'bg-stone-800 text-stone-500 border-stone-700' : (canBuy ? 'bg-cyan-500 hover:bg-cyan-400 text-stone-950 border-cyan-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed')}" data-id="${upg.id}" ${canBuy ? '' : 'disabled'}>
-        ${isMax ? 'МАКС' : `${cost} 🪠`}
-      </button>
-    `;
+  tiers.forEach(tInfo => {
+    const tierUpgrades = TRANSCEND_UPGRADES.filter(u => u.tier === tInfo.tier);
+    if (tierUpgrades.length === 0) return;
 
-    row.querySelector('.buy-art-btn').addEventListener('click', () => {
-      if (buyTranscendUpgrade(upg.id)) {
-        renderTranscendUpgrades();
-        updateHUD();
+    const tierHeader = document.createElement('div');
+    tierHeader.className = 'text-[11px] font-game text-cyan-300 uppercase tracking-wider pt-2 pb-1 border-b border-cyan-500/30 flex items-center justify-between';
+    tierHeader.innerHTML = `<span>${tInfo.name}</span>`;
+    listEl.appendChild(tierHeader);
+
+    tierUpgrades.forEach(upg => {
+      const isLocked = upg.reqTranscend && (transcends < upg.reqTranscend);
+      let isMax = false;
+      let lvl = 0;
+
+      if (typeof GAME.transcendUpgrades?.[upg.key] === 'boolean') {
+        isMax = !!GAME.transcendUpgrades[upg.key];
+        lvl = isMax ? 1 : 0;
+      } else {
+        lvl = GAME.transcendUpgrades?.[upg.key] || 0;
+        isMax = lvl >= upg.max;
       }
-    });
 
-    listEl.appendChild(row);
+      const cost = upg.costStep ? (upg.cost + lvl * upg.costStep) : upg.cost;
+      const canBuy = !isLocked && !isMax && ((GAME.transcendPlungers || 0) >= cost);
+
+      const row = document.createElement('div');
+      row.className = `p-2.5 rounded-2xl border flex items-center justify-between shadow-sm transition ${isLocked ? 'bg-indigo-950/30 border-stone-800 opacity-60' : 'bg-indigo-950/60 border-cyan-500/40'}`;
+      
+      const lockBadge = isLocked 
+        ? `<span class="text-[9px] text-red-400 font-bold block mt-0.5">🔒 Требуется ${upg.reqTranscend} Прорывов (Сделано: ${transcends})</span>`
+        : '';
+
+      const btnText = isLocked 
+        ? '🔒' 
+        : (isMax ? 'МАКС' : `${formatNumber(cost)} 🪠`);
+
+      row.innerHTML = `
+        <div class="pr-2">
+          <div class="font-bold text-xs ${isLocked ? 'text-stone-400' : 'text-cyan-200'}">
+            ${upg.name} <span class="text-yellow-400 font-game">(${lvl}/${upg.max})</span>
+          </div>
+          <div class="text-[10px] text-stone-300 leading-tight mt-0.5">${upg.desc}</div>
+          ${lockBadge}
+        </div>
+        <button class="buy-art-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 transition ${isMax ? 'bg-stone-800 text-stone-500 border-stone-700' : (canBuy ? 'bg-cyan-500 hover:bg-cyan-400 text-stone-950 font-black border-cyan-300 jelly-btn shadow-md' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed')}" data-id="${upg.id}" ${canBuy ? '' : 'disabled'}>
+          ${btnText}
+        </button>
+      `;
+
+      if (canBuy) {
+        row.querySelector('.buy-art-btn').addEventListener('click', () => {
+          if (buyTranscendUpgrade(upg.id)) {
+            renderTranscendUpgrades();
+            updateHUD();
+          }
+        });
+      }
+
+      listEl.appendChild(row);
+    });
   });
 }

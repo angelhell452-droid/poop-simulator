@@ -2,7 +2,7 @@ import { GAME } from './core/state.js';
 import { startGameLoop } from './core/gameLoop.js';
 import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, wipePlayerData, requestCloudSync } from './save/cloudSync.js';
 import { saveLocal } from './save/saveManager.js';
-import { updateHUD, initAutocareListeners } from './ui/hudView.js';
+import { updateHUD, initAutocareListeners, initAutomationToggleListeners } from './ui/hudView.js';
 import { renderFactories } from './ui/factoryView.js';
 import { renderTalents } from './ui/talentView.js';
 import { renderShop } from './ui/shopView.js';
@@ -105,6 +105,7 @@ export async function bootstrap() {
   initCasesListeners();
   initKnivesIndexListeners();
   initAutocareListeners();
+  initAutomationToggleListeners();
   initAuthModal();
   initLeaderboardView();
 

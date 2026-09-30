@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40"
-            id="versionTag">v4.6.3 PRO</span>
+            id="versionTag">v4.7.0 PRO</span>
         </div>
         <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
       </div>
@@ -84,6 +84,11 @@
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         <span id="cloudStatusText">БД: OK</span>
       </div>
+      <button id="btnGuideModal"
+        class="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-cyan-400 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
+        title="Справочник и Гид по экономике игры">
+        <span>📖</span> <span class="hidden sm:inline">Гид</span>
+      </button>
       <button id="btnLeaderboardModal"
         class="bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-500 hover:brightness-110 text-stone-950 font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-300 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
         title="Таблица Лидеров и Зал Славы (Топ 20 игроков)">
@@ -216,6 +221,27 @@
           <button
             class="autoclick-spd-btn px-2 py-0.5 rounded bg-amber-600 text-white font-bold border border-yellow-400"
             data-cps="1000">1мс ⚡</button>
+        </div>
+      </div>
+
+      <!-- ASTRAL TRANSCENDENCE AUTOMATION DECK -->
+      <div id="transcendAutomationsDeck"
+        class="hidden px-3 py-1.5 bg-indigo-950/90 border-b border-indigo-500/50 flex flex-wrap items-center justify-between gap-2 z-10 text-xs">
+        <div class="flex items-center gap-1.5 text-cyan-300 font-game text-[11px]">
+          <span>🌌</span>
+          <span class="tracking-wide">Астральный Авто-Контроль:</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnToggleAutoBuyer"
+            class="hidden px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700">
+            <span id="autoBuyerLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+            <span id="autoBuyerLabel">Заводы: ВЫКЛ</span>
+          </button>
+          <button id="btnToggleAutoEvolution"
+            class="hidden px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700">
+            <span id="autoEvolutionLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+            <span id="autoEvolutionLabel">Мутации: ВЫКЛ</span>
+          </button>
         </div>
       </div>
 
@@ -800,7 +826,7 @@
       <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex justify-between">
           <span class="text-stone-300">Условие доступа:</span>
-          <span class="font-bold text-cyan-300">Форма 50+ или 2,500+ 🧻 за всё время</span>
+          <span class="font-bold text-cyan-300">Форма 50+, 5+ Смывов и 2,500+ 🧻</span>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Запас Втулок Судьбы:</span>
@@ -810,6 +836,9 @@
           <span class="text-stone-300">Награда за Прорыв:</span>
           <span class="font-game text-cyan-300 text-sm" id="transcendCalcPlungers">+0 🪠 Вантузов</span>
         </div>
+      </div>
+
+      <div id="transcendMilestoneHint" class="bg-indigo-950/80 border border-indigo-400/50 rounded-2xl p-2.5 my-2 text-left">
       </div>
 
       <!-- Astral Upgrades Grid -->
@@ -1103,6 +1132,177 @@
       <!-- Action Section during roulette -->
       <div id="rouletteControlSection" class="mt-3 flex gap-3 justify-center">
         <span class="text-xs text-stone-400 font-bold animate-pulse">Рулетка крутится... Испытайте удачу CS:GO!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME GUIDE MODAL (СПРАВОЧНИК ВЫЖИВАНИЯ И ЭКОНОМИКИ) -->
+  <div id="guideModal"
+    class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div
+      class="bg-gradient-to-b from-stone-900 via-indigo-950 to-stone-900 rounded-3xl border-4 border-cyan-400 max-w-2xl w-full p-5 relative shadow-2xl max-h-[92vh] overflow-y-auto custom-scroll text-left">
+      <button
+        class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
+      
+      <div class="flex items-center gap-3 border-b border-cyan-500/30 pb-3 mb-4">
+        <span class="text-4xl">📖</span>
+        <div>
+          <h3 class="font-game text-xl sm:text-2xl text-yellow-300 tracking-wide">СПРАВОЧНИК ВЫЖИВАНИЯ</h3>
+          <p class="text-xs text-cyan-200">Полный гид по ресурсам, экономике и стратегиям развития</p>
+        </div>
+      </div>
+
+      <div class="space-y-3.5 text-xs">
+        <!-- 1. BIOMASS -->
+        <div class="p-3.5 rounded-2xl bg-amber-950/40 border border-amber-500/50 shadow">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-2xl">💨</span>
+            <span class="font-game text-sm text-yellow-300">Биомасса (Biomass)</span>
+            <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/40 font-bold ml-auto">Основная валюта</span>
+          </div>
+          <p class="text-stone-300 leading-relaxed">
+            Фундаментальная энергия вселенной какашечки. Необходима для любого первичного роста.
+          </p>
+          <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+            <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
+              <b class="text-emerald-400">⚡ Как зарабатывать:</b>
+              <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
+                <li>Клики по персонажу (усиливаются ножами, сытостью и талантами)</li>
+                <li>Автоматические заводы (15 фабрик: от Мух до Сингулярности)</li>
+                <li>Ловля пролетающих золотых метеоритов</li>
+              </ul>
+            </div>
+            <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
+              <b class="text-yellow-400">🎯 Зачем нужна:</b>
+              <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
+                <li>Покупка новых фабрик и расширение пассивного CPS</li>
+                <li>Мутация персонажа (20,000 форм в Хрониках Эволюции)</li>
+                <li>Активация множителей покупки (x1, x10, x100, МАКС)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. SPARKLES -->
+        <div class="p-3.5 rounded-2xl bg-pink-950/40 border border-pink-500/50 shadow">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-2xl">✨</span>
+            <span class="font-game text-sm text-pink-300">Блестяшки (Sparkles)</span>
+            <span class="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full border border-pink-500/40 font-bold ml-auto">Премиум-ресурс</span>
+          </div>
+          <p class="text-stone-300 leading-relaxed">
+            Драгоценные искры сияния, дающие доступ к роскоши Бутика и прокачке оружия.
+          </p>
+          <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+            <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
+              <b class="text-emerald-400">⚡ Как зарабатывать:</b>
+              <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
+                <li>Критические удары при кликах (базово 5%, растет от счастья и талантов)</li>
+                <li>Автокликер на максимальной скорости (до 1000 кликов/сек)</li>
+                <li>Сбор летающих метеоритов и выполнение достижений</li>
+              </ul>
+            </div>
+            <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
+              <b class="text-yellow-400">🎯 Зачем нужна:</b>
+              <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
+                <li>Бутик аксессуаров: 14 шапок (со скрытыми бонусами к клику)</li>
+                <li>Заточка ножей StatTrak™ звездами (★ Lv.1 - Lv.10)</li>
+                <li>Покупка элитных перков бесконечного дохода</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. TOILET ROLLS -->
+        <div class="p-3.5 rounded-2xl bg-purple-950/40 border border-purple-500/50 shadow">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-2xl">🧻</span>
+            <span class="font-game text-sm text-yellow-300">Втулки Судьбы (Toilet Rolls)</span>
+            <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/40 font-bold ml-auto">Престиж I ранга</span>
+          </div>
+          <p class="text-stone-300 leading-relaxed">
+            Священные втулки от Великого Смыва Судьбы. Дают глобальный постоянный множитель ко <b class="text-yellow-300">ВСЕМУ</b> доходу!
+          </p>
+          <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+            <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
+              <b class="text-emerald-400">⚡ Как зарабатывать:</b>
+              <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
+                <li>Ритуал Смыва Судьбы (после 100+ формы или 100K+ биомассы)</li>
+                <li>Каждая втулка даёт +2% ко всему доходу (+4% после 25-го смыва)</li>
+                <li>Пассивный Хроно-генератор втулок из Прорыва</li>
+              </ul>
+            </div>
+            <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
+              <b class="text-yellow-400">🎯 Зачем нужна:</b>
+              <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
+                <li>Древо Талантов: 18 вечных умений прокачки</li>
+                <li>Открытие оружейных кейсов CS:GO (Фазы 1-3)</li>
+                <li>Разблокировка Астрального Прорыва (требует 5 смывов!)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. ASTRAL PLUNGERS -->
+        <div class="p-3.5 rounded-2xl bg-indigo-950/40 border border-cyan-400/50 shadow">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-2xl">🪠</span>
+            <span class="font-game text-sm text-cyan-300">Астральные Вантузы (Astral Plungers)</span>
+            <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/40 font-bold ml-auto">Престиж II ранга</span>
+          </div>
+          <p class="text-stone-300 leading-relaxed">
+            Высшая эндгейм-валюта Космического Прорыва. Раздвигает границы реальности и открывает полную автоматизацию.
+          </p>
+          <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+            <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
+              <b class="text-emerald-400">⚡ Как зарабатывать:</b>
+              <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
+                <li>Астральный Прорыв (кнопка 🪠 Прорыв)</li>
+                <li>Условие: совершить минимум 5 Смывов и накопить 2,500+ втулок</li>
+                <li>Сохраняет 35% всех втулок после Прорыва!</li>
+              </ul>
+            </div>
+            <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
+              <b class="text-yellow-400">🎯 Зачем нужна:</b>
+              <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
+                <li>4 Тира Астральных Реликвий (Авто-Заводы, Авто-Мутация форм)</li>
+                <li>Открытие богоподобных кейсов (Небесный, Cobblestone, Демиург, Вечность)</li>
+                <li>Высшая Космическая Сингулярность</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. KNIVES & CSGO CASES -->
+        <div class="p-3.5 rounded-2xl bg-amber-950/30 border border-yellow-400/50 shadow">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-2xl">🗡️</span>
+            <span class="font-game text-sm text-amber-300">Коллекция 200 Ножей CS:GO & StatTrak™</span>
+            <span class="text-[10px] bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded-full border border-yellow-500/40 font-bold ml-auto">Арсенал</span>
+          </div>
+          <p class="text-stone-300 leading-relaxed">
+            Все 200 легендарных ножей CS:GO с настоящей физической рулеткой, звуками открытия, анимацией в руке какашечки и счетчиком кликов StatTrak™!
+          </p>
+          <div class="mt-2 bg-stone-900/80 p-2 rounded-xl border border-stone-700 text-[11px] space-y-1">
+            <div><b class="text-cyan-300">⭐ Редкости:</b> Армейские ➔ Запрещенные ➔ Засекреченные ➔ Тайные (Covert) ➔ Радужные (Rainbow) ➔ Титановые ➔ Небесные (Celestial) ➔ Божественные (Godly Omega)!</div>
+            <div><b class="text-yellow-300">⭐ Фазы кейсов:</b> Кейсы открываются поэтапно: ранние стоят втулки, эндгейм-кейсы требуют нескольких Прорывов и Астральных Вантузов.</div>
+            <div><b class="text-orange-400">⭐ StatTrak™:</b> Каждый клик экипированным ножом навсегда увеличивает счётчик его фрагов!</div>
+          </div>
+        </div>
+
+        <!-- 6. PRO TIPS -->
+        <div class="p-3.5 rounded-2xl bg-stone-900/90 border border-stone-700 shadow">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-2xl">💡</span>
+            <span class="font-game text-sm text-yellow-300">Советы и Стратегии для Быстрого Прогресса</span>
+          </div>
+          <ul class="list-disc list-inside text-stone-300 mt-1 space-y-1 text-[11px]">
+            <li><b class="text-amber-300">Триада ухода:</b> Держите Сытость выше 90% (+50% к клику), Чистоту выше 90% (+40% к заводам), а Счастье выше 70% (удваивает частоту критов). Включите Авто-Уход при первой возможности!</li>
+            <li><b class="text-amber-300">Турбо-Ярость:</b> Набивайте быстрые клики, чтобы заполнить шкалу Комбо до 100% и активировать Турбо-Режим с x10 уроном!</li>
+            <li><b class="text-amber-300">Архетипы:</b> Перед Смывом выбирайте подходящий архетип (например, <i>Магнат</i> для ночного AFK или <i>Кликер</i> для активной игры).</li>
+            <li><b class="text-amber-300">Грамотный Смыв:</b> Не сидите слишком долго на одном забеге, если прирост биомассы замедлился — смыв даст Втулки и резко разгонит следующий цикл!</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
