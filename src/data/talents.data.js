@@ -1,0 +1,25 @@
+export const TALENTS = [
+      { id: 'soft_rolls', name: 'Мягкость 4-х слоев', desc: '+25% ко всему доходу за каждый уровень', cost: 1, level: 0, max: 2500, icon: '🧻' },
+      { id: 'crit_master', name: 'Ультра-Шмяк (Крит)', desc: '+0.2% шанс крита и +40% к урону крита за уровень', cost: 2, level: 0, max: 1500, icon: '💥' },
+      { id: 'turbo_pipe', name: 'Трубопроводный Разгон Заводов', desc: '+35% к мощности всех заводов за уровень', cost: 2, level: 0, max: 2000, icon: '⚡' },
+      { id: 'royal_gold', name: 'Стартовый Золотой Трон', desc: '+50,000 💨 стартовой биомассы после смыва за уровень', cost: 3, level: 0, max: 1000, icon: '🚽' },
+      { id: 'sparkle_alchemy', name: 'Алхимия Блестяшек', desc: '+15% к выпадению блестяшек при каждом клике', cost: 3, level: 0, max: 1000, icon: '✨' },
+      { id: 'cosmic_resonance', name: 'Космический Резонанс Мультиверса', desc: 'x1.5 к множителю всех форм мутации за каждые 2 уровня', cost: 5, level: 0, max: 1000, icon: '🌌' },
+      { id: 'golden_synergy', name: 'Священный Синергизм Заводов', desc: '+150% к силе клика от каждых 10 купленных заводов', cost: 4, level: 0, max: 1000, icon: '🏭' },
+      { id: 'infinity_flush', name: 'Вечный Смыв Судьбы', desc: '+15% к получению Золотых Втулок за каждый Смыв', cost: 5, level: 0, max: 1000, icon: '🌀' },
+      { id: 'hyper_click', name: 'Гипер-Кликер (1ms Овердрайв)', desc: '+5% к силе клика за каждые 500 сделанных кликов', cost: 3, level: 0, max: 1500, icon: '👆' },
+      { id: 'combo_master', name: 'Владыка Комбо-Ярости', desc: '+20% к длительности комбо и +50% к множителю Турбо', cost: 4, level: 0, max: 1000, icon: '🔥' },
+      { id: 'meteor_hunter', name: 'Ловец Звездных Метеоритов', desc: 'Золотые метеориты падают на 20% чаще и дают x2 награду', cost: 5, level: 0, max: 1000, icon: '🌠' },
+      { id: 'afk_slumber', name: 'Мастер Офлайн-Медитации', desc: '+25% к офлайн-добыче и +3 часа к лимиту AFK', cost: 4, level: 0, max: 1000, icon: '💤' },
+      { id: 'transcend_soul', name: 'Астральная Трансценденция', desc: '+25% к получению Астральных Вантузов при Прорыве', cost: 6, level: 0, max: 1000, icon: '🪠' },
+      { id: 'quantum_mastery', name: 'Квантовое Господство', desc: '+1% от пассивного дохода заводов переходит в клик', cost: 5, level: 0, max: 1000, icon: '🔮' },
+      { id: 'omega_destiny', name: 'Печать Точки Омега', desc: 'Снижает стоимость эволюции всех форм на 2% за уровень', cost: 8, level: 0, max: 1000, icon: '👑' },
+      // NEW LATE-GAME TALENTS FOR HUNDREDS OF HOURS
+      { id: 'omni_mastery', name: 'Омни-Мастерство Бытия', desc: '+30% ко ВСЕМУ доходу и силе клика за уровень', cost: 10, level: 0, max: 2000, icon: '🌟' },
+      { id: 'hyperspeed_flush', name: 'Сверхсветовой Смыв', desc: '+15% к получению Втулок Судьбы за Смыв', cost: 12, level: 0, max: 1000, icon: '🚀' },
+      { id: 'star_forge_master', name: 'Ковка Звездной Стали', desc: '+15% к силе всех заточенных ножей за уровень', cost: 15, level: 0, max: 1000, icon: '⚔️' },
+      { id: 'quantum_replication', name: 'Квантовая Био-Репликация', desc: '+50% к пассивному доходу фабрик старших тиров', cost: 15, level: 0, max: 1500, icon: '🧬' },
+      { id: 'time_sovereign', name: 'Повелитель Хроноса', desc: '+35% к офлайн-эффективности и скорости авто-кликов', cost: 20, level: 0, max: 500, icon: '⏳' },
+      { id: 'astral_splendor', name: 'Астральное Сияние', desc: '+2% шанс на удвоение Вантузов при Прорыве за уровень', cost: 25, level: 0, max: 250, icon: '✨' },
+      { id: 'unbreakable_evo', name: 'Несокрушимая Эволюция', desc: 'Снижает стоимость форм 5000+ на 1.5% за уровень', cost: 30, level: 0, max: 500, icon: '🛡️' }
+    ];
