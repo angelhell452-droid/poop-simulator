@@ -17,11 +17,19 @@ export function getKnifeStar(knifeId) {
 
 export function getClickPower() {
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
-  const softRolls = TALENTS.find(t => t.id === 'soft_rolls');
-  const bonusPerRoll = 0.02 * (1 + (softRolls ? softRolls.level * 0.25 : 0));
-  const prestigePassiveBoost = 1 + ((GAME.prestigeRolls || 0) * bonusPerRoll);
+
+  // Permanent prestige passive boost based on all rolls earned (never drops when spending rolls!)
+  const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
+  const prestigePassiveBoost = 1 + (totalRolls * 0.02);
   const totalPrestigesBoost = 1 + (GAME.totalPrestiges * 0.35);
   const rollsMult = prestigePassiveBoost * totalPrestigesBoost;
+
+  // Direct Talent Multipliers (strictly increase power)
+  const softRolls = TALENTS.find(t => t.id === 'soft_rolls');
+  const softRollsMult = 1 + (softRolls ? softRolls.level * 0.25 : 0);
+
+  const omniMastery = TALENTS.find(t => t.id === 'omni_mastery');
+  const omniMasteryMult = 1 + (omniMastery ? omniMastery.level * 0.30 : 0);
 
   const cosmicRes = TALENTS.find(t => t.id === 'cosmic_resonance');
   const cosmicMult = cosmicRes ? Math.pow(1.5, Math.floor(cosmicRes.level / 2)) : 1;
@@ -60,7 +68,7 @@ export function getClickPower() {
   const katanaBonus = knifeStyle === 'katana' ? (1 + Math.floor(GAME.evoStage / 50) * 0.15) : 1.0;
 
   // Meaningful Pet Hunger Buff (+0% to +50% Click Power based on hunger)
-  const hungerBuff = 1 + ((GAME.hunger || 100) / 100) * 0.50;
+  const hungerBuff = 1 + Math.max(0, (GAME.hunger || 100) / 100) * 0.50;
 
   // Archetype specialization multiplier (+50% Click for 'clicker', +15% for 'balanced')
   let archMult = 1.0;
@@ -69,7 +77,7 @@ export function getClickPower() {
 
   const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.50;
 
-  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult;
+  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult;
 
   // Quantum Mastery talent: +1% of passive factory income per level transferred directly to click
   const qMastery = TALENTS.find(t => t.id === 'quantum_mastery');
@@ -91,6 +99,12 @@ export function getPassiveIncome() {
 
   const qRepl = TALENTS.find(t => t.id === 'quantum_replication');
   const qReplMult = 1 + (qRepl ? qRepl.level * 0.50 : 0);
+
+  const softRolls = TALENTS.find(t => t.id === 'soft_rolls');
+  const softRollsMult = 1 + (softRolls ? softRolls.level * 0.25 : 0);
+
+  const omniMastery = TALENTS.find(t => t.id === 'omni_mastery');
+  const omniMasteryMult = 1 + (omniMastery ? omniMastery.level * 0.30 : 0);
 
   const knife = getEquippedKnife();
   const knifeStyle = knife ? knife.style : '';
@@ -122,10 +136,9 @@ export function getPassiveIncome() {
   // Evolution Stage multiplier
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
 
-  // Direct unspent prestige rolls passive multiplier (+2% per unspent roll)
-  const softRolls = TALENTS.find(t => t.id === 'soft_rolls');
-  const bonusPerRoll = 0.02 * (1 + (softRolls ? softRolls.level * 0.25 : 0));
-  const prestigePassiveBoost = 1 + ((GAME.prestigeRolls || 0) * bonusPerRoll);
+  // Permanent prestige passive boost based on all rolls earned (never drops when spending rolls!)
+  const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
+  const prestigePassiveBoost = 1 + (totalRolls * 0.02);
   const totalPrestigesBoost = 1 + (GAME.totalPrestiges * 0.35);
   const rollsMult = prestigePassiveBoost * totalPrestigesBoost;
 
@@ -140,7 +153,7 @@ export function getPassiveIncome() {
   const facOverdriveMult = 1 + (GAME.transcendUpgrades?.factoryOverdrive || 0) * 1.0;
 
   // Pet Clean Buff (+0% to +40% passive income based on clean meter)
-  const cleanBuff = 1 + ((GAME.clean || 100) / 100) * 0.40;
+  const cleanBuff = 1 + Math.max(0, (GAME.clean || 100) / 100) * 0.40;
 
   // Equipped Knife Multiplier + Stars + Forge Artifact
   const knifeStar = knife ? getKnifeStar(knife.id) : 1;
@@ -159,5 +172,5 @@ export function getPassiveIncome() {
 
   const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.50;
 
-  return Math.max(0, Math.round(base * evo.mult * rollsMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult));
+  return Math.max(0, Math.round(base * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult));
 }

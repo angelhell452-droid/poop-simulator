@@ -35,6 +35,7 @@ export function executePrestige(chosenArchetype = 'balanced') {
   if (gain <= 0) return false;
 
   GAME.prestigeRolls += gain;
+  GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + gain;
   GAME.totalPrestiges++;
   GAME.cycleBiomass = 0;
   GAME.archetype = chosenArchetype;

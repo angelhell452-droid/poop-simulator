@@ -3,6 +3,7 @@ import { TALENTS } from '../data/talents.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getAffordableTalentInfo, buyTalent } from '../systems/talentService.js';
 import { updateHUD } from './hudView.js';
+import { saveLocal } from '../save/saveManager.js';
 
 export function renderTalents() {
   const container = document.getElementById('talentsContainer');
@@ -46,6 +47,7 @@ export function renderTalents() {
       if (buyTalent(tl.id)) {
         renderTalents();
         updateHUD();
+        saveLocal();
       }
     });
 

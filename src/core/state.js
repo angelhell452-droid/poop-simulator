@@ -1,12 +1,14 @@
 // Unified Reactive Game State
 
 export function getDefaultGameState() {
-  let playerId = localStorage.getItem('PoopSim_PlayerId');
+  let playerId = (typeof localStorage !== 'undefined') ? localStorage.getItem('PoopSim_PlayerId') : null;
   if (!playerId) {
     playerId = 'poop_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-    localStorage.setItem('PoopSim_PlayerId', playerId);
+    if (typeof localStorage !== 'undefined') {
+      try { localStorage.setItem('PoopSim_PlayerId', playerId); } catch (e) {}
+    }
   }
-  let playerName = localStorage.getItem('PoopSim_PlayerName') || ('Игрок #' + playerId.substring(playerId.length - 4));
+  let playerName = (typeof localStorage !== 'undefined' ? localStorage.getItem('PoopSim_PlayerName') : null) || ('Игрок #' + playerId.substring(playerId.length - 4));
 
   return {
     saveVersion: 2,
@@ -18,6 +20,7 @@ export function getDefaultGameState() {
     allTimeBiomass: 0,
     sparkles: 20,
     prestigeRolls: 0,
+    allTimePrestigeRolls: 0,
     totalPrestiges: 0,
     transcendPlungers: 0,
     totalTranscend: 0,

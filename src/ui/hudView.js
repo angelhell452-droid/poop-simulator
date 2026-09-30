@@ -5,6 +5,7 @@ import { getPassiveIncome, getClickPower } from '../economy/production.js';
 import { getAffordableEvoInfo } from '../economy/costs.js';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
 import { liveCps } from '../core/gameLoop.js';
+import { saveLocal } from '../save/saveManager.js';
 
 const FLUSH_COOLDOWN = 35000;
 
@@ -105,7 +106,14 @@ export function updateHUD() {
   const footPassive = document.getElementById('footPassiveRate');
   if (footPassive) footPassive.textContent = `+${formatNumber(getPassiveIncome())} /сек`;
   const footClick = document.getElementById('footClickPower');
-  if (footClick) footClick.textContent = formatNumber(getClickPower());
+  if (footClick) {
+    const pwr = getClickPower();
+    if (GAME.turboRushTime > 0) {
+      footClick.innerHTML = `${formatNumber(pwr)} <span class="text-[10px] text-yellow-300 font-normal animate-pulse">(🔥 ТУРБО x10)</span>`;
+    } else {
+      footClick.textContent = formatNumber(pwr);
+    }
+  }
   const footCps = document.getElementById('footCpsRate');
   if (footCps) {
     if (liveCps > 0) {
@@ -115,6 +123,26 @@ export function updateHUD() {
       footCps.classList.add('hidden');
     }
   }
+
+  // Combo Heat & Turbo Frenzy UI
+  const rushTimerEl = document.getElementById('turboRushTimer');
+  const comboLbl = document.getElementById('comboLabel');
+  const comboBarEl = document.getElementById('comboBar');
+  const comboIcon = document.getElementById('comboFlameIcon');
+
+  if (GAME.turboRushTime > 0) {
+    if (rushTimerEl) {
+      rushTimerEl.textContent = `🔥 ТУРБО x10! (${Math.ceil(GAME.turboRushTime)}с)`;
+      rushTimerEl.classList.remove('hidden');
+    }
+    if (comboLbl) comboLbl.textContent = '🔥 ТУРБО-РЕЖИМ x10! 🔥';
+    if (comboIcon) comboIcon.textContent = '🔥';
+  } else {
+    if (rushTimerEl) rushTimerEl.classList.add('hidden');
+    if (comboLbl) comboLbl.textContent = `ЯРОСТЬ КЛИКОВ: ${Math.round(GAME.comboHeat || 0)}%`;
+    if (comboIcon) comboIcon.textContent = (GAME.comboHeat > 50) ? '⚡' : '💤';
+  }
+  if (comboBarEl) comboBarEl.style.width = `${Math.min(100, Math.round(GAME.comboHeat || 0))}%`;
 
   // Milestone Tracker Bar
   const mGoal = getNextMilestoneGoal();
@@ -130,4 +158,80 @@ export function updateHUD() {
   if (mText) mText.textContent = mGoal.progressText;
   const mBadge = document.getElementById('archetypeBadge');
   if (mBadge) mBadge.textContent = mGoal.archetypeBadge;
+
+  // Auto-care UI state update
+  updateAutocareUI();
+}
+
+export function updateAutocareUI() {
+  const feedBtn = document.getElementById('btnAutoFeed');
+  const feedLed = document.getElementById('autoFeedLed');
+  if (feedBtn && feedLed) {
+    if (GAME.autoFeed) {
+      feedBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-emerald-950 border-emerald-500 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
+      feedLed.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse';
+    } else {
+      feedBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700';
+      feedLed.className = 'w-2 h-2 rounded-full bg-stone-500';
+    }
+  }
+
+  const washBtn = document.getElementById('btnAutoWash');
+  const washLed = document.getElementById('autoWashLed');
+  if (washBtn && washLed) {
+    if (GAME.autoWash) {
+      washBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-cyan-950 border-cyan-500 text-cyan-200 shadow-[0_0_8px_rgba(6,182,212,0.35)]';
+      washLed.className = 'w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee] animate-pulse';
+    } else {
+      washBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700';
+      washLed.className = 'w-2 h-2 rounded-full bg-stone-500';
+    }
+  }
+
+  const tickleBtn = document.getElementById('btnAutoTickle');
+  const tickleLed = document.getElementById('autoTickleLed');
+  if (tickleBtn && tickleLed) {
+    if (GAME.autoTickle) {
+      tickleBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-pink-950 border-pink-500 text-pink-200 shadow-[0_0_8px_rgba(236,72,153,0.35)]';
+      tickleLed.className = 'w-2 h-2 rounded-full bg-pink-400 shadow-[0_0_6px_#f472b6] animate-pulse';
+    } else {
+      tickleBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700';
+      tickleLed.className = 'w-2 h-2 rounded-full bg-stone-500';
+    }
+  }
+
+  const allBtn = document.getElementById('btnAutoCareAll');
+  if (allBtn) {
+    const allOn = GAME.autoFeed && GAME.autoWash && GAME.autoTickle;
+    allBtn.textContent = allOn ? '⚡ Все ВЫКЛ' : '⚡ Все ВКЛ';
+    allBtn.className = allOn
+      ? 'px-2.5 py-1 rounded-xl border text-[10px] font-game bg-emerald-800 hover:bg-emerald-700 text-emerald-100 border-emerald-400 transition shadow jelly-btn shadow-[0_0_8px_rgba(16,185,129,0.4)]'
+      : 'px-2.5 py-1 rounded-xl border text-[10px] font-game bg-amber-900/60 hover:bg-amber-800 text-amber-200 border-amber-600 transition shadow jelly-btn';
+  }
+}
+
+export function initAutocareListeners() {
+  document.getElementById('btnAutoFeed')?.addEventListener('click', () => {
+    GAME.autoFeed = !GAME.autoFeed;
+    updateAutocareUI();
+    saveLocal();
+  });
+  document.getElementById('btnAutoWash')?.addEventListener('click', () => {
+    GAME.autoWash = !GAME.autoWash;
+    updateAutocareUI();
+    saveLocal();
+  });
+  document.getElementById('btnAutoTickle')?.addEventListener('click', () => {
+    GAME.autoTickle = !GAME.autoTickle;
+    updateAutocareUI();
+    saveLocal();
+  });
+  document.getElementById('btnAutoCareAll')?.addEventListener('click', () => {
+    const allOn = GAME.autoFeed && GAME.autoWash && GAME.autoTickle;
+    GAME.autoFeed = !allOn;
+    GAME.autoWash = !allOn;
+    GAME.autoTickle = !allOn;
+    updateAutocareUI();
+    saveLocal();
+  });
 }

@@ -4,6 +4,7 @@ import { formatNumber } from '../utils/numberFormatter.js';
 import { getAffordableFactoryInfo } from '../economy/costs.js';
 import { buyFactory } from '../systems/factoryService.js';
 import { updateHUD } from './hudView.js';
+import { saveLocal } from '../save/saveManager.js';
 
 export function renderFactories() {
   const container = document.getElementById('factoriesContainer');
@@ -69,6 +70,7 @@ export function renderFactories() {
       if (buyFactory(fac.id)) {
         renderFactories();
         updateHUD();
+        saveLocal();
       }
     });
 

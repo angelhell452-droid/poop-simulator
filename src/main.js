@@ -2,7 +2,7 @@ import { GAME } from './core/state.js';
 import { startGameLoop } from './core/gameLoop.js';
 import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, wipePlayerData, requestCloudSync } from './save/cloudSync.js';
 import { saveLocal } from './save/saveManager.js';
-import { updateHUD } from './ui/hudView.js';
+import { updateHUD, initAutocareListeners } from './ui/hudView.js';
 import { renderFactories } from './ui/factoryView.js';
 import { renderTalents } from './ui/talentView.js';
 import { renderShop } from './ui/shopView.js';
@@ -18,6 +18,7 @@ import { performEvolution } from './progression/evolutionService.js';
 import { checkAchievements } from './systems/achievementsService.js';
 import { getPassiveIncome } from './economy/production.js';
 import { TALENTS } from './data/talents.data.js';
+import { ACHIEVEMENTS } from './data/achievements.data.js';
 import { SHOP_ITEMS } from './data/shop.data.js';
 import { formatNumber } from './utils/numberFormatter.js';
 import { formatDurationAway } from './utils/timeUtils.js';
@@ -96,11 +97,26 @@ export function applyGameModeUI() {
 export async function bootstrap() {
   console.log('🚀 Bootstrapping Poop Simulator (Modular Architecture v2)...');
 
-  // 1. Initialize UI Canvas, Modals, Cases & Knives Listeners
+  // 1. Initialize UI Canvas, Modals, Cases, Knives & Autocare Listeners
   initPetCanvas();
   initModals();
   initCasesListeners();
   initKnivesIndexListeners();
+  initAutocareListeners();
+
+  // Secret Click Trophy on Logo
+  document.getElementById('logoSecretClick')?.addEventListener('click', () => {
+    const ach = ACHIEVEMENTS.find(a => a.id === 'ach_secret');
+    if (ach && !ach.done) {
+      ach.done = true;
+      GAME.sparkles += ach.reward;
+      addVisualParticle('🤫 Секрет найден! +25✨', '#facc15', 1.5);
+      checkAchievements();
+      updateHUD();
+      renderAchievements();
+      saveLocal();
+    }
+  });
 
   // 2. Load Save (Local + Cloud D1)
   await loadFromCloudDatabaseOrLocal();

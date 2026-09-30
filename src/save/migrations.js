@@ -17,6 +17,7 @@ export function migrateSaveData(rawSave) {
         allTimeBiomass: Number.isFinite(legacy.allTimeBiomass) && legacy.allTimeBiomass >= 0 ? legacy.allTimeBiomass : 0,
         sparkles: Number.isFinite(legacy.sparkles) ? legacy.sparkles : 20,
         prestigeRolls: Number.isFinite(legacy.prestigeRolls) ? legacy.prestigeRolls : 0,
+        allTimePrestigeRolls: Number.isFinite(legacy.allTimePrestigeRolls) ? legacy.allTimePrestigeRolls : (legacy.prestigeRolls || 0),
         totalPrestiges: legacy.totalPrestiges || 0,
         transcendPlungers: legacy.transcendPlungers || 0,
         totalTranscend: legacy.totalTranscend || 0,
