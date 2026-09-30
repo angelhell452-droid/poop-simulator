@@ -149,8 +149,13 @@ export function initModals() {
 
     const plungersEl = document.getElementById('transcendCalcPlungers');
     if (plungersEl) {
-      if (!t.meetsPrestiges) {
-        plungersEl.innerHTML = `<span class="text-red-400 font-bold text-xs">🔒 Требуется ${t.reqPrestiges} Смывов! (${t.currentPrestiges}/${t.reqPrestiges})</span>`;
+      if (!t.isMet) {
+        plungersEl.innerHTML = `
+          <div class="flex items-center gap-1.5 flex-wrap justify-end">
+            <span class="text-cyan-300 font-bold text-sm">+${formatNumber(gain)} <span class="plunger-icon"></span></span>
+            <span class="text-[10px] text-amber-300/80 font-mono">(прогноз к открытию)</span>
+          </div>
+        `;
       } else {
         plungersEl.innerHTML = `+${formatNumber(gain)} <span class="plunger-icon"></span> Вантузов`;
       }
@@ -192,8 +197,8 @@ export function initModals() {
             <span class="font-game text-sm text-cyan-300 font-bold">+${formatNumber(gain)} <span class="plunger-icon"></span></span>
           </div>
           <div class="text-[10px] text-indigo-200 space-y-0.5 font-mono">
-            <div>├─ <span class="roll-icon"></span> От накопленных Втулок: <b class="text-white">+${t.rollsPart}</b> вантузов (основной источник!)</div>
-            <div>├─ 🧬 От сверх-эволюции формы: <b class="text-white">+${t.stagePart}</b> вантузов</div>
+            <div>├─ <span class="roll-icon"></span> От накопленных Втулок (${formatNumber(t.currentRolls)}): <b class="text-white">+${t.rollsPart}</b> вантузов</div>
+            <div>├─ 🧬 От эволюции формы (Форма #${t.currentForm}): <b class="text-white">+${t.stagePart}</b> вантузов (+1 за каждые 10 форм)</div>
             <div>├─ <span class="plunger-icon"></span> Астральный Инкубатор: <b class="${t.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${Math.round(t.incubatorBonus * 100)}%</b></div>
             <div>└─ 🔮 Душа Прорыва (Талант): <b class="${t.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${Math.round(t.soulBonus * 100)}%</b></div>
           </div>
@@ -202,10 +207,10 @@ export function initModals() {
               <span>💡</span>
               <span>Как получить больше Вантузов?</span>
             </div>
-            <div class="text-indigo-200/90 text-[9px] leading-tight">
-              • Копите как можно больше Втулок Судьбы перед Прорывом! (до +1 вантуза еще: <b>${formatNumber(t.nextPlungerRollsNeeded)}</b> <span class="roll-icon"></span>)<br/>
-              • Прокачивайте Астральный Инкубатор в Прорыве (+10% за уровень)<br/>
-              • Качайте талант "Душа Прорыва" в Древе Смыва (+20% за уровень)
+            <div class="text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
+              <div>• <b>Втулки</b>: делайте больше Смывов! До следующего +1 вантуза нужно ещё: <b>${formatNumber(t.nextPlungerRollsNeeded)}</b> <span class="roll-icon"></span></div>
+              <div>• <b>Формы</b>: развивайте какашку дальше (до следующего +1 вантуза ещё <b>${t.nextPlungerFormsNeeded}</b> форм)</div>
+              <div>• <b>Таланты</b>: качайте "Душа Прорыва" в Древе Смыва (+20% за уровень) и "Астральный Инкубатор" в Прорыве (+10% за уровень)</div>
             </div>
           </div>
         </div>

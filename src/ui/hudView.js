@@ -30,11 +30,17 @@ export function updateHUD() {
   const topPl = document.getElementById('topPlungers');
   if (topPl) topPl.textContent = formatNumber(GAME.transcendPlungers || 0);
 
+  const lvlPrestigeTxt = `Ур. ${GAME.totalPrestiges || 0}`;
   const headerPrestige = document.getElementById('headerPrestigeLvl');
-  if (headerPrestige) headerPrestige.textContent = `Ур. ${GAME.totalPrestiges || 0}`;
+  if (headerPrestige) headerPrestige.textContent = lvlPrestigeTxt;
+  const masterPrestige = document.getElementById('masterPrestigeLvl');
+  if (masterPrestige) masterPrestige.textContent = lvlPrestigeTxt;
 
+  const lvlTranscendTxt = `Ур. ${GAME.totalTranscend || 0}`;
   const headerTranscend = document.getElementById('headerTranscendLvl');
-  if (headerTranscend) headerTranscend.textContent = `Ур. ${GAME.totalTranscend || 0}`;
+  if (headerTranscend) headerTranscend.textContent = lvlTranscendTxt;
+  const masterTranscend = document.getElementById('masterTranscendLvl');
+  if (masterTranscend) masterTranscend.textContent = lvlTranscendTxt;
 
 
   // Needs bars & numbers
@@ -55,11 +61,11 @@ export function updateHUD() {
 
   // Buff texts (Concise & zero jitter)
   const buffH = document.getElementById('buffHungerText');
-  if (buffH) buffH.textContent = `Сытость: ${Math.round(GAME.hunger)}% (+${Math.round((GAME.hunger / 100) * 50)}%)`;
+  if (buffH) buffH.textContent = `+${Math.round((GAME.hunger / 100) * 50)}% Клик`;
   const buffC = document.getElementById('buffCleanText');
-  if (buffC) buffC.textContent = `Чистота: ${Math.round(GAME.clean)}% (+${Math.round((GAME.clean / 100) * 40)}%)`;
+  if (buffC) buffC.textContent = `+${Math.round((GAME.clean / 100) * 40)}% Заводы`;
   const buffHp = document.getElementById('buffHappyText');
-  if (buffHp) buffHp.textContent = `Счастье: ${Math.round(GAME.happy)}% (x2${GAME.happy >= 70 ? '🔥' : ''})`;
+  if (buffHp) buffHp.textContent = `x2 Криты${GAME.happy >= 70 ? ' 🔥' : ''}`;
 
   const buffIdeal = document.getElementById('buffIdealPill');
   if (buffIdeal) {
@@ -207,87 +213,52 @@ export function updateHUD() {
 
 export function updateAutocareUI() {
   const hasAutoCare = !!GAME.transcendUpgrades?.autoCare;
-  const lockedNotice = document.getElementById('autoCareLockedNotice');
-  const controls = document.getElementById('autoCareControls');
-  if (lockedNotice && controls) {
-    lockedNotice.classList.toggle('hidden', hasAutoCare);
-    controls.classList.toggle('hidden', !hasAutoCare);
-  }
 
-  const feedBtn = document.getElementById('btnAutoFeed');
-  const feedLed = document.getElementById('autoFeedLed');
-  if (feedBtn && feedLed) {
-    if (GAME.autoFeed) {
-      feedBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-emerald-950 border-emerald-500 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
-      feedLed.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse';
+  const updatePill = (btnId, ledId, txtId, isOn, colorClass, ledColor) => {
+    const btn = document.getElementById(btnId);
+    const led = document.getElementById(ledId);
+    const txt = document.getElementById(txtId);
+    if (!btn || !led || !txt) return;
+
+    if (!hasAutoCare) {
+      btn.className = 'px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-900/90 text-stone-500 border-stone-800 hover:border-cyan-500/50 hover:text-cyan-400 cursor-pointer';
+      led.className = 'w-1.5 h-1.5 rounded-full bg-stone-600';
+      txt.textContent = '🔒 Авто';
+      btn.title = 'Астральный Авто-Уход (Тир I Прорыва: 25 Вантузов). Нажмите, чтобы открыть Прорыв!';
     } else {
-      feedBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700';
-      feedLed.className = 'w-2 h-2 rounded-full bg-stone-500';
+      if (isOn) {
+        btn.className = `px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn ${colorClass} cursor-pointer`;
+        led.className = `w-2 h-2 rounded-full ${ledColor} animate-pulse`;
+        txt.textContent = 'Авто: ВКЛ';
+        btn.title = 'Авто-действие ВКЛЮЧЕНО (нажмите для выключения)';
+      } else {
+        btn.className = 'px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 hover:text-stone-200 cursor-pointer';
+        led.className = 'w-2 h-2 rounded-full bg-stone-500';
+        txt.textContent = 'Авто: ВЫКЛ';
+        btn.title = 'Авто-действие ВЫКЛЮЧЕНО (нажмите для включения)';
+      }
     }
-  }
+  };
 
-  const washBtn = document.getElementById('btnAutoWash');
-  const washLed = document.getElementById('autoWashLed');
-  if (washBtn && washLed) {
-    if (GAME.autoWash) {
-      washBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-cyan-950 border-cyan-500 text-cyan-200 shadow-[0_0_8px_rgba(6,182,212,0.35)]';
-      washLed.className = 'w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee] animate-pulse';
-    } else {
-      washBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700';
-      washLed.className = 'w-2 h-2 rounded-full bg-stone-500';
-    }
-  }
-
-  const tickleBtn = document.getElementById('btnAutoTickle');
-  const tickleLed = document.getElementById('autoTickleLed');
-  if (tickleBtn && tickleLed) {
-    if (GAME.autoTickle) {
-      tickleBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-pink-950 border-pink-500 text-pink-200 shadow-[0_0_8px_rgba(236,72,153,0.35)]';
-      tickleLed.className = 'w-2 h-2 rounded-full bg-pink-400 shadow-[0_0_6px_#f472b6] animate-pulse';
-    } else {
-      tickleBtn.className = 'px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700';
-      tickleLed.className = 'w-2 h-2 rounded-full bg-stone-500';
-    }
-  }
-
-  const allBtn = document.getElementById('btnAutoCareAll');
-  if (allBtn) {
-    const allOn = GAME.autoFeed && GAME.autoWash && GAME.autoTickle;
-    allBtn.textContent = allOn ? '⚡ Все ВЫКЛ' : '⚡ Все ВКЛ';
-    allBtn.className = allOn
-      ? 'px-2.5 py-1 rounded-xl border text-[10px] font-game bg-emerald-800 hover:bg-emerald-700 text-emerald-100 border-emerald-400 transition shadow jelly-btn shadow-[0_0_8px_rgba(16,185,129,0.4)]'
-      : 'px-2.5 py-1 rounded-xl border text-[10px] font-game bg-amber-900/60 hover:bg-amber-800 text-amber-200 border-amber-600 transition shadow jelly-btn';
-  }
+  updatePill('btnAutoFeed', 'autoFeedLed', 'autoFeedText', !!GAME.autoFeed, 'bg-emerald-950 border-emerald-500 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.35)]', 'bg-emerald-400 shadow-[0_0_6px_#34d399]');
+  updatePill('btnAutoWash', 'autoWashLed', 'autoWashText', !!GAME.autoWash, 'bg-cyan-950 border-cyan-500 text-cyan-200 shadow-[0_0_8px_rgba(6,182,212,0.35)]', 'bg-cyan-400 shadow-[0_0_6px_#22d3ee]');
+  updatePill('btnAutoTickle', 'autoTickleLed', 'autoTickleText', !!GAME.autoTickle, 'bg-pink-950 border-pink-500 text-pink-200 shadow-[0_0_8px_rgba(236,72,153,0.35)]', 'bg-pink-400 shadow-[0_0_6px_#f472b6]');
 }
 
 export function initAutocareListeners() {
-  document.getElementById('btnAutoCareInfo')?.addEventListener('click', () => {
-    document.getElementById('transcendModal')?.classList.remove('hidden');
-  });
+  const handleAutoClick = (propName) => {
+    if (!GAME.transcendUpgrades?.autoCare) {
+      document.getElementById('transcendModal')?.classList.remove('hidden');
+      return;
+    }
+    GAME[propName] = !GAME[propName];
+    updateAutocareUI();
+    saveLocal();
+  };
 
-  document.getElementById('btnAutoFeed')?.addEventListener('click', () => {
-    GAME.autoFeed = !GAME.autoFeed;
-    updateAutocareUI();
-    saveLocal();
-  });
-  document.getElementById('btnAutoWash')?.addEventListener('click', () => {
-    GAME.autoWash = !GAME.autoWash;
-    updateAutocareUI();
-    saveLocal();
-  });
-  document.getElementById('btnAutoTickle')?.addEventListener('click', () => {
-    GAME.autoTickle = !GAME.autoTickle;
-    updateAutocareUI();
-    saveLocal();
-  });
-  document.getElementById('btnAutoCareAll')?.addEventListener('click', () => {
-    const allOn = GAME.autoFeed && GAME.autoWash && GAME.autoTickle;
-    GAME.autoFeed = !allOn;
-    GAME.autoWash = !allOn;
-    GAME.autoTickle = !allOn;
-    updateAutocareUI();
-    saveLocal();
-  });
+  document.getElementById('btnAutoFeed')?.addEventListener('click', () => handleAutoClick('autoFeed'));
+  document.getElementById('btnAutoWash')?.addEventListener('click', () => handleAutoClick('autoWash'));
+  document.getElementById('btnAutoTickle')?.addEventListener('click', () => handleAutoClick('autoTickle'));
 }
 
 export function updateAutomationTogglesUI() {

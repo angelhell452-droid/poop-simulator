@@ -76,12 +76,12 @@ export const TRANSCEND_UPGRADES = [
     id: 'art_auto_care', 
     key: 'autoCare', 
     name: '🤖 Астральный Авто-Уход', 
-    desc: 'Автоматически заботится о какашечке (кормление, мытье, щекотка) + открывает панель авто-ухода!', 
-    cost: 3500, 
+    desc: 'Автоматически заботится о питомце (еда, мытье, щекотка) + открывает встроенный авто-уход!', 
+    cost: 25, 
     max: 1, 
-    tier: 2, 
-    tierName: 'Тир 2: Продвинутый', 
-    reqTranscend: 2 
+    tier: 1, 
+    tierName: 'Тир 1: Базовый', 
+    reqTranscend: 1 
   },
   { 
     id: 'art_knife_forge', 

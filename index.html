@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.8.0 PRO | Ребаланс Смыва, Астральная Автоматизация, Скип Рулетки, Втулки</title>
+  <title>Poop Simulator v4.8.1 PRO | Центральный Хаб Валюты, Инлайн Авто-Уход, Прозрачный Прорыв</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,46 +23,11 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.8.0 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.8.1 PRO</span>
         </div>
 
         <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
       </div>
-    </div>
-
-    <!-- CURRENCY BAR -->
-    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-      <div
-        class="flex items-center gap-1.5 bg-stone-900/90 px-3 py-1 rounded-xl border border-amber-700/60 shadow-inner">
-        <span class="text-lg" id="iconBiomass">💨</span>
-        <div>
-          <div class="text-[9px] text-amber-400 font-bold uppercase" id="labelBiomass">Биомасса</div>
-          <span class="font-game text-sm sm:text-base text-emerald-400 tracking-wide font-mono tabular-nums min-w-[50px] inline-block" id="topBiomass">0</span>
-        </div>
-      </div>
-      <div
-        class="flex items-center gap-1.5 bg-stone-900/90 px-3 py-1 rounded-xl border border-amber-700/60 shadow-inner">
-        <span class="text-lg" id="iconSparkles">✨</span>
-        <div>
-          <div class="text-[9px] text-yellow-400 font-bold uppercase" id="labelSparkles">Блестяшки</div>
-          <span class="font-game text-sm sm:text-base text-yellow-300 tracking-wide font-mono tabular-nums min-w-[40px] inline-block" id="topSparkles">0</span>
-        </div>
-      </div>
-      <div id="currencyPrestigeBox" class="flex items-center gap-1.5 bg-purple-950/90 hover:bg-purple-900 px-3 py-1 rounded-xl border-2 border-yellow-400 shadow cursor-pointer transition" title="Открыть Смыв Судьбы">
-        <span class="roll-icon text-xl"></span>
-        <div>
-          <div class="text-[9px] text-yellow-300 font-bold uppercase">Втулки</div>
-          <span class="font-game text-sm sm:text-base text-yellow-200 tracking-wide font-mono tabular-nums min-w-[45px] inline-block" id="topPrestige">0</span>
-        </div>
-      </div>
-      <div id="currencyPlungersBox" class="flex items-center gap-1.5 bg-indigo-950/90 hover:bg-indigo-900 px-3 py-1 rounded-xl border-2 border-cyan-400 shadow cursor-pointer transition" title="Открыть Астральный Прорыв">
-        <span class="plunger-icon text-xl"></span>
-        <div>
-          <div class="text-[9px] text-cyan-300 font-bold uppercase">Вантузы</div>
-          <span class="font-game text-sm sm:text-base text-cyan-200 tracking-wide font-mono tabular-nums min-w-[40px] inline-block" id="topPlungers">0</span>
-        </div>
-      </div>
-
     </div>
 
     <!-- DATABASE STATUS & ACTIONS -->
@@ -185,31 +150,162 @@
     <section
       class="flex-1 flex flex-col bg-stone-800 rounded-3xl border-4 border-amber-900 shadow-2xl overflow-hidden relative min-h-[480px]">
 
-      <!-- Live Stats & Need Bars -->
-      <div class="grid grid-cols-3 gap-2 px-3 py-2 bg-stone-900/90 border-b border-amber-900/60 z-10 text-xs font-bold">
-        <div>
-          <div class="flex justify-between text-stone-300 text-[11px] mb-0.5">
-            <span>🍕 Питание</span><span id="txtHunger">100%</span>
-          </div>
-          <div class="w-full bg-stone-700 h-2 rounded-full overflow-hidden">
-            <div id="barHunger" class="bg-orange-500 h-full transition-all duration-300" style="width: 100%"></div>
-          </div>
-        </div>
-        <div>
-          <div class="flex justify-between text-stone-300 text-[11px] mb-0.5">
-            <span>🫧 Чистота</span><span id="txtClean">100%</span>
-          </div>
-          <div class="w-full bg-stone-700 h-2 rounded-full overflow-hidden">
-            <div id="barClean" class="bg-cyan-500 h-full transition-all duration-300" style="width: 100%"></div>
+      <!-- MASTER CENTRAL CURRENCY COMMAND DECK -->
+      <div id="masterCurrencyDeck"
+        class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-2 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 border-b-2 border-amber-900/80 z-20 shadow-md">
+        
+        <!-- Biomass -->
+        <div class="flex items-center gap-2 bg-stone-900/90 hover:bg-stone-850 px-2.5 py-1.5 rounded-2xl border border-emerald-500/40 shadow-inner transition select-none">
+          <span class="text-xl shrink-0" id="iconBiomass">💨</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between text-[10px] text-amber-400 font-bold uppercase tracking-wider">
+              <span id="labelBiomass">Биомасса</span>
+            </div>
+            <div class="font-game text-sm sm:text-base text-emerald-400 tracking-wide font-mono tabular-nums truncate" id="topBiomass">0</div>
           </div>
         </div>
-        <div>
-          <div class="flex justify-between text-stone-300 text-[11px] mb-0.5">
-            <span>💖 Настроение</span><span id="txtHappy">100%</span>
+
+        <!-- Sparkles -->
+        <div class="flex items-center gap-2 bg-stone-900/90 hover:bg-stone-850 px-2.5 py-1.5 rounded-2xl border border-yellow-500/40 shadow-inner transition select-none">
+          <span class="text-xl shrink-0" id="iconSparkles">✨</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between text-[10px] text-yellow-400 font-bold uppercase tracking-wider">
+              <span id="labelSparkles">Блестяшки</span>
+            </div>
+            <div class="font-game text-sm sm:text-base text-yellow-300 tracking-wide font-mono tabular-nums truncate" id="topSparkles">0</div>
           </div>
-          <div class="w-full bg-stone-700 h-2 rounded-full overflow-hidden">
-            <div id="barHappy" class="bg-pink-500 h-full transition-all duration-300" style="width: 100%"></div>
+        </div>
+
+        <!-- Rolls (Clickable to open Prestige) -->
+        <div id="currencyPrestigeBox"
+          class="flex items-center gap-2 bg-purple-950/80 hover:bg-purple-900/90 px-2.5 py-1.5 rounded-2xl border border-yellow-400/60 shadow transition cursor-pointer select-none jelly-btn"
+          title="Втулки Судьбы: нажмите, чтобы открыть окно Смыва">
+          <span class="roll-icon text-xl shrink-0"></span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between text-[10px] text-yellow-300 font-bold uppercase tracking-wider">
+              <span>Втулки</span>
+              <span id="masterPrestigeLvl" class="text-[9px] bg-purple-900 text-yellow-200 border border-yellow-400/40 px-1 py-0.2 rounded font-black">Ур. 0</span>
+            </div>
+            <div class="font-game text-sm sm:text-base text-yellow-200 tracking-wide font-mono tabular-nums truncate" id="topPrestige">0</div>
           </div>
+        </div>
+
+        <!-- Plungers (Clickable to open Transcend) -->
+        <div id="currencyPlungersBox"
+          class="flex items-center gap-2 bg-indigo-950/80 hover:bg-indigo-900/90 px-2.5 py-1.5 rounded-2xl border border-cyan-400/60 shadow transition cursor-pointer select-none jelly-btn"
+          title="Астральные Вантузы: нажмите, чтобы открыть окно Прорыва">
+          <span class="plunger-icon text-xl shrink-0"></span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between text-[10px] text-cyan-300 font-bold uppercase tracking-wider">
+              <span>Вантузы</span>
+              <span id="masterTranscendLvl" class="text-[9px] bg-indigo-900 text-cyan-200 border border-cyan-400/40 px-1 py-0.2 rounded font-black">Ур. 0</span>
+            </div>
+            <div class="font-game text-sm sm:text-base text-cyan-200 tracking-wide font-mono tabular-nums truncate" id="topPlungers">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UNIFIED PET CARE & NEEDS STATION -->
+      <div id="petNeedsStation" class="bg-stone-900/95 border-b border-amber-900/60 z-10 select-none">
+        
+        <!-- Status Ribbon: Ideal Care (Shown when all 3 >= 90%) -->
+        <div id="buffIdealPill"
+          class="hidden py-0.5 px-3 bg-gradient-to-r from-yellow-500/20 via-amber-400/30 to-yellow-500/20 border-b border-yellow-400/50 text-center text-[11px] font-bold text-yellow-300 animate-pulse flex items-center justify-center gap-2">
+          <span>👑</span> <span>СТАТУС «ИДЕАЛ x2»: Все потребности удовлетворены! Доход и криты удвоены!</span> <span>👑</span>
+        </div>
+
+        <!-- 3 Unified Need Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2">
+          
+          <!-- Need 1: Сытость / Hunger -->
+          <div class="bg-stone-950/80 rounded-2xl p-2 border border-orange-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <div class="flex items-center gap-1 text-stone-200">
+                <span>🍗</span>
+                <span class="text-[11px]">Сытость:</span>
+                <span id="txtHunger" class="font-mono text-orange-400 font-black">100%</span>
+              </div>
+              <span id="buffHungerText" class="text-[9px] px-1.5 py-0.5 rounded bg-orange-950/90 text-orange-300 border border-orange-600/40 font-bold">+50% Клик</span>
+            </div>
+            <div class="w-full bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700/60">
+              <div id="barHunger" class="bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all duration-300" style="width: 100%"></div>
+            </div>
+            <div class="flex items-center gap-1 pt-0.5">
+              <button id="btnFeed"
+                class="flex-1 jelly-btn bg-gradient-to-r from-orange-600 to-amber-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[11px] py-1 px-2 rounded-xl shadow border border-orange-400/50 flex items-center justify-center gap-1 cursor-pointer"
+                title="Покормить (+30% сытости, +50% к клику)">
+                <span>🍔</span> <span>Покормить</span>
+              </button>
+              <button id="btnAutoFeed"
+                class="px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
+                title="Авто-Кормление (открывается в Астральном Прорыве, Тир I)">
+                <span id="autoFeedLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+                <span id="autoFeedText">Авто</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Need 2: Чистота / Clean -->
+          <div class="bg-stone-950/80 rounded-2xl p-2 border border-cyan-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <div class="flex items-center gap-1 text-stone-200">
+                <span>🫧</span>
+                <span class="text-[11px]">Чистота:</span>
+                <span id="txtClean" class="font-mono text-cyan-400 font-black">100%</span>
+              </div>
+              <span id="buffCleanText" class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950/90 text-cyan-300 border border-cyan-600/40 font-bold">+40% Заводы</span>
+            </div>
+            <div class="w-full bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700/60">
+              <div id="barClean" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full transition-all duration-300" style="width: 100%"></div>
+            </div>
+            <div class="flex items-center gap-1 pt-0.5">
+              <button id="btnWash"
+                class="flex-1 jelly-btn bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[11px] py-1 px-2 rounded-xl shadow border border-cyan-400/50 flex items-center justify-center gap-1 cursor-pointer"
+                title="Вымыть какашечку (+35% чистоты, +40% к заводам)">
+                <span>🧼</span> <span>Вымыть</span>
+              </button>
+              <button id="btnPolish"
+                class="jelly-btn bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-stone-950 font-black text-[10px] py-1 px-2 rounded-xl shadow border border-yellow-300 flex items-center justify-center gap-1 shrink-0 cursor-pointer"
+                title="Полировать до блеска (+4 блестяшки, заполняет чистоту при 70%+)">
+                <span>✨</span> <span>Глянец</span>
+              </button>
+              <button id="btnAutoWash"
+                class="px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
+                title="Авто-Мытье и Полировка (открывается в Астральном Прорыве, Тир I)">
+                <span id="autoWashLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+                <span id="autoWashText">Авто</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Need 3: Настроение / Happy -->
+          <div class="bg-stone-950/80 rounded-2xl p-2 border border-pink-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <div class="flex items-center gap-1 text-stone-200">
+                <span>💖</span>
+                <span class="text-[11px]">Настроение:</span>
+                <span id="txtHappy" class="font-mono text-pink-400 font-black">100%</span>
+              </div>
+              <span id="buffHappyText" class="text-[9px] px-1.5 py-0.5 rounded bg-pink-950/90 text-pink-300 border border-pink-600/40 font-bold">x2 Криты</span>
+            </div>
+            <div class="w-full bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700/60">
+              <div id="barHappy" class="bg-gradient-to-r from-pink-500 to-rose-400 h-full transition-all duration-300" style="width: 100%"></div>
+            </div>
+            <div class="flex items-center gap-1 pt-0.5">
+              <button id="btnTickle"
+                class="flex-1 jelly-btn bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[11px] py-1 px-2 rounded-xl shadow border border-pink-400/50 flex items-center justify-center gap-1 cursor-pointer"
+                title="Щекотать какашечку (+15% радости, +8 комбо-ярости, x2 шанс крита)">
+                <span>🪶</span> <span>Щекотать</span>
+              </button>
+              <button id="btnAutoTickle"
+                class="px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
+                title="Авто-Щекотка (открывается в Астральном Прорыве, Тир I)">
+                <span id="autoTickleLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+                <span id="autoTickleText">Авто</span>
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -343,100 +439,6 @@
         </div>
       </div>
 
-      <!-- ACTIVE PET CARE BUFFS BANNER (Zero-jitter fixed height) -->
-      <div id="petBuffsBanner"
-        class="px-3 py-1 bg-stone-950/90 border-t border-amber-900/40 flex items-center justify-between gap-1 text-[10px] overflow-x-auto overflow-y-hidden whitespace-nowrap h-[34px] min-h-[34px] max-h-[34px] z-10 custom-scroll">
-        <div id="buffHungerPill"
-          class="flex items-center gap-1 px-2 py-0.5 rounded bg-orange-950/80 border border-orange-600/50 text-orange-200 shrink-0">
-          <span>🍗</span> <span id="buffHungerText">Сытость: 100% (+50%)</span>
-        </div>
-        <div id="buffCleanPill"
-          class="flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-600/50 text-cyan-200 shrink-0">
-          <span>✨</span> <span id="buffCleanText">Чистота: 100% (+40%)</span>
-        </div>
-        <div id="buffHappyPill"
-          class="flex items-center gap-1 px-2 py-0.5 rounded bg-pink-950/80 border border-pink-600/50 text-pink-200 shrink-0">
-          <span>💖</span> <span id="buffHappyText">Счастье: 100% (x2)</span>
-        </div>
-        <div id="buffIdealPill"
-          class="hidden flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500/20 border border-yellow-400 text-yellow-300 font-bold animate-pulse shrink-0">
-          <span>👑</span> <span>ИДЕАЛ x2!</span>
-        </div>
-      </div>
-
-      <!-- AUTO-CARE DECK (Авто-Кормление, Авто-Мытье, Авто-Щекотка) -->
-      <div
-        class="px-3 py-1.5 bg-stone-950/95 border-t border-amber-900/60 flex items-center justify-between gap-1 flex-wrap z-10 text-[11px]" id="autoCareDeck">
-        
-        <!-- Locked State Notice (Before midgame Astral Transcendence) -->
-        <div id="autoCareLockedNotice" class="w-full flex items-center justify-between gap-2 py-0.5 text-[11px] text-stone-400">
-          <div class="flex items-center gap-1.5 text-stone-300">
-            <span class="text-sm">🔒</span>
-            <span>Авто-уход открывается в <strong>Астральном Прорыве</strong> (Тир II)</span>
-          </div>
-          <button id="btnAutoCareInfo" class="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold underline cursor-pointer bg-transparent border-0 flex items-center gap-1">
-            <span>К Прорыву</span> <span class="plunger-icon"></span>
-          </button>
-        </div>
-
-        <!-- Unlocked Controls (After Astral Transcendence purchase) -->
-        <div id="autoCareControls" class="w-full hidden flex items-center justify-between gap-1 flex-wrap">
-          <div class="flex items-center gap-1.5 font-bold text-amber-300">
-            <span class="text-sm">🤖</span>
-            <span class="text-[10px] uppercase font-bold text-stone-300">Авто-Уход:</span>
-          </div>
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <button id="btnAutoFeed"
-              class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
-              title="Автоматически кормить при голоде < 75%">
-              <span id="autoFeedLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
-              <span>🍔 Авто-Еда</span>
-            </button>
-            <button id="btnAutoWash"
-              class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
-              title="Автоматически мыть и полировать при чистоте < 75%">
-              <span id="autoWashLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
-              <span>🧼 Авто-Мытье</span>
-            </button>
-            <button id="btnAutoTickle"
-              class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
-              title="Автоматически щекотать для комбо и счастья">
-              <span id="autoTickleLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
-              <span>🪶 Авто-Щекотка</span>
-            </button>
-            <button id="btnAutoCareAll"
-              class="px-2.5 py-1 rounded-xl border text-[10px] font-game bg-amber-900/60 hover:bg-amber-800 text-amber-200 border-amber-600 transition shadow jelly-btn"
-              title="Переключить все авто-действия">
-              ⚡ Все ВКЛ
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pet Care Bar (Legit validation checks & Noob-friendly badges) -->
-      <div
-        class="bg-stone-900/95 p-2.5 border-t border-amber-900/60 flex flex-wrap items-center justify-around gap-2 z-10">
-        <button id="btnFeed"
-          class="jelly-btn flex items-center gap-1.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow border border-orange-400/40"
-          title="Сытость дает +50% к силе клика">
-          <span>🍔</span> Покормить <span class="hidden sm:inline text-[9px] text-amber-200 font-normal">(+50% Клик)</span>
-        </button>
-        <button id="btnWash"
-          class="jelly-btn flex items-center gap-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow border border-cyan-400/40"
-          title="Чистота дает +40% к доходу заводов">
-          <span>🧼</span> Вымыть <span class="hidden sm:inline text-[9px] text-cyan-200 font-normal">(+40% Заводы)</span>
-        </button>
-        <button id="btnPolish"
-          class="jelly-btn flex items-center gap-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow border border-yellow-400/40"
-          title="Полировка повышает блеск">
-          <span>🧻</span> Полировать <span class="hidden sm:inline text-[9px] text-yellow-200 font-normal">(+Чистота)</span>
-        </button>
-        <button id="btnTickle"
-          class="jelly-btn flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow border border-pink-400/40"
-          title="Счастье удваивает шанс критов">
-          <span>🪶</span> Щекотать <span class="hidden sm:inline text-[9px] text-pink-200 font-normal">(x2 Криты)</span>
-        </button>
-      </div>
     </section>
 
     <!-- RIGHT: MULTI-TAB EXPANDED DASHBOARD -->
