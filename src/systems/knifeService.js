@@ -70,4 +70,35 @@ export function getEquippedKnife() {
   return KNIVES.find(k => k.id === GAME.equippedKnife) || null;
 }
 
+export function getBestKnife() {
+  if (!GAME.unlockedKnives || GAME.unlockedKnives.length === 0) return null;
+  let best = null;
+  let maxScore = -1;
+
+  for (const kid of GAME.unlockedKnives) {
+    const kn = KNIVES.find(k => k.id === kid);
+    if (!kn) continue;
+    const star = getKnifeStar(kn.id);
+    const clickPower = kn.clickMult * (1 + (star - 1) * 0.35);
+    const passPower = kn.passiveMult * (1 + (star - 1) * 0.25);
+    const score = (clickPower * 1.5) + passPower;
+    if (score > maxScore) {
+      maxScore = score;
+      best = kn;
+    }
+  }
+  return best;
+}
+
+export function equipBestKnife() {
+  const best = getBestKnife();
+  if (!best) return { success: false, msg: 'У вас пока нет разблокированных ножей!' };
+  if (GAME.equippedKnife === best.id) {
+    return { success: false, msg: `Уже экипирован самый мощный нож: ${best.name}!`, knife: best, alreadyEquipped: true };
+  }
+  GAME.equippedKnife = best.id;
+  events.emit('knife:equipped', { knife: best });
+  return { success: true, knife: best };
+}
+
 export { getKnifeStar };

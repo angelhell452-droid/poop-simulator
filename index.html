@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40"
-            id="versionTag">v4.7.0 PRO</span>
+            id="versionTag">v4.7.1 PRO</span>
         </div>
         <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
       </div>
@@ -89,6 +89,11 @@
         title="Справочник и Гид по экономике игры">
         <span>📖</span> <span class="hidden sm:inline">Гид</span>
       </button>
+      <button id="btnPatchNotesModal"
+        class="bg-gradient-to-r from-amber-600 via-orange-600 to-yellow-600 hover:brightness-110 text-stone-950 font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-300 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
+        title="Журнал обновлений и список изменений (Патч-ноуты)">
+        <span>📜</span> <span class="hidden sm:inline">Патчи</span>
+      </button>
       <button id="btnLeaderboardModal"
         class="bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-500 hover:brightness-110 text-stone-950 font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-300 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
         title="Таблица Лидеров и Зал Славы (Топ 20 игроков)">
@@ -144,6 +149,21 @@
         class="hidden sm:flex items-center gap-1 text-[10px] bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 px-2 py-0.5 rounded-lg font-bold">
         <span id="milestoneRewardText">Награда: 🏭 Первая фабрика</span>
       </div>
+    </div>
+
+    <!-- DYNAMIC SMART ASSISTANT BANNER (Beginner-Friendly Contextual Hints) -->
+    <div id="smartHintBanner"
+      class="mt-1.5 bg-gradient-to-r from-amber-950/80 via-stone-900 to-indigo-950/80 border-2 border-yellow-500/40 rounded-2xl px-3 py-1.5 flex items-center justify-between gap-2 shadow-lg transition">
+      <div class="flex items-center gap-2 overflow-hidden">
+        <span class="text-xl shrink-0" id="smartHintIcon">💡</span>
+        <div class="text-[11px] text-stone-200 truncate" id="smartHintText">
+          Загрузка советов помощника...
+        </div>
+      </div>
+      <button id="smartHintBtn"
+        class="shrink-0 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-[10px] font-black px-3 py-1 rounded-xl shadow border border-yellow-300 jelly-btn">
+        Действие ⚡
+      </button>
     </div>
   </div>
 
@@ -342,24 +362,28 @@
         </div>
       </div>
 
-      <!-- Pet Care Bar (Legit validation checks) -->
+      <!-- Pet Care Bar (Legit validation checks & Noob-friendly badges) -->
       <div
         class="bg-stone-900/95 p-2.5 border-t border-amber-900/60 flex flex-wrap items-center justify-around gap-2 z-10">
         <button id="btnFeed"
-          class="jelly-btn flex items-center gap-1.5 bg-orange-600 hover:bg-orange-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm">
-          <span>🍔</span> Покормить
+          class="jelly-btn flex items-center gap-1.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow border border-orange-400/40"
+          title="Сытость дает +50% к силе клика">
+          <span>🍔</span> Покормить <span class="hidden sm:inline text-[9px] text-amber-200 font-normal">(+50% Клик)</span>
         </button>
         <button id="btnWash"
-          class="jelly-btn flex items-center gap-1.5 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm">
-          <span>🧼</span> Вымыть
+          class="jelly-btn flex items-center gap-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow border border-cyan-400/40"
+          title="Чистота дает +40% к доходу заводов">
+          <span>🧼</span> Вымыть <span class="hidden sm:inline text-[9px] text-cyan-200 font-normal">(+40% Заводы)</span>
         </button>
         <button id="btnPolish"
-          class="jelly-btn flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm">
-          <span>🧻</span> Полировать
+          class="jelly-btn flex items-center gap-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow border border-yellow-400/40"
+          title="Полировка повышает блеск">
+          <span>🧻</span> Полировать <span class="hidden sm:inline text-[9px] text-yellow-200 font-normal">(+Чистота)</span>
         </button>
         <button id="btnTickle"
-          class="jelly-btn flex items-center gap-1.5 bg-pink-600 hover:bg-pink-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm">
-          <span>🪶</span> Щекотать
+          class="jelly-btn flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow border border-pink-400/40"
+          title="Счастье удваивает шанс критов">
+          <span>🪶</span> Щекотать <span class="hidden sm:inline text-[9px] text-pink-200 font-normal">(x2 Криты)</span>
         </button>
       </div>
     </section>
@@ -468,11 +492,22 @@
                 </div>
               </div>
             </div>
-            <button id="btnUnequipKnife"
-              class="hidden text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-stone-300 px-2.5 py-1.5 rounded-xl border border-stone-600 jelly-btn">
-              Снять
-            </button>
+            <div class="flex items-center gap-2">
+              <button id="btnEquipBestKnifeEquipped"
+                class="hidden text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 px-2.5 py-1.5 rounded-xl border border-yellow-300 font-black jelly-btn">
+                ⚔️ Лучший
+              </button>
+              <button id="btnEquipBestKnifeEmpty"
+                class="text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 px-2.5 py-1.5 rounded-xl border border-yellow-300 font-black jelly-btn">
+                ⚔️ Надеть лучший
+              </button>
+              <button id="btnUnequipKnife"
+                class="hidden text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-stone-300 px-2.5 py-1.5 rounded-xl border border-stone-600 jelly-btn">
+                Снять
+              </button>
+            </div>
           </div>
+          <div id="knifeToastNotification" class="hidden"></div>
 
           <!-- Knife Index Book Showcase Button -->
           <div class="my-2">
@@ -497,12 +532,45 @@
             <!-- Rendered in JS -->
           </div>
 
-          <!-- Unlocked Knives Inventory -->
-          <div class="flex items-center justify-between px-1 pt-1">
-            <span class="font-bold text-stone-400 uppercase text-[10px]">Коллекция Ножей:</span>
-            <span class="text-[10px] text-amber-400 font-bold" id="knivesCountBadge">0 / 9 найдено</span>
+          <!-- Unlocked Knives Inventory Header -->
+          <div class="flex items-center justify-between px-1 pt-1 flex-wrap gap-1">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-stone-200 uppercase text-[11px] font-game">🗡️ Инвентарь Клинков:</span>
+              <span class="text-[10px] text-amber-400 font-bold" id="knivesCountBadge">0 / 200 найдено</span>
+            </div>
+            <button id="btnEquipBestKnifeInv"
+              class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-game text-[10px] font-black px-2.5 py-1 rounded-xl shadow jelly-btn flex items-center gap-1 border border-yellow-300"
+              title="Автоматически найти и надеть самый мощный нож">
+              <span>⚔️</span>
+              <span>Надеть лучший</span>
+            </button>
           </div>
-          <div class="space-y-2 max-h-[220px] overflow-y-auto custom-scroll pr-1" id="knivesInventoryContainer">
+
+          <!-- Inventory Filter & Sort Controls -->
+          <div class="bg-stone-900/90 p-2 rounded-2xl border border-stone-800 space-y-1.5 text-xs">
+            <div class="flex items-center gap-2">
+              <input type="text" id="knifeInvSearch" placeholder="🔍 Поиск ножа по названию..."
+                class="flex-1 bg-stone-950 text-stone-200 text-[11px] px-2.5 py-1 rounded-xl border border-stone-700 focus:outline-none focus:border-amber-400 placeholder:text-stone-500">
+              <select id="knifeInvSort"
+                class="bg-stone-950 text-yellow-300 text-[10px] font-bold px-2 py-1 rounded-xl border border-stone-700 focus:outline-none">
+                <option value="power">⚡ По Мощи (Клик+Заводы)</option>
+                <option value="click">🗡️ По Силе Клика</option>
+                <option value="passive">🏭 По Пассивному CPS</option>
+                <option value="stattrak">🔥 По StatTrak™</option>
+                <option value="star">⭐ По Уровню Заточки</option>
+                <option value="name">🔤 По Названию</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-1 overflow-x-auto custom-scroll pb-0.5" id="knifeInvFilterBar">
+              <button class="knife-inv-filter px-2 py-0.5 rounded-lg text-[10px] font-bold border transition bg-amber-500 text-stone-950 border-yellow-300" data-filter="all">Все</button>
+              <button class="knife-inv-filter px-2 py-0.5 rounded-lg text-[10px] font-bold border transition bg-stone-950 text-yellow-400 border-yellow-500/40" data-filter="godly">★ Боги & Небесные</button>
+              <button class="knife-inv-filter px-2 py-0.5 rounded-lg text-[10px] font-bold border transition bg-stone-950 text-red-400 border-red-500/40" data-filter="covert">Тайные & Титан</button>
+              <button class="knife-inv-filter px-2 py-0.5 rounded-lg text-[10px] font-bold border transition bg-stone-950 text-pink-400 border-pink-500/40" data-filter="classified">Засекреченные</button>
+              <button class="knife-inv-filter px-2 py-0.5 rounded-lg text-[10px] font-bold border transition bg-stone-950 text-stone-400 border-stone-700" data-filter="common">Обычные</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[250px] overflow-y-auto custom-scroll pr-1" id="knivesInventoryContainer">
             <!-- Rendered in JS -->
           </div>
         </div>
@@ -1303,6 +1371,28 @@
             <li><b class="text-amber-300">Грамотный Смыв:</b> Не сидите слишком долго на одном забеге, если прирост биомассы замедлился — смыв даст Втулки и резко разгонит следующий цикл!</li>
           </ul>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PATCH NOTES MODAL (ИСТОРИЯ ОБНОВЛЕНИЙ И ПАТЧ-НОУТЫ) -->
+  <div id="patchNotesModal"
+    class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div
+      class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-yellow-400 max-w-xl w-full p-5 relative shadow-2xl max-h-[92vh] overflow-y-auto custom-scroll text-left">
+      <button
+        class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
+      
+      <div class="flex items-center gap-3 border-b border-yellow-500/30 pb-3 mb-4">
+        <span class="text-4xl">📜</span>
+        <div>
+          <h3 class="font-game text-xl sm:text-2xl text-yellow-300 tracking-wide">ЖУРНАЛ ОБНОВЛЕНИЙ</h3>
+          <p class="text-xs text-amber-200">История патчей, новых механик и улучшений игры</p>
+        </div>
+      </div>
+
+      <div class="space-y-3.5" id="patchNotesList">
+        <!-- Rendered in JS -->
       </div>
     </div>
   </div>

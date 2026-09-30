@@ -11,6 +11,7 @@ import { updateTalentButtons } from './talentView.js';
 import { updateShopButtons } from './shopView.js';
 import { updateCasesButtons } from './casesView.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js';
+import { updateSmartAssistant } from './smartAssistantView.js';
 
 const FLUSH_COOLDOWN = 35000;
 
@@ -180,6 +181,7 @@ export function updateHUD() {
     }
   }
   updateAutomationTogglesUI();
+  updateSmartAssistant();
 }
 
 export function updateAutocareUI() {

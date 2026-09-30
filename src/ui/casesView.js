@@ -3,7 +3,7 @@ import { CSGO_CASES } from '../data/cases.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js';
-import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife } from '../systems/knifeService.js';
+import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife } from '../systems/knifeService.js';
 import { saveLocal } from '../save/saveManager.js';
 import { requestCloudSync } from '../save/cloudSync.js';
 import { updateHUD } from './hudView.js';
@@ -16,6 +16,10 @@ let rouletteWinningKnife = null;
 let isRouletteSpinning = false;
 let confettiParticles = [];
 let confettiAnimId = null;
+
+let knifeFilterRarity = 'all';
+let knifeSearchQuery = '';
+let knifeSortMode = 'power';
 
 function getAudioCtx() {
   if (!audioCtx) {
@@ -547,7 +551,7 @@ export function renderCasesSystem() {
       const eqClickPct = Math.round((equippedObj.clickMult * (1 + (eqStar - 1) * 0.35) - 1) * 100);
       const eqPassPct = Math.round((equippedObj.passiveMult * (1 + (eqStar - 1) * 0.25) - 1) * 100);
       equippedCard.innerHTML = `
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-3">
             <span class="text-3xl">${equippedObj.icon}</span>
             <div>
@@ -557,7 +561,14 @@ export function renderCasesSystem() {
               <div class="text-[9px] text-stone-400 mt-0.5">${equippedObj.desc}</div>
             </div>
           </div>
-          <button id="btnUnequipKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-600 text-xs px-3 py-1.5 rounded-xl font-bold">Снять</button>
+          <div class="flex items-center gap-2">
+            <button id="btnEquipBestKnifeEquipped" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black text-xs px-2.5 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="Автоматически выбрать нож с наивысшим уроном и бонусами">
+              ⚔️ Лучший
+            </button>
+            <button id="btnUnequipKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-600 text-xs px-2.5 py-1.5 rounded-xl font-bold">
+              Снять
+            </button>
+          </div>
         </div>
       `;
       const unequipBtn = document.getElementById('btnUnequipKnife');
@@ -569,12 +580,23 @@ export function renderCasesSystem() {
           saveLocal();
         });
       }
+      const bestEquippedBtn = document.getElementById('btnEquipBestKnifeEquipped');
+      if (bestEquippedBtn) {
+        bestEquippedBtn.addEventListener('click', handleEquipBestKnife);
+      }
     } else {
       equippedCard.innerHTML = `
-        <div class="text-center py-2">
-          <span class="text-stone-400">Нож не экипирован. Выберите нож из инвентаря ниже или откройте CS:GO кейс!</span>
+        <div class="text-center py-2 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span class="text-stone-400 text-xs">Нож не экипирован. Выберите нож ниже или:</span>
+          <button id="btnEquipBestKnifeEmpty" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black text-xs px-3 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1">
+            ⚔️ Надеть лучший нож
+          </button>
         </div>
       `;
+      const bestEmptyBtn = document.getElementById('btnEquipBestKnifeEmpty');
+      if (bestEmptyBtn) {
+        bestEmptyBtn.addEventListener('click', handleEquipBestKnife);
+      }
     }
   }
 
@@ -583,88 +605,215 @@ export function renderCasesSystem() {
     if (!GAME.unlockedKnives || GAME.unlockedKnives.length === 0) {
       invContainer.innerHTML = '<div class="col-span-2 text-center text-stone-500 py-6 text-xs">Коллекция ножей пуста. Открывайте кейсы за Золотые Втулки (🧻) или Астральные Вантузы (🪠)!</div>';
     } else {
-      invContainer.innerHTML = GAME.unlockedKnives.map(kid => {
-        const kn = KNIVES.find(k => k.id === kid);
-        if (!kn) return '';
-        const isEquipped = GAME.equippedKnife === kn.id;
-        const star = getKnifeStar(kn.id);
-        const costInfo = getKnifeSharpenCost(kn);
-        const clickBonusPct = Math.round((kn.clickMult * (1 + (star - 1) * 0.35) - 1) * 100);
-        const rarityClass = kn.rarity === 'special' ? 'border-yellow-400 bg-yellow-950/30' : (kn.rarity === 'covert' ? 'border-red-500 bg-red-950/30' : (kn.rarity === 'classified' ? 'border-pink-500 bg-pink-950/30' : 'border-purple-500 bg-purple-950/30'));
-        const sharpenBtnTxt = costInfo.maxReached ? '★ МАКС' : `⭐ Заточить (${costInfo.cost} ${costInfo.symbol})`;
-        return `
-          <div class="p-2.5 rounded-xl border-2 ${rarityClass} shadow flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between">
-                <span class="text-xl">${kn.icon}</span>
-                <span class="text-[9px] font-bold uppercase text-stone-400">${kn.rarityName}</span>
-                <span class="text-[10px] font-black text-amber-400">★ Lv.${star}</span>
-              </div>
-              <div class="font-game text-xs text-yellow-300 mt-1 truncate">${kn.name}</div>
-              <div class="flex items-center justify-between mt-0.5">
-                <span class="text-[10px] text-emerald-400 font-bold">+${clickBonusPct}% Клик</span>
-                <span class="text-[9px] text-orange-400 font-mono font-bold">★ ${(kn.statTrak || 0).toLocaleString()}</span>
-              </div>
-            </div>
-            <div class="flex flex-col gap-1.5 mt-2.5">
-              <div class="flex gap-1.5">
-                <button class="equip-knife-btn flex-1 py-1 rounded-lg text-[10px] font-bold ${isEquipped ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-500 text-white jelly-btn'}" data-id="${kn.id}">
-                  ${isEquipped ? '✓ НАДЕТ' : 'НАДЕТЬ'}
-                </button>
-                <button class="sell-knife-btn bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold px-2 py-1 rounded-lg text-[10px] border border-stone-700" data-id="${kn.id}" data-price="${kn.rarity === 'special' ? 60 : (kn.rarity === 'covert' ? 25 : (kn.rarity === 'classified' ? 12 : (kn.rarity === 'restricted' ? 5 : 2)))}" title="Утилизировать за Втулки">
-                  +${kn.rarity === 'special' ? 60 : (kn.rarity === 'covert' ? 25 : (kn.rarity === 'classified' ? 12 : (kn.rarity === 'restricted' ? 5 : 2)))} 🧻
-                </button>
-              </div>
-              <button class="sharpen-knife-btn w-full py-1 rounded-lg text-[10px] font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition ${costInfo.maxReached ? 'opacity-50 cursor-not-allowed' : ''}" data-id="${kn.id}" ${costInfo.maxReached ? 'disabled' : ''}>
-                ${sharpenBtnTxt}
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
+      let filteredKnives = (GAME.unlockedKnives || [])
+        .map(kid => KNIVES.find(k => k.id === kid))
+        .filter(Boolean);
 
-      invContainer.querySelectorAll('.equip-knife-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          GAME.equippedKnife = btn.dataset.id;
-          updateHUD();
-          renderCasesSystem();
-          saveLocal();
-        });
+      // Search query
+      if (knifeSearchQuery.trim()) {
+        const q = knifeSearchQuery.trim().toLowerCase();
+        filteredKnives = filteredKnives.filter(k => 
+          k.name.toLowerCase().includes(q) || 
+          (k.rarityName && k.rarityName.toLowerCase().includes(q))
+        );
+      }
+
+      // Rarity filter
+      if (knifeFilterRarity !== 'all') {
+        if (knifeFilterRarity === 'godly') {
+          filteredKnives = filteredKnives.filter(k => ['godly', 'special', 'celestial', 'titanium', 'rainbow'].includes(k.rarity));
+        } else if (knifeFilterRarity === 'covert') {
+          filteredKnives = filteredKnives.filter(k => k.rarity === 'covert');
+        } else if (knifeFilterRarity === 'classified') {
+          filteredKnives = filteredKnives.filter(k => k.rarity === 'classified');
+        } else if (knifeFilterRarity === 'common') {
+          filteredKnives = filteredKnives.filter(k => !['godly', 'special', 'celestial', 'titanium', 'rainbow', 'covert', 'classified'].includes(k.rarity));
+        }
+      }
+
+      // Sorting
+      filteredKnives.sort((a, b) => {
+        const starA = getKnifeStar(a.id);
+        const starB = getKnifeStar(b.id);
+        const clickA = a.clickMult * (1 + (starA - 1) * 0.35);
+        const clickB = b.clickMult * (1 + (starB - 1) * 0.35);
+        const passA = a.passiveMult * (1 + (starA - 1) * 0.25);
+        const passB = b.passiveMult * (1 + (starB - 1) * 0.25);
+        const powerA = clickA * 1.5 + passA;
+        const powerB = clickB * 1.5 + passB;
+
+        switch (knifeSortMode) {
+          case 'power':
+            return powerB - powerA;
+          case 'click':
+            return clickB - clickA;
+          case 'passive':
+            return passB - passA;
+          case 'stattrak':
+            return (b.statTrak || 0) - (a.statTrak || 0);
+          case 'stars':
+            return starB - starA;
+          case 'name':
+            return a.name.localeCompare(b.name);
+          default:
+            return powerB - powerA;
+        }
       });
 
-      invContainer.querySelectorAll('.sharpen-knife-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          sharpenKnife(btn.dataset.id);
-          renderCasesSystem();
-          updateHUD();
-          saveLocal();
-        });
-      });
+      if (filteredKnives.length === 0) {
+        invContainer.innerHTML = '<div class="col-span-2 text-center text-stone-400 py-6 text-xs">По вашему запросу ножи не найдены 🔍</div>';
+      } else {
+        invContainer.innerHTML = filteredKnives.map(kn => {
+          const isEquipped = GAME.equippedKnife === kn.id;
+          const star = getKnifeStar(kn.id);
+          const costInfo = getKnifeSharpenCost(kn);
+          const clickBonusPct = Math.round((kn.clickMult * (1 + (star - 1) * 0.35) - 1) * 100);
+          const passBonusPct = Math.round((kn.passiveMult * (1 + (star - 1) * 0.25) - 1) * 100);
+          const rarityClass = (kn.rarity === 'special' || kn.rarity === 'godly' || kn.rarity === 'celestial') 
+            ? 'border-yellow-400 bg-yellow-950/30 shadow-[0_0_8px_rgba(250,204,21,0.25)]' 
+            : (kn.rarity === 'covert' ? 'border-red-500 bg-red-950/30 shadow-[0_0_8px_rgba(239,68,68,0.25)]' 
+            : (kn.rarity === 'classified' ? 'border-pink-500 bg-pink-950/30' : 'border-purple-500 bg-purple-950/30'));
+          const sharpenBtnTxt = costInfo.maxReached ? '★ МАКС' : `⭐ Заточить (${costInfo.cost} ${costInfo.symbol})`;
+          return `
+            <div class="p-2.5 rounded-xl border-2 ${rarityClass} shadow flex flex-col justify-between ${isEquipped ? 'ring-2 ring-emerald-400' : ''}">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-xl">${kn.icon}</span>
+                  <span class="text-[9px] font-bold uppercase text-stone-400">${kn.rarityName}</span>
+                  <span class="text-[10px] font-black text-amber-400">★ Lv.${star}</span>
+                </div>
+                <div class="font-game text-xs text-yellow-300 mt-1 truncate" title="${kn.name}">${kn.name}</div>
+                <div class="flex items-center justify-between mt-0.5">
+                  <span class="text-[10px] text-emerald-400 font-bold">+${clickBonusPct}% Клик</span>
+                  <span class="text-[10px] text-cyan-400 font-bold">+${passBonusPct}% Зав</span>
+                </div>
+                <div class="text-[9px] text-orange-400 font-mono font-bold mt-0.5">
+                  ★ StatTrak: ${(kn.statTrak || 0).toLocaleString()}
+                </div>
+              </div>
+              <div class="flex flex-col gap-1.5 mt-2.5">
+                <div class="flex gap-1.5">
+                  <button class="equip-knife-btn flex-1 py-1 rounded-lg text-[10px] font-bold ${isEquipped ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-500 text-white jelly-btn'}" data-id="${kn.id}">
+                    ${isEquipped ? '✓ НАДЕТ' : 'НАДЕТЬ'}
+                  </button>
+                  <button class="sell-knife-btn bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold px-2 py-1 rounded-lg text-[10px] border border-stone-700" data-id="${kn.id}" data-price="${kn.rarity === 'special' ? 60 : (kn.rarity === 'covert' ? 25 : (kn.rarity === 'classified' ? 12 : (kn.rarity === 'restricted' ? 5 : 2)))}" title="Утилизировать за Втулки">
+                    +${kn.rarity === 'special' ? 60 : (kn.rarity === 'covert' ? 25 : (kn.rarity === 'classified' ? 12 : (kn.rarity === 'restricted' ? 5 : 2)))} 🧻
+                  </button>
+                </div>
+                <button class="sharpen-knife-btn w-full py-1 rounded-lg text-[10px] font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition ${costInfo.maxReached ? 'opacity-50 cursor-not-allowed' : ''}" data-id="${kn.id}" ${costInfo.maxReached ? 'disabled' : ''}>
+                  ${sharpenBtnTxt}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
 
-      invContainer.querySelectorAll('.sell-knife-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const kid = btn.dataset.id;
-          const kn = KNIVES.find(k => k.id === kid);
-          const price = parseInt(btn.dataset.price) || 2;
-          if (confirm(`Утилизировать нож "${kn ? kn.name : kid}" и получить +${price} 🧻 Втулок Судьбы?`)) {
-            const idx = GAME.unlockedKnives.indexOf(kid);
-            if (idx !== -1) {
-              GAME.unlockedKnives.splice(idx, 1);
-              if (GAME.equippedKnife === kid) GAME.equippedKnife = null;
-              GAME.prestigeRolls += price;
-              updateHUD();
-              renderCasesSystem();
-              saveLocal();
+        invContainer.querySelectorAll('.equip-knife-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            GAME.equippedKnife = btn.dataset.id;
+            updateHUD();
+            renderCasesSystem();
+            saveLocal();
+          });
+        });
+
+        invContainer.querySelectorAll('.sharpen-knife-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sharpenKnife(btn.dataset.id);
+            renderCasesSystem();
+            updateHUD();
+            saveLocal();
+          });
+        });
+
+        invContainer.querySelectorAll('.sell-knife-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const kid = btn.dataset.id;
+            const kn = KNIVES.find(k => k.id === kid);
+            const price = parseInt(btn.dataset.price) || 2;
+            if (confirm(`Утилизировать нож "${kn ? kn.name : kid}" и получить +${price} 🧻 Втулок Судьбы?`)) {
+              const idx = GAME.unlockedKnives.indexOf(kid);
+              if (idx !== -1) {
+                GAME.unlockedKnives.splice(idx, 1);
+                if (GAME.equippedKnife === kid) GAME.equippedKnife = null;
+                GAME.prestigeRolls += price;
+                updateHUD();
+                renderCasesSystem();
+                saveLocal();
+              }
             }
-          }
+          });
         });
-      });
+      }
     }
   }
 }
 
+export function handleEquipBestKnife() {
+  const res = equipBestKnife();
+  if (res.success) {
+    updateHUD();
+    renderCasesSystem();
+    saveLocal();
+    showKnifeToast(`⚔️ Экипирован лучший нож: ${res.knife.icon} ${res.knife.name}!`);
+  } else {
+    showKnifeToast(res.msg || 'Нет доступных ножей для экипировки');
+  }
+}
+
+function showKnifeToast(text) {
+  const existing = document.getElementById('knifeToastNotification');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'knifeToastNotification';
+  toast.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-[9999] bg-gradient-to-r from-amber-500 to-yellow-500 text-stone-950 font-game font-bold text-xs px-4 py-2 rounded-2xl shadow-2xl border-2 border-yellow-200 flex items-center gap-2';
+  toast.innerHTML = `<span>${text}</span>`;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.4s ease';
+    setTimeout(() => toast.remove(), 400);
+  }, 2400);
+}
+
 export function initCasesListeners() {
+  const btnEquipBestInv = document.getElementById('btnEquipBestKnifeInv');
+  if (btnEquipBestInv) {
+    btnEquipBestInv.addEventListener('click', handleEquipBestKnife);
+  }
+
+  const searchInput = document.getElementById('knifeInvSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      knifeSearchQuery = e.target.value;
+      renderCasesSystem();
+    });
+  }
+
+  const sortSelect = document.getElementById('knifeInvSort');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', (e) => {
+      knifeSortMode = e.target.value;
+      renderCasesSystem();
+    });
+  }
+
+  document.querySelectorAll('.knife-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      knifeFilterRarity = btn.dataset.filter || 'all';
+      document.querySelectorAll('.knife-filter-btn').forEach(b => {
+        if (b.dataset.filter === knifeFilterRarity) {
+          b.className = 'knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-amber-600 text-white shadow';
+        } else {
+          b.className = 'knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-stone-400 hover:text-white';
+        }
+      });
+      renderCasesSystem();
+    });
+  });
+
   const btnEquip = document.getElementById('btnEquipRouletteKnife');
   if (btnEquip) {
     btnEquip.addEventListener('click', () => {

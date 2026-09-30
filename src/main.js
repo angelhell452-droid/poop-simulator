@@ -14,6 +14,8 @@ import { initPetCanvas, triggerPetSquash, addVisualParticle, checkMeteorClick } 
 import { initModals } from './ui/modalManager.js';
 import { initAuthModal } from './ui/authModalView.js';
 import { initLeaderboardView } from './ui/leaderboardView.js';
+import { initPatchNotesListeners } from './ui/patchNotesView.js';
+import { initSmartAssistantListeners } from './ui/smartAssistantView.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
 import { addPendingClicks, processBatchedClicks } from './systems/clickService.js';
 import { performEvolution } from './progression/evolutionService.js';
@@ -108,6 +110,8 @@ export async function bootstrap() {
   initAutomationToggleListeners();
   initAuthModal();
   initLeaderboardView();
+  initPatchNotesListeners();
+  initSmartAssistantListeners();
 
   // Secret Click Trophy on Logo
   document.getElementById('logoSecretClick')?.addEventListener('click', () => {
