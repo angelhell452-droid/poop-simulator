@@ -70,6 +70,12 @@ export function applySaveDataSafely(rawData) {
   if (!isFinite(GAME.allTimeBiomass) || GAME.allTimeBiomass < 0 || GAME.allTimeBiomass > 1e308) GAME.allTimeBiomass = 0;
   if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e308) GAME.cycleBiomass = 0;
   if (!isFinite(GAME.prestigeRolls) || GAME.prestigeRolls < 0 || GAME.prestigeRolls > 1e308) GAME.prestigeRolls = 0;
+  if (!Number.isFinite(GAME.transcendCycleRolls) || GAME.transcendCycleRolls < 0 || GAME.transcendCycleRolls > 1e308) {
+    GAME.transcendCycleRolls = GAME.prestigeRolls || 0;
+  }
+  if (GAME.transcendCycleRolls === 0 && (GAME.prestigeRolls || 0) > 0) {
+    GAME.transcendCycleRolls = GAME.prestigeRolls;
+  }
   if (!isFinite(GAME.transcendPlungers) || GAME.transcendPlungers < 0 || GAME.transcendPlungers > 1e308) GAME.transcendPlungers = 0;
   if (!isFinite(GAME.evoStage) || GAME.evoStage < 0) GAME.evoStage = 0;
   if (GAME.evoStage >= EVOLUTIONS.length) GAME.evoStage = EVOLUTIONS.length - 1;

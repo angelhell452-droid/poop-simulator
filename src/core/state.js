@@ -21,6 +21,7 @@ export function getDefaultGameState() {
     sparkles: 20,
     prestigeRolls: 0,
     allTimePrestigeRolls: 0,
+    transcendCycleRolls: 0,
     totalPrestiges: 0,
     transcendPlungers: 0,
     totalTranscend: 0,

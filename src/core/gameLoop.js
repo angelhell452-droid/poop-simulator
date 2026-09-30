@@ -79,7 +79,10 @@ export function gameEngineTick() {
     passiveRollAccumulator += dt;
     if (passiveRollAccumulator >= 5.0) {
       passiveRollAccumulator = 0;
-      GAME.prestigeRolls += GAME.transcendUpgrades.passiveRolls;
+      const pRolls = GAME.transcendUpgrades.passiveRolls;
+      GAME.prestigeRolls += pRolls;
+      GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + pRolls;
+      GAME.transcendCycleRolls = (GAME.transcendCycleRolls || 0) + pRolls;
     }
   }
 

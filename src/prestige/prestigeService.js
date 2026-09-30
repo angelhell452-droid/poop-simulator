@@ -91,6 +91,7 @@ export function executePrestige(chosenArchetype = 'balanced') {
 
   GAME.prestigeRolls += gain;
   GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + gain;
+  GAME.transcendCycleRolls = (GAME.transcendCycleRolls || 0) + gain;
   GAME.totalPrestiges++;
   GAME.cycleBiomass = 0;
   GAME.currentRunPeakGPS = 0;

@@ -43,6 +43,7 @@ export function checkAchievements() {
       if (ach.rewardRolls) {
         GAME.prestigeRolls = (GAME.prestigeRolls || 0) + ach.rewardRolls;
         GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + ach.rewardRolls;
+        GAME.transcendCycleRolls = (GAME.transcendCycleRolls || 0) + ach.rewardRolls;
       }
       if (ach.rewardPlungers) {
         GAME.transcendPlungers = (GAME.transcendPlungers || 0) + ach.rewardPlungers;

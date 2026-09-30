@@ -11,6 +11,7 @@ import { renderCharacterInventory } from './characterInventoryView.js';
 import { renderTalents, switchTalentSubTab } from './talentView.js';
 import { renderFactories } from './factoryView.js';
 import { renderShop } from './shopView.js';
+import { events } from '../core/events.js';
 
 let pendingPrestigeArchetype = 'balanced';
 
@@ -183,7 +184,7 @@ export function initModals() {
           </div>
           <div class="flex items-center justify-between text-xs">
             <span class="${t.meetsRolls ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-              <span class="roll-icon"></span> Запас Втулок: ${formatNumber(t.currentRolls)} / ${formatNumber(t.reqRolls)}
+              <span class="roll-icon"></span> Накоплено Втулок: ${formatNumber(t.currentRolls)} / ${formatNumber(t.reqRolls)}
             </span>
             <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsRolls ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
               ${t.meetsRolls ? '✓ Накоплено' : `Нужно еще ${formatNumber(Math.max(0, t.reqRolls - t.currentRolls))} втулок`}
@@ -198,7 +199,7 @@ export function initModals() {
           </div>
           <div class="text-[10px] text-indigo-200 space-y-0.5 font-mono">
             <div>├─ 🌀 От числа Смывов (${formatNumber(t.currentPrestiges)}): <b class="text-white">+${formatNumber(t.flushPart)}</b> вантузов (+1 за каждый смыв)</div>
-            <div>├─ <span class="roll-icon"></span> От накопленных Втулок (${formatNumber(t.currentRolls)}): <b class="text-white">+${formatNumber(t.rollsPart)}</b> вантузов (+1 за 500 втулок)</div>
+            <div>├─ <span class="roll-icon"></span> От накопленных Втулок за Прорыв (${formatNumber(t.currentRolls)}): <b class="text-white">+${formatNumber(t.rollsPart)}</b> вантузов (+1 за 500 втулок)</div>
             <div>├─ 🧬 От эволюции формы (Форма #${formatNumber(t.currentForm)}): <b class="text-white">+${formatNumber(t.stagePart)}</b> вантузов (+1 за каждые 10 форм)</div>
             <div>├─ <span class="plunger-icon"></span> Астральный Инкубатор: <b class="${t.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${Math.round(t.incubatorBonus * 100)}%</b></div>
             <div>└─ 🔮 Душа Прорыва (Талант): <b class="${t.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${Math.round(t.soulBonus * 100)}%</b></div>
@@ -210,7 +211,7 @@ export function initModals() {
             </div>
             <div class="text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
               <div>• <b>Смывы</b>: делайте больше Смывов! Каждый Смыв гарантирует <b>+1 Вантуз</b> (+${formatNumber(t.flushPart)} сейчас)</div>
-              <div>• <b>Втулки</b>: копите больше Втулок! До следующего +1 вантуза нужно ещё: <b>${formatNumber(t.nextPlungerRollsNeeded)}</b> <span class="roll-icon"></span></div>
+              <div>• <b>Втулки</b>: делайте Смывы и зарабатывайте Втулки! До следующего +1 вантуза нужно ещё: <b>${formatNumber(t.nextPlungerRollsNeeded)}</b> <span class="roll-icon"></span></div>
               <div>• <b>Формы</b>: развивайте какашку дальше (до следующего +1 вантуза ещё <b>${formatNumber(t.nextPlungerFormsNeeded)}</b> форм)</div>
               <div>• <b>Таланты</b>: качайте "Душа Прорыва" в Древе Смыва (+20% за ур.) и "Астральный Инкубатор" в Прорыве (+10% за ур.)</div>
             </div>
@@ -297,6 +298,14 @@ export function initModals() {
       document.getElementById('offlineModal')?.classList.add('hidden');
     });
   }
+
+  // Reactive listener: refresh transcend modal if open when prestige completes
+  events.on('prestige:completed', () => {
+    const tModal = document.getElementById('transcendModal');
+    if (tModal && !tModal.classList.contains('hidden')) {
+      openTranscendModal();
+    }
+  });
 }
 
 function renderArchetypeButtons() {

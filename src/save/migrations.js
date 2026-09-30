@@ -18,6 +18,9 @@ export function migrateSaveData(rawSave) {
         sparkles: Number.isFinite(legacy.sparkles) ? legacy.sparkles : 20,
         prestigeRolls: Number.isFinite(legacy.prestigeRolls) ? legacy.prestigeRolls : 0,
         allTimePrestigeRolls: Number.isFinite(legacy.allTimePrestigeRolls) ? legacy.allTimePrestigeRolls : (legacy.prestigeRolls || 0),
+        transcendCycleRolls: Number.isFinite(legacy.transcendCycleRolls) && legacy.transcendCycleRolls >= 0
+          ? legacy.transcendCycleRolls
+          : (Number.isFinite(legacy.prestigeRolls) && legacy.prestigeRolls >= 0 ? legacy.prestigeRolls : 0),
         totalPrestiges: legacy.totalPrestiges || 0,
         transcendPlungers: legacy.transcendPlungers || 0,
         totalTranscend: legacy.totalTranscend || 0,
@@ -61,6 +64,14 @@ export function migrateSaveData(rawSave) {
       knifeStats: rawSave.knifeStats || [],
       knifeStars: rawSave.knifeStars || {}
     };
+  }
+
+  if (rawSave && rawSave.game) {
+    if (!Number.isFinite(rawSave.game.transcendCycleRolls) || rawSave.game.transcendCycleRolls <= 0) {
+      rawSave.game.transcendCycleRolls = Number.isFinite(rawSave.game.prestigeRolls) && rawSave.game.prestigeRolls > 0
+        ? rawSave.game.prestigeRolls
+        : 0;
+    }
   }
 
   return rawSave;

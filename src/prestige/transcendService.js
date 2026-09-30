@@ -19,7 +19,8 @@ export function getTranscendRequirement() {
   const currentStage = GAME.evoStage || 0;
   const currentForm = currentStage + 1;
   const currentPrestiges = GAME.totalPrestiges || 0;
-  const currentRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
+  // Accumulated rolls strictly within the current Transcend cycle (resets on transcend)
+  const currentRolls = Math.max(GAME.transcendCycleRolls || 0, GAME.prestigeRolls || 0);
 
   const meetsStage = currentStage >= reqStage;
   const meetsPrestiges = currentPrestiges >= reqPrestiges;
@@ -113,6 +114,8 @@ export function executeTranscend() {
 
   // Preserve 35% of rolls so player is never stalled after transcend
   GAME.prestigeRolls = Math.floor((GAME.prestigeRolls || 0) * 0.35);
+  // Reset rolls accumulated in this transcend cycle for the new era
+  GAME.transcendCycleRolls = GAME.prestigeRolls || 0;
   GAME.cycleBiomass = 0;
   GAME.biomass = 0;
   GAME.currentRunPeakGPS = 0;
