@@ -31,9 +31,9 @@ export function buildSavePayload() {
 
 export function saveLocal() {
   try {
-    if (!isFinite(GAME.biomass) || GAME.biomass < 0 || GAME.biomass > 1e160) GAME.biomass = 0;
-    if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e160) GAME.cycleBiomass = 0;
-    if (!isFinite(GAME.allTimeBiomass) || GAME.allTimeBiomass < 0 || GAME.allTimeBiomass > 1e160) GAME.allTimeBiomass = 0;
+    if (!isFinite(GAME.biomass) || GAME.biomass < 0 || GAME.biomass > 1e308) GAME.biomass = 0;
+    if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e308) GAME.cycleBiomass = 0;
+    if (!isFinite(GAME.allTimeBiomass) || GAME.allTimeBiomass < 0 || GAME.allTimeBiomass > 1e308) GAME.allTimeBiomass = 0;
     
     const payload = buildSavePayload();
     const json = JSON.stringify(payload);
@@ -60,14 +60,17 @@ export function applySaveDataSafely(rawData) {
     if (data.game.transcendUpgrades) {
       GAME.transcendUpgrades = { ...GAME.transcendUpgrades, ...data.game.transcendUpgrades };
     }
+    if (data.game.boutiqueLevels) {
+      GAME.boutiqueLevels = { ...GAME.boutiqueLevels, ...data.game.boutiqueLevels };
+    }
   }
 
   // Safety sanitisers
-  if (!isFinite(GAME.biomass) || GAME.biomass < 0 || GAME.biomass > 1e160) GAME.biomass = 0;
-  if (!isFinite(GAME.allTimeBiomass) || GAME.allTimeBiomass < 0 || GAME.allTimeBiomass > 1e160) GAME.allTimeBiomass = 0;
-  if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e160) GAME.cycleBiomass = 0;
-  if (!isFinite(GAME.prestigeRolls) || GAME.prestigeRolls < 0 || GAME.prestigeRolls > 1e15) GAME.prestigeRolls = 0;
-  if (!isFinite(GAME.transcendPlungers) || GAME.transcendPlungers < 0 || GAME.transcendPlungers > 1e10) GAME.transcendPlungers = 0;
+  if (!isFinite(GAME.biomass) || GAME.biomass < 0 || GAME.biomass > 1e308) GAME.biomass = 0;
+  if (!isFinite(GAME.allTimeBiomass) || GAME.allTimeBiomass < 0 || GAME.allTimeBiomass > 1e308) GAME.allTimeBiomass = 0;
+  if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e308) GAME.cycleBiomass = 0;
+  if (!isFinite(GAME.prestigeRolls) || GAME.prestigeRolls < 0 || GAME.prestigeRolls > 1e308) GAME.prestigeRolls = 0;
+  if (!isFinite(GAME.transcendPlungers) || GAME.transcendPlungers < 0 || GAME.transcendPlungers > 1e308) GAME.transcendPlungers = 0;
   if (!isFinite(GAME.evoStage) || GAME.evoStage < 0) GAME.evoStage = 0;
   if (GAME.evoStage >= EVOLUTIONS.length) GAME.evoStage = EVOLUTIONS.length - 1;
 

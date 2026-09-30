@@ -14,9 +14,11 @@ export function getAffordableTalentInfo(tl) {
   let count = 0;
   let currRolls = GAME.prestigeRolls;
 
+  const growth = tl.costMult || 1.12;
+
   for (let i = 0; i < targetCount; i++) {
     const lvl = tl.level + i;
-    const cost = Math.floor(tl.cost * Math.pow(1.075, lvl)) + lvl;
+    const cost = Math.floor(tl.cost * Math.pow(growth, lvl)) + lvl;
     if (isMax) {
       if (currRolls >= cost) {
         currRolls -= cost;
@@ -32,7 +34,7 @@ export function getAffordableTalentInfo(tl) {
   }
 
   if (count === 0) {
-    totalCost = Math.floor(tl.cost * Math.pow(1.075, tl.level)) + tl.level;
+    totalCost = Math.floor(tl.cost * Math.pow(growth, tl.level)) + tl.level;
     return { count: 1, totalCost, canBuy: false, maxed: false };
   }
 

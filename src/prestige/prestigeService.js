@@ -5,11 +5,11 @@ import { KNIVES } from '../data/knives.data.js';
 import { events } from '../core/events.js';
 
 export function getPrestigeRollsReward() {
-  if (GAME.evoStage < 14 && GAME.cycleBiomass < 100000) return 0;
+  if (GAME.evoStage < 14 && (GAME.cycleBiomass || 0) < 100000) return 0;
 
-  // Master Economy Dual Prestige Tier 1 (PowerA = 0.20, ScaleA = 15.0, ThresholdA = 100,000)
-  const bioRatio = Math.max(0, GAME.cycleBiomass || 0) / 100000;
-  const bioPart = Math.floor(15.0 * Math.pow(bioRatio, 0.20));
+  // Master Economy Dual Prestige Tier 1 (Calibrated smooth power 0.14)
+  const bioRatio = Math.max(1, (GAME.cycleBiomass || 0) / 100000);
+  const bioPart = Math.floor(15.0 * Math.pow(bioRatio, 0.14));
   const stagePart = Math.floor(Math.pow(1 + Math.max(0, GAME.evoStage || 0) / 15, 0.50) * 4);
   let baseRolls = Math.max(1, bioPart + stagePart);
 
@@ -19,14 +19,12 @@ export function getPrestigeRollsReward() {
     baseRolls = Math.round(baseRolls * 1.25);
   }
 
+  // Talent bonuses (+8% per level each)
   const infFlush = TALENTS.find(t => t.id === 'infinity_flush');
-  if (infFlush && infFlush.level > 0) {
-    baseRolls = Math.round(baseRolls * (1 + infFlush.level * 0.15));
-  }
   const hyperFlush = TALENTS.find(t => t.id === 'hyperspeed_flush');
-  if (hyperFlush && hyperFlush.level > 0) {
-    baseRolls = Math.round(baseRolls * (1 + hyperFlush.level * 0.15));
-  }
+  const flushTalentBonus = 1 + (infFlush ? infFlush.level * 0.08 : 0) + (hyperFlush ? hyperFlush.level * 0.08 : 0);
+  baseRolls = Math.round(baseRolls * flushTalentBonus);
+
   return Math.max(1, baseRolls);
 }
 

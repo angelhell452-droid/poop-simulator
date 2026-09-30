@@ -54,15 +54,17 @@ export function getClickPower() {
   const turboBonus = 1 + (turboTalent ? turboTalent.level * 0.50 : 0);
   const turboMult = GAME.turboRushTime > 0 ? (turboBase * turboBonus) : 1.0;
 
-  // Equipped Knife Multiplier + Stars + Forge Artifact
+  // Equipped Knife Multiplier + Stars + Forge Artifact + Boutique Diamond Sharpening
   const knife = getEquippedKnife();
   const knifeStar = knife ? getKnifeStar(knife.id) : 1;
   const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.30;
+  const diamondLvl = GAME.boutiqueLevels?.diamond_sharpening || 0;
+  const diamondBoost = 1 + diamondLvl * 0.15;
   
   // Soft-cap high knife multipliers to prevent early game destruction
   let rawKnifeClick = knife ? knife.clickMult : 1.0;
   let effectiveKnifeClick = rawKnifeClick > 50 ? (50 + Math.pow(rawKnifeClick - 50, 0.65)) : rawKnifeClick;
-  const knifeClickMult = knife ? (effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost) : 1.0;
+  const knifeClickMult = knife ? (effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost * diamondBoost) : 1.0;
 
   // Knife Synergy: Katana boosts Click Power by +15% per 50 evolution forms
   const knifeStyle = knife ? knife.style : '';
@@ -86,7 +88,11 @@ export function getClickPower() {
   const omniWealthActive = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned;
   const omniWealthMult = omniWealthActive ? 2.0 : 1.0;
 
-  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult;
+  // Boutique Repeatable: Singularity Spark (+25% all income per level)
+  const sparkLvl = GAME.boutiqueLevels?.singularity_spark || 0;
+  const sparkMult = 1 + sparkLvl * 0.25;
+
+  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult * sparkMult;
 
   // Quantum Mastery talent + Quantum Click upgrade: direct transfer of passive GPS to click
   const qMastery = TALENTS.find(t => t.id === 'quantum_mastery');
@@ -178,12 +184,14 @@ export function getPassiveIncome() {
   // Pet Clean Buff (+0% to +40% passive income based on clean meter)
   const cleanBuff = 1 + Math.max(0, (GAME.clean || 100) / 100) * 0.40;
 
-  // Equipped Knife Multiplier + Stars + Forge Artifact
+  // Equipped Knife Multiplier + Stars + Forge Artifact + Boutique Diamond Sharpening
   const knifeStar = knife ? getKnifeStar(knife.id) : 1;
   const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.30;
+  const diamondLvl = GAME.boutiqueLevels?.diamond_sharpening || 0;
+  const diamondBoost = 1 + diamondLvl * 0.15;
   let rawKnifePass = knife ? knife.passiveMult : 1.0;
   let effectiveKnifePass = rawKnifePass > 30 ? (30 + Math.pow(rawKnifePass - 30, 0.65)) : rawKnifePass;
-  const knifePassiveMult = knife ? (effectiveKnifePass * (1 + (knifeStar - 1) * 0.25) * knifeForgeBoost) : 1.0;
+  const knifePassiveMult = knife ? (effectiveKnifePass * (1 + (knifeStar - 1) * 0.25) * knifeForgeBoost * diamondBoost) : 1.0;
 
   // Archetype specialization multiplier (+50% passive for 'tycoon', +15% for 'balanced')
   let archMult = 1.0;
@@ -199,7 +207,13 @@ export function getPassiveIncome() {
   const omniWealthActive = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned;
   const omniWealthMult = omniWealthActive ? 2.0 : 1.0;
 
-  const finalGPS = Math.max(0, Math.round(base * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult * omniWealthMult));
+  // Boutique Repeatables: Crystal Factory & Singularity Spark
+  const crystalLvl = GAME.boutiqueLevels?.crystal_factory || 0;
+  const crystalMult = 1 + crystalLvl * 0.20;
+  const sparkLvl = GAME.boutiqueLevels?.singularity_spark || 0;
+  const sparkMult = 1 + sparkLvl * 0.25;
+
+  const finalGPS = Math.max(0, Math.round(base * crystalMult * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult * omniWealthMult * sparkMult));
   if (finalGPS > (GAME.currentRunPeakGPS || 0)) {
     GAME.currentRunPeakGPS = finalGPS;
   }

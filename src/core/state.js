@@ -56,6 +56,7 @@ export function getDefaultGameState() {
     turboCount: 0,
     meteorsCaught: 0,
     currentRunPeakGPS: 0,
+    boutiqueLevels: {},
     
     lastSaveTime: Date.now(),
     lastActiveTime: Date.now(),

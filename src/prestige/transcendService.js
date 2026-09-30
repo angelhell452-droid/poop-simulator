@@ -4,18 +4,22 @@ import { TALENTS } from '../data/talents.data.js';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
 import { events } from '../core/events.js';
 
+export const TRANSCEND_REQ_ROLLS = 2500;
+export const TRANSCEND_REQ_STAGE = 50;
+
 export function getTranscendPlungersReward() {
   const lifetimeRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
-  if (GAME.evoStage < 99 && lifetimeRolls < 100000) return 0;
+  if (GAME.evoStage < TRANSCEND_REQ_STAGE && lifetimeRolls < TRANSCEND_REQ_ROLLS) return 0;
 
-  // Master Economy Dual Prestige Tier 2 (PowerB = 0.25, ScaleB = 0.20)
-  const rollsPart = Math.floor(0.20 * Math.pow(Math.max(0, lifetimeRolls), 0.25));
-  const stagePart = Math.floor(Math.pow(1 + Math.max(0, GAME.evoStage - 99) / 40, 0.50));
+  // Master Economy Dual Prestige Tier 2
+  const rollsRatio = Math.max(1, lifetimeRolls / TRANSCEND_REQ_ROLLS);
+  const rollsPart = Math.floor(2.0 * Math.pow(rollsRatio, 0.22));
+  const stagePart = Math.floor(Math.max(0, GAME.evoStage - TRANSCEND_REQ_STAGE) / 25);
   let base = Math.max(1, rollsPart + stagePart);
 
   const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');
   if (soulTalent && soulTalent.level > 0) {
-    base = Math.round(base * (1 + soulTalent.level * 0.25));
+    base = Math.round(base * (1 + soulTalent.level * 0.20));
   }
   const incubator = GAME.transcendUpgrades?.plungerIncubator || 0;
   if (incubator > 0) {

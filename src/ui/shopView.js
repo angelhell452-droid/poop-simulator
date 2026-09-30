@@ -1,10 +1,27 @@
 import { GAME } from '../core/state.js';
-import { SHOP_ITEMS } from '../data/shop.data.js';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { saveLocal } from '../save/saveManager.js';
 import { updateHUD } from './hudView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { requestCloudSync } from '../save/cloudSync.js';
+
+export function getBoutiqueRepeatableCost(item) {
+  const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[item.id]) || 0;
+  return Math.round(item.baseCost * Math.pow(item.costMult, lvl));
+}
+
+export function buyBoutiqueRepeatable(itemId) {
+  const item = BOUTIQUE_REPEATABLES.find(i => i.id === itemId);
+  if (!item) return false;
+  const cost = getBoutiqueRepeatableCost(item);
+  if ((GAME.sparkles || 0) < cost) return false;
+
+  GAME.sparkles -= cost;
+  if (!GAME.boutiqueLevels) GAME.boutiqueLevels = {};
+  GAME.boutiqueLevels[itemId] = (GAME.boutiqueLevels[itemId] || 0) + 1;
+  return true;
+}
 
 export function renderShop() {
   const container = document.getElementById('shopItemsContainer');
@@ -14,12 +31,50 @@ export function renderShop() {
   const sparkleLabel = document.getElementById('shopSparkleLabel');
   if (sparkleLabel) sparkleLabel.textContent = `${formatNumber(GAME.sparkles)} ✨`;
 
+  // 1. REPEATABLE ENDLESS SPARKLE SINKS
+  const repHeader = document.createElement('div');
+  repHeader.className = 'font-game text-xs text-yellow-300 uppercase tracking-wider py-1 border-b border-amber-800/40 flex items-center justify-between';
+  repHeader.innerHTML = '<span>💎 Реликвии Омниверса (Многоуровневые)</span><span class="text-[9px] text-amber-400 font-normal">Бесконечные улучшения</span>';
+  container.appendChild(repHeader);
+
+  BOUTIQUE_REPEATABLES.forEach(it => {
+    const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[it.id]) || 0;
+    const cost = getBoutiqueRepeatableCost(it);
+    const canBuy = (GAME.sparkles || 0) >= cost;
+
+    const row = document.createElement('div');
+    row.className = 'p-2.5 rounded-xl border flex items-center justify-between bg-gradient-to-r from-amber-950/80 via-purple-950/70 to-stone-950 border-yellow-500/50 shadow-sm';
+    row.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">${it.icon}</span>
+        <div>
+          <div class="font-bold text-xs text-yellow-200">
+            ${it.name} <span class="text-yellow-400 font-game text-[11px] font-black">★ Lv.${lvl.toLocaleString()}</span>
+          </div>
+          <div class="text-[10px] text-amber-200/80">${it.desc}</div>
+        </div>
+      </div>
+      <div class="shrink-0 ml-2">
+        <button class="buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition ${canBuy ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-bold border-yellow-300 jelly-btn shadow' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${it.id}" ${canBuy ? '' : 'disabled'}>
+          ${formatNumber(cost)} ✨
+        </button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+
+  // 2. EXCLUSIVE ONE-OFF ITEMS & HATS
+  const oneOffHeader = document.createElement('div');
+  oneOffHeader.className = 'font-game text-xs text-amber-400 uppercase tracking-wider py-1 mt-3 border-b border-stone-800 flex items-center justify-between';
+  oneOffHeader.innerHTML = '<span>✨ Эксклюзивные Шляпы и Перки</span><span class="text-[9px] text-stone-400 font-normal">Разовые покупки</span>';
+  container.appendChild(oneOffHeader);
+
   SHOP_ITEMS.forEach(it => {
     const isEquipped = GAME.equippedHat === it.id;
     const canBuy = GAME.sparkles >= it.cost && !it.owned;
 
     const row = document.createElement('div');
-    row.className = `p-2.5 rounded-xl border flex items-center justify-between ${it.cost >= 25000 ? 'bg-gradient-to-r from-purple-950/80 to-amber-950/80 border-yellow-500/60' : 'bg-stone-950 border-stone-800'}`;
+    row.className = `p-2.5 rounded-xl border flex items-center justify-between ${it.cost >= 1000000 ? 'bg-gradient-to-r from-purple-950/90 to-amber-950/90 border-yellow-400 shadow-md' : (it.cost >= 25000 ? 'bg-gradient-to-r from-purple-950/60 to-amber-950/60 border-yellow-500/40' : 'bg-stone-950 border-stone-800')}`;
     row.innerHTML = `
       <div class="flex items-center gap-2">
         <span class="text-2xl">${it.icon}</span>
@@ -43,6 +98,18 @@ export function renderShop() {
       </div>
     `;
     container.appendChild(row);
+  });
+
+  container.querySelectorAll('.buy-repeatable-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (buyBoutiqueRepeatable(btn.dataset.id)) {
+        checkAchievements();
+        renderShop();
+        updateHUD();
+        saveLocal();
+        requestCloudSync(2000);
+      }
+    });
   });
 
   container.querySelectorAll('.buy-shop-btn').forEach(btn => {

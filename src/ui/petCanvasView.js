@@ -334,7 +334,8 @@ export function catchGoldenMeteor() {
   GAME.meteorsCaught = (GAME.meteorsCaught || 0) + 1;
 
   const hunterTalent = TALENTS.find(t => t.id === 'meteor_hunter');
-  const rewardMult = 1 + (hunterTalent ? hunterTalent.level * 0.25 : 0);
+  const luckBonus = 1 + (GAME.boutiqueLevels?.golden_luck || 0) * 0.25;
+  const rewardMult = (1 + (hunterTalent ? hunterTalent.level * 0.25 : 0)) * luckBonus;
 
   const roll = Math.random();
   let label = '';

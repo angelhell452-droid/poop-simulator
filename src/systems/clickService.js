@@ -15,7 +15,8 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
 
   const basePower = getClickPower();
   const critTalent = TALENTS.find(t => t.id === 'crit_master');
-  let critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.002 : 0.05));
+  const luckLvl = GAME.boutiqueLevels?.golden_luck || 0;
+  let critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.002 : 0.05) + luckLvl * 0.01);
   let critMultiplier = (20 + (critTalent ? critTalent.level * 0.4 : 0));
 
   const sparkleTalent = TALENTS.find(t => t.id === 'sparkle_alchemy');
