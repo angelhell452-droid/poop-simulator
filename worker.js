@@ -28,6 +28,20 @@ async function ensureSchema(db) {
     await db.prepare(`
       CREATE INDEX IF NOT EXISTS idx_player_saves_biomass ON player_saves(biomass DESC);
     `).run();
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS user_accounts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL COLLATE NOCASE UNIQUE,
+        password_hash TEXT NOT NULL,
+        player_id TEXT NOT NULL UNIQUE,
+        created_at TEXT DEFAULT (datetime('now')),
+        last_login TEXT DEFAULT (datetime('now'))
+      );
+    `).run();
+
+    await db.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_user_accounts_username ON user_accounts(username);
+    `).run();
   } catch (err) {
     console.warn("Schema initialization notice:", err);
   }
@@ -82,6 +96,116 @@ async function handleCloudSave(req, env) {
 
     if (req.method === "POST") {
       const body = await req.json();
+
+      // Action: Register user account
+      if (action === "register" || body.action === "register") {
+        const username = (body.username || "").trim();
+        const passwordHash = (body.passwordHash || "").trim();
+        const clientPlayerId = (body.playerId || "").trim();
+
+        if (!username || username.length < 3 || username.length > 32) {
+          return new Response(JSON.stringify({ success: false, error: "Логин должен содержать от 3 до 32 символов!" }), { status: 400, headers });
+        }
+        if (!passwordHash || passwordHash.length < 32) {
+          return new Response(JSON.stringify({ success: false, error: "Некорректный пароль!" }), { status: 400, headers });
+        }
+
+        const existing = await env.DB.prepare(`SELECT id FROM user_accounts WHERE username = ? COLLATE NOCASE LIMIT 1`).bind(username).first();
+        if (existing) {
+          return new Response(JSON.stringify({ success: false, error: "Логин уже занят! Выберите другое имя." }), { status: 409, headers });
+        }
+
+        let finalPlayerId = clientPlayerId;
+        if (finalPlayerId) {
+          const idTaken = await env.DB.prepare(`SELECT id FROM user_accounts WHERE player_id = ? LIMIT 1`).bind(finalPlayerId).first();
+          if (idTaken) finalPlayerId = "";
+        }
+        if (!finalPlayerId) {
+          finalPlayerId = 'usr_' + (typeof crypto.randomUUID === 'function' ? crypto.randomUUID().replace(/-/g, '').slice(0, 16) : Math.random().toString(36).slice(2, 14));
+        }
+
+        await env.DB.prepare(`
+          INSERT INTO user_accounts (username, password_hash, player_id, created_at, last_login)
+          VALUES (?, ?, ?, datetime('now'), datetime('now'))
+        `).bind(username, passwordHash, finalPlayerId).run();
+
+        if (body.saveData) {
+          const sData = body.saveData;
+          const stage = Number(sData?.game?.evoStage !== undefined ? sData.game.evoStage + 1 : sData?.game?.stage) || 1;
+          const biomass = Number(sData?.game?.allTimeBiomass ?? sData?.game?.biomass) || 0;
+          const sparkles = Number(sData?.game?.sparkles) || 0;
+          const prestigeCurrency = Number(sData?.game?.prestigeRolls ?? sData?.game?.prestigeCurrency) || 0;
+          const jsonStr = typeof sData === "string" ? sData : JSON.stringify(sData);
+
+          await env.DB.prepare(`
+            INSERT INTO player_saves (player_id, player_name, stage, biomass, sparkles, prestige_currency, save_data, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(player_id) DO UPDATE SET
+              player_name = excluded.player_name,
+              stage = excluded.stage,
+              biomass = excluded.biomass,
+              sparkles = excluded.sparkles,
+              prestige_currency = excluded.prestige_currency,
+              save_data = excluded.save_data,
+              updated_at = datetime('now')
+          `).bind(finalPlayerId, username, stage, biomass, sparkles, prestigeCurrency, jsonStr).run();
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          username,
+          playerId: finalPlayerId,
+          message: "Аккаунт успешно создан!"
+        }), { status: 200, headers });
+      }
+
+      // Action: Login user account
+      if (action === "login" || body.action === "login") {
+        const username = (body.username || "").trim();
+        const passwordHash = (body.passwordHash || "").trim();
+
+        if (!username || !passwordHash) {
+          return new Response(JSON.stringify({ success: false, error: "Введите логин и пароль!" }), { status: 400, headers });
+        }
+
+        const account = await env.DB.prepare(`
+          SELECT * FROM user_accounts WHERE username = ? COLLATE NOCASE LIMIT 1
+        `).bind(username).first();
+
+        if (!account) {
+          return new Response(JSON.stringify({ success: false, error: "Пользователь с таким логином не найден!" }), { status: 404, headers });
+        }
+
+        if (account.password_hash !== passwordHash) {
+          return new Response(JSON.stringify({ success: false, error: "Неверный пароль!" }), { status: 401, headers });
+        }
+
+        await env.DB.prepare(`
+          UPDATE user_accounts SET last_login = datetime('now') WHERE id = ?
+        `).bind(account.id).run();
+
+        const saveRow = await env.DB.prepare(`
+          SELECT * FROM player_saves WHERE player_id = ? LIMIT 1
+        `).bind(account.player_id).first();
+
+        let parsedSave = null;
+        if (saveRow && saveRow.save_data) {
+          try {
+            parsedSave = typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
+          } catch (e) {
+            parsedSave = null;
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          username: account.username,
+          playerId: account.player_id,
+          saveData: parsedSave,
+          message: "Вход выполнен успешно!"
+        }), { status: 200, headers });
+      }
+
       const { playerId, playerName, saveData } = body;
 
       if (!playerId || !saveData) {
@@ -149,6 +273,19 @@ async function handleCloudSave(req, env) {
           JSON.stringify({ success: true, leaderboard: results || [] }),
           { status: 200, headers }
         );
+      }
+
+      // Handle account lookup
+      if (action === "get_account" || action === "account") {
+        if (!playerId) {
+          return new Response(JSON.stringify({ success: false, error: "Missing playerId" }), { status: 400, headers });
+        }
+        const account = await env.DB.prepare(`
+          SELECT username, player_id as playerId, created_at as createdAt, last_login as lastLogin
+          FROM user_accounts WHERE player_id = ? LIMIT 1
+        `).bind(playerId).first();
+
+        return new Response(JSON.stringify({ success: true, account: account || null }), { status: 200, headers });
       }
 
       if (!playerId) {

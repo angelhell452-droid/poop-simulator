@@ -6,6 +6,8 @@ import { getAffordableEvoInfo } from '../economy/costs.js';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
 import { liveCps } from '../core/gameLoop.js';
 import { saveLocal } from '../save/saveManager.js';
+import { updateFactoryButtons } from './factoryView.js';
+import { updateTalentButtons } from './talentView.js';
 
 const FLUSH_COOLDOWN = 35000;
 
@@ -161,6 +163,10 @@ export function updateHUD() {
 
   // Auto-care UI state update
   updateAutocareUI();
+
+  // Dynamic real-time buy multiplier & price responsiveness
+  updateFactoryButtons();
+  updateTalentButtons();
 }
 
 export function updateAutocareUI() {

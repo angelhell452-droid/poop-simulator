@@ -32,6 +32,8 @@ export let goldenMeteor = {
 let nextMeteorSpawn = Date.now() + 25000;
 let listenersInitialized = false;
 
+let lastAutoclickParticleTime = 0;
+
 export function initPetCanvas() {
   canvas = document.getElementById('petCanvas');
   if (!canvas) return;
@@ -43,7 +45,19 @@ export function initPetCanvas() {
     listenersInitialized = true;
     events.on('click:processed', (res) => {
       if (!res || res.totalEarned <= 0) return;
-      if (visualParticles.length >= 25) return;
+
+      const now = Date.now();
+      const isManual = !!res.isManual;
+
+      // Throttle automated background clicks to prevent FPS drops
+      if (!isManual) {
+        if (now - lastAutoclickParticleTime < 350) return;
+        lastAutoclickParticleTime = now;
+      }
+
+      if (visualParticles.length >= 6) {
+        visualParticles.shift();
+      }
 
       const { clicks, totalEarned, critsCount, clientX, clientY } = res;
       const textLabel = clicks > 1
@@ -62,15 +76,15 @@ export function initPetCanvas() {
         textLabel,
         critsCount > 0 ? '#f97316' : '#22c55e',
         critsCount > 0 ? 1.35 : 1.15,
-        1.1,
-        -2.8,
+        0.9,
+        -2.2,
         spawnX,
         spawnY
       );
     });
 
     events.on('turbo:activated', () => {
-      addVisualParticle('🔥 ТУРБО-РЕЖИМ x10! 🔥', '#ef4444', 1.8, 1.8, -3.0);
+      addVisualParticle('🔥 ТУРБО-РЕЖИМ x10! 🔥', '#ef4444', 1.5, 1.2, -2.5);
     });
   }
 
@@ -89,13 +103,16 @@ export function triggerPetSquash(sx = 1.25, sy = 0.8) {
   knifeSlashTimer = 1.0;
 }
 
-export function addVisualParticle(text, color = '#facc15', scale = 1.4, life = 1.5, vy = -2.5, x = null, y = null) {
+export function addVisualParticle(text, color = '#facc15', scale = 1.3, life = 0.9, vy = -2.2, x = null, y = null) {
   if (!canvas) canvas = document.getElementById('petCanvas');
   if (!canvas) return;
+  if (visualParticles.length >= 6) {
+    visualParticles.shift();
+  }
   const w = canvas.width || 360;
   const h = canvas.height || 480;
   visualParticles.push({
-    x: (x !== null && x !== undefined && !isNaN(x)) ? x : (w / 2 + (Math.random() * 80 - 40)),
+    x: (x !== null && x !== undefined && !isNaN(x)) ? x : (w / 2 + (Math.random() * 60 - 30)),
     y: (y !== null && y !== undefined && !isNaN(y)) ? y : (h * 0.48 + (Math.random() * 20 - 10)),
     text,
     color,
@@ -279,29 +296,34 @@ function renderPetLoop(time) {
     goldenMeteor.vy = (Math.random() - 0.5) * 0.8;
   }
 
-  // Floating text particles
-  for (let i = visualParticles.length - 1; i >= 0; i--) {
-    const p = visualParticles[i];
-    p.y += p.vy;
-    p.life -= 0.025;
-
-    ctx.save();
-    ctx.font = `900 ${Math.round(16 * p.scale)}px "Fredoka One", system-ui, -apple-system, sans-serif`;
+  // Floating text particles (Optimized lightweight batch for solid 60 FPS)
+  if (visualParticles.length > 0) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+    for (let i = visualParticles.length - 1; i >= 0; i--) {
+      const p = visualParticles[i];
+      p.y += p.vy;
+      p.life -= 0.035;
 
-    // Dark stroke outline for crisp readability over any background
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
-    ctx.lineWidth = Math.max(3, Math.round(3.5 * p.scale));
-    ctx.strokeText(p.text, p.x, p.y);
+      if (p.life <= 0) {
+        visualParticles.splice(i, 1);
+        continue;
+      }
 
-    // Punchy vibrant text fill
-    ctx.fillStyle = p.color;
-    ctx.fillText(p.text, p.x, p.y);
-    ctx.restore();
+      const alpha = Math.max(0, Math.min(1, p.life));
+      ctx.globalAlpha = alpha;
+      ctx.font = `900 ${Math.round(15 * p.scale)}px "Fredoka One", system-ui, -apple-system, sans-serif`;
 
-    if (p.life <= 0) visualParticles.splice(i, 1);
+      // Crisp contrast stroke
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.lineWidth = 2.5;
+      ctx.strokeText(p.text, p.x, p.y);
+
+      // Vibrant text fill
+      ctx.fillStyle = p.color;
+      ctx.fillText(p.text, p.x, p.y);
+    }
+    ctx.globalAlpha = 1.0;
   }
 
   requestAnimationFrame(renderPetLoop);

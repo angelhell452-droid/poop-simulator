@@ -54,3 +54,41 @@ export function renderTalents() {
     container.appendChild(row);
   });
 }
+
+export function updateTalentButtons() {
+  const panel = document.getElementById('panelTalents');
+  if (!panel || panel.classList.contains('hidden')) return;
+
+  const label = document.getElementById('talentRollsLabel');
+  if (label) label.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
+
+  const buyMultiplier = GAME.buyMultiplier || 1;
+  const buttons = panel.querySelectorAll('.buy-talent-btn');
+  buttons.forEach(btn => {
+    const tlId = btn.dataset.id;
+    const tl = TALENTS.find(t => t.id === tlId);
+    if (!tl) return;
+
+    const tlInfo = getAffordableTalentInfo(tl);
+    const maxed = tl.level >= tl.max;
+    const canBuy = tlInfo.canBuy && !maxed;
+
+    const btnLabel = maxed
+      ? 'МАКС'
+      : (buyMultiplier === 'max'
+        ? `+${tlInfo.count} (МАКС): ${formatNumber(tlInfo.totalCost)} 🧻`
+        : (buyMultiplier > 1 ? `+${tlInfo.count}: ${formatNumber(tlInfo.totalCost)} 🧻` : `${formatNumber(tlInfo.totalCost)} 🧻`));
+
+    if (btn.textContent.trim() !== btnLabel) {
+      btn.textContent = btnLabel;
+    }
+
+    if (btn.disabled !== !canBuy && !maxed) {
+      btn.disabled = !canBuy;
+      btn.className = canBuy
+        ? 'buy-talent-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 ml-2 transition bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-110 text-white border-purple-400 jelly-btn'
+        : 'buy-talent-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 ml-2 transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
+    }
+  });
+}
+

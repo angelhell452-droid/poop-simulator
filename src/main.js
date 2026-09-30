@@ -12,6 +12,7 @@ import { renderCasesSystem, initCasesListeners } from './ui/casesView.js';
 import { initKnivesIndexListeners } from './ui/knivesIndexView.js';
 import { initPetCanvas, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js';
 import { initModals } from './ui/modalManager.js';
+import { initAuthModal } from './ui/authModalView.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
 import { addPendingClicks, processBatchedClicks } from './systems/clickService.js';
 import { performEvolution } from './progression/evolutionService.js';
@@ -103,6 +104,7 @@ export async function bootstrap() {
   initCasesListeners();
   initKnivesIndexListeners();
   initAutocareListeners();
+  initAuthModal();
 
   // Secret Click Trophy on Logo
   document.getElementById('logoSecretClick')?.addEventListener('click', () => {
@@ -233,12 +235,7 @@ export async function bootstrap() {
     btn.addEventListener('click', () => {
       const m = btn.dataset.mult === 'max' ? 'max' : parseInt(btn.dataset.mult);
       GAME.buyMultiplier = m;
-      document.querySelectorAll('.buy-mult-btn').forEach(b => {
-        const mv = b.dataset.mult === 'max' ? 'max' : parseInt(b.dataset.mult);
-        b.className = (mv === m)
-          ? 'buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-amber-600 text-white font-bold border border-yellow-400 shadow jelly-btn'
-          : 'buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn';
-      });
+      updateMultiplierUI();
       renderFactories();
       renderTalents();
       updateHUD();
@@ -289,6 +286,7 @@ export async function bootstrap() {
   checkOfflineProgress();
 
   // 8. Initial UI Render across all active components
+  updateMultiplierUI();
   renderFactories();
   renderTalents();
   renderShop();
@@ -360,8 +358,20 @@ function checkOfflineProgress() {
   GAME.lastActiveTime = now;
 }
 
+export function updateMultiplierUI() {
+  const m = GAME.buyMultiplier;
+  document.querySelectorAll('.buy-mult-btn').forEach(b => {
+    const mv = b.dataset.mult === 'max' ? 'max' : parseInt(b.dataset.mult);
+    const isActive = (m === 'max' && mv === 'max') || (parseInt(m) === mv);
+    b.className = isActive
+      ? 'buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-amber-600 text-white font-bold border border-yellow-400 shadow jelly-btn'
+      : 'buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn';
+  });
+}
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bootstrap);
 } else {
   bootstrap();
 }
+

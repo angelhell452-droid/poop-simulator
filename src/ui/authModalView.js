@@ -1,0 +1,227 @@
+import { GAME } from '../core/state.js';
+import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase } from '../save/cloudSync.js';
+import { updateHUD } from './hudView.js';
+import { renderFactories } from './factoryView.js';
+import { renderTalents } from './talentView.js';
+import { renderShop } from './shopView.js';
+import { renderAchievements } from './achievementsView.js';
+import { renderEvoChronicles } from './evoChroniclesView.js';
+import { renderCasesSystem } from './casesView.js';
+
+export function openAuthModal(defaultTab = 'login') {
+  const modal = document.getElementById('authModal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  switchAuthTab(defaultTab);
+  clearAuthStatus();
+}
+
+export function closeAuthModal() {
+  const modal = document.getElementById('authModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+export function switchAuthTab(tab) {
+  const tabLogin = document.getElementById('tabAuthLogin');
+  const tabRegister = document.getElementById('tabAuthRegister');
+  const formLogin = document.getElementById('formAuthLogin');
+  const formRegister = document.getElementById('formAuthRegister');
+
+  clearAuthStatus();
+
+  if (tab === 'login') {
+    tabLogin?.classList.add('bg-amber-600', 'text-white', 'shadow');
+    tabLogin?.classList.remove('text-stone-400');
+    tabRegister?.classList.remove('bg-amber-600', 'text-white', 'shadow');
+    tabRegister?.classList.add('text-stone-400');
+
+    formLogin?.classList.remove('hidden');
+    formRegister?.classList.add('hidden');
+  } else {
+    tabRegister?.classList.add('bg-amber-600', 'text-white', 'shadow');
+    tabRegister?.classList.remove('text-stone-400');
+    tabLogin?.classList.remove('bg-amber-600', 'text-white', 'shadow');
+    tabLogin?.classList.add('text-stone-400');
+
+    formRegister?.classList.remove('hidden');
+    formLogin?.classList.add('hidden');
+  }
+}
+
+function showAuthStatus(msg, isSuccess = false) {
+  const box = document.getElementById('authStatusBox');
+  if (!box) return;
+  box.textContent = msg;
+  box.classList.remove('hidden');
+  if (isSuccess) {
+    box.className = 'mt-3 text-[11px] text-center p-2 rounded-xl font-medium bg-emerald-950/80 border border-emerald-500 text-emerald-300';
+  } else {
+    box.className = 'mt-3 text-[11px] text-center p-2 rounded-xl font-medium bg-red-950/80 border border-red-500 text-red-300';
+  }
+}
+
+function clearAuthStatus() {
+  const box = document.getElementById('authStatusBox');
+  if (box) {
+    box.textContent = '';
+    box.classList.add('hidden');
+  }
+}
+
+export function updateAccountHeaderUI() {
+  const stored = getStoredAccount();
+  const headerName = document.getElementById('headerAccountName');
+  const accountStatusBadge = document.getElementById('accountStatusBadge');
+  const btnAuthAction = document.getElementById('btnAuthAction');
+
+  if (stored && stored.username) {
+    if (headerName) headerName.textContent = stored.username;
+    if (accountStatusBadge) {
+      accountStatusBadge.innerHTML = `🟢 <span class="text-emerald-400 font-bold">${stored.username}</span> (Cloudflare D1)`;
+    }
+    if (btnAuthAction) {
+      btnAuthAction.textContent = '🚪 Выйти из аккаунта';
+      btnAuthAction.className = 'w-full py-1.5 px-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-bold border border-stone-600 transition';
+    }
+  } else {
+    if (headerName) headerName.textContent = 'Гость';
+    if (accountStatusBadge) {
+      accountStatusBadge.innerHTML = `⚪ <span class="text-amber-300 font-bold">Гостевой режим</span> (Локальное сохранение)`;
+    }
+    if (btnAuthAction) {
+      btnAuthAction.textContent = '🔑 Войти / Создать аккаунт';
+      btnAuthAction.className = 'w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-500 hover:brightness-110 text-stone-950 font-game text-xs font-bold border border-yellow-300 shadow jelly-btn transition';
+    }
+  }
+
+  const inpPlayerId = document.getElementById('inpPlayerId');
+  if (inpPlayerId) inpPlayerId.value = GAME.playerId || '';
+  const inpPlayerName = document.getElementById('inpPlayerName');
+  if (inpPlayerName) inpPlayerName.value = GAME.playerName || '';
+}
+
+function refreshAllGameUI() {
+  updateAccountHeaderUI();
+  updateHUD();
+  renderFactories();
+  renderTalents();
+  renderShop();
+  renderAchievements();
+  renderEvoChronicles();
+  renderCasesSystem();
+}
+
+export function initAuthModal() {
+  // Tabs
+  document.getElementById('tabAuthLogin')?.addEventListener('click', () => switchAuthTab('login'));
+  document.getElementById('tabAuthRegister')?.addEventListener('click', () => switchAuthTab('register'));
+
+  // Close & Guest buttons
+  document.getElementById('btnAuthClose')?.addEventListener('click', () => {
+    sessionStorage.setItem('poop_auth_dismissed', '1');
+    closeAuthModal();
+  });
+
+  document.getElementById('btnPlayAsGuest')?.addEventListener('click', () => {
+    sessionStorage.setItem('poop_auth_dismissed', '1');
+    closeAuthModal();
+  });
+
+  // Login form submit
+  document.getElementById('formAuthLogin')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAuthStatus();
+
+    const username = document.getElementById('loginUsername')?.value;
+    const password = document.getElementById('loginPassword')?.value;
+    const btnSubmit = document.getElementById('btnSubmitLogin');
+
+    if (btnSubmit) {
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = '⏳ Вход...';
+    }
+
+    const res = await loginAccount(username, password);
+
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = '🚀 Войти в аккаунт';
+    }
+
+    if (res.success) {
+      showAuthStatus(`✅ Добро пожаловать, ${res.username}! Прогресс загружен.`, true);
+      refreshAllGameUI();
+      setTimeout(() => {
+        closeAuthModal();
+      }, 700);
+    } else {
+      showAuthStatus(res.error || 'Ошибка входа');
+    }
+  });
+
+  // Register form submit
+  document.getElementById('formAuthRegister')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAuthStatus();
+
+    const username = document.getElementById('registerUsername')?.value;
+    const password = document.getElementById('registerPassword')?.value;
+    const btnSubmit = document.getElementById('btnSubmitRegister');
+
+    if (btnSubmit) {
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = '⏳ Создание...';
+    }
+
+    const res = await registerAccount(username, password);
+
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = '✨ Создать аккаунт';
+    }
+
+    if (res.success) {
+      showAuthStatus(`🎉 Аккаунт ${res.username} успешно создан в Cloudflare D1!`, true);
+      refreshAllGameUI();
+      setTimeout(() => {
+        closeAuthModal();
+      }, 800);
+    } else {
+      showAuthStatus(res.error || 'Ошибка регистрации');
+    }
+  });
+
+  // Account modal action button (Logout or Login)
+  document.getElementById('btnAuthAction')?.addEventListener('click', () => {
+    const stored = getStoredAccount();
+    if (stored) {
+      if (confirm('Вы уверены, что хотите выйти из аккаунта? Текущие данные сохранены в облаке.')) {
+        logoutAccount();
+        updateAccountHeaderUI();
+        openAuthModal('login');
+      }
+    } else {
+      document.getElementById('accountModal')?.classList.add('hidden');
+      openAuthModal('login');
+    }
+  });
+
+  // Force cloud save / load
+  document.getElementById('btnForceCloudSave')?.addEventListener('click', async () => {
+    await syncToCloudDatabase();
+    alert('✅ Прогресс успешно отправлен в Cloudflare D1!');
+  });
+
+  // Initialize UI
+  updateAccountHeaderUI();
+
+  // Startup check: if no stored account and not dismissed in session, open auth modal
+  const stored = getStoredAccount();
+  const dismissed = sessionStorage.getItem('poop_auth_dismissed');
+  if (!stored && !dismissed) {
+    // Show after slight delay for smooth page animation
+    setTimeout(() => {
+      openAuthModal('login');
+    }, 400);
+  }
+}

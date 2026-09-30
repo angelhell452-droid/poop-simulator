@@ -82,13 +82,15 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     }
   }
 
+  const isManual = (clickClientX !== null && clickClientX !== undefined);
   const result = {
     clicks: clicksToProcess,
     totalEarned,
     sparklesEarned,
     critsCount,
     clientX: clickClientX,
-    clientY: clickClientY
+    clientY: clickClientY,
+    isManual
   };
 
   events.emit('click:processed', result);

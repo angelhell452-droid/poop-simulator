@@ -14,11 +14,9 @@ export function getAffordableEvoInfo() {
     return { count: 0, totalCost: 0, canBuy: false, maxReached: true };
   }
 
-  const buyMultiplier = GAME.buyMultiplier || 1;
-  let targetCount = 1;
-  if (buyMultiplier === 10) targetCount = 10;
-  else if (buyMultiplier === 100) targetCount = 100;
-  else if (buyMultiplier === 'max') targetCount = 20000;
+  const rawMult = GAME.buyMultiplier;
+  const isMax = (rawMult === 'max' || rawMult === 'MAX');
+  const targetCount = isMax ? 20000 : (parseInt(rawMult) || 1);
 
   let totalCost = 0;
   let count = 0;
@@ -26,7 +24,7 @@ export function getAffordableEvoInfo() {
 
   for (let s = GAME.evoStage + 1; s < EVOLUTIONS.length; s++) {
     const cost = Math.max(1, Math.floor(EVOLUTIONS[s].cost * costDiscount));
-    if (buyMultiplier === 'max') {
+    if (isMax) {
       if (currBio >= cost) {
         currBio -= cost;
         totalCost += cost;
@@ -44,8 +42,13 @@ export function getAffordableEvoInfo() {
     }
   }
 
+  if (count === 0) {
+    const nextCost = Math.max(1, Math.floor(EVOLUTIONS[GAME.evoStage + 1].cost * costDiscount));
+    return { count: 1, totalCost: nextCost, canBuy: false, maxReached: false };
+  }
+
   const canBuy = count > 0 && GAME.biomass >= totalCost;
-  return { count, totalCost, canBuy, maxReached: false };
+  return { count, totalCost, canBuy: canBuy && count > 0, maxReached: false };
 }
 
 export function getAffordableFactoryInfo(fac) {
@@ -54,21 +57,25 @@ export function getAffordableFactoryInfo(fac) {
   const isTycoon = GAME.archetype === 'tycoon';
   const discount = isTycoon ? 0.90 : 1.0;
   const baseCost = fac.cost * discount;
-  const buyMultiplier = GAME.buyMultiplier || 1;
+  const rawMult = GAME.buyMultiplier;
+  const isMax = (rawMult === 'max' || rawMult === 'MAX');
+  const costCurrent = baseCost * Math.pow(r, currentCount);
 
-  if (buyMultiplier === 'max') {
-    const costCurrent = baseCost * Math.pow(r, currentCount);
+  if (isMax) {
     if (GAME.biomass < costCurrent) {
-      return { count: 0, totalCost: 0, canBuy: false };
+      return { count: 1, totalCost: Math.round(costCurrent), canBuy: false };
     }
-    const maxM = Math.floor(Math.log(1 + (GAME.biomass * (r - 1)) / costCurrent) / Math.log(r));
-    const count = Math.max(1, maxM);
-    const totalCost = Math.round(costCurrent * (Math.pow(r, count) - 1) / (r - 1));
-    return { count, totalCost, canBuy: GAME.biomass >= totalCost };
+    let maxM = Math.floor(Math.log(1 + (GAME.biomass * (r - 1)) / costCurrent) / Math.log(r));
+    maxM = Math.max(1, Math.min(100000, maxM));
+    let totalCost = Math.round(costCurrent * (Math.pow(r, maxM) - 1) / (r - 1));
+    while (totalCost > GAME.biomass && maxM > 1) {
+      maxM--;
+      totalCost = Math.round(costCurrent * (Math.pow(r, maxM) - 1) / (r - 1));
+    }
+    return { count: maxM, totalCost, canBuy: GAME.biomass >= totalCost && maxM > 0 };
   }
 
-  const count = typeof buyMultiplier === 'number' ? buyMultiplier : 1;
-  const costCurrent = baseCost * Math.pow(r, currentCount);
+  const count = parseInt(rawMult) || 1;
   const totalCost = count === 1
     ? Math.round(costCurrent)
     : Math.round(costCurrent * (Math.pow(r, count) - 1) / (r - 1));

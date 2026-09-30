@@ -77,3 +77,33 @@ export function renderFactories() {
     container.appendChild(row);
   });
 }
+
+export function updateFactoryButtons() {
+  const container = document.getElementById('factoriesContainer');
+  if (!container || !container.offsetParent) return;
+
+  const buyMultiplier = GAME.buyMultiplier || 1;
+  const buttons = container.querySelectorAll('.buy-factory-btn');
+  buttons.forEach(btn => {
+    const facId = btn.dataset.id;
+    const fac = FACTORIES.find(f => f.id === facId);
+    if (!fac) return;
+
+    const facInfo = getAffordableFactoryInfo(fac);
+    const countTxt = buyMultiplier === 'max'
+      ? `+${facInfo.count} (МАКС)`
+      : (buyMultiplier > 1 ? `+${facInfo.count}` : `+1`);
+
+    const newLabel = `${countTxt}: ${formatNumber(facInfo.totalCost)} 💨`;
+    if (btn.textContent.trim() !== newLabel) {
+      btn.textContent = newLabel;
+    }
+
+    if (btn.disabled !== !facInfo.canBuy) {
+      btn.disabled = !facInfo.canBuy;
+      btn.className = facInfo.canBuy
+        ? 'buy-factory-btn w-full py-1.5 px-3 rounded-xl border text-xs font-game transition bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 border-yellow-300 hover:brightness-110 jelly-btn'
+        : 'buy-factory-btn w-full py-1.5 px-3 rounded-xl border text-xs font-game transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
+    }
+  });
+}
