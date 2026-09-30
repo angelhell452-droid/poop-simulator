@@ -23,6 +23,7 @@ let pendingAutoEarned = 0;
 let pendingAutoCrits = 0;
 let pendingAutoSparkles = 0;
 let lastFloatingTextTime = 0;
+let activeComboParticle = null;
 
 export let goldenMeteor = {
   active: false,
@@ -220,8 +221,9 @@ export function addVisualParticle(text, color = '#facc15', scale = 1.2, life = 1
 
 function renderPetLoop(time) {
   if (!canvas || !ctx) return;
-  const w = canvas.width;
-  const h = canvas.height;
+  try {
+    const w = canvas.width;
+    const h = canvas.height;
   const currentEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
 
   const isGirly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
@@ -470,7 +472,6 @@ function renderPetLoop(time) {
       p.life -= 0.016;
 
       if (p.life <= 0) {
-        if (p === activeComboParticle) activeComboParticle = null;
         visualParticles.splice(i, 1);
         continue;
       }
@@ -494,8 +495,11 @@ function renderPetLoop(time) {
     }
     ctx.globalAlpha = 1.0;
   }
-
-  requestAnimationFrame(renderPetLoop);
+  } catch (err) {
+    console.error("renderPetLoop error:", err);
+  } finally {
+    requestAnimationFrame(renderPetLoop);
+  }
 }
 
 export function catchGoldenMeteor() {
