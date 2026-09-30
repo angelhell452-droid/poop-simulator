@@ -1,11 +1,12 @@
 import { GAME } from '../core/state.js';
 import { formatNumber } from '../utils/numberFormatter.js';
-import { getPrestigeRollsReward, executePrestige } from '../prestige/prestigeService.js';
-import { getTranscendPlungersReward, executeTranscend, buyTranscendUpgrade } from '../prestige/transcendService.js';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement } from '../prestige/prestigeService.js';
+import { getTranscendPlungersReward, executeTranscend, buyTranscendUpgrade, getTranscendRequirement } from '../prestige/transcendService.js';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
 import { TALENTS } from '../data/talents.data.js';
 import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
+import { renderCharacterInventory } from './characterInventoryView.js';
 import { renderTalents } from './talentView.js';
 import { renderFactories } from './factoryView.js';
 import { renderShop } from './shopView.js';
@@ -38,7 +39,24 @@ export function initModals() {
     pendingPrestigeArchetype = GAME.archetype || 'balanced';
     renderArchetypeButtons();
 
+    const req = getPrestigeRequirement();
     const gain = getPrestigeRollsReward();
+
+    const reqLabel = document.getElementById('prestigeReqLabel');
+    if (reqLabel) {
+      const stageOk = req.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300';
+      const bioOk = req.meetsBiomass ? 'text-emerald-300 font-bold' : 'text-stone-300';
+      const statusBadge = req.isMet 
+        ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/50 font-bold">✓ ГОТОВО К СМЫВУ</span>'
+        : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-red-950 text-red-300 border border-red-500/50 font-bold">🔒 НУЖЕН РОСТ</span>';
+      reqLabel.innerHTML = `
+        <div class="flex items-center justify-between gap-1 flex-wrap">
+          <div><span class="${stageOk}">Форма #${req.reqForm}</span> (сейчас #${req.currentForm}) или <span class="${bioOk}">${formatNumber(req.reqBiomass)} 💨</span></div>
+          ${statusBadge}
+        </div>
+      `;
+    }
+
     const calcEl = document.getElementById('prestigeCalcRolls');
     if (calcEl) {
       const flushes = GAME.totalPrestiges || 0;
@@ -66,7 +84,7 @@ export function initModals() {
       `;
     }
     const execBtn = document.getElementById('btnExecutePrestige');
-    if (execBtn) execBtn.disabled = gain <= 0;
+    if (execBtn) execBtn.disabled = !req.isMet || gain <= 0;
     document.getElementById('prestigeModal')?.classList.remove('hidden');
   };
 
@@ -81,6 +99,7 @@ export function initModals() {
       if (executePrestige(pendingPrestigeArchetype)) {
         document.getElementById('prestigeModal')?.classList.add('hidden');
         renderCasesSystem();
+        renderCharacterInventory();
         renderTalents();
         renderFactories();
         renderShop();
@@ -91,8 +110,7 @@ export function initModals() {
 
   // Open Transcend Modal (accessible from header button, canvas button, and plungers currency bar)
   const openTranscendModal = () => {
-    const flushes = GAME.totalPrestiges || 0;
-    const transcends = GAME.totalTranscend || 0;
+    const tReq = getTranscendRequirement();
     const gain = getTranscendPlungersReward();
 
     const rollsEl = document.getElementById('transcendCurrentRolls');
@@ -100,18 +118,42 @@ export function initModals() {
 
     const plungersEl = document.getElementById('transcendCalcPlungers');
     if (plungersEl) {
-      if (flushes < 5) {
-        plungersEl.innerHTML = `<span class="text-red-400 font-bold text-xs">🔒 Требуется 5 Смывов! (${flushes}/5)</span>`;
+      if (!tReq.meetsPrestiges) {
+        plungersEl.innerHTML = `<span class="text-red-400 font-bold text-xs">🔒 Требуется ${tReq.reqPrestiges} Смывов! (${tReq.currentPrestiges}/${tReq.reqPrestiges})</span>`;
       } else {
         plungersEl.textContent = `+${formatNumber(gain)} 🪠 Вантузов`;
       }
     }
 
+    const tReqLabel = document.getElementById('transcendReqLabel');
+    if (tReqLabel) {
+      const formOk = tReq.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300';
+      const pOk = tReq.meetsPrestiges ? 'text-emerald-300 font-bold' : 'text-stone-300';
+      const rOk = tReq.meetsRolls ? 'text-emerald-300 font-bold' : 'text-stone-300';
+      const statusBadge = tReq.isMet 
+        ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/50 font-bold">✓ ГОТОВ К ПРОРЫВУ</span>'
+        : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-red-950 text-red-300 border border-red-500/50 font-bold">🔒 ТРЕБУЮТСЯ РЕСУРСЫ</span>';
+      tReqLabel.innerHTML = `
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="${pOk}">• Смывы: ${tReq.currentPrestiges} / ${tReq.reqPrestiges}</span>
+            ${statusBadge}
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="${formOk}">• Форма: #${tReq.currentForm} / #${tReq.reqForm}</span>
+            <span class="${rOk}">• Втулки: ${formatNumber(tReq.currentRolls)} / ${formatNumber(tReq.reqRolls)} 🧻</span>
+          </div>
+        </div>
+      `;
+    }
+
     const milestoneEl = document.getElementById('transcendMilestoneHint');
     if (milestoneEl) {
+      const transcends = tReq.transcends;
       let tMilestoneText = '';
       if (transcends < 1) tMilestoneText = '🎯 Прорыв #1: Вантузы и Базовые Реликвии (Тир 1)';
-      else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: Астральная Автоматизация (Авто-Заводы & Мутации) [${transcends}/3]`;
+      else if (transcends < 2) tMilestoneText = `🎯 Прорыв #2: 🤖 Авто-Уход за Питомцем & Авто-Заводы [${transcends}/2]`;
+      else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: 🌀 Авто-Эволюция Мутаций [${transcends}/3]`;
       else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⏳ Временной Разлом (+25% к CPS всех фабрик) [${transcends}/5]`;
       else if (transcends < 10) tMilestoneText = `🎯 Прорыв #10: 🌌 Сингулярность & Корона Демиурга [${transcends}/10]`;
       else tMilestoneText = `🏆 Повелитель Астральной Сингулярности (${transcends} прорывов)!`;
@@ -126,9 +168,13 @@ export function initModals() {
 
     const execBtn = document.getElementById('btnExecuteTranscend');
     if (execBtn) {
-      if (flushes < 5) {
+      if (!tReq.isMet) {
         execBtn.disabled = true;
-        execBtn.textContent = `ТРЕБУЕТСЯ 5 СМЫВОВ (${flushes}/5) 🔒`;
+        if (!tReq.meetsPrestiges) {
+          execBtn.textContent = `ТРЕБУЕТСЯ ${tReq.reqPrestiges} СМЫВОВ (${tReq.currentPrestiges}/${tReq.reqPrestiges}) 🔒`;
+        } else {
+          execBtn.textContent = `ТРЕБУЕТСЯ ФОРМА #${tReq.reqForm} ИЛИ ${formatNumber(tReq.reqRolls)} 🧻 🔒`;
+        }
       } else {
         execBtn.disabled = gain <= 0;
         execBtn.textContent = `СОВЕРШИТЬ АСТРАЛЬНЫЙ ПРОРЫВ! 🌌`;
@@ -150,6 +196,7 @@ export function initModals() {
       if (executeTranscend()) {
         document.getElementById('transcendModal')?.classList.add('hidden');
         renderCasesSystem();
+        renderCharacterInventory();
         renderTalents();
         renderFactories();
         renderShop();

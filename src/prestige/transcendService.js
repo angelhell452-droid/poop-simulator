@@ -4,18 +4,54 @@ import { TALENTS } from '../data/talents.data.js';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
 import { events } from '../core/events.js';
 
-export const TRANSCEND_REQ_ROLLS = 2500;
-export const TRANSCEND_REQ_STAGE = 50;
+export function getTranscendRequirement() {
+  const t = GAME.totalTranscend || 0;
+  // Dynamic scaling:
+  // Transcend #0: Form 50, 5 Prestiges, 2,500 Rolls
+  // Transcend #1: Form 75, 8 Prestiges, 5,500 Rolls
+  // Transcend #2: Form 100, 11 Prestiges, 12,000 Rolls
+  // Transcend #3: Form 125, 14 Prestiges, 26,000 Rolls
+  const reqForm = Math.min(2000, 50 + t * 25);
+  const reqStage = reqForm - 1;
+  const reqPrestiges = 5 + t * 3;
+  const reqRolls = Math.floor(2500 * Math.pow(2.2, Math.min(10, t)));
+
+  const currentStage = GAME.evoStage || 0;
+  const currentForm = currentStage + 1;
+  const currentPrestiges = GAME.totalPrestiges || 0;
+  const currentRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
+
+  const meetsStage = currentStage >= reqStage;
+  const meetsPrestiges = currentPrestiges >= reqPrestiges;
+  const meetsRolls = currentRolls >= reqRolls;
+
+  const isMet = meetsPrestiges && (meetsStage || meetsRolls);
+
+  return {
+    transcends: t,
+    reqForm,
+    reqStage,
+    reqPrestiges,
+    reqRolls,
+    currentForm,
+    currentStage,
+    currentPrestiges,
+    currentRolls,
+    meetsStage,
+    meetsPrestiges,
+    meetsRolls,
+    isMet
+  };
+}
 
 export function getTranscendPlungersReward() {
-  if ((GAME.totalPrestiges || 0) < 5) return 0;
-  const lifetimeRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
-  if (GAME.evoStage < TRANSCEND_REQ_STAGE && lifetimeRolls < TRANSCEND_REQ_ROLLS) return 0;
+  const req = getTranscendRequirement();
+  if (!req.isMet) return 0;
 
   // Master Economy Dual Prestige Tier 2
-  const rollsRatio = Math.max(1, lifetimeRolls / TRANSCEND_REQ_ROLLS);
+  const rollsRatio = Math.max(1, req.currentRolls / req.reqRolls);
   const rollsPart = Math.floor(2.0 * Math.pow(rollsRatio, 0.22));
-  const stagePart = Math.floor(Math.max(0, GAME.evoStage - TRANSCEND_REQ_STAGE) / 25);
+  const stagePart = Math.floor(Math.max(0, req.currentForm - req.reqForm) / 25);
   let base = Math.max(1, rollsPart + stagePart);
 
   const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');

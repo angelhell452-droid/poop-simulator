@@ -49,7 +49,7 @@ export const TRANSCEND_UPGRADES = [
     reqTranscend: 1 
   },
 
-  // ТИР 2: ПРОДВИНУТАЯ АВТОМАТИЗАЦИЯ (Открыты с 3-х Прорывов)
+  // ТИР 2: ПРОДВИНУТАЯ АВТОМАТИЗАЦИЯ (Открыты со 2-го Прорыва, мидгейм)
   { 
     id: 'art_auto_buyer', 
     key: 'autoBuyer', 
@@ -59,18 +59,29 @@ export const TRANSCEND_UPGRADES = [
     max: 1, 
     tier: 2, 
     tierName: 'Тир 2: Продвинутый', 
-    reqTranscend: 3 
+    reqTranscend: 2 
   },
   { 
     id: 'art_auto_evolution', 
     key: 'autoEvolution', 
     name: '🌀 Авто-Эволюция Мутаций', 
     desc: 'Автоматически совершает мутацию форм + активирует тумблер управления на экране персонажа!', 
-    cost: 5000, 
+    cost: 4500, 
     max: 1, 
     tier: 2, 
     tierName: 'Тир 2: Продвинутый', 
-    reqTranscend: 3 
+    reqTranscend: 2 
+  },
+  { 
+    id: 'art_auto_care', 
+    key: 'autoCare', 
+    name: '🤖 Астральный Авто-Уход', 
+    desc: 'Автоматически заботится о какашечке (кормление, мытье, щекотка) + открывает панель авто-ухода!', 
+    cost: 3500, 
+    max: 1, 
+    tier: 2, 
+    tierName: 'Тир 2: Продвинутый', 
+    reqTranscend: 2 
   },
   { 
     id: 'art_knife_forge', 

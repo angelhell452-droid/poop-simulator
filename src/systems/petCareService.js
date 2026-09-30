@@ -50,6 +50,7 @@ export function decayNeeds(dt) {
 }
 
 export function runAutoCare() {
+  if (!GAME.transcendUpgrades?.autoCare) return;
   let triggered = false;
   if (GAME.autoFeed && GAME.hunger < 75) {
     GAME.hunger = Math.min(100, GAME.hunger + 30);

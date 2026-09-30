@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40"
-            id="versionTag">v4.7.1 PRO</span>
+            id="versionTag">v4.7.2 PRO</span>
         </div>
         <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
       </div>
@@ -80,9 +80,10 @@
       </div>
 
       <div id="cloudIndicator"
-        class="hidden sm:flex items-center gap-1 text-[11px] bg-stone-800 px-2 py-1 rounded-lg border border-stone-600 font-bold text-stone-300">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span id="cloudStatusText">БД: OK</span>
+        class="hidden sm:flex items-center justify-center gap-1.5 text-[10px] bg-stone-900/90 px-2 py-1 rounded-xl border border-stone-700 font-bold text-stone-300 w-[84px] min-w-[84px] max-w-[84px] shrink-0 flex-none text-center select-none overflow-hidden"
+        title="Статус синхронизации с базой данных Cloudflare D1">
+        <span id="cloudLed" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
+        <span id="cloudStatusText" class="truncate font-mono">D1: OK</span>
       </div>
       <button id="btnGuideModal"
         class="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-cyan-400 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
@@ -98,6 +99,11 @@
         class="bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-500 hover:brightness-110 text-stone-950 font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-300 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
         title="Таблица Лидеров и Зал Славы (Топ 20 игроков)">
         <span>🏆</span> <span class="hidden sm:inline">Топ</span>
+      </button>
+      <button id="btnOpenCharacterInventory"
+        class="bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-700 hover:brightness-110 text-stone-950 font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-300 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
+        title="Инвентарь персонажа (Снаряжение, Ножи, Головные уборы)">
+        <span>🎒</span> <span class="hidden sm:inline">Инвентарь</span>
       </button>
       <button id="btnTopKnivesIndex"
         class="bg-gradient-to-r from-purple-700 via-pink-700 to-amber-600 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-400 text-xs jelly-btn flex items-center gap-1.5 shadow"
@@ -286,6 +292,12 @@
 
         <!-- Canvas Quick Prestige & Transcend Badges (Prominent immediate access) -->
         <div class="absolute top-3 right-3 flex items-center gap-1.5 z-10 select-none">
+          <button id="btnCanvasInventory"
+            class="bg-amber-950/85 hover:bg-amber-900 backdrop-blur-md text-amber-200 border-2 border-yellow-400/80 rounded-2xl px-2.5 py-1 text-xs font-game flex items-center gap-1 shadow-lg jelly-btn transition"
+            title="Инвентарь персонажа (Снаряжение)">
+            <span>🎒</span>
+            <span class="hidden xs:inline">Инв</span>
+          </button>
           <button id="btnCanvasPrestige"
             class="bg-purple-950/85 hover:bg-purple-900 backdrop-blur-md text-yellow-300 border-2 border-yellow-400/80 rounded-2xl px-2.5 py-1 text-xs font-game flex items-center gap-1 shadow-lg jelly-btn transition"
             title="Открыть Смыв Судьбы (Престиж 1-го уровня)">
@@ -330,35 +342,50 @@
 
       <!-- AUTO-CARE DECK (Авто-Кормление, Авто-Мытье, Авто-Щекотка) -->
       <div
-        class="px-3 py-1.5 bg-stone-950/95 border-t border-amber-900/60 flex items-center justify-between gap-1 flex-wrap z-10 text-[11px]">
-        <div class="flex items-center gap-1.5 font-bold text-amber-300">
-          <span class="text-sm">🤖</span>
-          <span class="text-[10px] uppercase font-bold text-stone-300">Авто-Уход:</span>
+        class="px-3 py-1.5 bg-stone-950/95 border-t border-amber-900/60 flex items-center justify-between gap-1 flex-wrap z-10 text-[11px]" id="autoCareDeck">
+        
+        <!-- Locked State Notice (Before midgame Astral Transcendence) -->
+        <div id="autoCareLockedNotice" class="w-full flex items-center justify-between gap-2 py-0.5 text-[11px] text-stone-400">
+          <div class="flex items-center gap-1.5 text-stone-300">
+            <span class="text-sm">🔒</span>
+            <span>Авто-уход открывается в <strong>Астральном Прорыве</strong> (Тир II)</span>
+          </div>
+          <button id="btnAutoCareInfo" class="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold underline cursor-pointer bg-transparent border-0">
+            К Прорыву 🪠
+          </button>
         </div>
-        <div class="flex items-center gap-1.5 flex-wrap">
-          <button id="btnAutoFeed"
-            class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
-            title="Автоматически кормить при голоде < 75%">
-            <span id="autoFeedLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
-            <span>🍔 Авто-Еда</span>
-          </button>
-          <button id="btnAutoWash"
-            class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
-            title="Автоматически мыть и полировать при чистоте < 75%">
-            <span id="autoWashLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
-            <span>🧼 Авто-Мытье</span>
-          </button>
-          <button id="btnAutoTickle"
-            class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
-            title="Автоматически щекотать для комбо и счастья">
-            <span id="autoTickleLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
-            <span>🪶 Авто-Щекотка</span>
-          </button>
-          <button id="btnAutoCareAll"
-            class="px-2.5 py-1 rounded-xl border text-[10px] font-game bg-amber-900/60 hover:bg-amber-800 text-amber-200 border-amber-600 transition shadow jelly-btn"
-            title="Переключить все авто-действия">
-            ⚡ Все ВКЛ
-          </button>
+
+        <!-- Unlocked Controls (After Astral Transcendence purchase) -->
+        <div id="autoCareControls" class="w-full hidden flex items-center justify-between gap-1 flex-wrap">
+          <div class="flex items-center gap-1.5 font-bold text-amber-300">
+            <span class="text-sm">🤖</span>
+            <span class="text-[10px] uppercase font-bold text-stone-300">Авто-Уход:</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button id="btnAutoFeed"
+              class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
+              title="Автоматически кормить при голоде < 75%">
+              <span id="autoFeedLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+              <span>🍔 Авто-Еда</span>
+            </button>
+            <button id="btnAutoWash"
+              class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
+              title="Автоматически мыть и полировать при чистоте < 75%">
+              <span id="autoWashLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+              <span>🧼 Авто-Мытье</span>
+            </button>
+            <button id="btnAutoTickle"
+              class="px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700"
+              title="Автоматически щекотать для комбо и счастья">
+              <span id="autoTickleLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+              <span>🪶 Авто-Щекотка</span>
+            </button>
+            <button id="btnAutoCareAll"
+              class="px-2.5 py-1 rounded-xl border text-[10px] font-game bg-amber-900/60 hover:bg-amber-800 text-amber-200 border-amber-600 transition shadow jelly-btn"
+              title="Переключить все авто-действия">
+              ⚡ Все ВКЛ
+            </button>
+          </div>
         </div>
       </div>
 
@@ -477,37 +504,23 @@
               </div>
             </div>
             <p class="text-[10px] text-stone-300 mt-1">Открывайте кейсы за валюту перерождений (Втулки и Вантузы)!
-              Выбитые ножи отображаются в руке какашечки и дают сокрушительные множители силы.</p>
+              Выбитые ножи отправляются в ваш Инвентарь Персонажа и дают сокрушительные множители силы.</p>
           </div>
 
-          <!-- Active Knife Display -->
-          <div id="equippedKnifeCard"
-            class="p-3 rounded-2xl border-2 border-stone-700 bg-stone-950 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="text-3xl p-2 rounded-xl bg-stone-900 border border-stone-800" id="equippedKnifeIcon">✊</div>
+          <!-- Shortcut to Dedicated Character Inventory Modal -->
+          <div class="p-3 rounded-2xl bg-gradient-to-r from-amber-950/90 to-stone-900 border-2 border-yellow-500/60 shadow flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🎒</span>
               <div>
-                <div class="text-[10px] text-stone-400 uppercase font-bold">Экипированный Нож:</div>
-                <div class="font-game text-sm text-stone-200" id="equippedKnifeName">Голые руки (Без ножа)</div>
-                <div class="text-[10px] text-emerald-400 font-semibold" id="equippedKnifeStats">Бонус: Стандартный урон
-                </div>
+                <div class="font-game text-xs text-yellow-300">Инвентарь Снаряжения</div>
+                <div class="text-[10px] text-stone-300">Экипируйте выбитые ножи, головные уборы и выберите лучший клинок</div>
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <button id="btnEquipBestKnifeEquipped"
-                class="hidden text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 px-2.5 py-1.5 rounded-xl border border-yellow-300 font-black jelly-btn">
-                ⚔️ Лучший
-              </button>
-              <button id="btnEquipBestKnifeEmpty"
-                class="text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 px-2.5 py-1.5 rounded-xl border border-yellow-300 font-black jelly-btn">
-                ⚔️ Надеть лучший
-              </button>
-              <button id="btnUnequipKnife"
-                class="hidden text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-stone-300 px-2.5 py-1.5 rounded-xl border border-stone-600 jelly-btn">
-                Снять
-              </button>
-            </div>
+            <button id="btnOpenCharacterInventoryFromCases"
+              class="shrink-0 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-[11px] font-black px-3 py-1.5 rounded-xl border border-yellow-300 shadow jelly-btn">
+              🎒 Инвентарь
+            </button>
           </div>
-          <div id="knifeToastNotification" class="hidden"></div>
 
           <!-- Knife Index Book Showcase Button -->
           <div class="my-2">
@@ -529,48 +542,6 @@
           <!-- Cases Crates Grid -->
           <div class="font-bold text-stone-400 uppercase text-[10px] px-1">Доступные Кейсы для Открытия:</div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="casesCratesList">
-            <!-- Rendered in JS -->
-          </div>
-
-          <!-- Unlocked Knives Inventory Header -->
-          <div class="flex items-center justify-between px-1 pt-1 flex-wrap gap-1">
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-stone-200 uppercase text-[11px] font-game">🗡️ Инвентарь Клинков:</span>
-              <span class="text-[10px] text-amber-400 font-bold" id="knivesCountBadge">0 / 200 найдено</span>
-            </div>
-            <button id="btnEquipBestKnifeInv"
-              class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-game text-[10px] font-black px-2.5 py-1 rounded-xl shadow jelly-btn flex items-center gap-1 border border-yellow-300"
-              title="Автоматически найти и надеть самый мощный нож">
-              <span>⚔️</span>
-              <span>Надеть лучший</span>
-            </button>
-          </div>
-
-          <!-- Inventory Filter & Sort Controls -->
-          <div class="bg-stone-900/90 p-2 rounded-2xl border border-stone-800 space-y-1.5 text-xs">
-            <div class="flex items-center gap-2">
-              <input type="text" id="knifeInvSearch" placeholder="🔍 Поиск ножа по названию..."
-                class="flex-1 bg-stone-950 text-stone-200 text-[11px] px-2.5 py-1 rounded-xl border border-stone-700 focus:outline-none focus:border-amber-400 placeholder:text-stone-500">
-              <select id="knifeInvSort"
-                class="bg-stone-950 text-yellow-300 text-[10px] font-bold px-2 py-1 rounded-xl border border-stone-700 focus:outline-none">
-                <option value="power">⚡ По Мощи (Клик+Заводы)</option>
-                <option value="click">🗡️ По Силе Клика</option>
-                <option value="passive">🏭 По Пассивному CPS</option>
-                <option value="stattrak">🔥 По StatTrak™</option>
-                <option value="star">⭐ По Уровню Заточки</option>
-                <option value="name">🔤 По Названию</option>
-              </select>
-            </div>
-            <div class="flex items-center gap-1 overflow-x-auto custom-scroll pb-0.5" id="knifeInvFilterBar">
-              <button class="knife-inv-filter px-2 py-0.5 rounded-lg text-[10px] font-bold border transition bg-amber-500 text-stone-950 border-yellow-300" data-filter="all">Все</button>
-              <button class="knife-inv-filter px-2 py-0.5 rounded-lg text-[10px] font-bold border transition bg-stone-950 text-yellow-400 border-yellow-500/40" data-filter="godly">★ Боги & Небесные</button>
-              <button class="knife-inv-filter px-2 py-0.5 rounded-lg text-[10px] font-bold border transition bg-stone-950 text-red-400 border-red-500/40" data-filter="covert">Тайные & Титан</button>
-              <button class="knife-inv-filter px-2 py-0.5 rounded-lg text-[10px] font-bold border transition bg-stone-950 text-pink-400 border-pink-500/40" data-filter="classified">Засекреченные</button>
-              <button class="knife-inv-filter px-2 py-0.5 rounded-lg text-[10px] font-bold border transition bg-stone-950 text-stone-400 border-stone-700" data-filter="common">Обычные</button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[250px] overflow-y-auto custom-scroll pr-1" id="knivesInventoryContainer">
             <!-- Rendered in JS -->
           </div>
         </div>
@@ -833,9 +804,9 @@
         Золотые Втулки!</p>
 
       <div class="bg-purple-900/60 border border-yellow-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
-        <div class="flex justify-between">
-          <span class="text-stone-300">Условие доступа:</span>
-          <span class="font-bold text-yellow-300">Форма 15 или 100,000 💨</span>
+        <div class="flex flex-col gap-0.5">
+          <span class="text-stone-300 text-[10px] uppercase font-bold">Условие доступа:</span>
+          <div id="prestigeReqLabel" class="text-yellow-300 font-bold">Форма 15 или 100,000 💨</div>
         </div>
         <div id="prestigeCalcRolls">
           <span class="font-game text-yellow-300 text-sm">+0 🧻</span>
@@ -892,9 +863,9 @@
           Вантузы</b> за накопленные Втулки Судьбы.</p>
 
       <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
-        <div class="flex justify-between">
-          <span class="text-stone-300">Условие доступа:</span>
-          <span class="font-bold text-cyan-300">Форма 50+, 5+ Смывов и 2,500+ 🧻</span>
+        <div class="flex flex-col gap-0.5">
+          <span class="text-stone-300 text-[10px] uppercase font-bold">Условие доступа:</span>
+          <div id="transcendReqLabel" class="text-cyan-300 font-bold">Форма 50+, 5+ Смывов и 2,500+ 🧻</div>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Запас Втулок Судьбы:</span>
@@ -1392,6 +1363,119 @@
       </div>
 
       <div class="space-y-3.5" id="patchNotesList">
+        <!-- Rendered in JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARACTER INVENTORY & LOADOUT MODAL -->
+  <div id="characterInventoryModal"
+    class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div
+      class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-yellow-400 max-w-2xl w-full p-4 sm:p-6 relative shadow-2xl max-h-[92vh] overflow-y-auto custom-scroll text-left flex flex-col space-y-3 sm:space-y-4">
+      <button
+        class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-2xl font-bold transition">&times;</button>
+
+      <!-- Modal Header -->
+      <div class="flex items-center gap-3 border-b border-yellow-500/30 pb-3">
+        <span class="text-4xl">🎒</span>
+        <div>
+          <h3 class="font-game text-xl sm:text-2xl text-yellow-300 tracking-wide">ИНВЕНТАРЬ ПЕРСОНАЖА</h3>
+          <p class="text-xs text-amber-200">Снаряжение какашечки, головные уборы и арсенал боевых ножей CS:GO</p>
+        </div>
+      </div>
+
+      <!-- Character Loadout Deck (Forms, Hats, Weapons) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <!-- Poop Form & Hat Status -->
+        <div class="p-3 rounded-2xl bg-stone-900/90 border border-stone-700/80 flex items-center justify-between gap-3 shadow">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl" id="invPoopIcon">💩</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-game text-xs text-yellow-300" id="invPoopFormName">Форма #1: Какашич</span>
+                <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500 text-stone-950 uppercase" id="invPoopTierBadge">Тир 1</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px] text-stone-300 mt-1">
+                <span id="invHatIcon">🧢</span>
+                <span id="invHatName" class="text-stone-300">Без головного убора</span>
+              </div>
+            </div>
+          </div>
+          <button id="btnInvGoToShop" class="shrink-0 text-[10px] font-game bg-amber-900/60 hover:bg-amber-800 text-amber-200 border border-amber-600 px-2.5 py-1.5 rounded-xl jelly-btn" title="Перейти в королевский гардероб шапок">
+            Гардероб 🎩
+          </button>
+        </div>
+
+        <!-- Equipped Weapon Card -->
+        <div id="equippedKnifeCard" class="p-3 rounded-2xl border-2 border-amber-500/50 bg-stone-950 flex items-center justify-between shadow">
+          <div class="flex items-center gap-3">
+            <div class="text-3xl p-2 rounded-xl bg-stone-900 border border-stone-800" id="equippedKnifeIcon">✊</div>
+            <div>
+              <div class="text-[10px] text-stone-400 uppercase font-bold">Экипированный Нож:</div>
+              <div class="font-game text-sm text-stone-200" id="equippedKnifeName">Голые руки (Без ножа)</div>
+              <div class="text-[10px] text-emerald-400 font-semibold" id="equippedKnifeStats">Бонус: Стандартный урон</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnEquipBestKnifeEquipped"
+              class="hidden text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 px-2.5 py-1.5 rounded-xl border border-yellow-300 font-black jelly-btn">
+              ⚔️ Лучший
+            </button>
+            <button id="btnEquipBestKnifeEmpty"
+              class="text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 px-2.5 py-1.5 rounded-xl border border-yellow-300 font-black jelly-btn">
+              ⚔️ Надеть лучший
+            </button>
+            <button id="btnUnequipKnife"
+              class="hidden text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-stone-300 px-2.5 py-1.5 rounded-xl border border-stone-600 jelly-btn">
+              Снять
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="knifeToastNotification" class="hidden"></div>
+
+      <!-- Knife Arsenal Title & Quick Equip Best -->
+      <div class="flex items-center justify-between px-1 pt-1 flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-stone-200 uppercase text-xs font-game">🗡️ Коллекция Клинков:</span>
+          <span class="text-xs text-amber-400 font-bold" id="knivesCountBadge">0 / 200 найдено</span>
+        </div>
+        <button id="btnEquipBestKnifeInv"
+          class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-game text-xs font-black px-3 py-1.5 rounded-xl shadow-lg jelly-btn flex items-center gap-1.5 border border-yellow-300"
+          title="Автоматически найти и надеть самый мощный нож в вашей коллекции">
+          <span>⚔️</span>
+          <span>Надеть лучший нож</span>
+        </button>
+      </div>
+
+      <!-- Inventory Filter & Sort Controls -->
+      <div class="bg-stone-900/90 p-2.5 rounded-2xl border border-stone-800 space-y-2 text-xs">
+        <div class="flex items-center gap-2">
+          <input type="text" id="knifeInvSearch" placeholder="🔍 Поиск ножа по названию..."
+            class="flex-1 bg-stone-950 text-stone-200 text-xs px-3 py-1.5 rounded-xl border border-stone-700 focus:outline-none focus:border-amber-400 placeholder:text-stone-500">
+          <select id="knifeInvSort"
+            class="bg-stone-950 text-yellow-300 text-xs font-bold px-2.5 py-1.5 rounded-xl border border-stone-700 focus:outline-none">
+            <option value="power">⚡ По Мощи (Клик+Заводы)</option>
+            <option value="click">🗡️ По Силе Клика</option>
+            <option value="passive">🏭 По Пассивному CPS</option>
+            <option value="stattrak">🔥 По StatTrak™</option>
+            <option value="star">⭐ По Уровню Заточки</option>
+            <option value="name">🔤 По Названию</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-0.5" id="knifeInvFilterBar">
+          <button class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-amber-600 text-white shadow" data-filter="all">Все</button>
+          <button class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-yellow-400 border border-yellow-500/30" data-filter="godly">★ Боги & Небесные</button>
+          <button class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-red-400 border border-red-500/30" data-filter="covert">Тайные & Титан</button>
+          <button class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-pink-400 border border-pink-500/30" data-filter="classified">Засекреченные</button>
+          <button class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-stone-400 border border-stone-700" data-filter="common">Обычные</button>
+        </div>
+      </div>
+
+      <!-- Knives Scrollable Container -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[360px] overflow-y-auto custom-scroll pr-1" id="knivesInventoryContainer">
         <!-- Rendered in JS -->
       </div>
     </div>

@@ -16,6 +16,7 @@ import { initAuthModal } from './ui/authModalView.js';
 import { initLeaderboardView } from './ui/leaderboardView.js';
 import { initPatchNotesListeners } from './ui/patchNotesView.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js';
+import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
 import { addPendingClicks, processBatchedClicks } from './systems/clickService.js';
 import { performEvolution } from './progression/evolutionService.js';
@@ -112,6 +113,7 @@ export async function bootstrap() {
   initLeaderboardView();
   initPatchNotesListeners();
   initSmartAssistantListeners();
+  initCharacterInventoryListeners();
 
   // Secret Click Trophy on Logo
   document.getElementById('logoSecretClick')?.addEventListener('click', () => {
@@ -284,6 +286,7 @@ export async function bootstrap() {
   renderAchievements();
   renderEvoChronicles();
   renderCasesSystem();
+  renderCharacterInventory();
   updateHUD();
 
   // 9. Event Listener for tick UI sync

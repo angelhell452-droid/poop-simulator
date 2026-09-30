@@ -44,7 +44,7 @@ export async function syncToCloudDatabase() {
   saveLocal();
 
   const statusIndicator = document.getElementById('cloudStatusText');
-  if (statusIndicator) statusIndicator.textContent = "D1: Сохранение...";
+  if (statusIndicator) statusIndicator.textContent = "D1: Сохр...";
 
   const payload = buildSavePayload();
   const bodyStr = JSON.stringify({
@@ -73,12 +73,12 @@ export async function syncToCloudDatabase() {
     }
 
     if (res.ok) {
-      if (statusIndicator) statusIndicator.textContent = "D1: Синхр ✓";
+      if (statusIndicator) statusIndicator.textContent = "D1: OK";
     } else {
       if (statusIndicator) statusIndicator.textContent = "D1: Локально";
     }
   } catch (err) {
-    if (statusIndicator) statusIndicator.textContent = "D1: Локально";
+    if (statusIndicator) statusIndicator.textContent = "D1: Офлайн";
   }
 }
 

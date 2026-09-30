@@ -10,6 +10,7 @@ import { CSGO_CASES } from '../data/cases.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
+import { renderCharacterInventory } from './characterInventoryView.js';
 import { addVisualParticle } from './petCanvasView.js';
 
 let lastHintAction = null;
@@ -111,6 +112,7 @@ function determineBestHint() {
         if (res.success) {
           updateHUD();
           renderCasesSystem();
+          renderCharacterInventory();
           addVisualParticle(`⚔️ Экипирован: ${bestKnife.name}!`, '#facc15');
         }
       }
@@ -156,7 +158,7 @@ function determineBestHint() {
           text: `Хватает валюты на <b>«${c.name}»</b>! Испытайте удачу и выбейте редкий клинок!`,
           btnText: 'К кейсам 🎰',
           action: () => {
-            const tabBtn = document.querySelector('.tab-btn[data-tab="cases"]');
+            const tabBtn = document.querySelector('.dash-tab[data-target="panelCases"]');
             if (tabBtn) tabBtn.click();
           }
         };

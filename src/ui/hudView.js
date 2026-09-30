@@ -185,6 +185,14 @@ export function updateHUD() {
 }
 
 export function updateAutocareUI() {
+  const hasAutoCare = !!GAME.transcendUpgrades?.autoCare;
+  const lockedNotice = document.getElementById('autoCareLockedNotice');
+  const controls = document.getElementById('autoCareControls');
+  if (lockedNotice && controls) {
+    lockedNotice.classList.toggle('hidden', hasAutoCare);
+    controls.classList.toggle('hidden', !hasAutoCare);
+  }
+
   const feedBtn = document.getElementById('btnAutoFeed');
   const feedLed = document.getElementById('autoFeedLed');
   if (feedBtn && feedLed) {
@@ -232,6 +240,10 @@ export function updateAutocareUI() {
 }
 
 export function initAutocareListeners() {
+  document.getElementById('btnAutoCareInfo')?.addEventListener('click', () => {
+    document.getElementById('transcendModal')?.classList.remove('hidden');
+  });
+
   document.getElementById('btnAutoFeed')?.addEventListener('click', () => {
     GAME.autoFeed = !GAME.autoFeed;
     updateAutocareUI();
