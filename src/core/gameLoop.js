@@ -84,8 +84,13 @@ export function gameEngineTick() {
   }
 
   // 5. Combo Heat & Turbo Rush
+  const timeSinceLastClick = Date.now() - (GAME.lastClickTimestamp || 0);
+  const isActivelyClicking = timeSinceLastClick < 800 || (liveCps > 0);
+
   if (GAME.turboRushTime > 0) {
-    GAME.turboRushTime = Math.max(0, GAME.turboRushTime - dt);
+    if (!isActivelyClicking) {
+      GAME.turboRushTime = Math.max(0, GAME.turboRushTime - dt);
+    }
     GAME.comboHeat = 100;
   } else {
     GAME.comboHeat = Math.max(0, (GAME.comboHeat || 0) - (3.5 * dt));

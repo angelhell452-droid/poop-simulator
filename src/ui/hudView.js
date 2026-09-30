@@ -112,13 +112,15 @@ export function updateHUD() {
   if (footCps) {
     if (liveCps > 0) {
       footCps.textContent = `(${formatNumber(liveCps)} CPS ⚡)`;
-      footCps.classList.remove('hidden');
+      footCps.classList.remove('opacity-0');
+      footCps.classList.add('opacity-100');
     } else {
-      footCps.classList.add('hidden');
+      footCps.classList.remove('opacity-100');
+      footCps.classList.add('opacity-0');
     }
   }
 
-  // Combo Heat & Turbo Frenzy UI
+  // Combo Heat & Turbo Frenzy UI (Zero-jitter layout)
   const rushTimerEl = document.getElementById('turboRushTimer');
   const comboLbl = document.getElementById('comboLabel');
   const comboBarEl = document.getElementById('comboBar');
@@ -126,14 +128,18 @@ export function updateHUD() {
 
   if (GAME.turboRushTime > 0) {
     if (rushTimerEl) {
-      rushTimerEl.textContent = `🔥 ТУРБО x10! (${Math.ceil(GAME.turboRushTime)}с)`;
-      rushTimerEl.classList.remove('hidden');
+      rushTimerEl.textContent = `🔥 x10 (${Math.ceil(GAME.turboRushTime)}с)`;
+      rushTimerEl.classList.remove('opacity-0', 'pointer-events-none');
+      rushTimerEl.classList.add('opacity-100');
     }
-    if (comboLbl) comboLbl.textContent = '🔥 ТУРБО-РЕЖИМ x10! 🔥';
+    if (comboLbl) comboLbl.textContent = '🔥 ТУРБО x10!';
     if (comboIcon) comboIcon.textContent = '🔥';
   } else {
-    if (rushTimerEl) rushTimerEl.classList.add('hidden');
-    if (comboLbl) comboLbl.textContent = `ЯРОСТЬ КЛИКОВ: ${Math.round(GAME.comboHeat || 0)}%`;
+    if (rushTimerEl) {
+      rushTimerEl.classList.remove('opacity-100');
+      rushTimerEl.classList.add('opacity-0', 'pointer-events-none');
+    }
+    if (comboLbl) comboLbl.textContent = `ЯРОСТЬ: ${Math.round(GAME.comboHeat || 0)}%`;
     if (comboIcon) comboIcon.textContent = (GAME.comboHeat > 50) ? '⚡' : '💤';
   }
   if (comboBarEl) comboBarEl.style.width = `${Math.min(100, Math.round(GAME.comboHeat || 0))}%`;

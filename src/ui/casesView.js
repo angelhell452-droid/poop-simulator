@@ -474,7 +474,7 @@ export function renderCasesSystem() {
   const rollsLabel = document.getElementById('casesRollsLabel');
   if (rollsLabel) rollsLabel.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
   const plungersLabel = document.getElementById('casesPlungersLabel');
-  if (plungersLabel) plungersLabel.textContent = `${formatNumber(GAME.transcendPlungers || 0)} 🪠`;
+  if (plungersLabel) plungersLabel.innerHTML = `${formatNumber(GAME.transcendPlungers || 0)} <span class="plunger-icon"></span>`;
   
   const countBadge = document.getElementById('knivesCountBadge');
   const unlockedCount = (GAME.unlockedKnives || []).length;
@@ -515,16 +515,17 @@ export function renderCasesSystem() {
         ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 Требуется: ${c.reqTranscend ? `${c.reqTranscend} Прорывов` : `${c.reqPrestiges} Смывов`}</div>`
         : '';
 
+      const currIcon = c.currency === 'plungers' ? '<span class="plunger-icon"></span>' : '🧻';
       const btnText = !isUnlocked
         ? `🔒 ЗАБЛОКИРОВАНО`
-        : (hasCurrency ? `ОТКРЫТЬ КЕЙС 🎰` : `НЕ ХВАТАЕТ ${c.currencySymbol}`);
+        : (hasCurrency ? `ОТКРЫТЬ КЕЙС 🎰` : `НЕ ХВАТАЕТ ${c.currency === 'plungers' ? 'ВАНТУЗОВ' : 'ВТУЛОК'}`);
 
       return `
         <div class="p-3 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-lg flex flex-col justify-between relative overflow-hidden ${!isUnlocked ? 'opacity-70 grayscale-[25%]' : ''}">
           <div>
             <div class="flex items-center justify-between mb-1">
               <span class="text-2xl">${c.icon}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-900/80 text-yellow-300 border border-yellow-500/40">${formatNumber(c.cost)} ${c.currencySymbol}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-900/80 text-yellow-300 border border-yellow-500/40 inline-flex items-center gap-1">${formatNumber(c.cost)} ${currIcon}</span>
             </div>
             <div class="font-game text-xs text-yellow-200 mt-1">${c.name}</div>
             <div class="text-[10px] text-stone-300 mt-0.5 leading-snug">${c.desc}</div>
@@ -607,7 +608,7 @@ export function updateCasesButtons() {
   const rollsLabel = document.getElementById('casesRollsLabel');
   if (rollsLabel) rollsLabel.textContent = `${formatNumber(GAME.prestigeRolls)} 🧻`;
   const plungersLabel = document.getElementById('casesPlungersLabel');
-  if (plungersLabel) plungersLabel.textContent = `${formatNumber(GAME.transcendPlungers || 0)} 🪠`;
+  if (plungersLabel) plungersLabel.innerHTML = `${formatNumber(GAME.transcendPlungers || 0)} <span class="plunger-icon"></span>`;
 
   const cratesList = document.getElementById('casesCratesList');
   if (!cratesList) return;

@@ -121,7 +121,7 @@ export function initModals() {
       if (!tReq.meetsPrestiges) {
         plungersEl.innerHTML = `<span class="text-red-400 font-bold text-xs">🔒 Требуется ${tReq.reqPrestiges} Смывов! (${tReq.currentPrestiges}/${tReq.reqPrestiges})</span>`;
       } else {
-        plungersEl.textContent = `+${formatNumber(gain)} 🪠 Вантузов`;
+        plungersEl.innerHTML = `+${formatNumber(gain)} <span class="plunger-icon"></span> Вантузов`;
       }
     }
 
@@ -274,7 +274,7 @@ export function renderTranscendUpgrades() {
 
       const btnText = isLocked 
         ? '🔒' 
-        : (isMax ? 'МАКС' : `${formatNumber(cost)} 🪠`);
+        : (isMax ? 'МАКС' : `${formatNumber(cost)} <span class="plunger-icon"></span>`);
 
       row.innerHTML = `
         <div class="pr-2">

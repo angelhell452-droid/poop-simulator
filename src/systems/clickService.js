@@ -70,17 +70,25 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     eqKnife.statTrak = (eqKnife.statTrak || 0) + clicksToProcess;
   }
 
+  GAME.lastClickTimestamp = Date.now();
+
   // Combo Heat & Turbo Rush
+  const comboTalent = TALENTS.find(t => t.id === 'combo_master');
+  const bonusDuration = (comboTalent ? comboTalent.level * 0.5 : 0) + (SHOP_ITEMS.find(i => i.id === 'upg_comborush')?.owned ? 6 : 0);
+  const maxTurboDuration = Math.round(12 + bonusDuration);
+
   if (GAME.turboRushTime <= 0) {
     const heatGain = Math.min(25, clicksToProcess > 25 ? 12 : clicksToProcess * 0.7);
     GAME.comboHeat = Math.min(100, (GAME.comboHeat || 0) + heatGain);
     if (GAME.comboHeat >= 100) {
-      const comboTalent = TALENTS.find(t => t.id === 'combo_master');
-      const bonusDuration = (comboTalent ? comboTalent.level * 0.5 : 0) + (SHOP_ITEMS.find(i => i.id === 'upg_comborush')?.owned ? 6 : 0);
-      GAME.turboRushTime = Math.round(12 + bonusDuration);
+      GAME.turboRushTime = maxTurboDuration;
       GAME.turboCount = (GAME.turboCount || 0) + 1;
       events.emit('turbo:activated');
     }
+  } else {
+    // While clicking actively continues, refresh and hold the Turbo timer at maximum!
+    GAME.turboRushTime = Math.max(GAME.turboRushTime, maxTurboDuration);
+    GAME.comboHeat = 100;
   }
 
   const isManual = (clickClientX !== null && clickClientX !== undefined);
