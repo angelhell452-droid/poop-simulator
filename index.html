@@ -4310,26 +4310,27 @@
       };
     }
 
-    // Purely synchronous instant local storage (0ms delay, never rolled back)
+    // Pure Cloud Persistence: in-memory state validation & debounced cloud synchronization
     function saveLocal() {
       if (isWipingData) return;
       try {
         if (!isFinite(GAME.biomass) || GAME.biomass < 0 || GAME.biomass > 1e160) GAME.biomass = 0;
         if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e160) GAME.cycleBiomass = 0;
         if (!isFinite(GAME.allTimeBiomass) || GAME.allTimeBiomass < 0 || GAME.allTimeBiomass > 1e160) GAME.allTimeBiomass = 0;
-        const payload = buildSavePayload();
-        const json = JSON.stringify(payload);
-        localStorage.setItem(STORAGE_KEY, json);
-        localStorage.setItem(BACKUP_KEY, json);
       } catch (e) {
-        console.warn('LocalStorage save error', e);
+        console.warn('Memory sanitize error', e);
       }
+      requestCloudSync(2000);
     }
 
-    // Debounced cloud synchronization (saves without spamming network)
-    function requestCloudSync(delayMs = 2500) {
+    // Debounced cloud synchronization to Cloudflare D1
+    function requestCloudSync(delayMs = 2000) {
       if (isWipingData) return;
       if (cloudSyncDebounceTimer) clearTimeout(cloudSyncDebounceTimer);
+      if (Date.now() - lastCloudSyncTime > 6000) {
+        syncToCloudDatabase();
+        return;
+      }
       cloudSyncDebounceTimer = setTimeout(() => {
         syncToCloudDatabase();
       }, delayMs);
@@ -4337,7 +4338,7 @@
 
     async function syncToCloudDatabase() {
       if (isWipingData) return;
-      saveLocal(); // Always guarantee local storage is refreshed first
+      lastCloudSyncTime = Date.now();
 
       const statusIndicator = document.getElementById('cloudStatusText');
       if (statusIndicator) statusIndicator.textContent = "D1: Сохранение...";
@@ -4345,7 +4346,6 @@
       const payload = buildSavePayload();
       const bodyStr = JSON.stringify({ playerId: PLAYER_ID, playerName: PLAYER_NAME, saveData: payload });
 
-      // Try Cloudflare D1 Pages Function endpoint first, with legacy fallback
       try {
         let res = await fetch(CLOUD_SAVE_ENDPOINT, {
           method: 'POST',
@@ -4364,10 +4364,10 @@
         if (res.ok) {
           if (statusIndicator) statusIndicator.textContent = "D1: Синхр ✓";
         } else {
-          if (statusIndicator) statusIndicator.textContent = "D1: Локально";
+          if (statusIndicator) statusIndicator.textContent = "D1: Ошибка сети";
         }
       } catch (err) {
-        if (statusIndicator) statusIndicator.textContent = "D1: Локально";
+        if (statusIndicator) statusIndicator.textContent = "D1: Офлайн";
       }
     }
     const syncToNetlifyBlobs = syncToCloudDatabase;
@@ -4376,50 +4376,24 @@
       const statusIndicator = document.getElementById('cloudStatusText');
       if (statusIndicator) statusIndicator.textContent = "D1: Загрузка...";
 
-      // STEP 1: IMMEDIATELY load from local storage synchronously (zero rollback, zero lag)
-      let localData = null;
+      // Clean up legacy localStorage saves so client NEVER holds offline copies
       try {
-        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_KEY);
-        if (raw) localData = JSON.parse(raw);
-      } catch (e) {
-        console.error('LocalStorage parse failed', e);
-      }
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(BACKUP_KEY);
+      } catch (e) {}
 
-      if (localData) {
-        applySaveDataSafely(localData);
-        if (statusIndicator) statusIndicator.textContent = "D1: Локально ✓";
-      }
-
-      // STEP 2: Query Cloudflare D1 in background
+      // Pure Cloud Load from Cloudflare D1
       try {
-        let res = await fetch(`${CLOUD_SAVE_ENDPOINT}?playerId=${PLAYER_ID}`);
+        let res = await fetch(`${CLOUD_SAVE_ENDPOINT}?playerId=${encodeURIComponent(PLAYER_ID)}`);
         if (!res.ok && res.status === 404) {
-          res = await fetch(`${LEGACY_SAVE_ENDPOINT}?playerId=${PLAYER_ID}`);
+          res = await fetch(`${LEGACY_SAVE_ENDPOINT}?playerId=${encodeURIComponent(PLAYER_ID)}`);
         }
 
         if (res.ok) {
           const json = await res.json();
           if (json.exists && json.data) {
-            const cloudData = json.data;
-            const cloudTime = new Date(json.updatedAt || 0).getTime() || cloudData.saveTimestamp || 0;
-            const localTime = localData?.saveTimestamp || localData?.game?.lastActiveTime || 0;
-
-            // Bulletproof anti-rollback protection:
-            // Only adopt cloud save if it is strictly from a NEWER session on another device/tab (cloudTime > localTime + 1500ms).
-            // If local save is newer or equal, NEVER rollback! Instead, sync local state forward to Cloudflare D1!
-            const cloudIsNewerSession = cloudTime > (localTime + 1500);
-
-            if (cloudIsNewerSession) {
-              applySaveDataSafely(cloudData);
-              saveLocal(); // Persist the superior cloud progress locally
-              if (statusIndicator) statusIndicator.textContent = "D1: Загружено ✓";
-            } else {
-              // Local progress is the authoritative latest state! Update cloud!
-              if (localData) {
-                syncToCloudDatabase();
-              }
-              if (statusIndicator) statusIndicator.textContent = "D1: Синхр ✓";
-            }
+            applySaveDataSafely(json.data);
+            if (statusIndicator) statusIndicator.textContent = "D1: Загружено ✓";
 
             if (json.playerName) {
               PLAYER_NAME = json.playerName;
@@ -4428,16 +4402,19 @@
               if (inp) inp.value = PLAYER_NAME;
             }
           } else {
-            // New user or no cloud record yet -> push current local state to cloud
-            if (localData) {
-              syncToCloudDatabase();
-            }
+            // Player does NOT exist in D1 (new player OR wiped from database!)
+            // We do NOT resurrect any local data. Start fresh!
+            if (statusIndicator) statusIndicator.textContent = "D1: Новый игрок ✓";
+            await syncToCloudDatabase();
           }
+        } else {
+          if (statusIndicator) statusIndicator.textContent = "D1: Ошибка (" + res.status + ")";
         }
       } catch (err) {
-        console.warn('Database fetch failed, using local fallback', err);
-        if (statusIndicator) statusIndicator.textContent = "D1: Локально";
+        console.warn('Database fetch failed', err);
+        if (statusIndicator) statusIndicator.textContent = "D1: Офлайн";
       }
+      updateDashboardUI();
     }
     const loadFromNetlifyBlobsOrLocal = loadFromCloudDatabaseOrLocal;
 
@@ -7847,7 +7824,7 @@
     });
 
     document.getElementById('btnExportSave').addEventListener('click', () => {
-      const code = btoa(unescape(encodeURIComponent(localStorage.getItem(STORAGE_KEY) || '')));
+      const code = btoa(unescape(encodeURIComponent(JSON.stringify(buildSavePayload()))));
       prompt('Скопируйте код сохранения:', code);
     });
 
@@ -8062,15 +8039,15 @@
 
       // Record last active time for AFK progress calculation
       GAME.lastActiveTime = Date.now();
-      saveLocal(); // Continuous 1-second instant auto-save to localStorage
+      saveLocal();
 
       updateDashboardUI();
     }, 1000);
 
-    // AUTO-SYNC TO CLOUDFLARE D1 EVERY 10 SECONDS
+    // AUTO-SYNC TO CLOUDFLARE D1 EVERY 8 SECONDS
     setInterval(() => {
       syncToCloudDatabase();
-    }, 10000);
+    }, 8000);
 
     // GUARANTEED INSTANT SAVE ON PAGE RELOAD / TAB CLOSE / MINIMIZE
     function onPageLeave() {
