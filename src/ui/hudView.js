@@ -62,18 +62,6 @@ export function updateHUD() {
   const btnPolish = document.getElementById('btnPolish');
   if (btnPolish) btnPolish.disabled = GAME.clean < 70;
 
-  const now = Date.now();
-  const flushCooldownLeft = Math.max(0, FLUSH_COOLDOWN - (now - (GAME.lastFlushTime || 0)));
-  const flushReady = flushCooldownLeft === 0 && GAME.clean < 70;
-  const btnQuickFlush = document.getElementById('btnQuickFlush');
-  if (btnQuickFlush) btnQuickFlush.disabled = !flushReady;
-  const lblFlush = document.getElementById('flushCooldownLabel');
-  if (lblFlush) {
-    lblFlush.textContent = flushCooldownLeft > 0 
-      ? `${Math.ceil(flushCooldownLeft / 1000)}с` 
-      : (GAME.clean >= 70 ? 'Слишком чисто' : 'Готов');
-  }
-
   // Evolution Info
   const currEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const topStTitle = document.getElementById('topStageTitle');

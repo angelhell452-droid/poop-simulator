@@ -13,6 +13,7 @@ import { initKnivesIndexListeners } from './ui/knivesIndexView.js';
 import { initPetCanvas, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js';
 import { initModals } from './ui/modalManager.js';
 import { initAuthModal } from './ui/authModalView.js';
+import { initLeaderboardView } from './ui/leaderboardView.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
 import { addPendingClicks, processBatchedClicks } from './systems/clickService.js';
 import { performEvolution } from './progression/evolutionService.js';
@@ -105,6 +106,7 @@ export async function bootstrap() {
   initKnivesIndexListeners();
   initAutocareListeners();
   initAuthModal();
+  initLeaderboardView();
 
   // Secret Click Trophy on Logo
   document.getElementById('logoSecretClick')?.addEventListener('click', () => {
@@ -200,22 +202,6 @@ export async function bootstrap() {
     }
   });
 
-  // Quick Flush
-  document.getElementById('btnQuickFlush')?.addEventListener('click', () => {
-    const now = Date.now();
-    if (now - (GAME.lastFlushTime || 0) < 35000 || GAME.clean >= 70) return;
-    GAME.lastFlushTime = now;
-    GAME.clean = 100;
-    GAME.biomass += 50;
-    const overlay = document.getElementById('flushOverlay');
-    if (overlay) {
-      overlay.style.opacity = '1';
-      setTimeout(() => { overlay.style.opacity = '0'; }, 600);
-    }
-    checkAchievements();
-    updateHUD();
-    saveLocal();
-  });
 
   // Evolution button
   document.getElementById('btnEvolve')?.addEventListener('click', () => {

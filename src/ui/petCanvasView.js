@@ -18,6 +18,8 @@ let squashX = 1, squashY = 1;
 let blinkTimer = 0;
 let knifeSlashTimer = 0;
 export const visualParticles = [];
+export const sparkParticles = [];
+let activeComboParticle = null;
 
 export let goldenMeteor = {
   active: false,
@@ -46,45 +48,98 @@ export function initPetCanvas() {
     events.on('click:processed', (res) => {
       if (!res || res.totalEarned <= 0) return;
 
-      const now = Date.now();
       const isManual = !!res.isManual;
-
-      // Responsive background clicks with low-overhead 75ms throttle
-      if (!isManual) {
-        if (now - lastAutoclickParticleTime < 75) return;
-        lastAutoclickParticleTime = now;
-      }
-
-      if (visualParticles.length >= 30) {
-        visualParticles.shift();
-      }
-
       const { clicks, totalEarned, critsCount, clientX, clientY } = res;
-      const textLabel = clicks > 1
-        ? (critsCount > 0 ? `💥 КРИТ x${critsCount}! +${formatNumber(totalEarned)} 💨` : `⚡ +${formatNumber(totalEarned)} 💨 (x${clicks})`)
-        : (critsCount > 0 ? `💥 КРИТ! +${formatNumber(totalEarned)} 💨` : `+${formatNumber(totalEarned)} 💨`);
 
-      let spawnX = null;
-      let spawnY = null;
-      if (clientX !== null && clientX !== undefined && clientY !== null && clientY !== undefined && canvas) {
-        const rect = canvas.getBoundingClientRect();
-        spawnX = clientX - rect.left;
-        spawnY = clientY - rect.top;
+      const w = canvas ? canvas.width : 360;
+      const h = canvas ? canvas.height : 480;
+
+      let clickX = (clientX !== null && clientX !== undefined && canvas) ? (clientX - canvas.getBoundingClientRect().left) : (w / 2);
+      let clickY = (clientY !== null && clientY !== undefined && canvas) ? (clientY - canvas.getBoundingClientRect().top) : (h * 0.48);
+
+      // 1. Lightweight atmospheric spark burst (fast circle batch, zero font cost)
+      const sparkCount = Math.min(3, Math.max(1, Math.floor(clicks / 3) || 1));
+      for (let s = 0; s < sparkCount; s++) {
+        if (sparkParticles.length < 16) {
+          const ang = Math.random() * Math.PI * 2;
+          const spd = 1.0 + Math.random() * 2.2;
+          sparkParticles.push({
+            x: clickX + (Math.random() * 16 - 8),
+            y: clickY + (Math.random() * 16 - 8),
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd - 1.2,
+            r: Math.random() * 2.5 + 1.5,
+            color: critsCount > 0 ? '#f59e0b' : (isManual ? '#4ade80' : '#38bdf8'),
+            life: 0.55
+          });
+        }
       }
 
-      const particleColor = critsCount > 0 
-        ? '#fbbf24' 
-        : (isManual ? '#4ade80' : '#38bdf8');
+      // 2. High-Speed Click Consolidation (The Combo Nexus)
+      // When rapid clicks / autoclick occurs, consolidate damage into ONE punchy combo counter!
+      if (!isManual) {
+        if (activeComboParticle && activeComboParticle.life > 0.25) {
+          // Accumulate ongoing stream
+          activeComboParticle.totalEarned += totalEarned;
+          activeComboParticle.clicks += clicks;
+          activeComboParticle.text = `⚡ +${formatNumber(activeComboParticle.totalEarned)} 💨 (x${activeComboParticle.clicks})`;
+          activeComboParticle.life = 0.95; // refresh duration while firing
+          activeComboParticle.scale = Math.min(1.4, activeComboParticle.scale + 0.04);
+          activeComboParticle.y = Math.max(h * 0.35, activeComboParticle.y - 0.5);
+          if (activeComboParticle.clicks >= 200 || GAME.turboRushTime > 0) {
+            activeComboParticle.color = '#ef4444';
+          } else if (activeComboParticle.clicks >= 50) {
+            activeComboParticle.color = '#f59e0b';
+          }
+        } else {
+          // Start a new clean combo float
+          activeComboParticle = {
+            x: w / 2,
+            y: h * 0.44,
+            vx: 0,
+            vy: -0.8,
+            totalEarned: totalEarned,
+            clicks: clicks,
+            text: clicks > 1 ? `⚡ +${formatNumber(totalEarned)} 💨 (x${clicks})` : `+${formatNumber(totalEarned)} 💨`,
+            color: critsCount > 0 ? '#f59e0b' : '#38bdf8',
+            scale: 1.25,
+            life: 1.0,
+            isCombo: true
+          };
+          addManagedTextParticle(activeComboParticle);
+        }
 
-      addVisualParticle(
-        textLabel,
-        particleColor,
-        critsCount > 0 ? 1.4 : 1.2,
-        1.0,
-        critsCount > 0 ? -2.6 : -2.0,
-        spawnX,
-        spawnY
-      );
+        // Spawn a standalone big crit number only if a crit occurred and not overwhelmed
+        if (critsCount > 0 && visualParticles.length < 4) {
+          addManagedTextParticle({
+            x: clickX + (Math.random() * 50 - 25),
+            y: clickY - 20,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: -2.4,
+            text: `💥 КРИТ! +${formatNumber(totalEarned)} 💨`,
+            color: '#fbbf24',
+            scale: 1.35,
+            life: 0.9
+          });
+        }
+        return;
+      }
+
+      // 3. Manual Player Clicks (Punchy, responsive feedback directly at cursor)
+      const manualLabel = critsCount > 0 
+        ? `💥 КРИТ! +${formatNumber(totalEarned)} 💨` 
+        : `+${formatNumber(totalEarned)} 💨`;
+
+      addManagedTextParticle({
+        x: clickX,
+        y: clickY,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: -2.0,
+        text: manualLabel,
+        color: critsCount > 0 ? '#fbbf24' : '#4ade80',
+        scale: critsCount > 0 ? 1.4 : 1.2,
+        life: 1.0
+      });
     });
 
     events.on('turbo:activated', () => {
@@ -107,23 +162,32 @@ export function triggerPetSquash(sx = 1.25, sy = 0.8) {
   knifeSlashTimer = 1.0;
 }
 
+export function addManagedTextParticle(p) {
+  if (visualParticles.length >= 4) {
+    const nonComboIdx = visualParticles.findIndex(vp => !vp.isCombo);
+    if (nonComboIdx >= 0) {
+      visualParticles.splice(nonComboIdx, 1);
+    } else {
+      visualParticles.shift();
+    }
+  }
+  visualParticles.push(p);
+}
+
 export function addVisualParticle(text, color = '#facc15', scale = 1.2, life = 1.0, vy = -2.2, x = null, y = null) {
   if (!canvas) canvas = document.getElementById('petCanvas');
   if (!canvas) return;
-  if (visualParticles.length >= 30) {
-    visualParticles.shift();
-  }
   const w = canvas.width || 360;
   const h = canvas.height || 480;
-  visualParticles.push({
-    x: (x !== null && x !== undefined && !isNaN(x)) ? x : (w / 2 + (Math.random() * 60 - 30)),
-    y: (y !== null && y !== undefined && !isNaN(y)) ? y : (h * 0.48 + (Math.random() * 20 - 10)),
-    vx: (Math.random() - 0.5) * 0.9,
+  addManagedTextParticle({
+    x: (x !== null && x !== undefined && !isNaN(x)) ? x : (w / 2 + (Math.random() * 40 - 20)),
+    y: (y !== null && y !== undefined && !isNaN(y)) ? y : (h * 0.45),
+    vx: (Math.random() - 0.5) * 0.8,
+    vy: vy || -2.0,
     text,
     color,
     scale,
-    life,
-    vy
+    life
   });
 }
 
@@ -339,10 +403,33 @@ function renderPetLoop(time) {
     goldenMeteor.vy = (Math.random() - 0.5) * 0.8;
   }
 
-  // Floating text particles (Atmospheric, juicy & smooth 60 FPS cascade)
+  // 1. Lightweight atmospheric spark particles (fast circle batch, zero font cost)
+  if (sparkParticles.length > 0) {
+    for (let i = sparkParticles.length - 1; i >= 0; i--) {
+      const sp = sparkParticles[i];
+      sp.x += sp.vx;
+      sp.y += sp.vy;
+      sp.life -= 0.025;
+      if (sp.life <= 0) {
+        sparkParticles.splice(i, 1);
+        continue;
+      }
+      ctx.globalAlpha = Math.max(0, sp.life);
+      ctx.fillStyle = sp.color;
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, sp.r || 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // 2. High-performance Floating text particles (Max 4, pre-set font outside loop!)
   if (visualParticles.length > 0) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.font = '900 16px "Fredoka One", system-ui, -apple-system, sans-serif';
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+
     for (let i = visualParticles.length - 1; i >= 0; i--) {
       const p = visualParticles[i];
       p.x += (p.vx || 0);
@@ -351,22 +438,27 @@ function renderPetLoop(time) {
       p.life -= 0.016;
 
       if (p.life <= 0) {
+        if (p === activeComboParticle) activeComboParticle = null;
         visualParticles.splice(i, 1);
         continue;
       }
 
       const alpha = Math.max(0, Math.min(1, p.life));
       ctx.globalAlpha = alpha;
-      ctx.font = `900 ${Math.round(15 * p.scale)}px "Fredoka One", system-ui, -apple-system, sans-serif`;
 
-      // Crisp contrast stroke
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
-      ctx.lineWidth = 2.5;
-      ctx.strokeText(p.text, p.x, p.y);
-
-      // Vibrant text fill
-      ctx.fillStyle = p.color;
-      ctx.fillText(p.text, p.x, p.y);
+      if (p.scale && Math.abs(p.scale - 1) > 0.05) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.scale(p.scale, p.scale);
+        ctx.strokeText(p.text, 0, 0);
+        ctx.fillStyle = p.color;
+        ctx.fillText(p.text, 0, 0);
+        ctx.restore();
+      } else {
+        ctx.strokeText(p.text, p.x, p.y);
+        ctx.fillStyle = p.color;
+        ctx.fillText(p.text, p.x, p.y);
+      }
     }
     ctx.globalAlpha = 1.0;
   }
