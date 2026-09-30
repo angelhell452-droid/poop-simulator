@@ -7,10 +7,10 @@ import { events } from '../core/events.js';
 export function getPrestigeRollsReward() {
   if (GAME.evoStage < 14 && GAME.cycleBiomass < 100000) return 0;
 
-  // Calibrated smooth root-power prestige formula
-  const bioRatio = Math.max(0, GAME.cycleBiomass) / 100000;
-  const bioPart = Math.floor(18 * Math.pow(bioRatio, 0.45));
-  const stagePart = Math.floor(Math.pow(1 + Math.max(0, GAME.evoStage) / 15, 0.6) * 6);
+  // Master Economy Dual Prestige Tier 1 (PowerA = 0.20, ScaleA = 15.0, ThresholdA = 100,000)
+  const bioRatio = Math.max(0, GAME.cycleBiomass || 0) / 100000;
+  const bioPart = Math.floor(15.0 * Math.pow(bioRatio, 0.20));
+  const stagePart = Math.floor(Math.pow(1 + Math.max(0, GAME.evoStage || 0) / 15, 0.50) * 4);
   let baseRolls = Math.max(1, bioPart + stagePart);
 
   // Scythe / Коса knife synergy gives +25% rolls bonus
@@ -38,6 +38,7 @@ export function executePrestige(chosenArchetype = 'balanced') {
   GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + gain;
   GAME.totalPrestiges++;
   GAME.cycleBiomass = 0;
+  GAME.currentRunPeakGPS = 0;
   GAME.archetype = chosenArchetype;
 
   const startTalent = TALENTS.find(t => t.id === 'royal_gold');

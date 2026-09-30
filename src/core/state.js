@@ -55,6 +55,7 @@ export function getDefaultGameState() {
     turboRushTime: 0,
     turboCount: 0,
     meteorsCaught: 0,
+    currentRunPeakGPS: 0,
     
     lastSaveTime: Date.now(),
     lastActiveTime: Date.now(),

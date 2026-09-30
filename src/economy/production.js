@@ -42,9 +42,10 @@ export function getClickPower() {
   const hyperTalent = TALENTS.find(t => t.id === 'hyper_click');
   const hyperMult = 1 + (hyperTalent ? Math.floor(GAME.totalClicks / 500) * (hyperTalent.level * 0.05) : 0);
 
-  // Astral Plungers transcendence multiplier + Omni-Multiplier Artifact
+  // Astral Plungers Tier 2 Breakthrough power-law scaling (safe against big number overflow)
   const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
-  const plungersMult = 1 + (GAME.transcendPlungers || 0) * (1 + omniLvl);
+  const plungerCount = Math.max(0, GAME.transcendPlungers || 0);
+  const plungersMult = Math.pow(1 + plungerCount * (1 + omniLvl * 0.25), 1.25);
 
   // Turbo Frenzy Rush (Combo Master archetype: x15 base instead of x10)
   const isComboArch = GAME.archetype === 'combo';
@@ -145,9 +146,10 @@ export function getPassiveIncome() {
   const cosmicRes = TALENTS.find(t => t.id === 'cosmic_resonance');
   const cosmicMult = cosmicRes ? Math.pow(1.5, Math.floor(cosmicRes.level / 2)) : 1;
 
-  // Astral Plungers transcendence multiplier + Omni-Multiplier Artifact
+  // Astral Plungers Tier 2 Breakthrough power-law scaling (safe against big number overflow)
   const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
-  const plungersMult = 1 + (GAME.transcendPlungers || 0) * (1 + omniLvl);
+  const plungerCount = Math.max(0, GAME.transcendPlungers || 0);
+  const plungersMult = Math.pow(1 + plungerCount * (1 + omniLvl * 0.25), 1.25);
 
   // Transcendence Artifact: Factory Overdrive
   const facOverdriveMult = 1 + (GAME.transcendUpgrades?.factoryOverdrive || 0) * 1.0;
@@ -172,5 +174,9 @@ export function getPassiveIncome() {
 
   const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.50;
 
-  return Math.max(0, Math.round(base * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult));
+  const finalGPS = Math.max(0, Math.round(base * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult));
+  if (finalGPS > (GAME.currentRunPeakGPS || 0)) {
+    GAME.currentRunPeakGPS = finalGPS;
+  }
+  return finalGPS;
 }

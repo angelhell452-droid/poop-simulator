@@ -5,10 +5,11 @@ import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
 import { events } from '../core/events.js';
 
 export function getTranscendPlungersReward() {
-  if (GAME.evoStage < 99 && (GAME.prestigeRolls || 0) < 300) return 0;
+  const lifetimeRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
+  if (GAME.evoStage < 99 && lifetimeRolls < 100000) return 0;
 
-  const rollsRatio = Math.max(0, GAME.prestigeRolls || 0) / 150;
-  const rollsPart = Math.floor(Math.pow(rollsRatio, 0.60));
+  // Master Economy Dual Prestige Tier 2 (PowerB = 0.25, ScaleB = 0.20)
+  const rollsPart = Math.floor(0.20 * Math.pow(Math.max(0, lifetimeRolls), 0.25));
   const stagePart = Math.floor(Math.pow(1 + Math.max(0, GAME.evoStage - 99) / 40, 0.50));
   let base = Math.max(1, rollsPart + stagePart);
 
@@ -39,6 +40,7 @@ export function executeTranscend() {
   GAME.prestigeRolls = Math.floor((GAME.prestigeRolls || 0) * 0.35);
   GAME.cycleBiomass = 0;
   GAME.biomass = 0;
+  GAME.currentRunPeakGPS = 0;
   GAME.evoStage = 0;
   FACTORIES.forEach(fac => { fac.count = 0; });
   GAME.clean = 100;

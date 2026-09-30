@@ -2,13 +2,28 @@ import { GAME } from '../core/state.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { TALENTS } from '../data/talents.data.js';
 
+/**
+ * Asymptotic discount model with soft-cap guarantee.
+ * Ensures total discount never exceeds maxCap (default 90%) and base cost never drops below 10%.
+ */
+export function getAsymptoticDiscountFactor(rawDiscounts = [], maxCap = 0.90) {
+  let retention = 1.0;
+  for (const d of rawDiscounts) {
+    if (d > 0) {
+      retention *= Math.max(0, 1 - Math.min(0.999, d));
+    }
+  }
+  const minRetention = Math.round((1.0 - maxCap) * 1000) / 1000;
+  return Math.max(minRetention, minRetention + maxCap * retention);
+}
+
 export function getAffordableEvoInfo() {
   const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');
-  let costDiscount = omegaTalent ? Math.pow(0.98, omegaTalent.level) : 1.0;
   const unbreakEvo = TALENTS.find(t => t.id === 'unbreakable_evo');
-  if (unbreakEvo && unbreakEvo.level > 0) {
-    costDiscount *= Math.pow(0.985, unbreakEvo.level);
-  }
+
+  const omegaDisc = omegaTalent ? (1 - Math.pow(0.98, omegaTalent.level)) : 0;
+  const unbreakDisc = (unbreakEvo && unbreakEvo.level > 0) ? (1 - Math.pow(0.985, unbreakEvo.level)) : 0;
+  const costDiscount = getAsymptoticDiscountFactor([omegaDisc, unbreakDisc], 0.90);
 
   if (GAME.evoStage >= EVOLUTIONS.length - 1) {
     return { count: 0, totalCost: 0, canBuy: false, maxReached: true };
@@ -55,8 +70,8 @@ export function getAffordableFactoryInfo(fac) {
   const r = 1.15;
   const currentCount = fac.count || 0;
   const isTycoon = GAME.archetype === 'tycoon';
-  const discount = isTycoon ? 0.90 : 1.0;
-  const baseCost = fac.cost * discount;
+  const discountFactor = getAsymptoticDiscountFactor([isTycoon ? 0.10 : 0], 0.90);
+  const baseCost = fac.cost * discountFactor;
   const rawMult = GAME.buyMultiplier;
   const isMax = (rawMult === 'max' || rawMult === 'MAX');
   const costCurrent = baseCost * Math.pow(r, currentCount);
