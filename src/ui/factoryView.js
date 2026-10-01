@@ -6,19 +6,44 @@ import { buyFactory } from '../systems/factoryService.js';
 import { updateHUD } from './hudView.js';
 import { saveLocal } from '../save/saveManager.js';
 
+let activeFactoryTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
+
+export function initFactoryListeners() {
+  document.querySelectorAll('.fac-tier-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFactoryTier = btn.dataset.tier;
+      renderFactories();
+    });
+  });
+}
+
 export function renderFactories() {
   const container = document.getElementById('factoriesContainer');
   if (!container) return;
   container.innerHTML = '';
 
+  // Update tier filter button styles
+  document.querySelectorAll('.fac-tier-btn').forEach(b => {
+    const isAct = b.dataset.tier === String(activeFactoryTier);
+    if (isAct) {
+      b.className = 'fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 shadow border border-yellow-300';
+    } else {
+      b.className = 'fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800';
+    }
+  });
+
   let unownedCount = 0;
   const buyMultiplier = GAME.buyMultiplier || 1;
 
-  FACTORIES.forEach((fac) => {
+  const visibleFactories = activeFactoryTier === 'all'
+    ? FACTORIES
+    : FACTORIES.filter(fac => fac.tierNumber === Number(activeFactoryTier));
+
+  visibleFactories.forEach((fac) => {
     const currentCount = fac.count || 0;
     const isLocked = fac.reqStage !== undefined && (GAME.evoStage || 0) < fac.reqStage;
 
-    if (currentCount === 0) {
+    if (currentCount === 0 && activeFactoryTier === 'all') {
       unownedCount++;
       // Show up to 2 unowned upcoming tiers, plus the next locked goal
       if (unownedCount > 3) return;
@@ -50,6 +75,11 @@ export function renderFactories() {
       buttonLabel = `🔒 Требуется Форма #${fac.reqStage + 1}`;
     }
 
+    let tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-stone-800 text-stone-300 border border-stone-700">⭐ Т1</span>`;
+    if (fac.tierNumber === 2) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">⚡ Т2</span>`;
+    else if (fac.tierNumber === 3) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-purple-950/80 text-purple-300 border border-purple-500/40">🔮 Т3</span>`;
+    else if (fac.tierNumber === 4) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-amber-950/80 text-yellow-300 border border-yellow-500/50 shadow-[0_0_8px_rgba(234,179,8,0.3)]">🌌 Т4</span>`;
+
     const row = document.createElement('div');
     row.className = `p-3 rounded-2xl bg-stone-900 border ${isLocked ? 'border-stone-800/60 opacity-75' : 'border-stone-800 hover:border-amber-600'} transition flex flex-col gap-2 shadow-sm`;
     row.innerHTML = `
@@ -57,8 +87,9 @@ export function renderFactories() {
         <div class="flex items-center gap-2.5">
           <span class="text-2xl">${fac.icon}</span>
           <div>
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 flex-wrap">
               <span class="font-bold text-xs text-stone-200">${fac.name}</span>
+              ${tierBadge}
               ${isLocked ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-red-950/80 text-red-300 border border-red-700/50 font-bold">Форма #${fac.reqStage + 1}</span>` : ''}
             </div>
             <div class="text-[11px] text-emerald-400 font-game">+${formatNumber(fac.baseCps * (currentCount || 1))} /сек</div>

@@ -3,7 +3,7 @@ import { startGameLoop } from './core/gameLoop.js';
 import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, wipePlayerData, requestCloudSync } from './save/cloudSync.js';
 import { saveLocal } from './save/saveManager.js';
 import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting } from './ui/hudView.js';
-import { renderFactories } from './ui/factoryView.js';
+import { renderFactories, initFactoryListeners } from './ui/factoryView.js';
 import { renderTalents, initTalentsListeners } from './ui/talentView.js';
 import { renderShop } from './ui/shopView.js';
 import { renderAchievements } from './ui/achievementsView.js';
@@ -108,6 +108,7 @@ export async function bootstrap() {
   initCasesListeners();
   initKnivesIndexListeners();
   initTalentsListeners();
+  initFactoryListeners();
   initAutocareListeners();
   initAutomationToggleListeners();
   initAuthModal();

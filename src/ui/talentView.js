@@ -9,6 +9,8 @@ import { saveLocal } from '../save/saveManager.js';
 import { getRollIcon } from '../utils/icons.js';
 
 let activeTalentSubTab = 'flush'; // 'flush' | 'transcend'
+let activeFlushTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
+let activeTranscendTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
 
 export function switchTalentSubTab(tabName) {
   activeTalentSubTab = tabName;
@@ -47,6 +49,20 @@ export function initTalentsListeners() {
   document.getElementById('tabTalentsTranscend')?.addEventListener('click', () => {
     switchTalentSubTab('transcend');
   });
+
+  document.querySelectorAll('.talent-flush-tier-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFlushTier = btn.dataset.tier;
+      renderFlushTalents();
+    });
+  });
+
+  document.querySelectorAll('.talent-transcend-tier-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTranscendTier = btn.dataset.tier;
+      renderTranscendRelics();
+    });
+  });
 }
 
 export function renderFlushTalents() {
@@ -56,6 +72,16 @@ export function renderFlushTalents() {
 
   const label = document.getElementById('talentRollsLabel');
   if (label) label.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
+
+  // Update tier filter button styles
+  document.querySelectorAll('.talent-flush-tier-btn').forEach(b => {
+    const isAct = b.dataset.tier === String(activeFlushTier);
+    if (isAct) {
+      b.className = 'talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md border border-purple-400';
+    } else {
+      b.className = 'talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800';
+    }
+  });
 
   const buyMultiplier = GAME.buyMultiplier || 1;
 
@@ -67,12 +93,16 @@ export function renderFlushTalents() {
     { tier: 4, title: '🌌 Тир 4: Астральные Титаны Омниверса', desc: 'Космические множители для эндгейма' }
   ];
 
-  tierConfigs.forEach(tInfo => {
+  const visibleConfigs = activeFlushTier === 'all'
+    ? tierConfigs
+    : tierConfigs.filter(t => t.tier === Number(activeFlushTier));
+
+  visibleConfigs.forEach(tInfo => {
     const tierTalents = TALENTS.filter(tl => tl.tier === tInfo.tier);
     if (tierTalents.length === 0) return;
 
     const tierHeader = document.createElement('div');
-    tierHeader.className = 'text-[11px] font-game text-yellow-300 uppercase tracking-wider pt-2.5 pb-1 border-b border-yellow-500/30 flex items-center justify-between sticky top-0 bg-stone-900/95 z-10';
+    tierHeader.className = 'text-[11px] font-game text-yellow-300 uppercase tracking-wider pt-2.5 pb-1 border-b border-yellow-500/30 flex items-center justify-between';
     tierHeader.innerHTML = `
       <span>${tInfo.title}</span>
       <span class="text-[9px] text-stone-400 font-sans font-normal hidden sm:inline">${tInfo.desc}</span>
@@ -148,12 +178,26 @@ export function renderTranscendRelics() {
     { tier: 4, name: '🌌 Тир 4: Космическая Сингулярность (5-10+ Прорывов)', desc: 'Эндгейм-квантование и бесконечная вечность' }
   ];
 
-  tiers.forEach(tInfo => {
+  // Update tier filter button styles
+  document.querySelectorAll('.talent-transcend-tier-btn').forEach(b => {
+    const isAct = b.dataset.tier === String(activeTranscendTier);
+    if (isAct) {
+      b.className = 'talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-700 text-white shadow-md border border-cyan-400';
+    } else {
+      b.className = 'talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800';
+    }
+  });
+
+  const visibleTiers = activeTranscendTier === 'all'
+    ? tiers
+    : tiers.filter(t => t.tier === Number(activeTranscendTier));
+
+  visibleTiers.forEach(tInfo => {
     const tierUpgrades = TRANSCEND_UPGRADES.filter(u => u.tier === tInfo.tier);
     if (tierUpgrades.length === 0) return;
 
     const tierHeader = document.createElement('div');
-    tierHeader.className = 'text-[11px] font-game text-cyan-300 uppercase tracking-wider pt-2.5 pb-1 border-b border-cyan-500/30 flex items-center justify-between sticky top-0 bg-stone-900/95 z-10';
+    tierHeader.className = 'text-[11px] font-game text-cyan-300 uppercase tracking-wider pt-2.5 pb-1 border-b border-cyan-500/30 flex items-center justify-between';
     tierHeader.innerHTML = `
       <span>${tInfo.name}</span>
       <span class="text-[9px] text-stone-400 font-sans font-normal hidden sm:inline">${tInfo.desc}</span>

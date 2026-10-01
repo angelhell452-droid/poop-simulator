@@ -569,25 +569,26 @@ export function renderCasesSystem() {
         : '';
 
       const currIcon = c.currency === 'plungers' ? '<span class="plunger-icon"></span>' : '<span class="roll-icon"></span>';
+      const currSymbol = c.currency === 'plungers' ? '🪠' : '🧻';
       const btnText = !isUnlocked
-        ? `🔒 ЗАБЛОКИРОВАНО`
-        : (hasCurrency ? `ОТКРЫТЬ КЕЙС 🎰` : `НЕ ХВАТАЕТ ${c.currency === 'plungers' ? 'ВАНТУЗОВ' : 'ВТУЛОК'}`);
+        ? `🔒 ${c.reqTranscend ? `${c.reqTranscend} Прорыв` : `${c.reqPrestiges} Смыв`}`
+        : (hasCurrency ? `Открыть (${formatNumber(c.cost)} ${currSymbol}) 🎰` : `Мало ${currSymbol} (${formatNumber(c.cost)})`);
 
       return `
         <div class="p-3 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-lg flex flex-col justify-between relative overflow-hidden ${!isUnlocked ? 'opacity-70 grayscale-[25%]' : ''}">
           <div>
-            <div class="flex items-center justify-between mb-1">
-              <div class="flex items-center gap-1.5">
+            <div class="flex items-center justify-between mb-1 gap-2">
+              <div class="flex items-center gap-1.5 shrink-0">
                 <span class="text-2xl">${c.icon}</span>
                 <button class="case-info-btn w-6 h-6 rounded-full bg-stone-900/90 hover:bg-stone-800 text-yellow-300 border border-yellow-400/70 flex items-center justify-center text-xs font-black transition shadow jelly-btn cursor-pointer" data-case="${c.id}" title="Просмотреть шансы выпадения и список ножей">!</button>
               </div>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-900/80 text-yellow-300 border border-yellow-500/40 inline-flex items-center gap-1">${formatNumber(c.cost)} ${currIcon}</span>
+              <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-stone-900/90 text-yellow-300 border border-yellow-500/40 inline-flex items-center gap-1 shrink-0 whitespace-nowrap shadow-sm">${formatNumber(c.cost)} ${currIcon}</span>
             </div>
-            <div class="font-game text-xs text-yellow-200 mt-1">${c.name}</div>
-            <div class="text-[10px] text-stone-300 mt-0.5 leading-snug">${c.desc}</div>
+            <div class="font-game text-xs text-yellow-200 mt-1 truncate">${c.name}</div>
+            <div class="text-[10px] text-stone-300 mt-0.5 leading-snug line-clamp-2">${c.desc}</div>
             ${lockBadge}
           </div>
-          <button class="open-case-btn mt-3 w-full py-1.5 rounded-xl font-game text-xs transition jelly-btn ${canOpen ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${canOpen ? '' : 'disabled'}>
+          <button class="open-case-btn mt-3 w-full py-1.5 px-2 rounded-xl font-game text-xs transition jelly-btn truncate ${canOpen ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${canOpen ? '' : 'disabled'}>
             ${btnText}
           </button>
         </div>
@@ -805,12 +806,26 @@ export function updateCasesButtons() {
   cratesList.querySelectorAll('.open-case-btn').forEach(btn => {
     const c = CSGO_CASES.find(cs => cs.id === btn.dataset.case);
     if (!c) return;
+    const meetsPrestige = !c.reqPrestiges || (GAME.totalPrestiges || 0) >= c.reqPrestiges;
+    const meetsTranscend = !c.reqTranscend || (GAME.totalTranscend || 0) >= c.reqTranscend;
+    const isUnlocked = meetsPrestige && meetsTranscend;
     const hasCurrency = c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost : (GAME.transcendPlungers || 0) >= c.cost;
-    btn.disabled = !hasCurrency;
-    if (hasCurrency) {
-      btn.className = 'open-case-btn mt-3 w-full py-1.5 rounded-xl font-game text-xs transition jelly-btn bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md';
+    const canOpen = isUnlocked && hasCurrency;
+    btn.disabled = !canOpen;
+
+    const currSymbol = c.currency === 'plungers' ? '🪠' : '🧻';
+    const newText = !isUnlocked
+      ? `🔒 ${c.reqTranscend ? `${c.reqTranscend} Прорыв` : `${c.reqPrestiges} Смыв`}`
+      : (hasCurrency ? `Открыть (${formatNumber(c.cost)} ${currSymbol}) 🎰` : `Мало ${currSymbol} (${formatNumber(c.cost)})`);
+
+    if (btn.textContent.trim() !== newText) {
+      btn.textContent = newText;
+    }
+
+    if (canOpen) {
+      btn.className = 'open-case-btn mt-3 w-full py-1.5 px-2 rounded-xl font-game text-xs transition jelly-btn truncate bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md';
     } else {
-      btn.className = 'open-case-btn mt-3 w-full py-1.5 rounded-xl font-game text-xs transition jelly-btn bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700';
+      btn.className = 'open-case-btn mt-3 w-full py-1.5 px-2 rounded-xl font-game text-xs transition jelly-btn truncate bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700';
     }
   });
 }

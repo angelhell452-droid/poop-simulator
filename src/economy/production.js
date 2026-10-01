@@ -4,6 +4,7 @@ import { FACTORIES } from '../data/factories.data.js';
 import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
+import { formatNumber } from '../utils/numberFormatter.js';
 
 export function getEquippedKnife() {
   if (!GAME.equippedKnife) return null;
@@ -46,7 +47,9 @@ export function getClickPower() {
   const synergyMult = 1 + (synergyTalent ? Math.floor(totalFactories / 10) * (synergyTalent.level * 1.5) : 0);
 
   const hyperTalent = TALENTS.find(t => t.id === 'hyper_click');
-  const hyperMult = 1 + (hyperTalent ? Math.floor(GAME.totalClicks / 500) * (hyperTalent.level * 0.05) : 0);
+  const maxHyperStacks = 50;
+  const hyperStacks = Math.min(maxHyperStacks, Math.floor((GAME.totalClicks || 0) / 500));
+  const hyperMult = 1 + (hyperTalent ? hyperStacks * (hyperTalent.level * 0.05) : 0);
 
   // Astral Plungers Tier 2 Breakthrough power-law scaling (safe against big number overflow)
   const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
@@ -239,4 +242,190 @@ export function getPassiveIncome() {
     GAME.currentRunPeakGPS = finalGPS;
   }
   return finalGPS;
+}
+
+export function getActiveBuffsList() {
+  const buffs = [];
+
+  // 1. Гипер-Кликер
+  const hyperTalent = TALENTS.find(t => t.id === 'hyper_click');
+  if (hyperTalent && hyperTalent.level > 0) {
+    const maxHyperStacks = 50;
+    const hyperStacks = Math.min(maxHyperStacks, Math.floor((GAME.totalClicks || 0) / 500));
+    if (hyperStacks > 0) {
+      const bonusPct = Math.round(hyperStacks * (hyperTalent.level * 5));
+      buffs.push({
+        id: 'hyper_click',
+        icon: '👆',
+        name: 'Гипер-Клик (Овердрайв)',
+        short: `+${bonusPct}%`,
+        bonusText: `+${bonusPct}% к силе клика`,
+        badgeColor: 'bg-amber-950/90 border-yellow-400/80 text-yellow-300 shadow-[0_0_8px_rgba(234,179,8,0.25)]',
+        desc: 'Талант Смыва 2-го Тира: увеличивает силу каждого клика на +5% за каждые 500 сделанных кликов.',
+        progress: `Накоплено: ${hyperStacks} из ${maxHyperStacks} стаков (всего кликов: ${formatNumber(GAME.totalClicks || 0)}). Уровень таланта: ${hyperTalent.level}.`,
+        source: 'Таланты Смыва (Тир 2)',
+        tip: 'Делайте больше кликов мышкой или развивайте уровень таланта в Древе Втулок.'
+      });
+    }
+  }
+
+  // 2. Турбо-Ярость (Frenzy)
+  if ((GAME.turboRushTime || 0) > 0) {
+    const isComboArch = GAME.archetype === 'combo';
+    const turboBase = isComboArch ? 15.0 : 10.0;
+    const turboTalent = TALENTS.find(t => t.id === 'combo_master');
+    const turboBonus = 1 + (turboTalent ? turboTalent.level * 0.50 : 0);
+    const mult = Math.round(turboBase * turboBonus);
+    buffs.push({
+      id: 'turbo_rush',
+      icon: '⚡',
+      name: 'Турбо-Ярость (Frenzy Rush)',
+      short: `x${mult} (${Math.ceil(GAME.turboRushTime)}с)`,
+      bonusText: `x${mult} к силе клика`,
+      badgeColor: 'bg-red-950/90 border-red-500/80 text-red-200 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]',
+      desc: 'Временный ураганный режим! Сила клика колоссально умножается во время ярости.',
+      progress: `Осталось действия: ${Math.ceil(GAME.turboRushTime)} сек. Базовый множитель: x${turboBase}.`,
+      source: 'Быстрые клики (Комбо) / Золотой метеорит',
+      tip: 'Кликайте чаще чтобы продлить ярость, или ловите золотые метеориты!'
+    });
+  }
+
+  // 3. Статус «Идеал x2»
+  if ((GAME.hunger || 0) >= 90 && (GAME.cleanliness || 0) >= 90 && (GAME.happiness || 0) >= 90) {
+    buffs.push({
+      id: 'ideal_status',
+      icon: '👑',
+      name: 'Статус «Идеал x2»',
+      short: 'x2 Доход',
+      bonusText: 'x2 ко всему доходу и критам',
+      badgeColor: 'bg-gradient-to-r from-yellow-950 to-amber-900 border-yellow-300 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.5)]',
+      desc: 'Все 3 потребности питомца (Сытость, Чистота, Настроение) выше 90%! Питомец полностью счастлив и благодарит вас удвоенным производством.',
+      progress: `Сытость: ${Math.round(GAME.hunger)}% | Чистота: ${Math.round(GAME.cleanliness)}% | Настроение: ${Math.round(GAME.happiness)}%`,
+      source: 'Станция Заботы о Питомце',
+      tip: 'Используйте кнопки ухода (Покормить, Помыть, Пощекотать) или включите Авто-Уход Прорыва.'
+    });
+  }
+
+  // 4. Священный Синергизм Заводов
+  const synergyTalent = TALENTS.find(t => t.id === 'golden_synergy');
+  if (synergyTalent && synergyTalent.level > 0) {
+    let totalFactories = 0;
+    FACTORIES.forEach(fac => { totalFactories += (fac.count || 0); });
+    const factoryBlocks = Math.floor(totalFactories / 10);
+    if (factoryBlocks > 0) {
+      const bonusPct = Math.round(factoryBlocks * (synergyTalent.level * 150));
+      buffs.push({
+        id: 'golden_synergy',
+        icon: '🏭',
+        name: 'Священный Синергизм Заводов',
+        short: `+${bonusPct}%`,
+        bonusText: `+${bonusPct}% к силе клика`,
+        badgeColor: 'bg-purple-950/90 border-purple-400 text-purple-200 shadow-[0_0_8px_rgba(168,85,247,0.3)]',
+        desc: 'Талант Смыва 3-го Тира: за каждые 10 суммарно купленных заводов сила клика возрастает на +150% за уровень.',
+        progress: `Куплено заводов: ${formatNumber(totalFactories)} (активных десятков: ${formatNumber(factoryBlocks)}). Уровень таланта: ${synergyTalent.level}.`,
+        source: 'Таланты Смыва (Тир 3)',
+        tip: 'Покупайте больше недорогих заводов в панели заводов, чтобы увеличивать количество десятков.'
+      });
+    }
+  }
+
+  // 5. Сытость Питомца
+  const hungerVal = Math.max(0, GAME.hunger || 100);
+  if (hungerVal > 20) {
+    const hungerPct = Math.round((hungerVal / 100) * 50);
+    buffs.push({
+      id: 'pet_hunger',
+      icon: '🍗',
+      name: 'Сытость Питомца',
+      short: `+${hungerPct}%`,
+      bonusText: `+${hungerPct}% к силе клика`,
+      badgeColor: 'bg-orange-950/80 border-orange-500/50 text-orange-200',
+      desc: 'Качественное органическое питание наполняет какашечку энергией, давая до +50% к силе ручного клика.',
+      progress: `Текущая сытость: ${Math.round(hungerVal)}% из 100%`,
+      source: 'Станция Заботы (Сытость)',
+      tip: 'Регулярно жмите "Покормить 🍗" или активируйте авто-кормление.'
+    });
+  }
+
+  // 6. Чистота Питомца (Бонус к пассивному CPS)
+  const cleanVal = Math.max(0, GAME.cleanliness || 100);
+  if (cleanVal > 20) {
+    const cleanPct = Math.round((cleanVal / 100) * 50);
+    buffs.push({
+      id: 'pet_clean',
+      icon: '🧼',
+      name: 'Чистота и Гигиена',
+      short: `+${cleanPct}% CPS`,
+      bonusText: `+${cleanPct}% к пассивному доходу`,
+      badgeColor: 'bg-cyan-950/80 border-cyan-500/50 text-cyan-200',
+      desc: 'Чистота стимулирует непрерывную работу всех био-перерабатывающих фабрик (до +50% к пассивному доходу).',
+      progress: `Текущая чистота: ${Math.round(cleanVal)}% из 100%`,
+      source: 'Станция Заботы (Чистота)',
+      tip: 'Регулярно жмите "Помыть 🧼" чтобы не давать фабрикам замедляться.'
+    });
+  }
+
+  // 7. Экипированный Нож
+  const knife = getEquippedKnife();
+  if (knife) {
+    const knifeStar = getKnifeStar(knife.id);
+    const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.30;
+    const diamondLvl = GAME.boutiqueLevels?.diamond_sharpening || 0;
+    const diamondBoost = 1 + diamondLvl * 0.15;
+    let rawKnifeClick = knife.clickMult || 1.0;
+    let effectiveKnifeClick = rawKnifeClick > 50 ? (50 + Math.pow(rawKnifeClick - 50, 0.65)) : rawKnifeClick;
+    const knifeClickMult = (effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost * diamondBoost).toFixed(1);
+    buffs.push({
+      id: 'equipped_knife',
+      icon: '🔪',
+      name: `Оружие: ${knife.name}`,
+      short: `x${knifeClickMult}`,
+      bonusText: `x${knifeClickMult} к клику`,
+      badgeColor: 'bg-stone-900 border-amber-400 text-yellow-300 shadow-[0_0_8px_rgba(234,179,8,0.2)]',
+      desc: `Боевой нож из кейса CS:GO. Умножает базовую силу клика пропорционально редкости и уровню заточки.`,
+      progress: `Качество: ${knife.rarity || 'Армейское'} | Заточка: ${knifeStar}★ (${knife.knifeType || 'Нож'})`,
+      source: 'Инвентарь персонажа',
+      tip: 'Затачивайте нож в Инвентаре за Блестяшки или выбивайте ножи более высокой редкости из кейсов.'
+    });
+  }
+
+  // 8. Астральный Прорыв (Вантузы)
+  const plungerCount = Math.max(0, GAME.transcendPlungers || 0);
+  if (plungerCount > 0 || (GAME.totalTranscend || 0) > 0) {
+    const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
+    const plungersMult = Math.pow(1 + plungerCount * (1 + omniLvl * 0.25), 1.25).toFixed(1);
+    buffs.push({
+      id: 'astral_plungers',
+      icon: '🪠',
+      name: 'Сила Астральных Вантузов',
+      short: `x${plungersMult}`,
+      bonusText: `x${plungersMult} ко всему доходу и клику`,
+      badgeColor: 'bg-indigo-950/90 border-cyan-400 text-cyan-200 shadow-[0_0_10px_rgba(6,182,212,0.3)]',
+      desc: 'Священная космическая валюта 2-го престижа фундаментально умножает все показатели игры.',
+      progress: `Баланс: ${formatNumber(plungerCount)} 🪠 | Совершено Прорывов: ${formatNumber(GAME.totalTranscend || 0)}`,
+      source: 'Астральный Прорыв',
+      tip: 'Совершайте новые Прорывы и покупайте реликвию "Мульти-Омниверс" в ветке Прорыва.'
+    });
+  }
+
+  // 9. Смыв Судьбы (Втулки)
+  if ((GAME.totalPrestiges || 0) > 0) {
+    const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
+    const rollPower = (GAME.totalPrestiges >= 25) ? 0.50 : 0.25;
+    const boostPct = Math.round((Math.pow(Math.max(0, totalRolls), 0.45) * rollPower + (GAME.totalPrestiges * 0.35)) * 100);
+    buffs.push({
+      id: 'prestige_rolls',
+      icon: '🌀',
+      name: 'Мудрость Смыва Судьбы',
+      short: `+${boostPct}%`,
+      bonusText: `+${boostPct}% ко всему доходу`,
+      badgeColor: 'bg-purple-950/90 border-yellow-400 text-yellow-300 shadow-[0_0_8px_rgba(168,85,247,0.3)]',
+      desc: 'Постоянный множитель от всех завершенных циклов Смыва и накопленных Втулок Судьбы.',
+      progress: `Смывов совершено: ${formatNumber(GAME.totalPrestiges)} | Втулок: ${formatNumber(totalRolls)} 🧻`,
+      source: 'Смыв Судьбы',
+      tip: 'Совершайте регулярные Смывы при достижении высоких наград Втулок.'
+    });
+  }
+
+  return buffs;
 }

@@ -8,7 +8,7 @@ export const TALENTS = [
   // TIER 2: МИДГЕЙМ-РАЗГОН И КЛИКЕР-СИНЕРГИИ (1-й день: 150 - 500 🧻)
   { id: 'crit_master', name: 'Ультра-Шмяк (Крит)', desc: '+0.2% шанс крита и +40% к урону крита за уровень', cost: 150, costMult: 1.16, level: 0, max: 1500, icon: '💥', tier: 2, tierName: 'Продвинутый' },
   { id: 'turbo_pipe', name: 'Трубопроводный Разгон Заводов', desc: '+35% к мощности всех заводов за уровень', cost: 200, costMult: 1.16, level: 0, max: 2000, icon: '⚡', tier: 2, tierName: 'Продвинутый' },
-  { id: 'hyper_click', name: 'Гипер-Кликер (1ms Овердрайв)', desc: '+5% к силе клика за каждые 500 сделанных кликов', cost: 250, costMult: 1.17, level: 0, max: 1500, icon: '👆', tier: 2, tierName: 'Продвинутый' },
+  { id: 'hyper_click', name: 'Гипер-Кликер (1ms Овердрайв)', desc: '+5% к силе клика за каждые 500 кликов (макс. 50 стаков / до +250% за ур.)', cost: 250, costMult: 1.17, level: 0, max: 1500, icon: '👆', tier: 2, tierName: 'Продвинутый' },
   { id: 'combo_master', name: 'Владыка Комбо-Ярости', desc: '+20% к длительности комбо и +50% к множителю Турбо', cost: 350, costMult: 1.18, level: 0, max: 1000, icon: '🔥', tier: 2, tierName: 'Продвинутый' },
   { id: 'meteor_hunter', name: 'Ловец Звездных Метеоритов', desc: 'Золотые метеориты падают на 20% чаще и дают x2 награду', cost: 500, costMult: 1.18, level: 0, max: 1000, icon: '🌠', tier: 2, tierName: 'Продвинутый' },
 

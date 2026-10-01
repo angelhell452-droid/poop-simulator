@@ -1,7 +1,7 @@
 import { GAME } from '../core/state.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
-import { getPassiveIncome, getClickPower } from '../economy/production.js';
+import { getPassiveIncome, getClickPower, getActiveBuffsList } from '../economy/production.js';
 import { getAffordableEvoInfo } from '../economy/costs.js';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
 import { liveCps } from '../core/gameLoop.js';
@@ -212,15 +212,20 @@ export function updateHUD() {
   // Quick Prestige Button Check
   const pBreakdown = getPrestigeRewardBreakdown();
   const btnQuick = document.getElementById('btnQuickPrestige');
+  const btnQuickText = document.getElementById('btnQuickPrestigeText');
   if (btnQuick) {
     if (pBreakdown.isMet) {
       btnQuick.classList.remove('hidden');
-      btnQuick.innerHTML = `<span>⚡</span> <span class="truncate">Смыв (+${formatNumber(pBreakdown.totalGain)} 🧻)</span>`;
+      const newText = `Смыв (+${formatNumber(pBreakdown.totalGain)} 🧻)`;
+      if (btnQuickText && btnQuickText.textContent !== newText) {
+        btnQuickText.textContent = newText;
+      }
     } else {
       btnQuick.classList.add('hidden');
     }
   }
 
+  updateActiveBuffsUI();
   updateAutomationTogglesUI();
   updateSmartAssistant();
 }
@@ -276,8 +281,16 @@ export function initAutocareListeners() {
 
   const btnQuick = document.getElementById('btnQuickPrestige');
   if (btnQuick) {
-    btnQuick.addEventListener('click', (e) => {
-      e.stopPropagation();
+    let lastQuickPrestigeTime = 0;
+    const triggerQuickPrestige = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - lastQuickPrestigeTime < 500) return;
+      lastQuickPrestigeTime = now;
+
       const pBreakdown = getPrestigeRewardBreakdown();
       if (!pBreakdown.isMet) return;
 
@@ -299,8 +312,70 @@ export function initAutocareListeners() {
         }
         showWelcomeGreeting(`⚡ Быстрый Смыв выполнен! +${formatNumber(gained)} 🧻 Втулок Судьбы!`);
       }
-    });
+    };
+
+    btnQuick.addEventListener('pointerdown', triggerQuickPrestige);
+    btnQuick.addEventListener('click', triggerQuickPrestige);
   }
+}
+
+let lastBuffsSignature = '';
+
+export function updateActiveBuffsUI() {
+  const buffsListEl = document.getElementById('activeBuffsList');
+  if (!buffsListEl) return;
+
+  const buffs = getActiveBuffsList();
+  const sig = buffs.map(b => `${b.id}:${b.short}`).join('|');
+  if (sig === lastBuffsSignature) return;
+  lastBuffsSignature = sig;
+
+  if (buffs.length === 0) {
+    buffsListEl.innerHTML = `<span class="text-[10px] text-stone-500 italic">Нет активных баффов</span>`;
+    return;
+  }
+
+  buffsListEl.innerHTML = buffs.map(b => `
+    <button class="buff-pill px-2 py-0.5 rounded-lg border text-[10px] font-game font-bold flex items-center gap-1 transition shadow-sm jelly-btn cursor-pointer whitespace-nowrap shrink-0 ${b.badgeColor}" data-buff="${b.id}" title="Нажмите, чтобы просмотреть действие баффа">
+      <span>${b.icon}</span>
+      <span>${b.short}</span>
+    </button>
+  `).join('');
+
+  buffsListEl.querySelectorAll('.buff-pill').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const buffId = btn.dataset.buff;
+      const bObj = getActiveBuffsList().find(x => x.id === buffId);
+      if (bObj) showBuffDetailsModal(bObj);
+    });
+  });
+}
+
+export function showBuffDetailsModal(buff) {
+  const modal = document.getElementById('buffDetailsModal');
+  if (!modal) return;
+
+  const iconEl = document.getElementById('buffModalIcon');
+  const titleEl = document.getElementById('buffModalTitle');
+  const badgeEl = document.getElementById('buffModalBadge');
+  const descEl = document.getElementById('buffModalDesc');
+  const progressEl = document.getElementById('buffModalProgress');
+  const sourceEl = document.getElementById('buffModalSource');
+  const tipEl = document.getElementById('buffModalTip');
+
+  if (iconEl) iconEl.textContent = buff.icon;
+  if (titleEl) titleEl.textContent = buff.name;
+  if (badgeEl) {
+    badgeEl.textContent = buff.bonusText || buff.short;
+    badgeEl.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${buff.badgeColor || 'border-yellow-400 text-yellow-300'}`;
+  }
+  if (descEl) descEl.textContent = buff.desc || '';
+  if (progressEl) progressEl.textContent = buff.progress || 'Активен';
+  if (sourceEl) sourceEl.textContent = buff.source || 'Игровой процесс';
+  if (tipEl) tipEl.innerHTML = `💡 <b>Совет:</b> ${buff.tip || 'Развивайте эту механику для усиления множителя.'}`;
+
+  modal.classList.remove('hidden');
 }
 
 export function updateAutomationTogglesUI() {
