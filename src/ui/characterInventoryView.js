@@ -152,14 +152,14 @@ export function renderCharacterInventory() {
       equippedCard.innerHTML = `
         <div class="flex items-center justify-between gap-2 w-full">
           <div class="flex items-center gap-2.5 overflow-hidden">
-            <span class="text-3xl shrink-0">${equippedObj.icon}</span>
+            <span class="text-4xl shrink-0 drop-shadow-lg">${equippedObj.icon}</span>
             <div class="truncate">
-              <div class="font-game text-xs text-yellow-300 truncate">${equippedObj.name} <span class="text-amber-400 font-black">★ Lv.${eqStar}</span></div>
-              <div class="flex items-center gap-1.5 text-[9px] mt-0.5">
-                <span class="text-emerald-300 font-bold">+${formatNumber(eqClickPct)}% Клик</span>
-                <span class="text-stone-500">•</span>
-                <span class="text-cyan-300 font-bold">+${formatNumber(eqPassPct)}% Зав</span>
-                ${equippedObj.statTrak ? `<span class="text-stone-500">•</span><span class="text-orange-400 font-mono font-bold">🔥 ${formatNumber(equippedObj.statTrak)}</span>` : ''}
+              <div class="font-game text-sm text-white font-black truncate drop-shadow-md" style="text-shadow:0 1px 4px rgba(0,0,0,0.9)">${equippedObj.name}</div>
+              <div class="flex items-center gap-1.5 text-[10px] mt-0.5">
+                <span class="text-emerald-300 font-bold bg-emerald-950/70 px-1.5 py-0.5 rounded">+${formatNumber(eqClickPct)}% 🗗️</span>
+                <span class="text-cyan-300 font-bold bg-cyan-950/70 px-1.5 py-0.5 rounded">+${formatNumber(eqPassPct)}% 🏷️</span>
+                <span class="text-amber-300 font-black bg-amber-950/70 px-1.5 py-0.5 rounded">★ Lv.${eqStar}</span>
+                ${equippedObj.statTrak ? `<span class="text-orange-400 font-mono font-bold bg-orange-950/70 px-1.5 py-0.5 rounded">🔥 ${formatNumber(equippedObj.statTrak)}</span>` : ''}
               </div>
             </div>
           </div>

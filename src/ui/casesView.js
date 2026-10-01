@@ -1,6 +1,7 @@
 import { GAME } from '../core/state.js';
 import { CSGO_CASES } from '../data/cases.data.js';
 import { KNIVES } from '../data/knives.data.js';
+import { TALENTS } from '../data/talents.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js';
 import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife } from '../systems/knifeService.js';
@@ -209,6 +210,24 @@ export function openCaseRoulette(caseId) {
     return;
   }
 
+  // 🔒 Гейтинг по таланту
+  if (caseObj.reqTalent) {
+    const talent = TALENTS.find(t => t.id === caseObj.reqTalent);
+    if (!talent || talent.level <= 0) {
+      alert(`🔒 Этот кейс заблокирован! Требуется талант: «${caseObj.reqTalentName || caseObj.reqTalent}».\nКупите его во вкладке «Таланты»!`);
+      return;
+    }
+  }
+
+  // 🔒 Гейтинг по астральной реликвии
+  if (caseObj.reqTranscendUpgrade) {
+    const hasUpgrade = GAME.transcendUpgrades && GAME.transcendUpgrades[caseObj.reqTranscendUpgrade];
+    if (!hasUpgrade) {
+      alert(`🔒 Этот кейс заблокирован! Требуется реликвия: «${caseObj.reqTranscendUpgradeName || caseObj.reqTranscendUpgrade}».\nКупите её во вкладке «Таланты» → «Реликвии»!`);
+      return;
+    }
+  }
+
   if (caseObj.currency === 'rolls' && GAME.prestigeRolls < caseObj.cost) {
     alert('Недостаточно Золотых Втулок Судьбы (🧻)! Совершите Смыв Судьбы для их получения.');
     return;
@@ -267,17 +286,34 @@ export const KNIFE_RARITY_WEIGHTS = {
 };
 
 export function getKnifePoolWithChances(poolKnives) {
-  let totalWeight = 0;
-  poolKnives.forEach(k => {
-    totalWeight += (KNIFE_RARITY_WEIGHTS[k.rarity] || 15.0);
+  if (!poolKnives || poolKnives.length === 0) return [];
+
+  // Find power range within this specific pool
+  const minPower = Math.min(...poolKnives.map(k => k.clickMult || 1));
+  const maxPower = Math.max(...poolKnives.map(k => k.clickMult || 1));
+  const powerRange = maxPower / minPower;
+
+  // Curve strength: 0.0 = equal chances, 1.0 = fully linear inverse.
+  // 0.65 gives a nice balance — strongest is ~3-8x rarer than weakest,
+  // but never falls below 5% of the max weight (so always obtainable).
+  const CURVE = 0.65;
+  const MIN_WEIGHT_RATIO = 0.05; // strongest can never be less than 5% of weakest's weight
+
+  const rawWeights = poolKnives.map(k => {
+    const normalizedPower = (k.clickMult || 1) / minPower; // 1.0 for weakest, >1 for stronger
+    const raw = 1.0 / Math.pow(normalizedPower, CURVE);     // inverted: weak=high, strong=low
+    return Math.max(raw, MIN_WEIGHT_RATIO);                 // floor so best knife is still obtainable
   });
 
-  return poolKnives.map(k => {
-    const weight = KNIFE_RARITY_WEIGHTS[k.rarity] || 15.0;
-    const chancePercent = totalWeight > 0 ? (weight / totalWeight) * 100 : (100 / poolKnives.length);
+  const totalWeight = rawWeights.reduce((s, w) => s + w, 0);
+
+  return poolKnives.map((k, i) => {
+    const weight = rawWeights[i];
+    const chancePercent = (weight / totalWeight) * 100;
     return { knife: k, weight, chancePercent };
   });
 }
+
 
 export function pickWeightedKnife(poolKnives) {
   if (!poolKnives || poolKnives.length === 0) return null;
@@ -305,6 +341,13 @@ export function setupAndRunRouletteTape(caseObj, instantSkip = false) {
   currentWinnerIndex = winnerIndex;
   currentWinningOffset = winnerIndex * 152;
   const cards = [];
+
+  // Pre-compute rarity groups for neighbor card selection
+  const godlys = poolKnives.filter(k => k.rarity === 'godly' || k.rarity === 'special');
+  const titaniums = poolKnives.filter(k => k.rarity === 'titanium');
+  const celestials = poolKnives.filter(k => k.rarity === 'celestial');
+  const rainbows = poolKnives.filter(k => k.rarity === 'rainbow');
+  const coverts = poolKnives.filter(k => k.rarity === 'covert');
 
   for (let i = 0; i < 65; i++) {
     let itemKnife;
@@ -546,7 +589,7 @@ export function renderCasesSystem() {
   if (rollsLabel) rollsLabel.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
   const plungersLabel = document.getElementById('casesPlungersLabel');
   if (plungersLabel) plungersLabel.innerHTML = `${formatNumber(GAME.transcendPlungers || 0)} <span class="plunger-icon"></span>`;
-  
+
   const countBadge = document.getElementById('knivesCountBadge');
   const unlockedCount = (GAME.unlockedKnives || []).length;
   if (countBadge) countBadge.textContent = `${unlockedCount} / ${KNIVES.length} найдено`;
@@ -578,17 +621,30 @@ export function renderCasesSystem() {
     cratesList.innerHTML = CSGO_CASES.map(c => {
       const meetsPrestige = !c.reqPrestiges || (GAME.totalPrestiges || 0) >= c.reqPrestiges;
       const meetsTranscend = !c.reqTranscend || (GAME.totalTranscend || 0) >= c.reqTranscend;
-      const isUnlocked = meetsPrestige && meetsTranscend;
+      // 🔒 Talent gate check
+      const meetsTalent = !c.reqTalent || (() => {
+        const t = TALENTS.find(t => t.id === c.reqTalent);
+        return t && t.level > 0;
+      })();
+      // 🔒 Transcend upgrade (relic) gate check
+      const meetsRelic = !c.reqTranscendUpgrade || !!(GAME.transcendUpgrades && GAME.transcendUpgrades[c.reqTranscendUpgrade]);
+      const isUnlocked = meetsPrestige && meetsTranscend && meetsTalent && meetsRelic;
       const hasCurrency = c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost : (GAME.transcendPlungers || 0) >= c.cost;
       const canOpen = isUnlocked && hasCurrency;
 
+      let lockReason = '';
+      if (!meetsPrestige) lockReason = `${c.reqPrestiges} Смывов`;
+      else if (!meetsTranscend) lockReason = `${c.reqTranscend} Прорывов`;
+      else if (!meetsTalent) lockReason = `Талант «${c.reqTalentShortName || c.reqTalent}»`;
+      else if (!meetsRelic) lockReason = `Реликвия «${c.reqTranscendUpgradeName || c.reqTranscendUpgrade}»`;
+
       const lockBadge = !isUnlocked
-        ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 Требуется: ${c.reqTranscend ? `${c.reqTranscend} Прорывов` : `${c.reqPrestiges} Смывов`}</div>`
+        ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 Требуется: ${lockReason}</div>`
         : '';
 
       const currIcon = c.currency === 'plungers' ? '<span class="plunger-icon"></span>' : '<span class="roll-icon"></span>';
       const btnText = !isUnlocked
-        ? `🔒 ${c.reqTranscend ? `${c.reqTranscend} Прорыв` : `${c.reqPrestiges} Смыв`}`
+        ? `🔒 ${lockReason}`
         : (hasCurrency ? `Открыть 🎰` : `Мало валюты ❌`);
 
       return `

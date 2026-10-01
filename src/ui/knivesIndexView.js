@@ -283,7 +283,7 @@ export function renderPerksIndex() {
   if (!container) return;
 
   const perks = SHOP_ITEMS.filter(i => i.type === 'perk');
-  
+
   let html = `
     <div class="col-span-1 sm:col-span-2 text-left mb-1">
       <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">🌟 Перки Бутика и Улучшения</h4>
