@@ -485,6 +485,31 @@ export function drawKnifeVectorOnCanvas(ctx, knife, time) {
     g.addColorStop(0.7, '#8b5cf6');
     g.addColorStop(1, '#06b6d4');
     bladeFill = g;
+  } else if (color === 'rainbow') {
+    // 🌈 Настоящий спектральный градиент радуги
+    const g = ctx.createLinearGradient(0, -6, 52, 10);
+    g.addColorStop(0, '#ef4444');
+    g.addColorStop(0.2, '#f97316');
+    g.addColorStop(0.4, '#eab308');
+    g.addColorStop(0.6, '#22c55e');
+    g.addColorStop(0.8, '#06b6d4');
+    g.addColorStop(1, '#a855f7');
+    bladeFill = g;
+  } else if (color === 'celestial') {
+    // ✨ Небесный космический градиент звездного света
+    const g = ctx.createLinearGradient(0, -6, 50, 10);
+    g.addColorStop(0, '#a5f3fc');
+    g.addColorStop(0.4, '#06b6d4');
+    g.addColorStop(0.75, '#3b82f6');
+    g.addColorStop(1, '#1e1b4b');
+    bladeFill = g;
+  } else if (color === 'titanium') {
+    // 💎 Титановый кристальный градиент
+    const g = ctx.createLinearGradient(0, -6, 50, 10);
+    g.addColorStop(0, '#e0f2fe');
+    g.addColorStop(0.5, '#38bdf8');
+    g.addColorStop(1, '#1e3a8a');
+    bladeFill = g;
   } else if (color === 'marble' || color === 'fire_ice') {
     const g = ctx.createLinearGradient(0, -6, 50, 10);
     g.addColorStop(0, '#ef4444');
@@ -515,11 +540,51 @@ export function drawKnifeVectorOnCanvas(ctx, knife, time) {
     g.addColorStop(0.5, '#16a34a');
     g.addColorStop(1, '#052e16');
     bladeFill = g;
+  } else if (color === 'bluegem') {
+    const g = ctx.createLinearGradient(0, -6, 50, 10);
+    g.addColorStop(0, '#38bdf8');
+    g.addColorStop(0.6, '#0369a1');
+    g.addColorStop(1, '#d97706');
+    bladeFill = g;
   } else if (color === 'tiger') {
     const g = ctx.createLinearGradient(0, -6, 50, 10);
     g.addColorStop(0, '#fef08a');
     g.addColorStop(0.4, '#f59e0b');
     g.addColorStop(1, '#78350f');
+    bladeFill = g;
+  } else if (color === 'slaughter' || color === 'crimson') {
+    const g = ctx.createLinearGradient(0, -6, 50, 10);
+    g.addColorStop(0, '#f87171');
+    g.addColorStop(0.5, '#dc2626');
+    g.addColorStop(1, '#7f1d1d');
+    bladeFill = g;
+  } else if (color === 'autotronic') {
+    const g = ctx.createLinearGradient(0, -6, 50, 10);
+    g.addColorStop(0, '#ef4444');
+    g.addColorStop(0.65, '#b91c1c');
+    g.addColorStop(1, '#e2e8f0');
+    bladeFill = g;
+  } else if (color === 'damascus') {
+    const g = ctx.createLinearGradient(0, -6, 50, 10);
+    g.addColorStop(0, '#f8fafc');
+    g.addColorStop(0.25, '#94a3b8');
+    g.addColorStop(0.5, '#f1f5f9');
+    g.addColorStop(0.75, '#64748b');
+    g.addColorStop(1, '#cbd5e1');
+    bladeFill = g;
+  } else if (color === 'hyper') {
+    const g = ctx.createLinearGradient(0, -6, 50, 10);
+    g.addColorStop(0, '#22d3ee');
+    g.addColorStop(0.35, '#ec4899');
+    g.addColorStop(0.7, '#a855f7');
+    g.addColorStop(1, '#10b981');
+    bladeFill = g;
+  } else if (color === 'printstream') {
+    const g = ctx.createLinearGradient(0, -6, 50, 10);
+    g.addColorStop(0, '#ffffff');
+    g.addColorStop(0.5, '#e2e8f0');
+    g.addColorStop(0.85, '#0f172a');
+    g.addColorStop(1, '#38bdf8');
     bladeFill = g;
   } else if (color === 'godly') {
     const g = ctx.createLinearGradient(0, -6, 50, 10);

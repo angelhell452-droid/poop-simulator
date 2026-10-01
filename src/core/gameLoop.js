@@ -37,13 +37,10 @@ export function gameEngineTick() {
   GAME.allTimeBiomass += passiveGained;
   GAME.cycleBiomass += passiveGained;
 
-  // 2. High-Speed Autoclicker Engine & Perk
+  // 2. High-Speed Autoclicker Engine
   let targetCps = 0;
   if (GAME.autoclickerActive) {
     targetCps += (GAME.autoclickerSpeed || 1000);
-  }
-  if (SHOP_ITEMS.find(i => i.id === 'upg_autoclick')?.owned) {
-    targetCps += 20;
   }
   if (targetCps > 0) {
     addPendingClicks(targetCps * dt);

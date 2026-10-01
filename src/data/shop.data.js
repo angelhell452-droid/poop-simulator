@@ -21,7 +21,6 @@ export const SHOP_ITEMS = [
   { id: 'hat_godly_apex', name: 'Венец Демиурга Омниверса', type: 'hat', cost: 50000000000, clickBoost: 20000.0, icon: '🔱', desc: 'Священная реликвия: x20,000 к клику и сияние сверхновой!' },
   { id: 'hat_celestial_infinity', name: 'Абсолютные Кольца Бесконечности', type: 'hat', cost: 250000000000, clickBoost: 100000.0, icon: '🪐', desc: 'Пик могущества: x100,000 к клику и орбитальные планеты!' },
 
-  { id: 'upg_autoclick', name: 'Нано-Автошмякалка 60 FPS', type: 'perk', cost: 500, icon: '⚡', desc: 'Автоматически делает 20 кликов в секунду!' },
   { id: 'upg_magnet', name: 'Магнит Блестяшек', type: 'perk', cost: 1500, icon: '🧲', desc: '+30% к шансу выпадения блестяшек при клике!' },
   { id: 'upg_goldrush', name: 'Золотая Лихорадка', type: 'perk', cost: 10000, icon: '💰', desc: 'Удваивает доход всех заводов навсегда!' },
   { id: 'upg_quantum_click', name: 'Квантовый Синергизм Кликера', type: 'perk', cost: 25000, icon: '🔮', desc: 'Сила клика получает +2% от ВСЕГО пассивного дохода заводов!' },
