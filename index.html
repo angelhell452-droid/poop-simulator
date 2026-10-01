@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.14 PRO | Фильтры Книги Ножей видны</title>
+  <title>Poop Simulator v4.9.15 PRO | Баг-Репорт система</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.14 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.15 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -73,6 +73,11 @@
         class="bg-gradient-to-r from-amber-600 via-orange-600 to-yellow-600 hover:brightness-110 text-stone-950 font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-300 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
         title="Журнал обновлений и список изменений (Патч-ноуты)">
         <span>📜</span> <span class="hidden sm:inline">Патчи</span>
+      </button>
+      <button id="btnBugReport"
+        class="bg-gradient-to-r from-red-700 via-rose-700 to-red-600 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-red-400 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
+        title="Сообщить об ошибке или баге в игре">
+        <span>🐛</span> <span class="hidden sm:inline">Баг</span>
       </button>
       <button id="btnGuideModal"
         class="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-cyan-400 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
@@ -1946,6 +1951,68 @@
         id="buffModalTip">
         Совет по усилению эффекта.
       </div>
+    </div>
+  </div>
+
+  <!-- BUG REPORT MODAL -->
+  <div id="bugReportModal"
+    class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div
+      class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-red-500 max-w-lg w-full p-5 sm:p-6 relative shadow-[0_0_50px_rgba(239,68,68,0.3)] flex flex-col gap-4">
+
+      <!-- Close -->
+      <button id="btnCloseBugReport"
+        class="absolute top-3 right-3 text-stone-400 hover:text-white text-2xl font-bold leading-none">&times;</button>
+
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <div class="text-4xl p-2.5 bg-red-950/80 rounded-2xl border border-red-500/50 shadow-lg">🐛</div>
+        <div>
+          <h3 class="font-game text-xl text-red-400 tracking-wide">Баг-Репорт</h3>
+          <p class="text-[11px] text-stone-400">Опишите проблему — мы уведомляем разработчика в Discord!</p>
+        </div>
+      </div>
+
+      <!-- Category selector -->
+      <div>
+        <div class="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-2">Категория бага:</div>
+        <div class="flex flex-wrap gap-1.5">
+          <button class="bug-category-btn px-2.5 py-1 rounded-full text-[11px] font-bold border border-red-400 bg-red-600 text-white transition"
+            data-category="Визуальный баг">🎨 Визуальный</button>
+          <button class="bug-category-btn px-2.5 py-1 rounded-full text-[11px] font-bold border border-stone-600 bg-stone-800 text-stone-300 transition hover:border-red-500"
+            data-category="Краш / зависание">💥 Краш</button>
+          <button class="bug-category-btn px-2.5 py-1 rounded-full text-[11px] font-bold border border-stone-600 bg-stone-800 text-stone-300 transition hover:border-red-500"
+            data-category="Баланс / экономика">⚖️ Баланс</button>
+          <button class="bug-category-btn px-2.5 py-1 rounded-full text-[11px] font-bold border border-stone-600 bg-stone-800 text-stone-300 transition hover:border-red-500"
+            data-category="Звук">🔊 Звук</button>
+          <button class="bug-category-btn px-2.5 py-1 rounded-full text-[11px] font-bold border border-stone-600 bg-stone-800 text-stone-300 transition hover:border-red-500"
+            data-category="Другое">❓ Другое</button>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <div class="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1.5">Описание проблемы:</div>
+        <textarea id="bugReportText" rows="5"
+          placeholder="Опишите подробно: что произошло, когда возникло, как воспроизвести...&#10;&#10;Минимум 10 символов. Максимум 1000."
+          class="w-full bg-stone-950 border border-stone-700 focus:border-red-500 rounded-xl px-3 py-2.5 text-xs text-white placeholder-stone-600 resize-none focus:outline-none transition"></textarea>
+        <div class="flex items-center justify-between mt-1">
+          <span id="bugReportStatus" class="text-xs font-bold"></span>
+          <span class="text-[10px] text-stone-600">1 репорт в 60 секунд</span>
+        </div>
+      </div>
+
+      <!-- Auto-collected info notice -->
+      <div class="bg-stone-950/80 border border-stone-800 rounded-xl px-3 py-2 text-[10px] text-stone-500 flex items-start gap-2">
+        <span class="shrink-0 text-sm">ℹ️</span>
+        <span>С репортом автоматически отправляются: версия игры, никнейм, стадия игры и браузер. Никаких паролей или личных данных не собирается.</span>
+      </div>
+
+      <!-- Send button -->
+      <button id="btnSendBugReport"
+        class="w-full jelly-btn bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:brightness-110 text-white font-game text-sm py-2.5 rounded-2xl shadow-xl border border-red-400 font-bold flex items-center justify-center gap-2">
+        🚀 Отправить репорт
+      </button>
     </div>
   </div>
 

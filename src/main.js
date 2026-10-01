@@ -16,6 +16,7 @@ import { initAuthModal } from './ui/authModalView.js';
 import { initLeaderboardView } from './ui/leaderboardView.js';
 import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js';
+import { initBugReportListeners } from './ui/bugReportView.js';
 import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
 import { addPendingClicks, processBatchedClicks } from './systems/clickService.js';
@@ -115,6 +116,7 @@ export async function bootstrap() {
   initLeaderboardView();
   initPatchNotesListeners();
   initSmartAssistantListeners();
+  initBugReportListeners();
   initCharacterInventoryListeners();
 
   // Secret Click Trophy on Logo
