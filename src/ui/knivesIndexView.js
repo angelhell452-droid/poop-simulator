@@ -8,6 +8,7 @@ import { saveLocal } from '../save/saveManager.js';
 import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
 import { formatNumber } from '../utils/numberFormatter.js';
+import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 
 let currentCategory = 'knives'; // 'knives' | 'factories' | 'hats' | 'perks'
 let indexFilterRarity = 'all';
@@ -146,7 +147,7 @@ export function renderKnivesIndexBook() {
         ${!isUnlocked ? '<span class="absolute top-1.5 right-1.5 text-xs text-stone-500">🔒</span>' : ''}
         
         <div>
-          <div class="text-3xl my-1 flex justify-center filter drop-shadow select-none">${knife.icon}</div>
+          <div class="my-1 flex justify-center items-center select-none">${getKnifeImageHtml(knife, 52)}</div>
           <div class="font-game text-xs font-bold truncate text-yellow-100">${knife.name}</div>
           <div class="text-[9px] text-stone-400 truncate">${knife.caseName || 'Коллекция'}</div>
         </div>

@@ -10,6 +10,7 @@ import { requestCloudSync } from '../save/cloudSync.js';
 import { updateHUD } from './hudView.js';
 import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js';
 import { events } from '../core/events.js';
+import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 
 let csgoAudioEnabled = true;
 let audioCtx = null;
@@ -423,7 +424,7 @@ export function setupAndRunRouletteTape(caseObj, instantSkip = false) {
           <span class="font-bold uppercase ${badgeColor} px-1.5 py-0.2 rounded">${itemKnife.rarityName}</span>
           ${starBadge}
         </div>
-        <span class="text-3xl my-0.5 filter drop-shadow">${itemKnife.icon}</span>
+        <div class="my-0.5 flex items-center justify-center">${getKnifeImageHtml(itemKnife, 52)}</div>
         <div class="font-game text-[10px] text-yellow-200 truncate w-full px-1">${itemKnife.name}</div>
         <div class="h-1 w-full rounded-full ${barColor}"></div>
       </div>
@@ -529,7 +530,7 @@ function onRouletteFinished() {
   if (resBanner) resBanner.classList.remove('hidden');
 
   const rIcon = document.getElementById('rouletteResultIcon');
-  if (rIcon) rIcon.textContent = rouletteWinningKnife.icon;
+  if (rIcon) rIcon.innerHTML = getKnifeImageHtml(rouletteWinningKnife, 80);
   const rName = document.getElementById('rouletteResultName');
   if (rName) rName.textContent = rouletteWinningKnife.name;
 
@@ -756,7 +757,7 @@ export function openCasePreviewModal(caseId) {
       itemRow.className = `p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition ${rColor}`;
       itemRow.innerHTML = `
         <div class="flex items-center gap-2.5 min-w-0 flex-1">
-          <span class="text-3xl shrink-0 filter drop-shadow">${knife.icon}</span>
+          <div class="shrink-0 flex items-center justify-center">${getKnifeImageHtml(knife, 42)}</div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="font-bold text-xs text-stone-100 truncate">${knife.name}</span>

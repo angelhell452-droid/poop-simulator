@@ -12,6 +12,7 @@ import { renderShop } from './shopView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
+import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats'
@@ -152,7 +153,7 @@ export function renderCharacterInventory() {
       equippedCard.innerHTML = `
         <div class="flex items-center justify-between gap-2 w-full">
           <div class="flex items-center gap-2.5 overflow-hidden">
-            <span class="text-4xl shrink-0 drop-shadow-lg">${equippedObj.icon}</span>
+            <div class="shrink-0 flex items-center justify-center">${getKnifeImageHtml(equippedObj, 52)}</div>
             <div class="truncate">
               <div class="font-game text-sm text-white font-black truncate drop-shadow-md" style="text-shadow:0 1px 4px rgba(0,0,0,0.9)">${equippedObj.name}</div>
               <div class="flex items-center gap-1.5 text-[10px] mt-0.5">
@@ -355,7 +356,7 @@ function renderKnivesGrid() {
         <!-- Row 1: Icon, Name, Level, and Mini "!" button -->
         <div class="flex items-start justify-between gap-1.5">
           <div class="flex items-center gap-2 overflow-hidden flex-1">
-            <span class="text-2xl shrink-0">${kn.icon}</span>
+            <div class="shrink-0 flex items-center justify-center">${getKnifeImageHtml(kn, 40)}</div>
             <div class="truncate">
               <div class="font-game text-xs text-yellow-300 truncate font-bold" title="${kn.name}">${kn.name}</div>
               <div class="flex items-center gap-1.5 text-[9px] mt-0.5">

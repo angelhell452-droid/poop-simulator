@@ -1,33 +1,35 @@
 /**
  * knifeIcons.js
- * Централизованный маппинг иконок ножей.
- * Каждый тип ножа (style) имеет базовую SVG-иконку в виде эмодзи.
- * Редкость определяет цветовой класс CSS для обёртки иконки.
+ * Централизованный маппинг и векторные рендеры ножей.
+ * Поддерживает полноразмерные векторные SVG-модели ножей со скинами
+ * и текстовые эмодзи-иконки для компактных списков.
  */
+
+import { getKnifeVectorSvg } from './knifeVectorRenderer.js';
 
 // Базовые иконки по типу ножа (style)
 export const KNIFE_STYLE_ICONS = {
-  karambit: '🦅', // коготь/серп — характерный изогнутый клинок
-  butterfly: '🦋', // бабочка
-  m9: '🔱', // широкий клинок M9
-  bayonet: '⚔️', // штыковой нож
-  flip: '🌀', // складной
-  gut: '🪝', // крюкообразный
-  falchion: '🌙', // изогнутый клинок
-  huntsman: '🏹', // охотничий
-  bowie: '🗡️', // боуи — классический
-  stiletto: '💉', // тонкое лезвие
-  daggers: '✝️', // пара кинжалов
-  navaja: '🪒', // navaja — испанский складной
-  ursus: '🐻', // ursus — медведь
-  talon: '🦞', // talon — коготь
-  skeleton: '💀', // skeleton
-  paracord: '🧵', // paracord
-  survival: '🏕️', // survival
-  nomad: '🗺️', // nomad
-  classic: '🎯', // classic
-  katana: '⛩️', // katana
-  scythe: '☠️', // коса
+  karambit: '🦅',
+  butterfly: '🦋',
+  m9: '🔱',
+  bayonet: '⚔️',
+  flip: '🌀',
+  gut: '🪝',
+  falchion: '🌙',
+  huntsman: '🏹',
+  bowie: '🗡️',
+  stiletto: '💉',
+  daggers: '✝️',
+  navaja: '🪒',
+  ursus: '🐻',
+  talon: '🦞',
+  skeleton: '💀',
+  paracord: '🧵',
+  survival: '🏕️',
+  nomad: '🗺️',
+  classic: '🎯',
+  katana: '⛩️',
+  scythe: '☠️',
 };
 
 // Цветовые CSS-классы для рамки/свечения по редкости
@@ -48,14 +50,25 @@ export const KNIFE_RARITY_GLOW_CLASS = {
 };
 
 /**
- * Возвращает правильную иконку ножа по его данным.
- * Приоритет: если нож уже имеет явную иконку (не дефолтный эмодзи), используем стиль.
+ * Возвращает векторный SVG нож со скином для интерфейса (рулетка, инвентарь, атлас).
+ * @param {Object} knife - объект ножа
+ * @param {number} size - размер в px
+ * @param {string} extraClass - доп. классы
+ * @returns {string} HTML-строка
+ */
+export function getKnifeImageHtml(knife, size = 48, extraClass = '') {
+  if (!knife) return `<span class="text-2xl">🗡️</span>`;
+  return getKnifeVectorSvg(knife, size, extraClass);
+}
+
+/**
+ * Текстовая иконка-эмодзи ножа.
  * @param {Object} knife - объект ножа из KNIVES
  * @returns {string} - эмодзи иконка
  */
 export function getKnifeIcon(knife) {
   if (!knife) return '🗡️';
-  return KNIFE_STYLE_ICONS[knife.style] || '🗡️';
+  return KNIFE_STYLE_ICONS[knife.style] || knife.icon || '🗡️';
 }
 
 /**
