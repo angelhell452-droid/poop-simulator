@@ -146,10 +146,10 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
               ${isCurrent ? '<span class="text-[9px] bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 px-1.5 py-0.2 rounded font-black uppercase tracking-wider shrink-0 shadow">ВЫ</span>' : ''}
             </div>
             <div class="text-[10px] text-stone-400 flex items-center gap-2 mt-0.5">
-              <span>🧬 Форма ${player.stage || 1}</span>
+              <span>🧬 Форма #${formatNumber(player.stage || 1)}</span>
               <span class="text-stone-600">•</span>
-              <span class="text-purple-300 font-mono">🧻 ${player.prestiges || 0} см</span>
-              ${player.transcends ? `<span class="text-stone-600">•</span><span class="text-cyan-300 font-mono">🌌 ${player.transcends} пр</span>` : ''}
+              <span class="text-purple-300 font-mono">🧻 ${formatNumber(player.prestiges || 0)} см</span>
+              ${player.transcends ? `<span class="text-stone-600">•</span><span class="text-cyan-300 font-mono">🌌 ${formatNumber(player.transcends)} пр</span>` : ''}
             </div>
           </div>
         </div>
@@ -208,7 +208,7 @@ function updateDailyRewardCard(leaderboard) {
       btnClaim.className = 'w-full sm:w-auto shrink-0 bg-stone-800 text-stone-500 font-game font-bold text-xs px-3.5 py-2 rounded-xl cursor-not-allowed';
     }
   } else if (playerRank <= 10 && rewardAmount > 0) {
-    if (infoEl) infoEl.innerHTML = `<span class="text-emerald-300 font-bold">🎉 Вы в Топ-${playerRank}!</span> Ваша награда: <strong class="text-yellow-300">+${rewardAmount.toLocaleString('ru-RU')} ✨ Блестяшек</strong>`;
+    if (infoEl) infoEl.innerHTML = `<span class="text-emerald-300 font-bold">🎉 Вы в Топ-${playerRank}!</span> Ваша награда: <strong class="text-yellow-300">+${formatNumber(rewardAmount)} ✨ Блестяшек</strong>`;
     if (btnClaim) {
       btnClaim.disabled = false;
       btnClaim.innerHTML = `🎁 Забрать +${formatNumber(rewardAmount)} ✨`;
@@ -223,13 +223,13 @@ function updateDailyRewardCard(leaderboard) {
         // Flash message
         const notif = document.createElement('div');
         notif.className = 'fixed top-16 left-1/2 -translate-x-1/2 z-[9999] bg-gradient-to-r from-emerald-500 to-yellow-500 text-stone-950 font-game font-bold text-xs px-4 py-2 rounded-2xl shadow-2xl border-2 border-yellow-200 animate-bounce flex items-center gap-2';
-        notif.innerHTML = `<span>👑 Получена ежедневная награда Топ-${playerRank}: +${rewardAmount.toLocaleString('ru-RU')} ✨ Блестяшек!</span>`;
+        notif.innerHTML = `<span>👑 Получена ежедневная награда Топ-${playerRank}: +${formatNumber(rewardAmount)} ✨ Блестяшек!</span>`;
         document.body.appendChild(notif);
         setTimeout(() => notif.remove(), 3500);
       };
     }
   } else {
-    if (infoEl) infoEl.textContent = `Вы на #${playerRank} месте. Поднимитесь в Топ-10 по Очкам Славы, чтобы получать до 50,000 ✨ в день!`;
+    if (infoEl) infoEl.textContent = `Вы на #${playerRank} месте. Поднимитесь в Топ-10 по Очкам Славы, чтобы получать до ${formatNumber(50000)} ✨ в день!`;
     if (btnClaim) {
       btnClaim.disabled = true;
       btnClaim.textContent = '🔒 Нужен Топ-10';

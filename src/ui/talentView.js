@@ -118,8 +118,8 @@ export function renderFlushTalents() {
       const btnLabel = maxed
         ? 'МАКС'
         : (buyMultiplier === 'max'
-          ? `+${tlInfo.count} (${formatNumber(tlInfo.totalCost)} 🧻)`
-          : (buyMultiplier > 1 ? `+${tlInfo.count} (${formatNumber(tlInfo.totalCost)} 🧻)` : `${formatNumber(tlInfo.totalCost)} 🧻`));
+          ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)`
+          : (buyMultiplier > 1 ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)` : `${formatNumber(tlInfo.totalCost)} 🧻`));
 
       let tierBadgeClass = 'bg-stone-800 text-stone-300 border-stone-700';
       if (tl.tier === 2) tierBadgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40';
@@ -288,8 +288,8 @@ export function updateTalentButtons() {
     const btnLabel = maxed
       ? 'МАКС'
       : (buyMultiplier === 'max'
-        ? `+${tlInfo.count} (${formatNumber(tlInfo.totalCost)} 🧻)`
-        : (buyMultiplier > 1 ? `+${tlInfo.count} (${formatNumber(tlInfo.totalCost)} 🧻)` : `${formatNumber(tlInfo.totalCost)} 🧻`));
+        ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)`
+        : (buyMultiplier > 1 ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)` : `${formatNumber(tlInfo.totalCost)} 🧻`));
 
     if (btn.textContent.trim() !== btnLabel) {
       btn.textContent = btnLabel;

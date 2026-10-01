@@ -49,10 +49,10 @@ export function initModals() {
         <div class="space-y-1.5">
           <div class="flex items-center justify-between text-xs">
             <span class="${b.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-              🧬 Форма: #${b.currentForm} / #${b.reqForm}
+              🧬 Форма: #${formatNumber(b.currentForm)} / #${formatNumber(b.reqForm)}
             </span>
             <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${b.meetsStage ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-              ${b.meetsStage ? '✓ Достигнуто' : `Нужно еще +${Math.max(0, b.reqForm - b.currentForm)} форм`}
+              ${b.meetsStage ? '✓ Достигнуто' : `Нужно еще +${formatNumber(Math.max(0, b.reqForm - b.currentForm))} форм`}
             </span>
           </div>
           <div class="flex items-center justify-between text-xs">
@@ -91,7 +91,7 @@ export function initModals() {
             <div>├─ 💨 От биомассы забега: <b class="text-white">+${formatNumber(b.bioPart)}</b> втулок</div>
             <div>├─ 🧬 От эволюции формы: <b class="text-white">+${formatNumber(b.stagePart)}</b> втулок ${b.extraForms > 0 ? `(+${formatNumber(b.extraForms)} сверх цели)` : ''}</div>
             <div>├─ 🗡️ Бонус оружия (Коса): <b class="${b.scytheActive ? 'text-emerald-300' : 'text-stone-400'}">${b.scytheActive ? '+25% (АКТИВЕН)' : '0%'}</b></div>
-            <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${Math.round((b.flushTalentBonus - 1) * 100)}%</b></div>
+            <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${formatNumber(Math.round((b.flushTalentBonus - 1) * 100))}%</b></div>
           </div>
           <div class="pt-1.5 border-t border-purple-800/60 text-[10px] text-amber-300 font-sans space-y-0.5">
             <div class="font-bold flex items-center gap-1">
@@ -200,8 +200,8 @@ export function initModals() {
             <div>├─ 🌀 От числа Смывов (${formatNumber(t.currentPrestiges)}): <b class="text-white">+${formatNumber(t.flushPart)}</b> вантузов (+1 за каждый смыв)</div>
             <div>├─ <span class="roll-icon"></span> От накопленных Втулок за Прорыв (${formatNumber(t.currentRolls)}): <b class="text-white">+${formatNumber(t.rollsPart)}</b> вантузов (+1 за 500 втулок)</div>
             <div>├─ 🧬 От эволюции формы (Форма #${formatNumber(t.currentForm)}): <b class="text-white">+${formatNumber(t.stagePart)}</b> вантузов (+1 за каждые 10 форм)</div>
-            <div>├─ <span class="plunger-icon"></span> Астральный Инкубатор: <b class="${t.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${Math.round(t.incubatorBonus * 100)}%</b></div>
-            <div>└─ 🔮 Душа Прорыва (Талант): <b class="${t.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${Math.round(t.soulBonus * 100)}%</b></div>
+            <div>├─ <span class="plunger-icon"></span> Астральный Инкубатор: <b class="${t.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(t.incubatorBonus * 100))}%</b></div>
+            <div>└─ 🔮 Душа Прорыва (Талант): <b class="${t.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(t.soulBonus * 100))}%</b></div>
           </div>
           <div class="pt-1.5 border-t border-indigo-800/60 text-[10px] text-cyan-300 font-sans space-y-0.5">
             <div class="font-bold flex items-center gap-1">

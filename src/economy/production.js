@@ -258,11 +258,11 @@ export function getActiveBuffsList() {
         id: 'hyper_click',
         icon: '👆',
         name: 'Гипер-Клик (Овердрайв)',
-        short: `+${bonusPct}%`,
-        bonusText: `+${bonusPct}% к силе клика`,
+        short: `+${formatNumber(bonusPct)}%`,
+        bonusText: `+${formatNumber(bonusPct)}% к силе клика`,
         badgeColor: 'bg-amber-950/90 border-yellow-400/80 text-yellow-300 shadow-[0_0_8px_rgba(234,179,8,0.25)]',
         desc: 'Талант Смыва 2-го Тира: увеличивает силу каждого клика на +5% за каждые 500 сделанных кликов.',
-        progress: `Накоплено: ${hyperStacks} из ${maxHyperStacks} стаков (всего кликов: ${formatNumber(GAME.totalClicks || 0)}). Уровень таланта: ${hyperTalent.level}.`,
+        progress: `Накоплено: ${formatNumber(hyperStacks)} из ${formatNumber(maxHyperStacks)} стаков (всего кликов: ${formatNumber(GAME.totalClicks || 0)}). Уровень таланта: ${formatNumber(hyperTalent.level)}.`,
         source: 'Таланты Смыва (Тир 2)',
         tip: 'Делайте больше кликов мышкой или развивайте уровень таланта в Древе Втулок.'
       });
@@ -280,11 +280,11 @@ export function getActiveBuffsList() {
       id: 'turbo_rush',
       icon: '⚡',
       name: 'Турбо-Ярость (Frenzy Rush)',
-      short: `x${mult} (${Math.ceil(GAME.turboRushTime)}с)`,
-      bonusText: `x${mult} к силе клика`,
+      short: `x${formatNumber(mult)} (${Math.ceil(GAME.turboRushTime)}с)`,
+      bonusText: `x${formatNumber(mult)} к силе клика`,
       badgeColor: 'bg-red-950/90 border-red-500/80 text-red-200 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]',
       desc: 'Временный ураганный режим! Сила клика колоссально умножается во время ярости.',
-      progress: `Осталось действия: ${Math.ceil(GAME.turboRushTime)} сек. Базовый множитель: x${turboBase}.`,
+      progress: `Осталось действия: ${Math.ceil(GAME.turboRushTime)} сек. Базовый множитель: x${formatNumber(turboBase)}.`,
       source: 'Быстрые клики (Комбо) / Золотой метеорит',
       tip: 'Кликайте чаще чтобы продлить ярость, или ловите золотые метеориты!'
     });
@@ -300,7 +300,7 @@ export function getActiveBuffsList() {
       bonusText: 'x2 ко всему доходу и критам',
       badgeColor: 'bg-gradient-to-r from-yellow-950 to-amber-900 border-yellow-300 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.5)]',
       desc: 'Все 3 потребности питомца (Сытость, Чистота, Настроение) выше 90%! Питомец полностью счастлив и благодарит вас удвоенным производством.',
-      progress: `Сытость: ${Math.round(GAME.hunger)}% | Чистота: ${Math.round(GAME.cleanliness)}% | Настроение: ${Math.round(GAME.happiness)}%`,
+      progress: `Сытость: ${formatNumber(Math.round(GAME.hunger))}% | Чистота: ${formatNumber(Math.round(GAME.cleanliness))}% | Настроение: ${formatNumber(Math.round(GAME.happiness))}%`,
       source: 'Станция Заботы о Питомце',
       tip: 'Используйте кнопки ухода (Покормить, Помыть, Пощекотать) или включите Авто-Уход Прорыва.'
     });
@@ -318,11 +318,11 @@ export function getActiveBuffsList() {
         id: 'golden_synergy',
         icon: '🏭',
         name: 'Священный Синергизм Заводов',
-        short: `+${bonusPct}%`,
-        bonusText: `+${bonusPct}% к силе клика`,
+        short: `+${formatNumber(bonusPct)}%`,
+        bonusText: `+${formatNumber(bonusPct)}% к силе клика`,
         badgeColor: 'bg-purple-950/90 border-purple-400 text-purple-200 shadow-[0_0_8px_rgba(168,85,247,0.3)]',
         desc: 'Талант Смыва 3-го Тира: за каждые 10 суммарно купленных заводов сила клика возрастает на +150% за уровень.',
-        progress: `Куплено заводов: ${formatNumber(totalFactories)} (активных десятков: ${formatNumber(factoryBlocks)}). Уровень таланта: ${synergyTalent.level}.`,
+        progress: `Куплено заводов: ${formatNumber(totalFactories)} (активных десятков: ${formatNumber(factoryBlocks)}). Уровень таланта: ${formatNumber(synergyTalent.level)}.`,
         source: 'Таланты Смыва (Тир 3)',
         tip: 'Покупайте больше недорогих заводов в панели заводов, чтобы увеличивать количество десятков.'
       });
@@ -337,11 +337,11 @@ export function getActiveBuffsList() {
       id: 'pet_hunger',
       icon: '🍗',
       name: 'Сытость Питомца',
-      short: `+${hungerPct}%`,
-      bonusText: `+${hungerPct}% к силе клика`,
+      short: `+${formatNumber(hungerPct)}%`,
+      bonusText: `+${formatNumber(hungerPct)}% к силе клика`,
       badgeColor: 'bg-orange-950/80 border-orange-500/50 text-orange-200',
       desc: 'Качественное органическое питание наполняет какашечку энергией, давая до +50% к силе ручного клика.',
-      progress: `Текущая сытость: ${Math.round(hungerVal)}% из 100%`,
+      progress: `Текущая сытость: ${formatNumber(Math.round(hungerVal))}% из 100%`,
       source: 'Станция Заботы (Сытость)',
       tip: 'Регулярно жмите "Покормить 🍗" или активируйте авто-кормление.'
     });
@@ -355,11 +355,11 @@ export function getActiveBuffsList() {
       id: 'pet_clean',
       icon: '🧼',
       name: 'Чистота и Гигиена',
-      short: `+${cleanPct}% CPS`,
-      bonusText: `+${cleanPct}% к пассивному доходу`,
+      short: `+${formatNumber(cleanPct)}% CPS`,
+      bonusText: `+${formatNumber(cleanPct)}% к пассивному доходу`,
       badgeColor: 'bg-cyan-950/80 border-cyan-500/50 text-cyan-200',
       desc: 'Чистота стимулирует непрерывную работу всех био-перерабатывающих фабрик (до +50% к пассивному доходу).',
-      progress: `Текущая чистота: ${Math.round(cleanVal)}% из 100%`,
+      progress: `Текущая чистота: ${formatNumber(Math.round(cleanVal))}% из 100%`,
       source: 'Станция Заботы (Чистота)',
       tip: 'Регулярно жмите "Помыть 🧼" чтобы не давать фабрикам замедляться.'
     });
@@ -374,13 +374,13 @@ export function getActiveBuffsList() {
     const diamondBoost = 1 + diamondLvl * 0.15;
     let rawKnifeClick = knife.clickMult || 1.0;
     let effectiveKnifeClick = rawKnifeClick > 50 ? (50 + Math.pow(rawKnifeClick - 50, 0.65)) : rawKnifeClick;
-    const knifeClickMult = (effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost * diamondBoost).toFixed(1);
+    const knifeClickMult = effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost * diamondBoost;
     buffs.push({
       id: 'equipped_knife',
       icon: '🔪',
       name: `Оружие: ${knife.name}`,
-      short: `x${knifeClickMult}`,
-      bonusText: `x${knifeClickMult} к клику`,
+      short: `x${formatNumber(knifeClickMult)}`,
+      bonusText: `x${formatNumber(knifeClickMult)} к клику`,
       badgeColor: 'bg-stone-900 border-amber-400 text-yellow-300 shadow-[0_0_8px_rgba(234,179,8,0.2)]',
       desc: `Боевой нож из кейса CS:GO. Умножает базовую силу клика пропорционально редкости и уровню заточки.`,
       progress: `Качество: ${knife.rarity || 'Армейское'} | Заточка: ${knifeStar}★ (${knife.knifeType || 'Нож'})`,
@@ -393,13 +393,13 @@ export function getActiveBuffsList() {
   const plungerCount = Math.max(0, GAME.transcendPlungers || 0);
   if (plungerCount > 0 || (GAME.totalTranscend || 0) > 0) {
     const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
-    const plungersMult = Math.pow(1 + plungerCount * (1 + omniLvl * 0.25), 1.25).toFixed(1);
+    const plungersMult = Math.pow(1 + plungerCount * (1 + omniLvl * 0.25), 1.25);
     buffs.push({
       id: 'astral_plungers',
       icon: '🪠',
       name: 'Сила Астральных Вантузов',
-      short: `x${plungersMult}`,
-      bonusText: `x${plungersMult} ко всему доходу и клику`,
+      short: `x${formatNumber(plungersMult)}`,
+      bonusText: `x${formatNumber(plungersMult)} ко всему доходу и клику`,
       badgeColor: 'bg-indigo-950/90 border-cyan-400 text-cyan-200 shadow-[0_0_10px_rgba(6,182,212,0.3)]',
       desc: 'Священная космическая валюта 2-го престижа фундаментально умножает все показатели игры.',
       progress: `Баланс: ${formatNumber(plungerCount)} 🪠 | Совершено Прорывов: ${formatNumber(GAME.totalTranscend || 0)}`,
@@ -417,8 +417,8 @@ export function getActiveBuffsList() {
       id: 'prestige_rolls',
       icon: '🌀',
       name: 'Мудрость Смыва Судьбы',
-      short: `+${boostPct}%`,
-      bonusText: `+${boostPct}% ко всему доходу`,
+      short: `+${formatNumber(boostPct)}%`,
+      bonusText: `+${formatNumber(boostPct)}% ко всему доходу`,
       badgeColor: 'bg-purple-950/90 border-yellow-400 text-yellow-300 shadow-[0_0_8px_rgba(168,85,247,0.3)]',
       desc: 'Постоянный множитель от всех завершенных циклов Смыва и накопленных Втулок Судьбы.',
       progress: `Смывов совершено: ${formatNumber(GAME.totalPrestiges)} | Втулок: ${formatNumber(totalRolls)} 🧻`,

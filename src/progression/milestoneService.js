@@ -1,5 +1,6 @@
 import { GAME } from '../core/state.js';
 import { ARCHETYPES } from './archetypes.js';
+import { formatNumber } from '../utils/numberFormatter.js';
 
 export const MILESTONES = [
   { form: 5, icon: '🏭', title: 'Форма 5: Мушиная Ферма', reward: 'Разблокировка фабрик' },
@@ -33,7 +34,7 @@ export function getNextMilestoneGoal() {
     icon: nextM.icon,
     reward: nextM.reward,
     percent: pct,
-    progressText: `${currentStage.toLocaleString()} / ${nextM.form.toLocaleString()}`,
+    progressText: `${formatNumber(currentStage)} / ${formatNumber(nextM.form)}`,
     archetypeBadge: arch.badge
   };
 }

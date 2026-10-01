@@ -67,8 +67,8 @@ export function renderFactories() {
     const milestonePct = Math.min(100, Math.round((currentCount / nextMilestone) * 100));
 
     const countTxt = buyMultiplier === 'max'
-      ? `+${facInfo.count} (МАКС)`
-      : (buyMultiplier > 1 ? `+${facInfo.count}` : `+1`);
+      ? `+${formatNumber(facInfo.count)} (МАКС)`
+      : (buyMultiplier > 1 ? `+${formatNumber(facInfo.count)}` : `+1`);
 
     let buttonLabel = `${countTxt}: ${formatNumber(facInfo.totalCost)} 💨`;
     if (isLocked) {
@@ -96,7 +96,7 @@ export function renderFactories() {
           </div>
         </div>
         <div class="text-right">
-          <span class="font-game text-sm text-yellow-400 font-bold">${currentCount.toLocaleString()}</span>
+          <span class="font-game text-sm text-yellow-400 font-bold">${formatNumber(currentCount)}</span>
         </div>
       </div>
 
@@ -104,7 +104,7 @@ export function renderFactories() {
         <div class="flex-1 bg-stone-950 h-1.5 rounded-full overflow-hidden border border-stone-800">
           <div class="h-full bg-gradient-to-r from-amber-500 to-yellow-400" style="width: ${milestonePct}%"></div>
         </div>
-        <span class="text-[9px] text-stone-400 shrink-0 font-bold">${currentCount}/${nextMilestone} (${milestoneMultiplierDesc})</span>
+        <span class="text-[9px] text-stone-400 shrink-0 font-bold">${formatNumber(currentCount)}/${formatNumber(nextMilestone)} (${milestoneMultiplierDesc})</span>
       </div>
 
       <button class="buy-factory-btn w-full py-1.5 px-3 rounded-xl border text-xs font-game transition ${canBuy ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 border-yellow-300 hover:brightness-110 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${fac.id}" ${canBuy ? '' : 'disabled'}>
@@ -140,8 +140,8 @@ export function updateFactoryButtons() {
     const canBuy = !isLocked && facInfo.canBuy;
 
     const countTxt = buyMultiplier === 'max'
-      ? `+${facInfo.count} (МАКС)`
-      : (buyMultiplier > 1 ? `+${facInfo.count}` : `+1`);
+      ? `+${formatNumber(facInfo.count)} (МАКС)`
+      : (buyMultiplier > 1 ? `+${formatNumber(facInfo.count)}` : `+1`);
 
     const newLabel = isLocked
       ? `🔒 Требуется Форма #${fac.reqStage + 1}`

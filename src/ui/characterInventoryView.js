@@ -86,8 +86,8 @@ export function renderCharacterInventory() {
   if (hBonus) {
     if (equippedHat) {
       const hatLvl = getHatLevel(equippedHat.id);
-      const totalBoost = ((equippedHat.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35)).toFixed(1);
-      hBonus.textContent = `${equippedHat.desc || ''} (Итог: x${totalBoost} к клику)`;
+      const totalBoost = (equippedHat.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35);
+      hBonus.textContent = `${equippedHat.desc || ''} (Итог: x${formatNumber(totalBoost)} к клику)`;
       hBonus.className = 'text-[10px] text-pink-300 font-bold';
     } else {
       hBonus.textContent = 'Шапка не надета (+0% бонус)';
@@ -446,7 +446,7 @@ function renderHatsGrid() {
     const isInfoOpen = activeInfoCardId === hat.id;
     const hatLvl = getHatLevel(hat.id);
     const costInfo = getHatInlayCost(hat);
-    const totalBoost = ((hat.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35)).toFixed(1);
+    const totalBoost = (hat.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35);
 
     const card = document.createElement('div');
     card.className = `p-2 sm:p-2.5 rounded-2xl border-2 transition relative flex flex-col justify-between ${isEquipped ? 'border-pink-500 ring-2 ring-pink-500/40 bg-stone-900' : (hat.owned ? 'border-stone-700 bg-stone-950' : 'border-stone-800 bg-stone-950/60 opacity-80')}`;
@@ -462,7 +462,7 @@ function renderHatsGrid() {
                 <span>${hat.name}</span>
                 ${hat.owned ? `<span class="text-pink-400 font-mono text-[10px]">💎 Lv.${hatLvl}</span>` : ''}
               </div>
-              <div class="text-[9px] text-pink-300 mt-0.5 font-bold">${hat.desc} ${hat.owned && hatLvl > 1 ? `(Итог: x${totalBoost})` : ''}</div>
+              <div class="text-[9px] text-pink-300 mt-0.5 font-bold">${hat.desc} ${hat.owned && hatLvl > 1 ? `(Итог: x${formatNumber(totalBoost)})` : ''}</div>
             </div>
           </div>
           <button class="hat-info-toggle w-5 h-5 shrink-0 rounded-full bg-stone-800 hover:bg-stone-700 text-pink-300 border border-stone-600 flex items-center justify-center font-bold text-[11px] transition shadow" data-id="${hat.id}" title="Подробности">

@@ -62,9 +62,9 @@ export function updateHUD() {
 
   // Buff texts (Concise & zero jitter)
   const buffH = document.getElementById('buffHungerText');
-  if (buffH) buffH.textContent = `+${Math.round((GAME.hunger / 100) * 50)}% Клик`;
+  if (buffH) buffH.textContent = `+${formatNumber(Math.round((GAME.hunger / 100) * 50))}% Клик`;
   const buffC = document.getElementById('buffCleanText');
-  if (buffC) buffC.textContent = `+${Math.round((GAME.clean / 100) * 40)}% Заводы`;
+  if (buffC) buffC.textContent = `+${formatNumber(Math.round((GAME.clean / 100) * 40))}% Заводы`;
   const buffHp = document.getElementById('buffHappyText');
   if (buffHp) buffHp.textContent = `x2 Криты${GAME.happy >= 70 ? ' 🔥' : ''}`;
 
@@ -85,9 +85,9 @@ export function updateHUD() {
   // Evolution Info
   const currEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const topStTitle = document.getElementById('topStageTitle');
-  if (topStTitle) topStTitle.textContent = `Форма ${(currEvo.id + 1).toLocaleString()}: ${currEvo.name}`;
+  if (topStTitle) topStTitle.textContent = `Форма #${formatNumber(currEvo.id + 1)}: ${currEvo.name}`;
   const badgeEvo = document.getElementById('evoProgressBadge');
-  if (badgeEvo) badgeEvo.textContent = `${(currEvo.id + 1).toLocaleString()} / 20,000`;
+  if (badgeEvo) badgeEvo.textContent = `${formatNumber(currEvo.id + 1)} / ${formatNumber(20000)}`;
   const nameEvo = document.getElementById('evoStageName');
   if (nameEvo) nameEvo.textContent = currEvo.name;
   const descEvo = document.getElementById('evoStageDesc');
@@ -104,10 +104,10 @@ export function updateHUD() {
     } else {
       const buyMultiplier = GAME.buyMultiplier || 1;
       const countTxt = buyMultiplier === 'max'
-        ? `+${evoInfo.count} (МАКС)`
-        : (buyMultiplier > 1 ? `+${evoInfo.count}` : `След`);
+        ? `+${formatNumber(evoInfo.count)} (МАКС)`
+        : (buyMultiplier > 1 ? `+${formatNumber(evoInfo.count)}` : `След`);
       evoCostLabel.textContent = `${countTxt}: ${formatNumber(evoInfo.totalCost)} 💨`;
-      btnEvolve.textContent = evoInfo.count > 1 ? `Мутировать x${evoInfo.count}! 🧬` : `Мутировать! 🧬`;
+      btnEvolve.textContent = evoInfo.count > 1 ? `Мутировать x${formatNumber(evoInfo.count)}! 🧬` : `Мутировать! 🧬`;
       btnEvolve.disabled = !evoInfo.canBuy;
     }
   }

@@ -7,7 +7,7 @@ export function formatNumber(num, decimals = 2) {
   const abs = Math.abs(num);
   if (abs < 0.001) return '0';
   if (abs < 1000) {
-    return abs >= 10 ? Math.floor(num).toString() : num.toFixed(1).replace(/\.0$/, '');
+    return (abs >= 10 ? Math.floor(num) : Number(num.toFixed(1))).toString();
   }
 
   const units = [
@@ -21,7 +21,7 @@ export function formatNumber(num, decimals = 2) {
   if (unitIndex >= 0 && unitIndex < units.length) {
     const scaled = num / Math.pow(10, (unitIndex + 1) * 3);
     const dec = scaled >= 100 ? 0 : (scaled >= 10 ? 1 : decimals);
-    return scaled.toFixed(dec).replace(/\.0$/, '') + ' ' + units[unitIndex];
+    return Number(scaled.toFixed(dec)) + units[unitIndex];
   }
 
   // Beyond 10^66: Scientific exponential notation (e.g., 1.23e75, 4.56e200)

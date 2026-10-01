@@ -73,7 +73,7 @@ export function renderShop() {
         <span class="text-2xl">${it.icon}</span>
         <div>
           <div class="font-bold text-xs text-yellow-200">
-            ${it.name} <span class="text-yellow-400 font-game text-[11px] font-black">★ Lv.${lvl.toLocaleString()}</span>
+            ${it.name} <span class="text-yellow-400 font-game text-[11px] font-black">★ Lv.${formatNumber(lvl)}</span>
           </div>
           <div class="text-[10px] text-amber-200/80">${it.desc}</div>
         </div>

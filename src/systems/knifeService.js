@@ -3,6 +3,7 @@ import { KNIVES } from '../data/knives.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { getKnifeStar, getHatLevel } from '../economy/production.js';
 import { events } from '../core/events.js';
+import { formatNumber } from '../utils/numberFormatter.js';
 
 export function getKnifeSharpenCost(knife) {
   const currentStar = getKnifeStar(knife.id);
@@ -123,7 +124,7 @@ export function inlayHat(hatId) {
   }
 
   if ((GAME.sparkles || 0) < costInfo.cost) {
-    return { success: false, msg: `Недостаточно Блестяшек (✨)! Требуется: ${costInfo.cost.toLocaleString('ru-RU')} ✨` };
+    return { success: false, msg: `Недостаточно Блестяшек (✨)! Требуется: ${formatNumber(costInfo.cost)} ✨` };
   }
 
   GAME.sparkles -= costInfo.cost;
