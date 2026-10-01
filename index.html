@@ -4,14 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.12 PRO | Быстрое Открытие Кейсов & Баланс Заводов</title>
+  <title>Poop Simulator v4.9.13 PRO | Адаптивный UI для Телефонов и Планшетов</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="styles/main.css">
 </head>
 
-<body class="bg-stone-900 text-stone-100 h-screen max-h-screen flex flex-col overflow-hidden selection:bg-amber-400">
+<body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
 
   <!-- TOP APP HEADER -->
   <header
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.12 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.13 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -154,11 +154,11 @@
 
   <!-- MAIN VIEWPORT -->
   <main
-    class="flex-1 min-h-0 flex flex-col lg:flex-row max-w-7xl w-full mx-auto p-1.5 sm:p-2.5 gap-2 sm:gap-3 overflow-hidden">
+    class="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto p-1.5 sm:p-2.5 gap-2 sm:gap-3">
 
     <!-- LEFT: INTERACTIVE CANVAS PET ZONE -->
     <section
-      class="flex-1 min-h-0 flex flex-col bg-stone-800 rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900 shadow-2xl overflow-hidden relative">
+      class="flex flex-col bg-stone-800 rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900 shadow-2xl overflow-hidden relative" style="min-height:480px;">
 
       <!-- MASTER CENTRAL CURRENCY COMMAND DECK -->
       <div id="masterCurrencyDeck"
@@ -512,7 +512,7 @@
 
     <!-- RIGHT: MULTI-TAB EXPANDED DASHBOARD -->
     <aside
-      class="w-full lg:w-[460px] xl:w-[490px] flex flex-col bg-stone-900 rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900 shadow-2xl overflow-hidden h-full min-h-0 shrink-0">
+      class="w-full lg:w-[460px] xl:w-[490px] flex flex-col bg-stone-900 rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900 shadow-2xl overflow-hidden shrink-0" style="min-height:400px;">
 
       <!-- Nav Tabs (6 Tabs) -->
       <div

@@ -249,19 +249,27 @@ function renderPetLoop(time) {
     }
   }
 
+  // Adaptive base scale for smaller screens (mobile / tablet)
+  const baseScale = Math.min(1.0, Math.max(0.68, Math.min(w / 380, h / 360)));
+  const toiletBaseW = 170 * baseScale;
+  const toiletBaseH = 70 * baseScale;
+  const toiletWaterW = 120 * baseScale;
+  const toiletWaterH = 44 * baseScale;
+  const toiletCenterY = h * 0.77;
+
   // Porcelain Toilet Base
   ctx.fillStyle = isGirly ? '#fff1f2' : '#f8fafc';
   ctx.beginPath();
-  ctx.ellipse(w / 2, h * 0.76, 170, 70, 0, 0, Math.PI * 2);
+  ctx.ellipse(w / 2, toiletCenterY, toiletBaseW, toiletBaseH, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = isGirly ? '#f472b6' : '#cbd5e1';
-  ctx.lineWidth = 4;
+  ctx.lineWidth = Math.max(2.5, 4 * baseScale);
   ctx.stroke();
 
   // Toilet Water
   ctx.fillStyle = isGirly ? '#f9a8d4' : '#38bdf8';
   ctx.beginPath();
-  ctx.ellipse(w / 2, h * 0.77, 120, 44, 0, 0, Math.PI * 2);
+  ctx.ellipse(w / 2, toiletCenterY + 1 * baseScale, toiletWaterW, toiletWaterH, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Smooth Jelly Spring
@@ -269,8 +277,8 @@ function renderPetLoop(time) {
   squashY += (1 - squashY) * 0.12;
 
   ctx.save();
-  ctx.translate(w / 2, h * 0.63);
-  ctx.scale(squashX, squashY);
+  ctx.translate(w / 2, toiletCenterY - 45 * baseScale);
+  ctx.scale(squashX * baseScale, squashY * baseScale);
 
   // Aura effects
   const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);

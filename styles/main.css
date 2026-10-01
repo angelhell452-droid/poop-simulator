@@ -1,11 +1,109 @@
 @import './variables.css';
 
+/* =========================================================
+   RESPONSIVE LAYOUT CORE
+   Desktop (≥1024px) → locked 100vh, no scroll
+   Mobile/Tablet (<1024px) → scrollable, stacked layout
+   ========================================================= */
+
 html, body {
-  height: 100%;
-  max-height: 100vh;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  min-height: 100%;
+}
+
+/* Desktop: lock full viewport, no overflow */
+@media (min-width: 1024px) {
+  html, body {
+    height: 100%;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  /* Main area fills remaining height */
+  body > main {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  /* Left section fills column height */
+  body > main > section {
+    flex: 1 1 0;
+    min-height: 0 !important;
+  }
+  /* Right aside fills column height */
+  body > main > aside {
+    height: 100%;
+    min-height: 0 !important;
+    max-height: 100%;
+  }
+}
+
+/* Mobile / Tablet: scrollable stacked layout */
+@media (max-width: 1023px) {
+  html {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  body {
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  body > main {
+    overflow: visible !important;
+  }
+  /* Canvas section: fixed comfortable height on mobile */
+  body > main > section {
+    min-height: 520px !important;
+    flex: none !important;
+    height: auto !important;
+  }
+  /* Dashboard aside: auto height so it shows all content */
+  body > main > aside {
+    height: auto !important;
+    min-height: 400px !important;
+    max-height: none !important;
+  }
+  /* Canvas box: fixed height so pet renders properly */
+  #canvasBox {
+    min-height: 280px;
+    height: 280px;
+  }
+  /* Pet needs station: collapse pet care cards into 1 column on small phones */
+  #petNeedsStation .grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* Dashboard panel body: expand to show content instead of collapsing */
+  #dashPanels {
+    flex: none !important;
+    min-height: 350px;
+    overflow-y: visible !important;
+  }
+  /* Add bottom breathing room for scrollable mobile layout */
+  body > main {
+    padding-bottom: 1rem;
+  }
+  /* Header: allow wrapping on very small screens */
+  header {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+/* Very small screens (phones < 480px) */
+@media (max-width: 479px) {
+  body > main > section {
+    min-height: 460px !important;
+  }
+  #canvasBox {
+    min-height: 220px;
+    height: 220px;
+  }
 }
 
 body {
