@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.11 PRO | Векторные Ножи и Скины (19 типов)</title>
+  <title>Poop Simulator v4.9.12 PRO | Быстрое Открытие Кейсов & Баланс Заводов</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.11 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.12 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -1469,6 +1469,7 @@
           </div>
         </div>
 
+        <!-- Main equip / inventory buttons -->
         <div class="flex gap-2.5 w-full mt-3 z-10 max-w-md">
           <button id="btnEquipRouletteKnife"
             class="flex-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-xs sm:text-sm py-2.5 rounded-2xl font-black shadow-lg jelly-btn">
@@ -1477,6 +1478,20 @@
           <button id="btnKeepRouletteKnife"
             class="bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs px-5 py-2.5 rounded-2xl border border-stone-600">
             В инвентарь
+          </button>
+        </div>
+
+        <!-- Fast re-open buttons: Открыть заново + Открыть сразу 3 кейса -->
+        <div class="flex gap-2 w-full mt-2 z-10 max-w-md pt-2 border-t border-stone-800">
+          <button id="btnReopenCase"
+            class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-game text-xs py-2 px-2.5 rounded-xl font-bold shadow jelly-btn flex items-center justify-center gap-1.5"
+            title="Открыть этот же кейс ещё 1 раз">
+            <span>🔄</span> <span>Открыть ещё раз</span>
+          </button>
+          <button id="btnOpen3Cases"
+            class="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-600 hover:brightness-110 text-white font-game text-xs py-2 px-2.5 rounded-xl font-bold shadow jelly-btn flex items-center justify-center gap-1.5"
+            title="Открыть сразу 3 кейса мгновенно">
+            <span>⚡x3</span> <span>Открыть 3 шт</span>
           </button>
         </div>
       </div>

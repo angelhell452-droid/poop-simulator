@@ -29,7 +29,7 @@ export function checkAchievements() {
     if (ach.type === 'meteor' && (GAME.meteorsCaught || 0) >= ach.target) met = true;
     if (ach.type === 'turbo' && (GAME.turboCount || 0) >= ach.target) met = true;
     if (ach.type === 'transcend' && (GAME.totalTranscend || 0) >= ach.target) met = true;
-    if (ach.type === 'ideal' && (GAME.petHunger >= 90 && GAME.petClean >= 90 && GAME.petHappy >= 90)) met = true;
+    if (ach.type === 'ideal' && ((GAME.hunger >= 90 || GAME.petHunger >= 90) && (GAME.clean >= 90 || GAME.petClean >= 90) && (GAME.happy >= 90 || GAME.petHappy >= 90))) met = true;
     if (ach.type === 'sharpen') {
       const maxStar = Object.values(GAME.knifeStars || {}).reduce((mx, cur) => Math.max(mx, cur), 0);
       if (maxStar >= ach.target) met = true;

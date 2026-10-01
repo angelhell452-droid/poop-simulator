@@ -585,6 +585,93 @@ function onRouletteFinished() {
   requestCloudSync(2000);
 }
 
+export function openMultipleCases(caseObj, count = 3) {
+  if (!caseObj || count <= 0) return;
+  const isPlungers = caseObj.currency === 'plungers';
+  const totalCost = caseObj.cost * count;
+  const available = isPlungers ? (GAME.transcendPlungers || 0) : GAME.prestigeRolls;
+
+  if (available < totalCost) {
+    const sym = isPlungers ? '🪠' : '🧻';
+    alert(`Недостаточно валюты для открытия ${count} шт! Требуется: ${formatNumber(totalCost)} ${sym}`);
+    return;
+  }
+
+  // Deduct cost
+  if (isPlungers) {
+    GAME.transcendPlungers -= totalCost;
+  } else {
+    GAME.prestigeRolls -= totalCost;
+  }
+
+  const poolKnives = caseObj.pool.map(id => KNIVES.find(k => k.id === id)).filter(Boolean);
+  if (poolKnives.length === 0) return;
+
+  const wonKnives = [];
+  for (let i = 0; i < count; i++) {
+    const won = pickWeightedKnife(poolKnives) || poolKnives[0];
+    wonKnives.push(won);
+
+    if (!GAME.knifeStars) GAME.knifeStars = {};
+    if (!GAME.unlockedKnives.includes(won.id)) {
+      GAME.unlockedKnives.push(won.id);
+      GAME.knifeStars[won.id] = 1;
+    } else {
+      // Duplicate cashback 50%
+      const cashback = Math.max(1, Math.round(caseObj.cost * 0.5));
+      if (isPlungers) {
+        GAME.transcendPlungers = (GAME.transcendPlungers || 0) + cashback;
+      } else {
+        GAME.prestigeRolls = (GAME.prestigeRolls || 0) + cashback;
+      }
+    }
+  }
+
+  GAME.casesOpened = (GAME.casesOpened || 0) + count;
+  saveLocal();
+  updateHUD();
+  renderCasesSystem();
+  renderCharacterInventory();
+  requestCloudSync(2000);
+
+  // Set the highest tier knife as winning preview
+  wonKnives.sort((a, b) => (b.clickMult || 1) - (a.clickMult || 1));
+  rouletteWinningKnife = wonKnives[0];
+  activeRouletteCase = caseObj;
+
+  // Show banner with best knife and multi-toast summary
+  const modal = document.getElementById('caseRouletteModal');
+  if (modal) modal.classList.remove('hidden');
+
+  const titleEl = document.getElementById('rouletteCaseTitle');
+  if (titleEl) titleEl.textContent = `${caseObj.name} (Открыто ${count}x)`;
+
+  const unlockScreen = document.getElementById('rouletteUnlockScreen');
+  if (unlockScreen) unlockScreen.classList.add('hidden');
+  const wheelBox = document.getElementById('rouletteWheelBox');
+  if (wheelBox) wheelBox.classList.remove('opacity-40');
+  const ctrlSec = document.getElementById('rouletteControlSection');
+  if (ctrlSec) ctrlSec.classList.add('hidden');
+
+  const resBanner = document.getElementById('rouletteResultBanner');
+  if (resBanner) resBanner.classList.remove('hidden');
+
+  const rIcon = document.getElementById('rouletteResultIcon');
+  if (rIcon) rIcon.innerHTML = getKnifeImageHtml(rouletteWinningKnife, 80);
+  const rName = document.getElementById('rouletteResultName');
+  if (rName) rName.textContent = `★ Топ из 3 шт: ${rouletteWinningKnife.name}`;
+
+  const rarityEl = document.getElementById('rouletteResultRarity');
+  if (rarityEl) {
+    rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${rouletteWinningKnife.rarityName}</span> • <span class="text-yellow-400 font-bold">✨ Открыто сразу 3 кейса!</span>`;
+  }
+
+  playCsgoWinFanfare(rouletteWinningKnife.rarity);
+  launchConfettiFireworks(true);
+
+  showKnifeToast(`🎁 Открыто 3 кейса! Лучший: "${rouletteWinningKnife.name}" (+ещё 2 в инвентаре)`);
+}
+
 export function renderCasesSystem() {
   const rollsLabel = document.getElementById('casesRollsLabel');
   if (rollsLabel) rollsLabel.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
@@ -631,6 +718,7 @@ export function renderCasesSystem() {
       const meetsRelic = !c.reqTranscendUpgrade || !!(GAME.transcendUpgrades && GAME.transcendUpgrades[c.reqTranscendUpgrade]);
       const isUnlocked = meetsPrestige && meetsTranscend && meetsTalent && meetsRelic;
       const hasCurrency = c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost : (GAME.transcendPlungers || 0) >= c.cost;
+      const hasCurrency3 = isUnlocked && (c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost * 3 : (GAME.transcendPlungers || 0) >= c.cost * 3);
       const canOpen = isUnlocked && hasCurrency;
 
       let lockReason = '';
@@ -666,10 +754,17 @@ export function renderCasesSystem() {
             </div>
           </div>
 
-          <!-- Bottom Action Button: only action name, NO repeated price -->
-          <button class="open-case-btn mt-3 w-full py-2 px-2.5 rounded-xl font-game text-xs font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1.5 ${canOpen ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${canOpen ? '' : 'disabled'}>
-            ${btnText}
-          </button>
+          <!-- Bottom Action Buttons: Open 1x and Open 3x -->
+          <div class="mt-3 flex gap-1.5 w-full">
+            <button class="open-case-btn flex-1 py-2 px-1.5 rounded-xl font-game text-[11px] font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1 ${canOpen ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${canOpen ? '' : 'disabled'}>
+              ${btnText}
+            </button>
+            ${isUnlocked ? `
+              <button class="open-case-3x-btn py-2 px-2.5 rounded-xl font-game text-[11px] font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1 ${hasCurrency3 ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:brightness-110 text-white font-black' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${hasCurrency3 ? '' : 'disabled'} title="Открыть сразу 3 кейса мгновенно">
+                <span>⚡3x</span>
+              </button>
+            ` : ''}
+          </div>
         </div>
       `;
     }).join('');
@@ -678,6 +773,14 @@ export function renderCasesSystem() {
       btn.addEventListener('click', () => {
         const cid = btn.dataset.case;
         openCaseRoulette(cid);
+      });
+    });
+
+    cratesList.querySelectorAll('.open-case-3x-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cid = btn.dataset.case;
+        const caseObj = CSGO_CASES.find(c => c.id === cid);
+        if (caseObj) openMultipleCases(caseObj, 3);
       });
     });
 
@@ -824,6 +927,24 @@ export function initCasesListeners() {
       updateHUD();
       renderCasesSystem();
       renderCharacterInventory();
+    });
+  }
+
+  // 🔄 Кнопка "Открыть ещё раз"
+  const btnReopen = document.getElementById('btnReopenCase');
+  if (btnReopen) {
+    btnReopen.addEventListener('click', () => {
+      if (!activeRouletteCase) return;
+      openCaseRoulette(activeRouletteCase.id);
+    });
+  }
+
+  // ⚡x3 Кнопка "Открыть сразу 3 кейса"
+  const btnOpen3 = document.getElementById('btnOpen3Cases');
+  if (btnOpen3) {
+    btnOpen3.addEventListener('click', () => {
+      if (!activeRouletteCase) return;
+      openMultipleCases(activeRouletteCase, 3);
     });
   }
 

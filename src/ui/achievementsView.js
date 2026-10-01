@@ -35,7 +35,7 @@ export function renderAchievements() {
     } else if (ach.type === 'knives') {
       current = (GAME.unlockedKnives || []).length;
     } else if (ach.type === 'ideal') {
-      current = (GAME.petHunger >= 90 && GAME.petClean >= 90 && GAME.petHappy >= 90) ? 1 : 0;
+      current = ((GAME.hunger >= 90 || GAME.petHunger >= 90) && (GAME.clean >= 90 || GAME.petClean >= 90) && (GAME.happy >= 90 || GAME.petHappy >= 90)) ? 1 : 0;
     } else if (ach.type === 'sharpen') {
       current = Object.values(GAME.knifeStars || {}).reduce((mx, cur) => Math.max(mx, cur), 0);
     }

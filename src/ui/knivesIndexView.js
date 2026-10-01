@@ -1,5 +1,6 @@
 import { GAME } from '../core/state.js';
 import { KNIVES } from '../data/knives.data.js';
+import { CSGO_CASES } from '../data/cases.data.js';
 import { FACTORIES } from '../data/factories.data.js';
 import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js';
 import { TALENTS } from '../data/talents.data.js';
@@ -9,6 +10,16 @@ import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
+
+// Быстрый поиск кейса для ножа
+const KNIFE_CASE_MAP = new Map();
+CSGO_CASES.forEach(c => {
+  (c.pool || []).forEach(kid => {
+    if (!KNIFE_CASE_MAP.has(kid)) {
+      KNIFE_CASE_MAP.set(kid, { id: c.id, name: c.name, icon: c.icon, cost: c.cost, currency: c.currency });
+    }
+  });
+});
 
 let currentCategory = 'knives'; // 'knives' | 'factories' | 'hats' | 'perks'
 let indexFilterRarity = 'all';
@@ -123,6 +134,7 @@ export function renderKnivesIndexBook() {
     const isEquipped = GAME.equippedKnife === knife.id;
     const star = getKnifeStar(knife.id);
     const costInfo = getKnifeSharpenCost(knife);
+    const caseInfo = KNIFE_CASE_MAP.get(knife.id) || { name: 'Коллекция', icon: '📦' };
 
     const rarityColors = {
       common: 'border-stone-600 bg-stone-900/60 text-stone-400',
@@ -142,17 +154,19 @@ export function renderKnivesIndexBook() {
     const passPct = Math.round((knife.passiveMult * (1 + (star - 1) * 0.25) - 1) * 100);
 
     return `
-      <div class="p-2 sm:p-2.5 rounded-2xl border-2 flex flex-col justify-between relative transition duration-200 ${isUnlocked ? colorClass : 'border-stone-800 bg-stone-950/80 opacity-60 grayscale'} ${isEquipped ? 'ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]' : ''}">
-        ${isEquipped ? '<span class="absolute top-1.5 right-1.5 text-[9px] bg-yellow-400 text-stone-950 font-black px-1.5 py-0.5 rounded-full shadow">НАДЕТ</span>' : ''}
-        ${!isUnlocked ? '<span class="absolute top-1.5 right-1.5 text-xs text-stone-500">🔒</span>' : ''}
+      <div class="p-2 sm:p-2.5 rounded-2xl border-2 flex flex-col justify-between relative transition duration-200 min-h-[195px] overflow-hidden ${isUnlocked ? colorClass : 'border-stone-800 bg-stone-950/80 opacity-65 grayscale'} ${isEquipped ? 'ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]' : ''}">
+        ${isEquipped ? '<span class="absolute top-1.5 right-1.5 text-[8.5px] bg-yellow-400 text-stone-950 font-black px-1.5 py-0.5 rounded-full shadow z-10">НАДЕТ</span>' : ''}
+        ${!isUnlocked ? '<span class="absolute top-1.5 right-1.5 text-xs text-stone-500 z-10">🔒</span>' : ''}
         
-        <div>
-          <div class="my-1 flex justify-center items-center select-none">${getKnifeImageHtml(knife, 52)}</div>
-          <div class="font-game text-xs font-bold truncate text-yellow-100">${knife.name}</div>
-          <div class="text-[9px] text-stone-400 truncate">${knife.caseName || 'Коллекция'}</div>
+        <div class="flex flex-col items-center text-center w-full">
+          <div class="my-0.5 flex justify-center items-center select-none h-14">${getKnifeImageHtml(knife, 50)}</div>
+          <div class="font-game text-xs font-bold text-yellow-100 line-clamp-1 w-full text-center px-0.5" title="${knife.name}">${knife.name}</div>
+          <div class="mt-1 text-[8.5px] font-bold text-amber-300/90 bg-stone-950/80 px-2 py-0.5 rounded-full border border-amber-500/30 truncate max-w-full inline-flex items-center gap-1 shadow-sm" title="Выпадает из: ${caseInfo.name}">
+            <span>${caseInfo.icon}</span> <span class="truncate">${caseInfo.name}</span>
+          </div>
         </div>
 
-        <div class="mt-2 pt-1.5 border-t border-stone-800/80">
+        <div class="mt-2 pt-1.5 border-t border-stone-800/80 w-full">
           ${isUnlocked ? `
             <div class="flex justify-between items-center text-[10px] font-bold mb-1">
               <span class="text-amber-400">★ Lv.${star}</span>
@@ -182,8 +196,8 @@ export function renderKnivesIndexBook() {
               `)}
             </div>
           ` : `
-            <div class="text-[9px] text-stone-500 text-center py-1">
-              Откройте кейс <b class="text-stone-400">${knife.caseName || ''}</b>
+            <div class="text-[9px] text-stone-400 text-center py-1 bg-stone-900/60 rounded-lg border border-stone-800/60">
+              Выпадает из <b class="text-yellow-400 font-bold">${caseInfo.name}</b>
             </div>
           `}
         </div>

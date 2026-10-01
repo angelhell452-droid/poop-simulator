@@ -1,15 +1,15 @@
 export const FACTORIES = [
   // ⭐ ТИР 1: БЫТОВОЙ ДРЕНАЖ (ФОРМЫ 0 - 20)
-  { id: 'fly_squad', name: 'Эскадрилья Мух-Курьеров', cost: 25, baseCps: 0.5, count: 0, icon: '🪰', tier: 'early', tierNumber: 1, tierTitle: '⭐ Тир 1: Бытовой Дренаж', reqStage: 0 },
-  { id: 'news_paper', name: 'Утренняя Пресса Со Скидкой', cost: 350, baseCps: 4.0, count: 0, icon: '📰', tier: 'early', tierNumber: 1, tierTitle: '⭐ Тир 1: Бытовой Дренаж', reqStage: 3 },
-  { id: 'freshener_pine', name: 'Хвойный Ароматизатор Pro', cost: 4500, baseCps: 35.0, count: 0, icon: '🌲', tier: 'early', tierNumber: 1, tierTitle: '⭐ Тир 1: Бытовой Дренаж', reqStage: 8 },
-  { id: 'turbo_plunger', name: 'Титановый Вантуз-Турбо', cost: 65000, baseCps: 320.0, count: 0, icon: '🪠', tier: 'early', tierNumber: 1, tierTitle: '⭐ Тир 1: Бытовой Дренаж', reqStage: 15 },
+  { id: 'fly_squad', name: 'Эскадрилья Мух-Курьеров', cost: 15, baseCps: 0.5, count: 0, icon: '🪰', tier: 'early', tierNumber: 1, tierTitle: '⭐ Тир 1: Бытовой Дренаж', reqStage: 0 },
+  { id: 'news_paper', name: 'Утренняя Пресса Со Скидкой', cost: 250, baseCps: 6.0, count: 0, icon: '📰', tier: 'early', tierNumber: 1, tierTitle: '⭐ Тир 1: Бытовой Дренаж', reqStage: 3 },
+  { id: 'freshener_pine', name: 'Хвойный Ароматизатор Pro', cost: 3500, baseCps: 70.0, count: 0, icon: '🌲', tier: 'early', tierNumber: 1, tierTitle: '⭐ Тир 1: Бытовой Дренаж', reqStage: 8 },
+  { id: 'turbo_plunger', name: 'Титановый Вантуз-Турбо', cost: 50000, baseCps: 900.0, count: 0, icon: '🪠', tier: 'early', tierNumber: 1, tierTitle: '⭐ Тир 1: Бытовой Дренаж', reqStage: 15 },
 
-  // ⚡ ТИР 2: БИО-ИНДУСТРИЯ (ФОРМЫ 25 - 120) [Заметный прыжок цен и дохода: старт с 1.5M]
-  { id: 'sewer_factory', name: 'Био-Перерабатывающий Завод', cost: 1500000, baseCps: 6500.0, count: 0, icon: '🏭', tier: 'mid', tierNumber: 2, tierTitle: '⚡ Тир 2: Био-Индустрия', reqStage: 25 },
-  { id: 'hydro_cyclone', name: 'Гидроциклонный Сепаратор', cost: 25000000, baseCps: 85000.0, count: 0, icon: '🌀', tier: 'mid', tierNumber: 2, tierTitle: '⚡ Тир 2: Био-Индустрия', reqStage: 40 },
-  { id: 'orbital_station', name: 'Орбитальный Дренажный Модуль', cost: 500000000, baseCps: 1200000.0, count: 0, icon: '🛰️', tier: 'mid', tierNumber: 2, tierTitle: '⚡ Тир 2: Био-Индустрия', reqStage: 65 },
-  { id: 'quantum_collider', name: 'Квантовый Синтезатор Организма', cost: 10000000000, baseCps: 18000000.0, count: 0, icon: '⚛️', tier: 'mid', tierNumber: 2, tierTitle: '⚡ Тир 2: Био-Индустрия', reqStage: 95 },
+  // ⚡ ТИР 2: БИО-ИНДУСТРИЯ (ФОРМЫ 25 - 120) [Промышленный прорыв: вход от 750K, мощный CPS рост]
+  { id: 'sewer_factory', name: 'Био-Перерабатывающий Завод', cost: 750000, baseCps: 12000.0, count: 0, icon: '🏭', tier: 'mid', tierNumber: 2, tierTitle: '⚡ Тир 2: Био-Индустрия', reqStage: 25 },
+  { id: 'hydro_cyclone', name: 'Гидроциклонный Сепаратор', cost: 15000000, baseCps: 220000.0, count: 0, icon: '🌀', tier: 'mid', tierNumber: 2, tierTitle: '⚡ Тир 2: Био-Индустрия', reqStage: 40 },
+  { id: 'orbital_station', name: 'Орбитальный Дренажный Модуль', cost: 350000000, baseCps: 4500000.0, count: 0, icon: '🛰️', tier: 'mid', tierNumber: 2, tierTitle: '⚡ Тир 2: Био-Индустрия', reqStage: 65 },
+  { id: 'quantum_collider', name: 'Квантовый Синтезатор Организма', cost: 8000000000, baseCps: 95000000.0, count: 0, icon: '⚛️', tier: 'mid', tierNumber: 2, tierTitle: '⚡ Тир 2: Био-Индустрия', reqStage: 95 },
 
   // 🔮 ТИР 3: КОСМОС И ТЕМПОРАЛ (ФОРМЫ 140 - 2000) [Заметный прыжок цен и дохода: старт с 500B]
   { id: 'cosmic_blackhole', name: 'Сингулярный Пожиратель Отходов', cost: 5e11, baseCps: 6e8, count: 0, icon: '🌌', tier: 'late', tierNumber: 3, tierTitle: '🔮 Тир 3: Космос и Темпорал', reqStage: 140 },

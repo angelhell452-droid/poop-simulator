@@ -525,11 +525,11 @@ export function catchGoldenMeteor() {
     GAME.cycleBiomass += burst;
     label = `💰 ЗОЛОТОЙ ВЗРЫВ: +${formatNumber(burst)} 💨!`;
   } else if (roll < 0.90) {
-    const stageMultiplier = 1 + (GAME.evoStage || 0) * 0.5;
-    const prestigeMultiplier = 1 + (GAME.totalPrestiges || 0) * 0.35 + (GAME.totalTranscend || 0) * 2.5;
-    const baseSparkles = (350 + Math.random() * 450) * stageMultiplier * prestigeMultiplier * rewardMult;
-    const spGain = Math.max(500, Math.round(baseSparkles));
-    GAME.sparkles = (GAME.sparkles || 0) + spGain;
+    const stageMultiplier = 1 + Math.min(20, (GAME.evoStage || 0) * 0.15);
+    const prestigeMultiplier = 1 + Math.min(10, (GAME.totalPrestiges || 0) * 0.25) + Math.min(20, (GAME.totalTranscend || 0) * 1.5);
+    const baseSparkles = (150 + Math.random() * 200) * stageMultiplier * prestigeMultiplier * rewardMult;
+    const spGain = Math.max(100, Math.min(5000000, Math.round(Number.isFinite(baseSparkles) ? baseSparkles : 500)));
+    GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
     label = `✨ ЗВЕЗДНЫЙ ДОЖДЬ: +${formatNumber(spGain)} Блестяшек!`;
   } else {
     const rollMultiplier = 1 + (GAME.totalPrestiges || 0) * 0.15 + (GAME.totalTranscend || 0) * 1.5;
