@@ -1,7 +1,10 @@
 import { GAME } from '../core/state.js';
 import { KNIVES } from '../data/knives.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
-import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife } from '../systems/knifeService.js';
+import {
+  getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
+  getHatLevel, getHatInlayCost, inlayHat
+} from '../systems/knifeService.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js';
 import { saveLocal } from '../save/saveManager.js';
 import { updateHUD } from './hudView.js';
@@ -69,15 +72,58 @@ export function renderCharacterInventory() {
   const hName = document.getElementById('invHatName');
   const hBonus = document.getElementById('invHatBonus');
   const btnUnequipHat = document.getElementById('btnUnequipHat');
+  const btnInlayHat = document.getElementById('btnInlayEquippedHat');
 
   if (hIcon) hIcon.textContent = equippedHat ? equippedHat.icon : '🧢';
-  if (hName) hName.textContent = equippedHat ? equippedHat.name : 'Без головного убора';
+  if (hName) {
+    if (equippedHat) {
+      const hatLvl = getHatLevel(equippedHat.id);
+      hName.innerHTML = `${equippedHat.name} <span class="text-pink-400 font-black">💎 Lv.${hatLvl}</span>`;
+    } else {
+      hName.textContent = 'Без головного убора';
+    }
+  }
   if (hBonus) {
-    hBonus.textContent = equippedHat ? (equippedHat.desc || `x${equippedHat.clickBoost} к силе клика`) : 'Шапка не надета (+0% бонус)';
-    hBonus.className = equippedHat ? 'text-[10px] text-pink-300 font-bold' : 'text-[10px] text-stone-400';
+    if (equippedHat) {
+      const hatLvl = getHatLevel(equippedHat.id);
+      const totalBoost = ((equippedHat.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35)).toFixed(1);
+      hBonus.textContent = `${equippedHat.desc || ''} (Итог: x${totalBoost} к клику)`;
+      hBonus.className = 'text-[10px] text-pink-300 font-bold';
+    } else {
+      hBonus.textContent = 'Шапка не надета (+0% бонус)';
+      hBonus.className = 'text-[10px] text-stone-400';
+    }
   }
   if (btnUnequipHat) {
     btnUnequipHat.classList.toggle('hidden', !equippedHat);
+  }
+  if (btnInlayHat) {
+    if (equippedHat) {
+      btnInlayHat.classList.remove('hidden');
+      const costInfo = getHatInlayCost(equippedHat);
+      if (costInfo.maxReached) {
+        btnInlayHat.textContent = '💎 MAX';
+        btnInlayHat.disabled = true;
+        btnInlayHat.className = 'shrink-0 text-[10px] font-game bg-stone-800 text-stone-500 font-bold px-2 py-1.5 rounded-xl cursor-not-allowed';
+      } else {
+        btnInlayHat.disabled = false;
+        btnInlayHat.className = 'shrink-0 text-[10px] font-game bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 text-white font-bold px-2 py-1.5 rounded-xl jelly-btn flex items-center gap-1 shadow';
+        btnInlayHat.innerHTML = `💎 +1 (${formatNumber(costInfo.cost)} ✨)`;
+      }
+      btnInlayHat.onclick = () => {
+        const res = inlayHat(equippedHat.id);
+        if (res.success) {
+          updateHUD();
+          renderCharacterInventory();
+          saveLocal();
+          showKnifeToast(`💎 Шапка "${equippedHat.name}" инкрустирована до Lv.${res.newLevel}! (+35% силы клика)`);
+        } else {
+          alert(res.msg);
+        }
+      };
+    } else {
+      btnInlayHat.classList.add('hidden');
+    }
   }
 
   // 3. Dedicated Knife Slot (Слот Ножа)
@@ -88,6 +134,13 @@ export function renderCharacterInventory() {
       const eqStar = getKnifeStar(equippedObj.id);
       const eqClickPct = Math.round((equippedObj.clickMult * (1 + (eqStar - 1) * 0.35) - 1) * 100);
       const eqPassPct = Math.round((equippedObj.passiveMult * (1 + (eqStar - 1) * 0.25) - 1) * 100);
+      const costInfo = getKnifeSharpenCost(equippedObj);
+      const sharpenBtnHtml = costInfo.maxReached
+        ? `<span class="text-[10px] text-amber-400 font-bold px-2 py-1 bg-amber-950/40 rounded-xl border border-amber-800/40">★ MAX</span>`
+        : `<button id="btnSharpenEquippedKnife" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 text-stone-950 font-black text-[11px] px-2 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="Заточить надетый нож (+1 Lv)">
+            ⭐ Точить (${formatNumber(costInfo.cost)} ${costInfo.symbol})
+           </button>`;
+
       equippedCard.innerHTML = `
         <div class="flex items-center justify-between gap-2 w-full">
           <div class="flex items-center gap-2.5 overflow-hidden">
@@ -103,15 +156,27 @@ export function renderCharacterInventory() {
             </div>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
-            <button id="btnEquipBestKnifeEquipped" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black text-[11px] px-2.5 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="Надеть нож с наибольшим уроном">
+            ${sharpenBtnHtml}
+            <button id="btnEquipBestKnifeEquipped" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black text-[11px] px-2 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="Надеть нож с наибольшим уроном">
               ⚔️ Лучший
             </button>
-            <button id="btnUnequipKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-600 text-[11px] px-2.5 py-1.5 rounded-xl font-bold jelly-btn">
+            <button id="btnUnequipKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-600 text-[11px] px-2 py-1.5 rounded-xl font-bold jelly-btn">
               Снять
             </button>
           </div>
         </div>
       `;
+      document.getElementById('btnSharpenEquippedKnife')?.addEventListener('click', () => {
+        const res = sharpenKnife(equippedObj.id);
+        if (res.success) {
+          updateHUD();
+          renderCharacterInventory();
+          saveLocal();
+          showKnifeToast(`⭐ ${equippedObj.name} заточен до Lv.${res.newStar}! (+35% силы)`);
+        } else {
+          alert(res.msg);
+        }
+      });
       document.getElementById('btnUnequipKnife')?.addEventListener('click', () => {
         GAME.equippedKnife = null;
         updateHUD();
@@ -379,6 +444,9 @@ function renderHatsGrid() {
   allHats.forEach(hat => {
     const isEquipped = GAME.equippedHat === hat.id;
     const isInfoOpen = activeInfoCardId === hat.id;
+    const hatLvl = getHatLevel(hat.id);
+    const costInfo = getHatInlayCost(hat);
+    const totalBoost = ((hat.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35)).toFixed(1);
 
     const card = document.createElement('div');
     card.className = `p-2 sm:p-2.5 rounded-2xl border-2 transition relative flex flex-col justify-between ${isEquipped ? 'border-pink-500 ring-2 ring-pink-500/40 bg-stone-900' : (hat.owned ? 'border-stone-700 bg-stone-950' : 'border-stone-800 bg-stone-950/60 opacity-80')}`;
@@ -390,8 +458,11 @@ function renderHatsGrid() {
           <div class="flex items-center gap-2 overflow-hidden flex-1">
             <span class="text-3xl shrink-0">${hat.icon}</span>
             <div class="truncate">
-              <div class="font-game text-xs text-yellow-300 truncate font-bold">${hat.name}</div>
-              <div class="text-[9px] text-pink-300 mt-0.5 font-bold">${hat.desc}</div>
+              <div class="font-game text-xs text-yellow-300 truncate font-bold flex items-center gap-1.5">
+                <span>${hat.name}</span>
+                ${hat.owned ? `<span class="text-pink-400 font-mono text-[10px]">💎 Lv.${hatLvl}</span>` : ''}
+              </div>
+              <div class="text-[9px] text-pink-300 mt-0.5 font-bold">${hat.desc} ${hat.owned && hatLvl > 1 ? `(Итог: x${totalBoost})` : ''}</div>
             </div>
           </div>
           <button class="hat-info-toggle w-5 h-5 shrink-0 rounded-full bg-stone-800 hover:bg-stone-700 text-pink-300 border border-stone-600 flex items-center justify-center font-bold text-[11px] transition shadow" data-id="${hat.id}" title="Подробности">
@@ -402,24 +473,30 @@ function renderHatsGrid() {
         <!-- Row 2: Collapsible Info Drawer -->
         <div id="hatInfo_${hat.id}" class="${isInfoOpen ? '' : 'hidden'} p-2 my-1.5 rounded-xl bg-stone-900 border border-stone-700 text-[10px] text-stone-300 space-y-1">
           <p class="text-stone-300 font-bold">${hat.desc}</p>
-          <div class="text-[9px] text-stone-400">Множитель силы клика: x${hat.clickBoost || 1.0}</div>
+          <div class="text-[9px] text-stone-400">Базовый множитель: x${hat.clickBoost || 1.0}</div>
+          ${hat.owned ? `<div class="text-[9px] text-pink-300 font-bold">Уровень инкрустации: 💎 Lv.${hatLvl} (Итог: x${totalBoost} к клику)</div>` : ''}
           <div class="text-[9px] text-amber-300">${hat.owned ? '✓ Куплено в Бутике' : `Стоимость: ${formatNumber(hat.cost)} ✨ Блестяшек`}</div>
         </div>
       </div>
 
       <!-- Row 3: Action Buttons -->
       <div class="flex items-center justify-between gap-1 pt-1.5 border-t border-stone-800/80 mt-1.5">
-        ${hat.owned ? (
-          isEquipped ? `
-            <button class="unequip-hat-btn flex-1 py-1 px-2.5 rounded-xl text-[10px] font-game bg-emerald-600 text-white font-bold border border-emerald-400 shadow jelly-btn">
-              ✓ Надет (Снять)
+        ${hat.owned ? `
+          <div class="flex items-center gap-1.5 w-full">
+            ${isEquipped ? `
+              <button class="unequip-hat-btn flex-1 py-1 px-2 rounded-xl text-[10px] font-game bg-emerald-600 text-white font-bold border border-emerald-400 shadow jelly-btn">
+                ✓ Надет (Снять)
+              </button>
+            ` : `
+              <button class="equip-hat-btn flex-1 py-1 px-2 rounded-xl text-[10px] font-game bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 text-white font-bold border border-pink-400 shadow jelly-btn" data-id="${hat.id}">
+                Надеть
+              </button>
+            `}
+            <button class="inlay-hat-btn py-1 px-2 rounded-xl text-[10px] font-game ${costInfo.maxReached ? 'bg-stone-800 text-stone-500 cursor-not-allowed' : 'bg-stone-800 hover:bg-stone-700 text-pink-300 border border-pink-500/50'} font-bold shadow jelly-btn shrink-0" data-id="${hat.id}" title="Инкрустировать драгоценностями (+1 Lv)">
+              💎 ${costInfo.maxReached ? 'MAX' : `+1 (${formatNumber(costInfo.cost)} ✨)`}
             </button>
-          ` : `
-            <button class="equip-hat-btn flex-1 py-1 px-2.5 rounded-xl text-[10px] font-game bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 text-white font-bold border border-pink-400 shadow jelly-btn" data-id="${hat.id}">
-              Надеть
-            </button>
-          `
-        ) : `
+          </div>
+        ` : `
           <div class="flex items-center justify-between w-full">
             <span class="text-[10px] text-yellow-400 font-mono font-bold">${formatNumber(hat.cost)} ✨</span>
             <button class="buy-hat-inv-btn py-1 px-2.5 rounded-xl text-[10px] font-game ${GAME.sparkles >= hat.cost ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'} font-bold border shadow" data-id="${hat.id}" ${GAME.sparkles >= hat.cost ? '' : 'disabled'}>
@@ -475,6 +552,23 @@ function renderHatsGrid() {
         renderCharacterInventory();
         saveLocal();
         showKnifeToast(`🎩 Куплена и надета: ${hat.name}!`);
+      }
+    });
+  });
+
+  container.querySelectorAll('.inlay-hat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const hid = btn.dataset.id;
+      const res = inlayHat(hid);
+      if (res.success) {
+        updateHUD();
+        renderCharacterInventory();
+        renderShop();
+        saveLocal();
+        const hatObj = SHOP_ITEMS.find(i => i.id === hid);
+        showKnifeToast(`💎 Шапка "${hatObj ? hatObj.name : hid}" инкрустирована до Lv.${res.newLevel}! (+35% силы)`);
+      } else {
+        alert(res.msg);
       }
     });
   });

@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.8.3 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.0 PRO</span>
         </div>
 
         <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
@@ -48,12 +48,14 @@
       <button id="btnPrestigeModal"
         class="bg-gradient-to-r from-purple-700 to-indigo-700 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-400 text-xs jelly-btn flex items-center gap-1 shadow"
         title="Смыв Судьбы (Престиж 1-го ранга: Втулки и Таланты)">
-        <span class="roll-icon"></span> <span>Смыв</span> <span id="headerPrestigeLvl" class="text-yellow-300 font-black ml-0.5">Ур. 0</span>
+        <span class="roll-icon"></span> <span>Смыв</span> <span id="headerPrestigeLvl"
+          class="text-yellow-300 font-black ml-0.5">Ур. 0</span>
       </button>
       <button id="btnTranscendModal"
         class="bg-gradient-to-r from-cyan-600 via-indigo-700 to-purple-800 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-cyan-400 text-xs jelly-btn flex items-center gap-1 shadow"
         title="Астральный Прорыв (Престиж 2-го ранга: Вантузы и Артефакты)">
-        <span class="plunger-icon"></span> <span>Прорыв</span> <span id="headerTranscendLvl" class="text-cyan-300 font-black ml-0.5">Ур. 0</span>
+        <span class="plunger-icon"></span> <span>Прорыв</span> <span id="headerTranscendLvl"
+          class="text-cyan-300 font-black ml-0.5">Ур. 0</span>
       </button>
 
       <!-- GROUP 2: COMMUNITY & INFO -->
@@ -113,7 +115,8 @@
           <div class="flex items-center gap-2">
             <span class="text-[9px] text-amber-400 font-black uppercase tracking-wider">Текущая цель</span>
             <span id="archetypeBadge"
-              class="text-[9px] bg-purple-900/70 text-purple-200 border border-purple-500/50 px-1.5 py-0.2 rounded font-bold">⚖️ Универсал</span>
+              class="text-[9px] bg-purple-900/70 text-purple-200 border border-purple-500/50 px-1.5 py-0.2 rounded font-bold">⚖️
+              Универсал</span>
           </div>
           <span class="text-xs text-stone-100 font-bold" id="milestoneTitle">Форма 5 (Открытие фабрики Мух)</span>
         </div>
@@ -158,26 +161,32 @@
       <!-- MASTER CENTRAL CURRENCY COMMAND DECK -->
       <div id="masterCurrencyDeck"
         class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-2 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 border-b-2 border-amber-900/80 z-20 shadow-md">
-        
+
         <!-- Biomass -->
-        <div class="flex items-center gap-2 bg-stone-900/90 hover:bg-stone-850 px-2.5 py-1.5 rounded-2xl border border-emerald-500/40 shadow-inner transition select-none">
+        <div
+          class="flex items-center gap-2 bg-stone-900/90 hover:bg-stone-850 px-2.5 py-1.5 rounded-2xl border border-emerald-500/40 shadow-inner transition select-none">
           <span class="text-xl shrink-0" id="iconBiomass">💨</span>
           <div class="min-w-0 flex-1">
-            <div class="flex items-center justify-between text-[10px] text-amber-400 font-bold uppercase tracking-wider">
+            <div
+              class="flex items-center justify-between text-[10px] text-amber-400 font-bold uppercase tracking-wider">
               <span id="labelBiomass">Биомасса</span>
             </div>
-            <div class="font-game text-sm sm:text-base text-emerald-400 tracking-wide font-mono tabular-nums truncate" id="topBiomass">0</div>
+            <div class="font-game text-sm sm:text-base text-emerald-400 tracking-wide font-mono tabular-nums truncate"
+              id="topBiomass">0</div>
           </div>
         </div>
 
         <!-- Sparkles -->
-        <div class="flex items-center gap-2 bg-stone-900/90 hover:bg-stone-850 px-2.5 py-1.5 rounded-2xl border border-yellow-500/40 shadow-inner transition select-none">
+        <div
+          class="flex items-center gap-2 bg-stone-900/90 hover:bg-stone-850 px-2.5 py-1.5 rounded-2xl border border-yellow-500/40 shadow-inner transition select-none">
           <span class="text-xl shrink-0" id="iconSparkles">✨</span>
           <div class="min-w-0 flex-1">
-            <div class="flex items-center justify-between text-[10px] text-yellow-400 font-bold uppercase tracking-wider">
+            <div
+              class="flex items-center justify-between text-[10px] text-yellow-400 font-bold uppercase tracking-wider">
               <span id="labelSparkles">Блестяшки</span>
             </div>
-            <div class="font-game text-sm sm:text-base text-yellow-300 tracking-wide font-mono tabular-nums truncate" id="topSparkles">0</div>
+            <div class="font-game text-sm sm:text-base text-yellow-300 tracking-wide font-mono tabular-nums truncate"
+              id="topSparkles">0</div>
           </div>
         </div>
 
@@ -187,11 +196,15 @@
           title="Втулки Судьбы: нажмите, чтобы открыть окно Смыва">
           <span class="roll-icon text-xl shrink-0"></span>
           <div class="min-w-0 flex-1">
-            <div class="flex items-center justify-between text-[10px] text-yellow-300 font-bold uppercase tracking-wider">
+            <div
+              class="flex items-center justify-between text-[10px] text-yellow-300 font-bold uppercase tracking-wider">
               <span>Втулки</span>
-              <span id="masterPrestigeLvl" class="text-[9px] bg-purple-900 text-yellow-200 border border-yellow-400/40 px-1 py-0.2 rounded font-black">Ур. 0</span>
+              <span id="masterPrestigeLvl"
+                class="text-[9px] bg-purple-900 text-yellow-200 border border-yellow-400/40 px-1 py-0.2 rounded font-black">Ур.
+                0</span>
             </div>
-            <div class="font-game text-sm sm:text-base text-yellow-200 tracking-wide font-mono tabular-nums truncate" id="topPrestige">0</div>
+            <div class="font-game text-sm sm:text-base text-yellow-200 tracking-wide font-mono tabular-nums truncate"
+              id="topPrestige">0</div>
           </div>
         </div>
 
@@ -203,9 +216,12 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center justify-between text-[10px] text-cyan-300 font-bold uppercase tracking-wider">
               <span>Вантузы</span>
-              <span id="masterTranscendLvl" class="text-[9px] bg-indigo-900 text-cyan-200 border border-cyan-400/40 px-1 py-0.2 rounded font-black">Ур. 0</span>
+              <span id="masterTranscendLvl"
+                class="text-[9px] bg-indigo-900 text-cyan-200 border border-cyan-400/40 px-1 py-0.2 rounded font-black">Ур.
+                0</span>
             </div>
-            <div class="font-game text-sm sm:text-base text-cyan-200 tracking-wide font-mono tabular-nums truncate" id="topPlungers">0</div>
+            <div class="font-game text-sm sm:text-base text-cyan-200 tracking-wide font-mono tabular-nums truncate"
+              id="topPlungers">0</div>
           </div>
         </div>
       </div>
@@ -213,7 +229,8 @@
       <!-- COMBO HEAT & TURBO FRENZY BAR (Zero-jitter layout) -->
       <div
         class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between gap-2 z-10 h-[34px] min-h-[34px] max-h-[34px] overflow-hidden select-none">
-        <div class="flex items-center gap-1.5 w-[140px] min-w-[140px] max-w-[140px] shrink-0 text-[10px] font-bold text-amber-400">
+        <div
+          class="flex items-center gap-1.5 w-[140px] min-w-[140px] max-w-[140px] shrink-0 text-[10px] font-bold text-amber-400">
           <span id="comboFlameIcon" class="text-xs shrink-0">⚡</span>
           <span id="comboLabel" class="truncate font-mono tabular-nums">ЯРОСТЬ: 0%</span>
         </div>
@@ -258,14 +275,17 @@
       <!-- ASTRAL TRANSCENDENCE AUTOMATION DECK -->
       <div id="transcendAutomationsDeck"
         class="px-3 py-1.5 bg-indigo-950/90 border-b border-indigo-500/50 flex flex-wrap items-center justify-between gap-2 z-10 text-xs">
-        
+
         <!-- Locked State Notice (Before midgame Astral Transcendence) -->
-        <div id="transcendAutoLockedNotice" class="w-full flex items-center justify-between gap-2 py-0.5 text-[11px] text-stone-300">
+        <div id="transcendAutoLockedNotice"
+          class="w-full flex items-center justify-between gap-2 py-0.5 text-[11px] text-stone-300">
           <div class="flex items-center gap-1.5 text-cyan-200">
             <span class="text-sm">🔒</span>
-            <span>Астральный Авто-Контроль (Авто-Заводы и Мутации) открывается в <strong>Астральном Прорыве</strong> (Тир II)</span>
+            <span>Астральный Авто-Контроль (Авто-Заводы и Мутации) открывается в <strong>Астральном Прорыве</strong>
+              (Тир II)</span>
           </div>
-          <button id="btnTranscendAutoInfo" class="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold underline cursor-pointer bg-transparent border-0 flex items-center gap-1 shrink-0">
+          <button id="btnTranscendAutoInfo"
+            class="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold underline cursor-pointer bg-transparent border-0 flex items-center gap-1 shrink-0">
             <span>К Прорыву</span> <span class="plunger-icon"></span>
           </button>
         </div>
@@ -342,28 +362,34 @@
 
       <!-- UNIFIED PET CARE & NEEDS STATION (Bottom Console) -->
       <div id="petNeedsStation" class="bg-stone-900/95 border-t-2 border-amber-900/80 z-10 select-none">
-        
+
         <!-- Status Ribbon: Ideal Care (Shown when all 3 >= 90%) -->
         <div id="buffIdealPill"
           class="hidden py-0.5 px-3 bg-gradient-to-r from-yellow-500/20 via-amber-400/30 to-yellow-500/20 border-b border-yellow-400/50 text-center text-[11px] font-bold text-yellow-300 animate-pulse flex items-center justify-center gap-2">
-          <span>👑</span> <span>СТАТУС «ИДЕАЛ x2»: Все потребности удовлетворены! Доход и криты удвоены!</span> <span>👑</span>
+          <span>👑</span> <span>СТАТУС «ИДЕАЛ x2»: Все потребности удовлетворены! Доход и криты удвоены!</span>
+          <span>👑</span>
         </div>
 
         <!-- 3 Unified Need Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2">
-          
+
           <!-- Need 1: Сытость / Hunger -->
-          <div class="bg-stone-950/80 rounded-2xl p-2 border border-orange-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
+          <div
+            class="bg-stone-950/80 rounded-2xl p-2 border border-orange-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
             <div class="flex items-center justify-between text-xs font-bold">
               <div class="flex items-center gap-1 text-stone-200">
                 <span>🍗</span>
                 <span class="text-[11px]">Сытость:</span>
                 <span id="txtHunger" class="font-mono text-orange-400 font-black">100%</span>
               </div>
-              <span id="buffHungerText" class="text-[9px] px-1.5 py-0.5 rounded bg-orange-950/90 text-orange-300 border border-orange-600/40 font-bold">+50% Клик</span>
+              <span id="buffHungerText"
+                class="text-[9px] px-1.5 py-0.5 rounded bg-orange-950/90 text-orange-300 border border-orange-600/40 font-bold">+50%
+                Клик</span>
             </div>
             <div class="w-full bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700/60">
-              <div id="barHunger" class="bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all duration-300" style="width: 100%"></div>
+              <div id="barHunger"
+                class="bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all duration-300"
+                style="width: 100%"></div>
             </div>
             <div class="flex items-center gap-1 pt-0.5">
               <button id="btnFeed"
@@ -381,17 +407,21 @@
           </div>
 
           <!-- Need 2: Чистота / Clean -->
-          <div class="bg-stone-950/80 rounded-2xl p-2 border border-cyan-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
+          <div
+            class="bg-stone-950/80 rounded-2xl p-2 border border-cyan-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
             <div class="flex items-center justify-between text-xs font-bold">
               <div class="flex items-center gap-1 text-stone-200">
                 <span>🫧</span>
                 <span class="text-[11px]">Чистота:</span>
                 <span id="txtClean" class="font-mono text-cyan-400 font-black">100%</span>
               </div>
-              <span id="buffCleanText" class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950/90 text-cyan-300 border border-cyan-600/40 font-bold">+40% Заводы</span>
+              <span id="buffCleanText"
+                class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950/90 text-cyan-300 border border-cyan-600/40 font-bold">+40%
+                Заводы</span>
             </div>
             <div class="w-full bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700/60">
-              <div id="barClean" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full transition-all duration-300" style="width: 100%"></div>
+              <div id="barClean" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full transition-all duration-300"
+                style="width: 100%"></div>
             </div>
             <div class="flex items-center gap-1 pt-0.5">
               <button id="btnWash"
@@ -414,17 +444,21 @@
           </div>
 
           <!-- Need 3: Настроение / Happy -->
-          <div class="bg-stone-950/80 rounded-2xl p-2 border border-pink-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
+          <div
+            class="bg-stone-950/80 rounded-2xl p-2 border border-pink-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
             <div class="flex items-center justify-between text-xs font-bold">
               <div class="flex items-center gap-1 text-stone-200">
                 <span>💖</span>
                 <span class="text-[11px]">Настроение:</span>
                 <span id="txtHappy" class="font-mono text-pink-400 font-black">100%</span>
               </div>
-              <span id="buffHappyText" class="text-[9px] px-1.5 py-0.5 rounded bg-pink-950/90 text-pink-300 border border-pink-600/40 font-bold">x2 Криты</span>
+              <span id="buffHappyText"
+                class="text-[9px] px-1.5 py-0.5 rounded bg-pink-950/90 text-pink-300 border border-pink-600/40 font-bold">x2
+                Криты</span>
             </div>
             <div class="w-full bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700/60">
-              <div id="barHappy" class="bg-gradient-to-r from-pink-500 to-rose-400 h-full transition-all duration-300" style="width: 100%"></div>
+              <div id="barHappy" class="bg-gradient-to-r from-pink-500 to-rose-400 h-full transition-all duration-300"
+                style="width: 100%"></div>
             </div>
             <div class="flex items-center gap-1 pt-0.5">
               <button id="btnTickle"
@@ -539,12 +573,14 @@
           </div>
 
           <!-- Shortcut to Dedicated Character Inventory Modal -->
-          <div class="p-3 rounded-2xl bg-gradient-to-r from-amber-950/90 to-stone-900 border-2 border-yellow-500/60 shadow flex items-center justify-between gap-2">
+          <div
+            class="p-3 rounded-2xl bg-gradient-to-r from-amber-950/90 to-stone-900 border-2 border-yellow-500/60 shadow flex items-center justify-between gap-2">
             <div class="flex items-center gap-2.5">
               <span class="text-2xl">🎒</span>
               <div>
                 <div class="font-game text-xs text-yellow-300">Инвентарь Снаряжения</div>
-                <div class="text-[10px] text-stone-300">Экипируйте выбитые ножи, головные уборы и выберите лучший клинок</div>
+                <div class="text-[10px] text-stone-300">Экипируйте выбитые ножи, головные уборы и выберите лучший клинок
+                </div>
               </div>
             </div>
             <button id="btnOpenCharacterInventoryFromCases"
@@ -594,11 +630,13 @@
         <div id="panelTalents" class="hidden space-y-2.5">
           <!-- Sub-tabs navigation -->
           <div class="flex items-center gap-2 border-b border-stone-800 pb-2">
-            <button id="tabTalentsFlush" class="talent-sub-tab flex-1 py-1.5 px-3 rounded-xl font-game text-xs flex items-center justify-center gap-1.5 transition font-bold bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-md border border-yellow-400">
+            <button id="tabTalentsFlush"
+              class="talent-sub-tab flex-1 py-1.5 px-3 rounded-xl font-game text-xs flex items-center justify-center gap-1.5 transition font-bold bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-md border border-yellow-400">
               <span class="roll-icon"></span>
               <span>Таланты Смыва</span>
             </button>
-            <button id="tabTalentsTranscend" class="talent-sub-tab flex-1 py-1.5 px-3 rounded-xl font-game text-xs flex items-center justify-center gap-1.5 transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800">
+            <button id="tabTalentsTranscend"
+              class="talent-sub-tab flex-1 py-1.5 px-3 rounded-xl font-game text-xs flex items-center justify-center gap-1.5 transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800">
               <span class="plunger-icon"></span>
               <span>Реликвии Прорыва</span>
             </button>
@@ -611,7 +649,8 @@
                 <span class="font-game text-yellow-300 text-sm">Древние Знания Втулок</span>
                 <span class="font-game text-xs text-yellow-200" id="talentRollsLabel">0 🧻</span>
               </div>
-              <p class="text-[10px] text-purple-200 mt-1">Бонусы сохраняются при Смыве Судьбы навсегда. Развивайте ветви по тирам!</p>
+              <p class="text-[10px] text-purple-200 mt-1">Бонусы сохраняются при Смыве Судьбы навсегда. Развивайте ветви
+                по тирам!</p>
             </div>
             <div class="space-y-2 max-h-[385px] overflow-y-auto custom-scroll pr-1" id="talentsContainer"></div>
           </div>
@@ -623,7 +662,8 @@
                 <span class="font-game text-cyan-300 text-sm">Астральные Реликвии Омниверса</span>
                 <span class="font-game text-xs text-cyan-200" id="talentPlungersLabel">0 🪠</span>
               </div>
-              <p class="text-[10px] text-indigo-200 mt-1">Высшие артефакты автоматизации и космической силы, открываемые за Астральные Вантузы.</p>
+              <p class="text-[10px] text-indigo-200 mt-1">Высшие артефакты автоматизации и космической силы, открываемые
+                за Астральные Вантузы.</p>
             </div>
             <div class="space-y-2 max-h-[385px] overflow-y-auto custom-scroll pr-1" id="transcendRelicsContainer"></div>
           </div>
@@ -647,9 +687,11 @@
           <span>Доход: <b class="text-emerald-400 tabular-nums" id="footPassiveRate">+0 /сек</b></span>
           <span class="text-stone-600">|</span>
           <span>Клик: <b class="text-amber-300 tabular-nums min-w-[28px] inline-block" id="footClickPower">1</b></span>
-          <span id="footCpsRate" class="text-yellow-400 font-bold tabular-nums min-w-[65px] inline-block opacity-0 transition-opacity duration-150"></span>
+          <span id="footCpsRate"
+            class="text-yellow-400 font-bold tabular-nums min-w-[65px] inline-block opacity-0 transition-opacity duration-150"></span>
         </div>
-        <button id="btnExportSave" class="text-stone-400 hover:text-white underline shrink-0 ml-2">Резервная копия</button>
+        <button id="btnExportSave" class="text-stone-400 hover:text-white underline shrink-0 ml-2">Резервная
+          копия</button>
       </div>
     </aside>
   </main>
@@ -662,7 +704,7 @@
       <!-- Close button (acts as Play as Guest / Close) -->
       <button id="btnAuthClose"
         class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-2xl font-bold transition">&times;</button>
-      
+
       <div class="text-center mb-4">
         <div class="text-4xl mb-2 animate-bounce">👑</div>
         <h3 class="font-game text-xl text-yellow-300">Облачный Аккаунт D1</h3>
@@ -673,8 +715,7 @@
 
       <!-- Auth Tabs: Login vs Register -->
       <div class="flex rounded-xl bg-stone-950 p-1 border border-stone-800 mb-4 text-xs font-bold">
-        <button id="tabAuthLogin"
-          class="flex-1 py-2 rounded-lg bg-amber-600 text-white shadow transition font-game">
+        <button id="tabAuthLogin" class="flex-1 py-2 rounded-lg bg-amber-600 text-white shadow transition font-game">
           🔑 Вход
         </button>
         <button id="tabAuthRegister"
@@ -692,7 +733,8 @@
         </div>
         <div>
           <label class="block text-[10px] font-bold text-stone-400 uppercase mb-1">Пароль:</label>
-          <input id="loginPassword" type="password" placeholder="Введите пароль" maxlength="64" autocomplete="current-password"
+          <input id="loginPassword" type="password" placeholder="Введите пароль" maxlength="64"
+            autocomplete="current-password"
             class="w-full bg-stone-950 px-3 py-2 rounded-xl border border-stone-700 text-xs text-yellow-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 font-medium">
         </div>
         <button id="btnSubmitLogin" type="submit"
@@ -705,12 +747,14 @@
       <form id="formAuthRegister" class="space-y-3 hidden">
         <div>
           <label class="block text-[10px] font-bold text-stone-400 uppercase mb-1">Придумайте Логин:</label>
-          <input id="registerUsername" type="text" placeholder="От 3 до 30 символов" maxlength="32" autocomplete="username"
+          <input id="registerUsername" type="text" placeholder="От 3 до 30 символов" maxlength="32"
+            autocomplete="username"
             class="w-full bg-stone-950 px-3 py-2 rounded-xl border border-stone-700 text-xs text-yellow-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 font-medium">
         </div>
         <div>
           <label class="block text-[10px] font-bold text-stone-400 uppercase mb-1">Придумайте Пароль:</label>
-          <input id="registerPassword" type="password" placeholder="Минимум 4 символа" maxlength="64" autocomplete="new-password"
+          <input id="registerPassword" type="password" placeholder="Минимум 4 символа" maxlength="64"
+            autocomplete="new-password"
             class="w-full bg-stone-950 px-3 py-2 rounded-xl border border-stone-700 text-xs text-yellow-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 font-medium">
         </div>
         <div class="text-[10px] text-amber-400/90 bg-amber-950/40 p-2 rounded-lg border border-amber-800/40">
@@ -731,7 +775,8 @@
           class="text-xs text-stone-400 hover:text-amber-300 transition underline underline-offset-4 font-semibold">
           🎮 Играть как Гость (без пароля)
         </button>
-        <p class="text-[9px] text-stone-500 mt-1">Вы сможете создать или привязать аккаунт в любое удобное время через меню профиля.</p>
+        <p class="text-[9px] text-stone-500 mt-1">Вы сможете создать или привязать аккаунт в любое удобное время через
+          меню профиля.</p>
       </div>
     </div>
   </div>
@@ -821,7 +866,7 @@
       class="bg-stone-900 text-stone-100 rounded-3xl border-2 border-yellow-500/70 max-w-lg w-full p-4 sm:p-6 relative shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
       <button
         class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-2xl font-bold transition">&times;</button>
-      
+
       <div class="text-center mb-3">
         <div class="text-4xl mb-1 filter drop-shadow">🏆</div>
         <h3 class="font-game text-xl sm:text-2xl text-yellow-300">Зал Славы: Топ Игроков</h3>
@@ -835,6 +880,25 @@
         <button id="btnRefreshLeaderboardModal"
           class="text-[11px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 px-3 py-1 rounded-xl border border-yellow-500/50 flex items-center gap-1.5 shadow jelly-btn transition">
           <span>🔄</span> Обновить
+        </button>
+      </div>
+
+      <!-- DAILY TOP 10 REWARD CARD -->
+      <div id="leaderboardDailyRewardCard" class="mb-2.5 p-2.5 rounded-2xl bg-gradient-to-r from-amber-950/60 via-stone-900 to-purple-950/60 border border-amber-500/50 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="text-3xl shrink-0">🎁</span>
+          <div class="truncate">
+            <div class="font-game text-xs text-yellow-300 font-bold flex items-center gap-1.5">
+              <span>Ежедневная Награда Топ-10</span>
+              <span id="playerRankBadge" class="text-[9px] bg-amber-500 text-stone-950 px-1.5 py-0.5 rounded font-black">#? В РЕЙТИНГЕ</span>
+            </div>
+            <div id="leaderboardDailyRewardInfo" class="text-[10px] text-stone-300 mt-0.5">
+              Игроки в Топ-10 получают до 50,000 ✨ Блестяшек раз в 24 часа!
+            </div>
+          </div>
+        </div>
+        <button id="btnClaimDailyTop10" class="w-full sm:w-auto shrink-0 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game font-bold text-xs px-3 py-1.5 rounded-xl transition shadow jelly-btn disabled:opacity-50 disabled:cursor-not-allowed">
+          🎁 Забрать ✨
         </button>
       </div>
 
@@ -875,28 +939,39 @@
 
       <!-- ARCHETYPE PATH SELECTOR -->
       <div class="mb-4 text-left">
-        <div class="text-[10px] text-yellow-300 font-bold uppercase tracking-wider mb-1.5 flex items-center justify-between">
+        <div
+          class="text-[10px] text-yellow-300 font-bold uppercase tracking-wider mb-1.5 flex items-center justify-between">
           <span>Специализация на следующий забег:</span>
           <span class="text-[9px] text-stone-400 font-normal">Выбор стиля игры</span>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[10px] font-bold" id="archetypeSelectGrid">
-          <button type="button" class="arch-select-btn p-1.5 rounded-xl border text-center transition bg-purple-900/80 border-yellow-400 text-yellow-200 shadow" data-arch="balanced">
+          <button type="button"
+            class="arch-select-btn p-1.5 rounded-xl border text-center transition bg-purple-900/80 border-yellow-400 text-yellow-200 shadow"
+            data-arch="balanced">
             ⚖️ Универсал
             <div class="text-[8px] text-purple-300 font-normal">+15% ко всему</div>
           </button>
-          <button type="button" class="arch-select-btn p-1.5 rounded-xl border text-center transition bg-stone-900 border-stone-700 text-stone-300 hover:border-amber-500" data-arch="clicker">
+          <button type="button"
+            class="arch-select-btn p-1.5 rounded-xl border text-center transition bg-stone-900 border-stone-700 text-stone-300 hover:border-amber-500"
+            data-arch="clicker">
             🗡️ Кликер
             <div class="text-[8px] text-stone-400 font-normal">+50% к силе клика</div>
           </button>
-          <button type="button" class="arch-select-btn p-1.5 rounded-xl border text-center transition bg-stone-900 border-stone-700 text-stone-300 hover:border-amber-500" data-arch="tycoon">
+          <button type="button"
+            class="arch-select-btn p-1.5 rounded-xl border text-center transition bg-stone-900 border-stone-700 text-stone-300 hover:border-amber-500"
+            data-arch="tycoon">
             🏭 Магнат
             <div class="text-[8px] text-stone-400 font-normal">+50% к заводам</div>
           </button>
-          <button type="button" class="arch-select-btn p-1.5 rounded-xl border text-center transition bg-stone-900 border-stone-700 text-stone-300 hover:border-amber-500" data-arch="gambler">
+          <button type="button"
+            class="arch-select-btn p-1.5 rounded-xl border text-center transition bg-stone-900 border-stone-700 text-stone-300 hover:border-amber-500"
+            data-arch="gambler">
             🎲 Фортуна
             <div class="text-[8px] text-stone-400 font-normal">x2 Блестяшки ✨</div>
           </button>
-          <button type="button" class="arch-select-btn p-1.5 rounded-xl border text-center transition bg-stone-900 border-stone-700 text-stone-300 hover:border-amber-500" data-arch="combo">
+          <button type="button"
+            class="arch-select-btn p-1.5 rounded-xl border text-center transition bg-stone-900 border-stone-700 text-stone-300 hover:border-amber-500"
+            data-arch="combo">
             🔥 Комбо
             <div class="text-[8px] text-stone-400 font-normal">x15 Турбо-Ярость</div>
           </button>
@@ -927,7 +1002,8 @@
       <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex flex-col gap-0.5">
           <span class="text-stone-300 text-[10px] uppercase font-bold">Условие доступа:</span>
-          <div id="transcendReqLabel" class="text-cyan-300 font-bold">Форма 50+, 5+ Смывов и 2,500+ <span class="roll-icon"></span></div>
+          <div id="transcendReqLabel" class="text-cyan-300 font-bold">Форма 50+, 5+ Смывов и 2,500+ <span
+              class="roll-icon"></span></div>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Запас Втулок Судьбы:</span>
@@ -935,12 +1011,14 @@
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Награда за Прорыв:</span>
-          <span class="font-game text-cyan-300 text-sm" id="transcendCalcPlungers">+0 <span class="plunger-icon"></span> Вантузов</span>
+          <span class="font-game text-cyan-300 text-sm" id="transcendCalcPlungers">+0 <span class="plunger-icon"></span>
+            Вантузов</span>
         </div>
       </div>
 
 
-      <div id="transcendMilestoneHint" class="bg-indigo-950/80 border border-indigo-400/50 rounded-2xl p-2.5 my-2 text-left">
+      <div id="transcendMilestoneHint"
+        class="bg-indigo-950/80 border border-indigo-400/50 rounded-2xl p-2.5 my-2 text-left">
       </div>
 
       <!-- Navigation link to Talents dashboard tab -->
@@ -970,7 +1048,7 @@
       class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-yellow-400 max-w-xl w-full p-4 sm:p-6 relative shadow-2xl max-h-[92vh] overflow-y-auto custom-scroll text-left flex flex-col space-y-3">
       <button
         class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-2xl font-bold transition">&times;</button>
-      
+
       <div class="flex items-center gap-3 border-b border-yellow-500/30 pb-3">
         <span class="text-4xl" id="casePreviewIcon">📦</span>
         <div>
@@ -1037,119 +1115,152 @@
       <!-- Modal Title -->
       <div class="flex items-center justify-center gap-2 mb-1">
         <span class="text-3xl">📖</span>
-        <h3 class="font-game text-xl sm:text-2xl text-yellow-300 tracking-wide">КНИГА ИНДЕКСА НОЖЕЙ</h3>
+        <h3 class="font-game text-xl sm:text-2xl text-yellow-300 tracking-wide">ОМНИВЕРС ЭНЦИКЛОПЕДИЯ</h3>
       </div>
       <p class="text-[11px] text-stone-300 max-w-xl mx-auto mb-2">
-        Соберите полную коллекцию из <b>200 легендарных ножей</b>! Открытие ножей навсегда активирует мощные пассивные
-        бонусы ко всем доходам игры.
+        Полный справочник вселенной: 200 ножей, 14 автоматических заводов, 12 головных уборов и постоянные перки!
       </p>
 
-      <!-- Collection Progress Bar -->
-      <div class="bg-stone-900/90 border border-stone-700 rounded-2xl p-2.5 mb-2.5 text-left">
-        <div class="flex justify-between items-center text-xs font-bold mb-1">
-          <span class="text-stone-300 flex items-center gap-1">
-            <span>Прогресс Коллекции:</span>
-            <span id="indexBookProgressPercent" class="text-yellow-400 font-game">0.0%</span>
-          </span>
-          <span id="indexBookProgressCount" class="text-emerald-400 font-game text-sm">0 / 200 Открыто</span>
-        </div>
-        <div class="w-full bg-stone-800 h-3 rounded-full overflow-hidden border border-stone-700/80 p-0.5">
-          <div id="indexBookProgressBar"
-            class="bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 h-full rounded-full transition-all duration-500"
-            style="width: 0%"></div>
+      <!-- Category Tabs (Ножи, Заводы, Шапки, Перки) -->
+      <div class="flex items-center justify-center gap-1.5 sm:gap-2 mb-2 border-b border-stone-800 pb-2">
+        <button id="tabIndexKnives" class="index-category-tab px-3 py-1.5 rounded-xl font-game text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-stone-950 shadow-md">
+          🗡️ Ножи (200)
+        </button>
+        <button id="tabIndexFactories" class="index-category-tab px-3 py-1.5 rounded-xl font-game text-xs font-bold bg-stone-900 text-stone-400 hover:text-white border border-stone-800">
+          🏭 Заводы (14)
+        </button>
+        <button id="tabIndexHats" class="index-category-tab px-3 py-1.5 rounded-xl font-game text-xs font-bold bg-stone-900 text-stone-400 hover:text-white border border-stone-800">
+          🎩 Шапки (12)
+        </button>
+        <button id="tabIndexPerks" class="index-category-tab px-3 py-1.5 rounded-xl font-game text-xs font-bold bg-stone-900 text-stone-400 hover:text-white border border-stone-800">
+          🔮 Перки & Таланты
+        </button>
+      </div>
+
+      <!-- VIEW 1: KNIVES -->
+      <div id="viewIndexKnives" class="flex-1 flex flex-col overflow-hidden">
+        <!-- Collection Progress Bar -->
+        <div class="bg-stone-900/90 border border-stone-700 rounded-2xl p-2.5 mb-2.5 text-left">
+          <div class="flex justify-between items-center text-xs font-bold mb-1">
+            <span class="text-stone-300 flex items-center gap-1">
+              <span>Прогресс Коллекции:</span>
+              <span id="indexBookProgressPercent" class="text-yellow-400 font-game">0.0%</span>
+            </span>
+            <span id="indexBookProgressCount" class="text-emerald-400 font-game text-sm">0 / 200 Открыто</span>
+          </div>
+          <div class="w-full bg-stone-800 h-3 rounded-full overflow-hidden border border-stone-700/80 p-0.5">
+            <div id="indexBookProgressBar"
+              class="bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 h-full rounded-full transition-all duration-500"
+              style="width: 0%"></div>
+          </div>
+
+          <!-- Milestones Badges Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-6 gap-1.5 mt-2.5 pt-2 border-t border-stone-800 text-[10px]">
+            <div id="milestone10" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
+              <div class="font-bold">10 Ножей</div>
+              <div class="text-[9px] text-stone-400">+10% Клик</div>
+            </div>
+            <div id="milestone25" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
+              <div class="font-bold">25 Ножей</div>
+              <div class="text-[9px] text-stone-400">+25% Заводы</div>
+            </div>
+            <div id="milestone50" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
+              <div class="font-bold">50 Ножей</div>
+              <div class="text-[9px] text-stone-400">+50% Клик</div>
+            </div>
+            <div id="milestone100" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
+              <div class="font-bold">100 Ножей</div>
+              <div class="text-[9px] text-stone-400">x2.0 Всё!</div>
+            </div>
+            <div id="milestone150" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
+              <div class="font-bold">150 Ножей</div>
+              <div class="text-[9px] text-stone-400">x3.0 Всё!</div>
+            </div>
+            <div id="milestone200" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
+              <div class="font-bold text-yellow-300">200 Ножей</div>
+              <div class="text-[9px] text-yellow-400 font-bold">★ x5.0 МАСТЕР</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Milestones Badges Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-6 gap-1.5 mt-2.5 pt-2 border-t border-stone-800 text-[10px]">
-          <div id="milestone10" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
-            <div class="font-bold">10 Ножей</div>
-            <div class="text-[9px] text-stone-400">+10% Клик</div>
+        <!-- Filters & Search Bar -->
+        <div class="flex flex-col sm:flex-row gap-2 items-center justify-between mb-2">
+          <!-- Search Input -->
+          <div class="w-full sm:w-64 relative">
+            <input type="text" id="knifeIndexSearchInput" placeholder="🔍 Поиск ножа по названию..."
+              class="w-full bg-stone-900 border border-stone-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-yellow-400">
           </div>
-          <div id="milestone25" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
-            <div class="font-bold">25 Ножей</div>
-            <div class="text-[9px] text-stone-400">+25% Заводы</div>
+
+          <!-- Status Filter: All / Unlocked / Locked -->
+          <div
+            class="flex items-center gap-1 text-[11px] font-bold bg-stone-900 p-0.5 rounded-xl border border-stone-700">
+            <button class="index-status-filter-btn px-2.5 py-1 rounded-lg bg-yellow-500 text-stone-950 font-bold"
+              data-status="all">Все</button>
+            <button class="index-status-filter-btn px-2.5 py-1 rounded-lg text-stone-400 hover:text-white"
+              data-status="unlocked">✓ Открыто</button>
+            <button class="index-status-filter-btn px-2.5 py-1 rounded-lg text-stone-400 hover:text-white"
+              data-status="locked">🔒 Закрыто</button>
           </div>
-          <div id="milestone50" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
-            <div class="font-bold">50 Ножей</div>
-            <div class="text-[9px] text-stone-400">+50% Клик</div>
-          </div>
-          <div id="milestone100" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
-            <div class="font-bold">100 Ножей</div>
-            <div class="text-[9px] text-stone-400">x2.0 Всё!</div>
-          </div>
-          <div id="milestone150" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
-            <div class="font-bold">150 Ножей</div>
-            <div class="text-[9px] text-stone-400">x3.0 Всё!</div>
-          </div>
-          <div id="milestone200" class="p-1 rounded-lg bg-stone-800 border border-stone-700 text-center text-stone-400">
-            <div class="font-bold text-yellow-300">200 Ножей</div>
-            <div class="text-[9px] text-yellow-400 font-bold">★ x5.0 МАСТЕР</div>
-          </div>
+        </div>
+
+        <!-- Rarity Filter Pills Scrollable -->
+        <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1.5 mb-2 text-[10px] font-bold"
+          id="knifeRarityFiltersBar">
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-yellow-500 text-stone-950 font-black border border-yellow-400"
+            data-rarity="all">Все (200)</button>
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-stone-800 text-stone-300 border border-stone-700 hover:border-stone-500"
+            data-rarity="common">Обычный (20)</button>
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-sky-950 text-sky-300 border border-sky-600/60 hover:border-sky-400"
+            data-rarity="rare">Редкий (25)</button>
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-indigo-950 text-indigo-300 border border-indigo-600/60 hover:border-indigo-400"
+            data-rarity="very_rare">Очень редкий (25)</button>
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-purple-950 text-purple-300 border border-purple-600/60 hover:border-purple-400"
+            data-rarity="epic">Эпичный (30)</button>
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-pink-950 text-pink-300 border border-pink-600/60 hover:border-pink-400"
+            data-rarity="classified">Засекреченный (25)</button>
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-red-950 text-red-300 border border-red-600/60 hover:border-red-400"
+            data-rarity="covert">Тайный (25)</button>
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-gradient-to-r from-red-900/60 via-purple-900/60 to-blue-900/60 text-yellow-300 border border-yellow-400 hover:brightness-125"
+            data-rarity="rainbow">Радужный (20)</button>
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-cyan-950 text-cyan-300 border border-cyan-400 hover:brightness-125"
+            data-rarity="celestial">Небесный (15)</button>
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-teal-950 text-teal-300 border border-teal-400 hover:brightness-125"
+            data-rarity="titanium">Титановый (10)</button>
+          <button
+            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-yellow-950 text-yellow-300 border border-yellow-400 hover:brightness-125 font-black"
+            data-rarity="godly">Божественный (5)</button>
+        </div>
+
+        <!-- Knives Cards Grid (Scrollable viewport for 200 knives) -->
+        <div id="knivesIndexGrid"
+          class="flex-1 overflow-y-auto custom-scroll grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5 p-1">
+          <!-- Rendered dynamically by renderKnivesIndexBook() -->
         </div>
       </div>
 
-      <!-- Filters & Search Bar -->
-      <div class="flex flex-col sm:flex-row gap-2 items-center justify-between mb-2">
-        <!-- Search Input -->
-        <div class="w-full sm:w-64 relative">
-          <input type="text" id="knifeIndexSearchInput" placeholder="🔍 Поиск ножа по названию..."
-            class="w-full bg-stone-900 border border-stone-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-yellow-400">
-        </div>
-
-        <!-- Status Filter: All / Unlocked / Locked -->
-        <div
-          class="flex items-center gap-1 text-[11px] font-bold bg-stone-900 p-0.5 rounded-xl border border-stone-700">
-          <button class="index-status-filter-btn px-2.5 py-1 rounded-lg bg-yellow-500 text-stone-950 font-bold"
-            data-status="all">Все</button>
-          <button class="index-status-filter-btn px-2.5 py-1 rounded-lg text-stone-400 hover:text-white"
-            data-status="unlocked">✓ Открыто</button>
-          <button class="index-status-filter-btn px-2.5 py-1 rounded-lg text-stone-400 hover:text-white"
-            data-status="locked">🔒 Закрыто</button>
-        </div>
+      <!-- VIEW 2: FACTORIES -->
+      <div id="viewIndexFactories" class="hidden flex-1 overflow-y-auto custom-scroll grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-1">
+        <!-- Rendered dynamically by renderFactoriesIndex() -->
       </div>
 
-      <!-- Rarity Filter Pills Scrollable -->
-      <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1.5 mb-2 text-[10px] font-bold"
-        id="knifeRarityFiltersBar">
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-yellow-500 text-stone-950 font-black border border-yellow-400"
-          data-rarity="all">Все (200)</button>
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-stone-800 text-stone-300 border border-stone-700 hover:border-stone-500"
-          data-rarity="common">Обычный (20)</button>
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-sky-950 text-sky-300 border border-sky-600/60 hover:border-sky-400"
-          data-rarity="rare">Редкий (25)</button>
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-indigo-950 text-indigo-300 border border-indigo-600/60 hover:border-indigo-400"
-          data-rarity="very_rare">Очень редкий (25)</button>
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-purple-950 text-purple-300 border border-purple-600/60 hover:border-purple-400"
-          data-rarity="epic">Эпичный (30)</button>
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-pink-950 text-pink-300 border border-pink-600/60 hover:border-pink-400"
-          data-rarity="classified">Засекреченный (25)</button>
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-red-950 text-red-300 border border-red-600/60 hover:border-red-400"
-          data-rarity="covert">Тайный (25)</button>
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-gradient-to-r from-red-900/60 via-purple-900/60 to-blue-900/60 text-yellow-300 border border-yellow-400 hover:brightness-125"
-          data-rarity="rainbow">Радужный (20)</button>
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-cyan-950 text-cyan-300 border border-cyan-400 hover:brightness-125"
-          data-rarity="celestial">Небесный (15)</button>
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-teal-950 text-teal-300 border border-teal-400 hover:brightness-125"
-          data-rarity="titanium">Титановый (10)</button>
-        <button
-          class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-yellow-950 text-yellow-300 border border-yellow-400 hover:brightness-125 font-black"
-          data-rarity="godly">Божественный (5)</button>
+      <!-- VIEW 3: HATS -->
+      <div id="viewIndexHats" class="hidden flex-1 overflow-y-auto custom-scroll grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 p-1">
+        <!-- Rendered dynamically by renderHatsIndex() -->
       </div>
 
-      <!-- Knives Cards Grid (Scrollable viewport for 200 knives) -->
-      <div id="knivesIndexGrid"
-        class="flex-1 overflow-y-auto custom-scroll grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5 p-1">
-        <!-- Rendered dynamically by renderKnivesIndexBook() -->
+      <!-- VIEW 4: PERKS & TALENTS -->
+      <div id="viewIndexPerks" class="hidden flex-1 overflow-y-auto custom-scroll grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-1">
+        <!-- Rendered dynamically by renderPerksIndex() -->
       </div>
     </div>
   </div>
@@ -1279,7 +1390,8 @@
           title="Мгновенно остановить рулетку и открыть нож">
           <span>⏩</span> <span>Пропустить (Скип)</span>
         </button>
-        <label class="flex items-center gap-1.5 text-[11px] text-stone-300 cursor-pointer select-none hover:text-yellow-300 transition ml-2">
+        <label
+          class="flex items-center gap-1.5 text-[11px] text-stone-300 cursor-pointer select-none hover:text-yellow-300 transition ml-2">
           <input type="checkbox" id="toggleFastCaseOpen" class="rounded accent-amber-500 cursor-pointer" />
           <span>Быстрое открытие (Скипать всегда)</span>
         </label>
@@ -1295,7 +1407,7 @@
       class="bg-gradient-to-b from-stone-900 via-indigo-950 to-stone-900 rounded-3xl border-4 border-cyan-400 max-w-2xl w-full p-5 relative shadow-2xl max-h-[92vh] overflow-y-auto custom-scroll text-left">
       <button
         class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
-      
+
       <div class="flex items-center gap-3 border-b border-cyan-500/30 pb-3 mb-4">
         <span class="text-4xl">📖</span>
         <div>
@@ -1310,7 +1422,9 @@
           <div class="flex items-center gap-2 mb-1">
             <span class="text-2xl">💨</span>
             <span class="font-game text-sm text-yellow-300">Биомасса (Biomass)</span>
-            <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/40 font-bold ml-auto">Основная валюта</span>
+            <span
+              class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/40 font-bold ml-auto">Основная
+              валюта</span>
           </div>
           <p class="text-stone-300 leading-relaxed">
             Фундаментальная энергия вселенной какашечки. Необходима для любого первичного роста.
@@ -1340,7 +1454,8 @@
           <div class="flex items-center gap-2 mb-1">
             <span class="text-2xl">✨</span>
             <span class="font-game text-sm text-pink-300">Блестяшки (Sparkles)</span>
-            <span class="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full border border-pink-500/40 font-bold ml-auto">Премиум-ресурс</span>
+            <span
+              class="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full border border-pink-500/40 font-bold ml-auto">Премиум-ресурс</span>
           </div>
           <p class="text-stone-300 leading-relaxed">
             Драгоценные искры сияния, дающие доступ к роскоши Бутика и прокачке оружия.
@@ -1370,10 +1485,13 @@
           <div class="flex items-center gap-2 mb-1">
             <span class="text-2xl">🧻</span>
             <span class="font-game text-sm text-yellow-300">Втулки Судьбы (Toilet Rolls)</span>
-            <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/40 font-bold ml-auto">Престиж I ранга</span>
+            <span
+              class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/40 font-bold ml-auto">Престиж
+              I ранга</span>
           </div>
           <p class="text-stone-300 leading-relaxed">
-            Священные втулки от Великого Смыва Судьбы. Дают глобальный постоянный множитель ко <b class="text-yellow-300">ВСЕМУ</b> доходу!
+            Священные втулки от Великого Смыва Судьбы. Дают глобальный постоянный множитель ко <b
+              class="text-yellow-300">ВСЕМУ</b> доходу!
           </p>
           <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
             <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
@@ -1400,7 +1518,9 @@
           <div class="flex items-center gap-2 mb-1">
             <span class="text-2xl">🪠</span>
             <span class="font-game text-sm text-cyan-300">Астральные Вантузы (Astral Plungers)</span>
-            <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/40 font-bold ml-auto">Престиж II ранга</span>
+            <span
+              class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/40 font-bold ml-auto">Престиж
+              II ранга</span>
           </div>
           <p class="text-stone-300 leading-relaxed">
             Высшая эндгейм-валюта Космического Прорыва. Раздвигает границы реальности и открывает полную автоматизацию.
@@ -1430,15 +1550,20 @@
           <div class="flex items-center gap-2 mb-1">
             <span class="text-2xl">🗡️</span>
             <span class="font-game text-sm text-amber-300">Коллекция 200 Ножей CS:GO & StatTrak™</span>
-            <span class="text-[10px] bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded-full border border-yellow-500/40 font-bold ml-auto">Арсенал</span>
+            <span
+              class="text-[10px] bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded-full border border-yellow-500/40 font-bold ml-auto">Арсенал</span>
           </div>
           <p class="text-stone-300 leading-relaxed">
-            Все 200 легендарных ножей CS:GO с настоящей физической рулеткой, звуками открытия, анимацией в руке какашечки и счетчиком кликов StatTrak™!
+            Все 200 легендарных ножей CS:GO с настоящей физической рулеткой, звуками открытия, анимацией в руке
+            какашечки и счетчиком кликов StatTrak™!
           </p>
           <div class="mt-2 bg-stone-900/80 p-2 rounded-xl border border-stone-700 text-[11px] space-y-1">
-            <div><b class="text-cyan-300">⭐ Редкости:</b> Армейские ➔ Запрещенные ➔ Засекреченные ➔ Тайные (Covert) ➔ Радужные (Rainbow) ➔ Титановые ➔ Небесные (Celestial) ➔ Божественные (Godly Omega)!</div>
-            <div><b class="text-yellow-300">⭐ Фазы кейсов:</b> Кейсы открываются поэтапно: ранние стоят втулки, эндгейм-кейсы требуют нескольких Прорывов и Астральных Вантузов.</div>
-            <div><b class="text-orange-400">⭐ StatTrak™:</b> Каждый клик экипированным ножом навсегда увеличивает счётчик его фрагов!</div>
+            <div><b class="text-cyan-300">⭐ Редкости:</b> Армейские ➔ Запрещенные ➔ Засекреченные ➔ Тайные (Covert) ➔
+              Радужные (Rainbow) ➔ Титановые ➔ Небесные (Celestial) ➔ Божественные (Godly Omega)!</div>
+            <div><b class="text-yellow-300">⭐ Фазы кейсов:</b> Кейсы открываются поэтапно: ранние стоят втулки,
+              эндгейм-кейсы требуют нескольких Прорывов и Астральных Вантузов.</div>
+            <div><b class="text-orange-400">⭐ StatTrak™:</b> Каждый клик экипированным ножом навсегда увеличивает
+              счётчик его фрагов!</div>
           </div>
         </div>
 
@@ -1449,10 +1574,15 @@
             <span class="font-game text-sm text-yellow-300">Советы и Стратегии для Быстрого Прогресса</span>
           </div>
           <ul class="list-disc list-inside text-stone-300 mt-1 space-y-1 text-[11px]">
-            <li><b class="text-amber-300">Триада ухода:</b> Держите Сытость выше 90% (+50% к клику), Чистоту выше 90% (+40% к заводам), а Счастье выше 70% (удваивает частоту критов). Включите Авто-Уход при первой возможности!</li>
-            <li><b class="text-amber-300">Турбо-Ярость:</b> Набивайте быстрые клики, чтобы заполнить шкалу Комбо до 100% и активировать Турбо-Режим с x10 уроном!</li>
-            <li><b class="text-amber-300">Архетипы:</b> Перед Смывом выбирайте подходящий архетип (например, <i>Магнат</i> для ночного AFK или <i>Кликер</i> для активной игры).</li>
-            <li><b class="text-amber-300">Грамотный Смыв:</b> Не сидите слишком долго на одном забеге, если прирост биомассы замедлился — смыв даст Втулки и резко разгонит следующий цикл!</li>
+            <li><b class="text-amber-300">Триада ухода:</b> Держите Сытость выше 90% (+50% к клику), Чистоту выше 90%
+              (+40% к заводам), а Счастье выше 70% (удваивает частоту критов). Включите Авто-Уход при первой
+              возможности!</li>
+            <li><b class="text-amber-300">Турбо-Ярость:</b> Набивайте быстрые клики, чтобы заполнить шкалу Комбо до 100%
+              и активировать Турбо-Режим с x10 уроном!</li>
+            <li><b class="text-amber-300">Архетипы:</b> Перед Смывом выбирайте подходящий архетип (например,
+              <i>Магнат</i> для ночного AFK или <i>Кликер</i> для активной игры).</li>
+            <li><b class="text-amber-300">Грамотный Смыв:</b> Не сидите слишком долго на одном забеге, если прирост
+              биомассы замедлился — смыв даст Втулки и резко разгонит следующий цикл!</li>
           </ul>
         </div>
       </div>
@@ -1466,7 +1596,7 @@
       class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-yellow-400 max-w-xl w-full p-5 relative shadow-2xl max-h-[92vh] overflow-y-auto custom-scroll text-left">
       <button
         class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
-      
+
       <div class="flex items-center gap-3 border-b border-yellow-500/30 pb-3 mb-4">
         <span class="text-4xl">📜</span>
         <div>
@@ -1501,9 +1631,11 @@
       <!-- DEDICATED SLOTS: KNIFE SLOT & HAT SLOT -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         <!-- 1. Dedicated Knife Slot (Слот Ножа) -->
-        <div class="p-3 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-950 border-2 border-amber-500/60 shadow flex flex-col justify-between">
+        <div
+          class="p-3 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-950 border-2 border-amber-500/60 shadow flex flex-col justify-between">
           <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] font-game text-amber-400 uppercase font-black tracking-wider flex items-center gap-1">
+            <span
+              class="text-[10px] font-game text-amber-400 uppercase font-black tracking-wider flex items-center gap-1">
               <span>⚔️</span> Слот Оружия
             </span>
             <span class="text-[9px] text-stone-400 font-mono">Боевой клинок</span>
@@ -1515,7 +1647,8 @@
                 <span class="text-2xl">✊</span>
                 <span>Голые руки (Без ножа)</span>
               </div>
-              <button id="btnEquipBestKnifeEmpty" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black text-[11px] px-3 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1 shrink-0">
+              <button id="btnEquipBestKnifeEmpty"
+                class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black text-[11px] px-3 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1 shrink-0">
                 ⚔️ Надеть лучший
               </button>
             </div>
@@ -1527,9 +1660,11 @@
         </div>
 
         <!-- 2. Dedicated Hat Slot (Слот Шапки) -->
-        <div class="p-3 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-950 border-2 border-pink-500/60 shadow flex flex-col justify-between">
+        <div
+          class="p-3 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-950 border-2 border-pink-500/60 shadow flex flex-col justify-between">
           <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] font-game text-pink-400 uppercase font-black tracking-wider flex items-center gap-1">
+            <span
+              class="text-[10px] font-game text-pink-400 uppercase font-black tracking-wider flex items-center gap-1">
               <span>🎩</span> Слот Головного Убора
             </span>
             <button id="btnUnequipHat" class="hidden text-[10px] text-stone-400 hover:text-red-400 font-bold underline">
@@ -1540,34 +1675,46 @@
             <div class="flex items-center gap-2.5 overflow-hidden">
               <span class="text-3xl shrink-0" id="invHatIcon">🧢</span>
               <div class="truncate">
-                <div class="font-game text-xs text-yellow-300 truncate font-bold" id="invHatName">Без головного убора</div>
+                <div class="font-game text-xs text-yellow-300 truncate font-bold" id="invHatName">Без головного убора
+                </div>
                 <div class="text-[10px] text-stone-400" id="invHatBonus">Шапка не надета (+0% бонус)</div>
               </div>
             </div>
-            <button id="btnInvGoToShop" class="shrink-0 text-[10px] font-game bg-pink-900/50 hover:bg-pink-800 text-pink-200 border border-pink-500/50 px-2.5 py-1.5 rounded-xl jelly-btn">
-              Гардероб 🎩
-            </button>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button id="btnInlayEquippedHat"
+                class="hidden text-[10px] font-game bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 text-white font-bold px-2 py-1.5 rounded-xl jelly-btn flex items-center gap-1">
+                💎 Инкрустация
+              </button>
+              <button id="btnInvGoToShop"
+                class="shrink-0 text-[10px] font-game bg-pink-900/50 hover:bg-pink-800 text-pink-200 border border-pink-500/50 px-2.5 py-1.5 rounded-xl jelly-btn">
+                Гардероб 🎩
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Poop Character Form Status Line -->
-      <div class="px-3 py-1.5 rounded-xl bg-stone-900/60 border border-stone-800 flex items-center justify-between text-xs">
+      <div
+        class="px-3 py-1.5 rounded-xl bg-stone-900/60 border border-stone-800 flex items-center justify-between text-xs">
         <div class="flex items-center gap-2">
           <span class="text-xl" id="invPoopIcon">💩</span>
           <span class="font-game text-stone-200" id="invPoopFormName">Форма #1: Какашич</span>
         </div>
-        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500 text-stone-950 uppercase" id="invPoopTierBadge">Тир 1</span>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500 text-stone-950 uppercase"
+          id="invPoopTierBadge">Тир 1</span>
       </div>
 
       <div id="knifeToastNotification" class="hidden"></div>
 
       <!-- SUB-NAVIGATION TABS: KNIVES VS HATS -->
       <div class="flex items-center gap-2 border-b border-stone-800 pb-2">
-        <button id="invTabKnives" class="inv-sub-tab px-4 py-2 rounded-2xl font-game text-xs flex items-center gap-1.5 transition font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-stone-950 shadow-md border border-yellow-300">
+        <button id="invTabKnives"
+          class="inv-sub-tab px-4 py-2 rounded-2xl font-game text-xs flex items-center gap-1.5 transition font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-stone-950 shadow-md border border-yellow-300">
           <span>🗡️</span> Арсенал Ножей (<span id="invKnivesCount">0/200</span>)
         </button>
-        <button id="invTabHats" class="inv-sub-tab px-4 py-2 rounded-2xl font-game text-xs flex items-center gap-1.5 transition font-bold bg-stone-900 text-stone-400 hover:text-white border border-stone-800">
+        <button id="invTabHats"
+          class="inv-sub-tab px-4 py-2 rounded-2xl font-game text-xs flex items-center gap-1.5 transition font-bold bg-stone-900 text-stone-400 hover:text-white border border-stone-800">
           <span>🎩</span> Гардероб Шапок (<span id="invHatsCount">0/14</span>)
         </button>
       </div>
@@ -1603,23 +1750,35 @@
             </select>
           </div>
           <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-0.5" id="knifeInvFilterBar">
-            <button class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-amber-600 text-white shadow" data-filter="all">Все</button>
-            <button class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-yellow-400 border border-yellow-500/30" data-filter="godly">★ Боги & Небесные</button>
-            <button class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-red-400 border border-red-500/30" data-filter="covert">Тайные & Титан</button>
-            <button class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-pink-400 border border-pink-500/30" data-filter="classified">Засекреченные</button>
-            <button class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-stone-400 border border-stone-700" data-filter="common">Обычные</button>
+            <button
+              class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-amber-600 text-white shadow"
+              data-filter="all">Все</button>
+            <button
+              class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-yellow-400 border border-yellow-500/30"
+              data-filter="godly">★ Боги & Небесные</button>
+            <button
+              class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-red-400 border border-red-500/30"
+              data-filter="covert">Тайные & Титан</button>
+            <button
+              class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-pink-400 border border-pink-500/30"
+              data-filter="classified">Засекреченные</button>
+            <button
+              class="knife-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold transition bg-stone-800 text-stone-400 border border-stone-700"
+              data-filter="common">Обычные</button>
           </div>
         </div>
 
         <!-- Knives Scrollable Container (Compact Cards) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[360px] overflow-y-auto custom-scroll pr-1" id="knivesInventoryContainer">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[360px] overflow-y-auto custom-scroll pr-1"
+          id="knivesInventoryContainer">
           <!-- Rendered in JS -->
         </div>
       </div>
 
       <!-- PANEL 2: HATS WARDROBE (NEW) -->
       <div id="invHatsPanel" class="hidden space-y-3">
-        <div class="p-2.5 rounded-2xl bg-pink-950/40 border border-pink-500/40 text-xs flex items-center justify-between">
+        <div
+          class="p-2.5 rounded-2xl bg-pink-950/40 border border-pink-500/40 text-xs flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="text-2xl">👑</span>
             <div>
@@ -1630,7 +1789,8 @@
         </div>
 
         <!-- Hats Scrollable Container (Compact Cards) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[360px] overflow-y-auto custom-scroll pr-1" id="hatsInventoryContainer">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[360px] overflow-y-auto custom-scroll pr-1"
+          id="hatsInventoryContainer">
           <!-- Rendered in JS -->
         </div>
       </div>

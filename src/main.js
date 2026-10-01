@@ -2,7 +2,7 @@ import { GAME } from './core/state.js';
 import { startGameLoop } from './core/gameLoop.js';
 import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, wipePlayerData, requestCloudSync } from './save/cloudSync.js';
 import { saveLocal } from './save/saveManager.js';
-import { updateHUD, initAutocareListeners, initAutomationToggleListeners } from './ui/hudView.js';
+import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting } from './ui/hudView.js';
 import { renderFactories } from './ui/factoryView.js';
 import { renderTalents, initTalentsListeners } from './ui/talentView.js';
 import { renderShop } from './ui/shopView.js';
@@ -14,7 +14,7 @@ import { initPetCanvas, triggerPetSquash, addVisualParticle, checkMeteorClick } 
 import { initModals } from './ui/modalManager.js';
 import { initAuthModal } from './ui/authModalView.js';
 import { initLeaderboardView } from './ui/leaderboardView.js';
-import { initPatchNotesListeners } from './ui/patchNotesView.js';
+import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js';
 import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
@@ -314,6 +314,12 @@ export async function bootstrap() {
   window.GAME = GAME;
   window.wipePlayerData = wipePlayerData;
   window.syncToCloudDatabase = syncToCloudDatabase;
+
+  // 13. Show welcome greeting & auto pop-up patch notes on launch
+  showWelcomeGreeting();
+  setTimeout(() => {
+    openPatchNotesModal();
+  }, 350);
 
   console.log('✅ Poop Simulator initialized successfully.');
 }

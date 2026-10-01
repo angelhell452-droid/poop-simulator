@@ -25,7 +25,8 @@ export function buildSavePayload() {
     achievements: ACHIEVEMENTS.map(a => ({ id: a.id, done: !!a.done })),
     purchasedItems: SHOP_ITEMS.filter(item => item.owned).map(i => i.id),
     knifeStats: KNIVES.map(k => ({ id: k.id, statTrak: k.statTrak || 0 })),
-    knifeStars: GAME.knifeStars || {}
+    knifeStars: GAME.knifeStars || {},
+    hatLevels: GAME.hatLevels || {}
   };
 }
 
@@ -123,6 +124,12 @@ export function applySaveDataSafely(rawData) {
 
   if (data.knifeStars && typeof data.knifeStars === 'object') {
     GAME.knifeStars = { ...data.knifeStars };
+  }
+
+  if (data.hatLevels && typeof data.hatLevels === 'object') {
+    GAME.hatLevels = { ...data.hatLevels };
+  } else if (!GAME.hatLevels) {
+    GAME.hatLevels = {};
   }
 
   events.emit('save:loaded');

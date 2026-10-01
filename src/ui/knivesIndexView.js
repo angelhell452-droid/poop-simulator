@@ -1,10 +1,15 @@
 import { GAME } from '../core/state.js';
 import { KNIVES } from '../data/knives.data.js';
-import { getKnifeStar, getKnifeSharpenCost, sharpenKnife } from '../systems/knifeService.js';
+import { FACTORIES } from '../data/factories.data.js';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js';
+import { TALENTS } from '../data/talents.data.js';
+import { getKnifeStar, getKnifeSharpenCost, sharpenKnife, getHatLevel } from '../systems/knifeService.js';
 import { saveLocal } from '../save/saveManager.js';
 import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
+import { formatNumber } from '../utils/numberFormatter.js';
 
+let currentCategory = 'knives'; // 'knives' | 'factories' | 'hats' | 'perks'
 let indexFilterRarity = 'all';
 let indexFilterStatus = 'all';
 let indexSearchQuery = '';
@@ -13,13 +18,49 @@ export function openKnivesIndexModal() {
   const modal = document.getElementById('knivesIndexModal');
   if (!modal) return;
   modal.classList.remove('hidden');
-  renderKnivesIndexBook();
+  switchIndexCategory(currentCategory);
 }
 
 export function closeKnivesIndexModal() {
   const modal = document.getElementById('knivesIndexModal');
   if (!modal) return;
   modal.classList.add('hidden');
+}
+
+export function switchIndexCategory(cat) {
+  currentCategory = cat;
+
+  const tabs = {
+    knives: document.getElementById('tabIndexKnives'),
+    factories: document.getElementById('tabIndexFactories'),
+    hats: document.getElementById('tabIndexHats'),
+    perks: document.getElementById('tabIndexPerks')
+  };
+
+  const views = {
+    knives: document.getElementById('viewIndexKnives'),
+    factories: document.getElementById('viewIndexFactories'),
+    hats: document.getElementById('viewIndexHats'),
+    perks: document.getElementById('viewIndexPerks')
+  };
+
+  for (const key in tabs) {
+    if (tabs[key]) {
+      if (key === cat) {
+        tabs[key].className = 'index-category-tab px-3 py-1.5 rounded-xl font-game text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-stone-950 shadow-md';
+      } else {
+        tabs[key].className = 'index-category-tab px-3 py-1.5 rounded-xl font-game text-xs font-bold bg-stone-900 text-stone-400 hover:text-white border border-stone-800';
+      }
+    }
+    if (views[key]) {
+      views[key].classList.toggle('hidden', key !== cat);
+    }
+  }
+
+  if (cat === 'knives') renderKnivesIndexBook();
+  else if (cat === 'factories') renderFactoriesIndex();
+  else if (cat === 'hats') renderHatsIndex();
+  else if (cat === 'perks') renderPerksIndex();
 }
 
 export function renderKnivesIndexBook() {
@@ -68,85 +109,80 @@ export function renderKnivesIndexBook() {
     const isUnlocked = unlockedSet.has(k.id);
     if (indexFilterStatus === 'unlocked' && !isUnlocked) return false;
     if (indexFilterStatus === 'locked' && isUnlocked) return false;
-
-    if (indexFilterRarity !== 'all') {
-      if (indexFilterRarity === 'common' && k.rarity !== 'common' && k.rarity !== 'mil-spec') return false;
-      else if (indexFilterRarity === 'very_rare' && k.rarity !== 'very_rare' && k.rarity !== 'restricted') return false;
-      else if (indexFilterRarity === 'godly' && k.rarity !== 'godly' && k.rarity !== 'special') return false;
-      else if (indexFilterRarity !== 'common' && indexFilterRarity !== 'very_rare' && indexFilterRarity !== 'godly' && k.rarity !== indexFilterRarity) return false;
-    }
-
+    if (indexFilterRarity !== 'all' && k.rarity !== indexFilterRarity) return false;
     if (indexSearchQuery.trim()) {
-      const q = indexSearchQuery.toLowerCase();
-      const matchName = k.name.toLowerCase().includes(q);
-      const matchRarity = k.rarityName.toLowerCase().includes(q);
-      if (!matchName && !matchRarity) return false;
+      const q = indexSearchQuery.toLowerCase().trim();
+      return k.name.toLowerCase().includes(q) || (k.caseName && k.caseName.toLowerCase().includes(q));
     }
     return true;
   });
 
-  if (filtered.length === 0) {
-    grid.innerHTML = `<div class="col-span-full py-12 text-stone-500 text-xs text-center">Ножи по выбранным фильтрам не найдены. Попробуйте сбросить фильтры!</div>`;
-    return;
-  }
+  grid.innerHTML = filtered.map(knife => {
+    const isUnlocked = unlockedSet.has(knife.id);
+    const isEquipped = GAME.equippedKnife === knife.id;
+    const star = getKnifeStar(knife.id);
+    const costInfo = getKnifeSharpenCost(knife);
 
-  grid.innerHTML = filtered.map(k => {
-    const isUnlocked = unlockedSet.has(k.id);
-    const isEquipped = GAME.equippedKnife === k.id;
-    const rarityClass = 'rarity-' + k.rarity;
+    const rarityColors = {
+      common: 'border-stone-600 bg-stone-900/60 text-stone-400',
+      rare: 'border-sky-500 bg-sky-950/40 text-sky-400',
+      very_rare: 'border-indigo-500 bg-indigo-950/40 text-indigo-400',
+      epic: 'border-purple-500 bg-purple-950/40 text-purple-400',
+      classified: 'border-pink-500 bg-pink-950/40 text-pink-400',
+      covert: 'border-red-500 bg-red-950/40 text-red-400',
+      rainbow: 'border-yellow-400 bg-gradient-to-br from-red-950/40 via-purple-950/40 to-blue-950/40 text-yellow-300',
+      celestial: 'border-cyan-400 bg-cyan-950/50 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.2)]',
+      titanium: 'border-teal-400 bg-teal-950/50 text-teal-300 shadow-[0_0_15px_rgba(45,212,191,0.2)]',
+      godly: 'border-amber-400 bg-amber-950/60 text-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.3)] animate-pulse'
+    };
 
-    if (isUnlocked) {
-      const star = getKnifeStar(k.id);
-      const costInfo = getKnifeSharpenCost(k);
-      const clickBonusPct = Math.round((k.clickMult * (1 + (star - 1) * 0.35) - 1) * 100);
-      return `
-        <div class="p-2.5 rounded-2xl border-2 ${rarityClass} shadow flex flex-col justify-between text-left relative transition hover:scale-[1.02]">
-          <div>
-            <div class="flex items-center justify-between">
-              <span class="text-2xl filter drop-shadow">${k.icon}</span>
-              <div class="flex items-center gap-1">
-                <span class="text-[9px] font-black text-amber-300">★ Lv.${star}</span>
-                <span class="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-black/60 text-yellow-300 border border-yellow-400/40">${k.rarityName}</span>
-              </div>
-            </div>
-            <div class="font-game text-xs text-yellow-200 mt-1 truncate" title="${k.name}">${k.name}</div>
-            <div class="text-[10px] text-emerald-400 font-bold mt-0.5">+${clickBonusPct}% Клик</div>
-            <div class="text-[9px] text-stone-400 font-mono mt-0.5">★ StatTrak™: ${(k.statTrak || 0)}</div>
-          </div>
-          <div class="mt-2 flex flex-col gap-1">
-            <button class="index-equip-btn w-full py-1 rounded-lg text-[10px] font-bold ${isEquipped ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-500 text-white jelly-btn'}" data-id="${k.id}">
-              ${isEquipped ? '✓ НАДЕТ' : 'НАДЕТЬ'}
-            </button>
-            <button class="index-sharpen-btn w-full py-0.5 rounded text-[9px] font-bold bg-amber-500/80 hover:bg-amber-400 text-stone-950 ${costInfo.maxReached ? 'opacity-40 cursor-not-allowed' : ''}" data-id="${k.id}" ${costInfo.maxReached ? 'disabled' : ''}>
-              ${costInfo.maxReached ? '★ МАКС' : `⭐ Заточить (${costInfo.cost} ${costInfo.symbol})`}
-            </button>
-          </div>
+    const colorClass = rarityColors[knife.rarity] || 'border-stone-700 bg-stone-900 text-stone-400';
+    const clickPct = Math.round((knife.clickMult * (1 + (star - 1) * 0.35) - 1) * 100);
+    const passPct = Math.round((knife.passiveMult * (1 + (star - 1) * 0.25) - 1) * 100);
+
+    return `
+      <div class="p-2 sm:p-2.5 rounded-2xl border-2 flex flex-col justify-between relative transition duration-200 ${isUnlocked ? colorClass : 'border-stone-800 bg-stone-950/80 opacity-60 grayscale'} ${isEquipped ? 'ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]' : ''}">
+        ${isEquipped ? '<span class="absolute top-1.5 right-1.5 text-[9px] bg-yellow-400 text-stone-950 font-black px-1.5 py-0.5 rounded-full shadow">НАДЕТ</span>' : ''}
+        ${!isUnlocked ? '<span class="absolute top-1.5 right-1.5 text-xs text-stone-500">🔒</span>' : ''}
+        
+        <div>
+          <div class="text-3xl my-1 flex justify-center filter drop-shadow select-none">${knife.icon}</div>
+          <div class="font-game text-xs font-bold truncate text-yellow-100">${knife.name}</div>
+          <div class="text-[9px] text-stone-400 truncate">${knife.caseName || 'Коллекция'}</div>
         </div>
-      `;
-    } else {
-      return `
-        <div class="p-2.5 rounded-2xl border-2 border-stone-800 bg-stone-950/80 shadow flex flex-col justify-between text-left opacity-75 relative">
-          <div>
-            <div class="flex items-center justify-between">
-              <span class="text-2xl opacity-40">🔒</span>
-              <span class="text-[8px] font-bold uppercase px-1.5 py-0.2 rounded bg-stone-900 text-stone-400 border border-stone-800">${k.rarityName}</span>
+
+        <div class="mt-2 pt-1.5 border-t border-stone-800/80">
+          ${isUnlocked ? `
+            <div class="flex justify-between items-center text-[10px] font-bold mb-1">
+              <span class="text-amber-400">★ Lv.${star}</span>
+              <span class="text-emerald-400">+${formatNumber(clickPct)}% Клик</span>
             </div>
-            <div class="font-game text-xs text-stone-500 mt-1 truncate">??? Заблокировано</div>
-            <div class="text-[10px] text-stone-500 mt-0.5">Множитель: ???</div>
-            <div class="text-[9px] text-amber-500/80 mt-1 italic">Выпадает из кейсов</div>
-          </div>
-          <div class="mt-2">
-            <div class="w-full py-1 rounded-lg text-[10px] font-bold bg-stone-900 text-stone-600 text-center border border-stone-800">
-              НЕ ОТКРЫТ
+            <div class="text-[9px] text-cyan-300 font-mono text-center mb-1.5">+${formatNumber(passPct)}% Заводы</div>
+            <div class="flex gap-1">
+              ${!isEquipped ? `
+                <button class="index-equip-btn flex-1 py-1 rounded-xl text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold transition shadow" data-id="${knife.id}">
+                  Надеть
+                </button>
+              ` : `
+                <span class="flex-1 py-1 text-center text-[10px] font-game text-yellow-300 font-bold">✓ В руке</span>
+              `}
+              <button class="index-sharpen-btn px-2 py-1 rounded-xl text-[10px] font-game ${costInfo.maxReached ? 'bg-stone-800 text-stone-500 cursor-not-allowed' : 'bg-stone-800 hover:bg-stone-700 text-yellow-300 border border-yellow-500/40'} font-bold shadow" data-id="${knife.id}" title="Заточить нож (+1 Lv)">
+                ${costInfo.maxReached ? 'MAX' : `⭐ +1 (${formatNumber(costInfo.cost)} ${costInfo.symbol})`}
+              </button>
             </div>
-          </div>
+          ` : `
+            <div class="text-[9px] text-stone-500 text-center py-1">
+              Откройте кейс <b class="text-stone-400">${knife.caseName || ''}</b>
+            </div>
+          `}
         </div>
-      `;
-    }
+      </div>
+    `;
   }).join('');
 
   grid.querySelectorAll('.index-equip-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       GAME.equippedKnife = btn.dataset.id;
       updateHUD();
       renderKnivesIndexBook();
@@ -167,6 +203,152 @@ export function renderKnivesIndexBook() {
   });
 }
 
+export function renderFactoriesIndex() {
+  const container = document.getElementById('viewIndexFactories');
+  if (!container) return;
+
+  container.innerHTML = FACTORIES.map((fac, idx) => {
+    const isUnlocked = (GAME.evoStage || 0) >= (fac.reqStage || 0);
+    const count = fac.count || 0;
+    const isActive = count > 0;
+
+    return `
+      <div class="p-3 rounded-2xl border ${isActive ? 'border-amber-500/60 bg-stone-900/90 shadow' : 'border-stone-800 bg-stone-950/70'} flex items-start gap-3">
+        <span class="text-3xl shrink-0 p-2 bg-stone-800/80 rounded-xl border border-stone-700">${fac.icon}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-1">
+            <span class="font-game text-xs font-bold ${isActive ? 'text-yellow-300' : 'text-stone-200'} truncate">#${idx + 1} ${fac.name}</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-black uppercase ${isActive ? 'bg-emerald-500 text-stone-950' : 'bg-stone-800 text-stone-400'} shrink-0">
+              ${isActive ? `${count} шт` : (isUnlocked ? '0 шт' : '🔒 Заблокировано')}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 text-[10px] text-stone-400 mt-1">
+            <span class="text-emerald-400 font-bold">+${formatNumber(fac.baseCps)}/сек</span>
+            <span>•</span>
+            <span class="text-yellow-400 font-mono">База: ${formatNumber(fac.cost)} 💨</span>
+          </div>
+          <div class="text-[9px] text-stone-500 mt-0.5">
+            Тир: <b class="text-stone-300 uppercase">${fac.tier || 'early'}</b> (Требуется форма: #${(fac.reqStage || 0) + 1})
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+export function renderHatsIndex() {
+  const container = document.getElementById('viewIndexHats');
+  if (!container) return;
+
+  const hats = SHOP_ITEMS.filter(i => i.type === 'hat');
+  container.innerHTML = hats.map(hat => {
+    const isOwned = !!hat.owned;
+    const isEquipped = GAME.equippedHat === hat.id;
+    const hatLvl = getHatLevel(hat.id);
+    const totalBoost = ((hat.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35)).toFixed(1);
+
+    return `
+      <div class="p-2.5 rounded-2xl border ${isEquipped ? 'border-pink-500 bg-pink-950/30 ring-2 ring-pink-500/50' : (isOwned ? 'border-stone-700 bg-stone-900/80' : 'border-stone-800 bg-stone-950/60 opacity-70')} flex flex-col justify-between text-left">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-3xl">${hat.icon}</span>
+            <span class="text-[9px] font-black px-1.5 py-0.5 rounded ${isEquipped ? 'bg-pink-500 text-white' : (isOwned ? 'bg-stone-800 text-pink-300' : 'bg-stone-900 text-stone-500')}">
+              ${isEquipped ? 'НАДЕТО' : (isOwned ? `💎 Lv.${hatLvl}` : 'В БУТИКЕ')}
+            </span>
+          </div>
+          <div class="font-game text-xs font-bold text-yellow-200 mt-1 truncate">${hat.name}</div>
+          <div class="text-[9px] text-pink-300 font-bold mt-0.5">${hat.desc}</div>
+        </div>
+        <div class="mt-2 pt-1 border-t border-stone-800/80 text-[10px] flex justify-between items-center">
+          <span class="text-yellow-400 font-mono font-bold">${formatNumber(hat.cost)} ✨</span>
+          <span class="text-emerald-400 font-bold">x${totalBoost} Клик</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+export function renderPerksIndex() {
+  const container = document.getElementById('viewIndexPerks');
+  if (!container) return;
+
+  const perks = SHOP_ITEMS.filter(i => i.type === 'perk');
+  
+  let html = `
+    <div class="col-span-1 sm:col-span-2 text-left mb-1">
+      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">🌟 Перки Бутика и Улучшения</h4>
+    </div>
+  `;
+
+  html += perks.map(p => {
+    const isOwned = !!p.owned;
+    return `
+      <div class="p-2.5 rounded-2xl border ${isOwned ? 'border-emerald-500/60 bg-emerald-950/20' : 'border-stone-800 bg-stone-950/80'} flex items-start gap-2.5 text-left">
+        <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${p.icon}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <span class="font-game text-xs font-bold ${isOwned ? 'text-yellow-300' : 'text-stone-300'} truncate">${p.name}</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-black ${isOwned ? 'bg-emerald-500 text-stone-950' : 'bg-stone-800 text-stone-400'}">
+              ${isOwned ? '✓ КУПЛЕНО' : `${formatNumber(p.cost)} ✨`}
+            </span>
+          </div>
+          <div class="text-[10px] text-stone-400 mt-0.5">${p.desc}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  html += `
+    <div class="col-span-1 sm:col-span-2 text-left mt-3 mb-1">
+      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">🔮 Бесконечные Усиления Бутика</h4>
+    </div>
+  `;
+
+  html += BOUTIQUE_REPEATABLES.map(b => {
+    const curLvl = GAME.boutiqueLevels?.[b.id] || 0;
+    return `
+      <div class="p-2.5 rounded-2xl border border-stone-800 bg-stone-950/80 flex items-start gap-2.5 text-left">
+        <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${b.icon}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <span class="font-game text-xs font-bold text-yellow-300 truncate">${b.name}</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-black bg-purple-900 text-purple-200">
+              Lv.${curLvl}
+            </span>
+          </div>
+          <div class="text-[10px] text-stone-400 mt-0.5">${b.desc}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  html += `
+    <div class="col-span-1 sm:col-span-2 text-left mt-3 mb-1">
+      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">📜 Священные Таланты Смыва</h4>
+    </div>
+  `;
+
+  html += TALENTS.map(t => {
+    const curLvl = t.level || 0;
+    return `
+      <div class="p-2.5 rounded-2xl border border-stone-800 bg-stone-950/80 flex items-start gap-2.5 text-left">
+        <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${t.icon}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <span class="font-game text-xs font-bold text-yellow-300 truncate">${t.name}</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-black bg-amber-950 text-amber-300 border border-amber-800/50">
+              Lv.${curLvl} / ${t.max}
+            </span>
+          </div>
+          <div class="text-[10px] text-stone-400 mt-0.5">${t.desc}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = html;
+}
+
 export function initKnivesIndexListeners() {
   const btnOpenIndexModal = document.getElementById('btnOpenKnivesIndexModal');
   if (btnOpenIndexModal) btnOpenIndexModal.addEventListener('click', openKnivesIndexModal);
@@ -176,6 +358,12 @@ export function initKnivesIndexListeners() {
 
   const btnCloseIndexModal = document.getElementById('btnCloseKnivesIndex');
   if (btnCloseIndexModal) btnCloseIndexModal.addEventListener('click', closeKnivesIndexModal);
+
+  // Category Tabs
+  document.getElementById('tabIndexKnives')?.addEventListener('click', () => switchIndexCategory('knives'));
+  document.getElementById('tabIndexFactories')?.addEventListener('click', () => switchIndexCategory('factories'));
+  document.getElementById('tabIndexHats')?.addEventListener('click', () => switchIndexCategory('hats'));
+  document.getElementById('tabIndexPerks')?.addEventListener('click', () => switchIndexCategory('perks'));
 
   const searchInput = document.getElementById('knifeIndexSearchInput');
   if (searchInput) {

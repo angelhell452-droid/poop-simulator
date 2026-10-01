@@ -5,7 +5,7 @@ export function getDefaultGameState() {
   if (!playerId) {
     playerId = 'poop_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
     if (typeof localStorage !== 'undefined') {
-      try { localStorage.setItem('PoopSim_PlayerId', playerId); } catch (e) {}
+      try { localStorage.setItem('PoopSim_PlayerId', playerId); } catch (e) { }
     }
   }
   let playerName = (typeof localStorage !== 'undefined' ? localStorage.getItem('PoopSim_PlayerName') : null) || ('Игрок #' + playerId.substring(playerId.length - 4));
@@ -14,7 +14,7 @@ export function getDefaultGameState() {
     saveVersion: 2,
     playerId: playerId,
     playerName: playerName,
-    
+
     biomass: 0,
     cycleBiomass: 0,
     allTimeBiomass: 0,
@@ -25,46 +25,48 @@ export function getDefaultGameState() {
     totalPrestiges: 0,
     transcendPlungers: 0,
     totalTranscend: 0,
-    
+
     evoStage: 0,
     archetype: 'balanced', // 'balanced' | 'clicker' | 'tycoon' | 'gambler' | 'combo'
-    
+
     hunger: 100,
     clean: 100,
     happy: 100,
     autoFeed: false,
     autoWash: false,
     autoTickle: false,
-    
+
     totalClicks: 0,
     lastFlushTime: 0,
     equippedHat: null,
-    
+
     autoclickerActive: false,
     autoclickerSpeed: 1000,
-    
+
     gameMode: 'boys', // 'boys' | 'girls'
     girlyMode: false,
     buyMultiplier: 1, // 1 | 10 | 100 | 'max'
-    
+
     equippedKnife: null,
     unlockedKnives: [],
     knifeStars: {},
+    hatLevels: {},
     casesOpened: 0,
-    
+    lastDailyTop10Claim: 0,
+
     comboHeat: 0,
     turboRushTime: 0,
     turboCount: 0,
     meteorsCaught: 0,
     currentRunPeakGPS: 0,
     boutiqueLevels: {},
-    
+
     lastSaveTime: Date.now(),
     lastActiveTime: Date.now(),
-    
+
     autoBuyerEnabled: true,
     autoEvolutionEnabled: true,
-    
+
     transcendUpgrades: {
       cosmicSynergy: 0,
       autoBuyer: false,

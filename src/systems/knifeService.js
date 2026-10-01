@@ -1,6 +1,7 @@
 import { GAME } from '../core/state.js';
 import { KNIVES } from '../data/knives.data.js';
-import { getKnifeStar } from '../economy/production.js';
+import { SHOP_ITEMS } from '../data/shop.data.js';
+import { getKnifeStar, getHatLevel } from '../economy/production.js';
 import { events } from '../core/events.js';
 
 export function getKnifeSharpenCost(knife) {
@@ -8,15 +9,15 @@ export function getKnifeSharpenCost(knife) {
   if (currentStar >= 25) return { maxReached: true, cost: 0, currency: 'rolls', symbol: '🧻' };
 
   if (knife.rarity === 'celestial' || knife.rarity === 'godly') {
-    const cost = Math.max(1, Math.floor(2 * Math.pow(1.35, currentStar - 1)));
+    const cost = Math.max(5, Math.floor(5 * Math.pow(1.60, currentStar - 1)));
     return { maxReached: false, cost, currency: 'plungers', symbol: '🪠' };
   } else {
-    let baseCost = 15;
-    let growth = 1.35;
-    if (knife.rarity === 'restricted') { baseCost = 35; growth = 1.38; }
-    if (knife.rarity === 'classified') { baseCost = 80; growth = 1.40; }
-    if (knife.rarity === 'covert') { baseCost = 250; growth = 1.42; }
-    if (knife.rarity === 'special') { baseCost = 800; growth = 1.45; }
+    let baseCost = 50;
+    let growth = 1.65;
+    if (knife.rarity === 'restricted') { baseCost = 120; growth = 1.70; }
+    if (knife.rarity === 'classified') { baseCost = 300; growth = 1.75; }
+    if (knife.rarity === 'covert') { baseCost = 750; growth = 1.80; }
+    if (knife.rarity === 'special') { baseCost = 2000; growth = 1.85; }
     const cost = Math.floor(baseCost * Math.pow(growth, currentStar - 1));
     return { maxReached: false, cost, currency: 'rolls', symbol: '🧻' };
   }
@@ -101,4 +102,37 @@ export function equipBestKnife() {
   return { success: true, knife: best };
 }
 
-export { getKnifeStar };
+export function getHatInlayCost(hat) {
+  if (!hat) return { maxReached: true, cost: 0, currency: 'sparkles', symbol: '✨' };
+  const currentLvl = getHatLevel(hat.id);
+  if (currentLvl >= 25) return { maxReached: true, cost: 0, currency: 'sparkles', symbol: '✨' };
+
+  const baseCost = Math.max(1500, Math.floor((hat.cost || 5000) * 0.35));
+  const growth = 1.75;
+  const cost = Math.floor(baseCost * Math.pow(growth, currentLvl - 1));
+  return { maxReached: false, cost, currency: 'sparkles', symbol: '✨' };
+}
+
+export function inlayHat(hatId) {
+  const hat = SHOP_ITEMS.find(i => i.id === hatId && i.type === 'hat');
+  if (!hat) return { success: false, msg: 'Шапка не найдена!' };
+
+  const costInfo = getHatInlayCost(hat);
+  if (costInfo.maxReached) {
+    return { success: false, msg: 'Эта шапка уже инкрустирована до максимума (💎 Lv.25)!' };
+  }
+
+  if ((GAME.sparkles || 0) < costInfo.cost) {
+    return { success: false, msg: `Недостаточно Блестяшек (✨)! Требуется: ${costInfo.cost.toLocaleString('ru-RU')} ✨` };
+  }
+
+  GAME.sparkles -= costInfo.cost;
+  if (!GAME.hatLevels) GAME.hatLevels = {};
+  GAME.hatLevels[hatId] = (GAME.hatLevels[hatId] || 1) + 1;
+
+  events.emit('hat:inlayed', { hat, newLevel: GAME.hatLevels[hatId] });
+  return { success: true, newLevel: GAME.hatLevels[hatId] };
+}
+
+export { getKnifeStar, getHatLevel };
+

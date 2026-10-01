@@ -176,12 +176,12 @@ export function renderTranscendRelics() {
       const cost = upg.costStep ? (upg.cost + lvl * upg.costStep) : upg.cost;
       const canBuy = !isLocked && !isMax && ((GAME.transcendPlungers || 0) >= cost);
 
-      const lockBadge = isLocked 
+      const lockBadge = isLocked
         ? `<span class="text-[9px] text-red-400 font-bold block mt-0.5">🔒 Требуется ${upg.reqTranscend} Прорывов (Сделано: ${transcends})</span>`
         : '';
 
-      const btnText = isLocked 
-        ? '🔒' 
+      const btnText = isLocked
+        ? '🔒'
         : (isMax ? 'МАКС' : `${formatNumber(cost)} <span class="plunger-icon"></span>`);
 
       const row = document.createElement('div');

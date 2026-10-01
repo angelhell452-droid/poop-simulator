@@ -361,13 +361,13 @@ export function renderTranscendUpgrades() {
 
       const row = document.createElement('div');
       row.className = `p-2.5 rounded-2xl border flex items-center justify-between shadow-sm transition ${isLocked ? 'bg-indigo-950/30 border-stone-800 opacity-60' : 'bg-indigo-950/60 border-cyan-500/40'}`;
-      
-      const lockBadge = isLocked 
+
+      const lockBadge = isLocked
         ? `<span class="text-[9px] text-red-400 font-bold block mt-0.5">🔒 Требуется ${upg.reqTranscend} Прорывов (Сделано: ${transcends})</span>`
         : '';
 
-      const btnText = isLocked 
-        ? '🔒' 
+      const btnText = isLocked
+        ? '🔒'
         : (isMax ? 'МАКС' : `${formatNumber(cost)} <span class="plunger-icon"></span>`);
 
       row.innerHTML = `

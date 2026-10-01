@@ -15,6 +15,11 @@ export function getKnifeStar(knifeId) {
   return GAME.knifeStars[knifeId] || 1;
 }
 
+export function getHatLevel(hatId) {
+  if (!GAME.hatLevels || !hatId) return 1;
+  return GAME.hatLevels[hatId] || 1;
+}
+
 export function getClickPower() {
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
 
@@ -81,9 +86,10 @@ export function getClickPower() {
 
   const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.50;
 
-  // Hat click boost from Boutique
+  // Hat click boost from Boutique (enhanced with Gem Inlaying)
   const equippedHatItem = GAME.equippedHat ? SHOP_ITEMS.find(i => i.id === GAME.equippedHat) : null;
-  const hatClickBoost = equippedHatItem ? (equippedHatItem.clickBoost || 1.0) : 1.0;
+  const hatLvl = equippedHatItem ? getHatLevel(equippedHatItem.id) : 1;
+  const hatClickBoost = equippedHatItem ? ((equippedHatItem.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35)) : 1.0;
 
   // Boutique Perk: Omniversal Wealth (+100% all income)
   const omniWealthActive = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned;
