@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.13 PRO | Адаптивный UI для Телефонов и Планшетов</title>
+  <title>Poop Simulator v4.9.14 PRO | Фильтры Книги Ножей видны</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.13 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.14 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -1280,7 +1280,7 @@
         </div>
 
         <!-- Filters & Search Bar -->
-        <div class="flex flex-col sm:flex-row gap-2 items-center justify-between mb-2">
+        <div class="flex flex-col sm:flex-row gap-2 items-center justify-between mb-0 shrink-0">
           <!-- Search Input -->
           <div class="w-full sm:w-64 relative">
             <input type="text" id="knifeIndexSearchInput" placeholder="🔍 Поиск ножа по названию..."
@@ -1300,41 +1300,44 @@
         </div>
 
         <!-- Rarity Filter Pills Scrollable -->
-        <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1.5 mb-2 text-[10px] font-bold"
-          id="knifeRarityFiltersBar">
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-yellow-500 text-stone-950 font-black border border-yellow-400"
-            data-rarity="all">Все (200)</button>
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-stone-800 text-stone-300 border border-stone-700 hover:border-stone-500"
-            data-rarity="common">Обычный (20)</button>
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-sky-950 text-sky-300 border border-sky-600/60 hover:border-sky-400"
-            data-rarity="rare">Редкий (25)</button>
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-indigo-950 text-indigo-300 border border-indigo-600/60 hover:border-indigo-400"
-            data-rarity="very_rare">Очень редкий (25)</button>
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-purple-950 text-purple-300 border border-purple-600/60 hover:border-purple-400"
-            data-rarity="epic">Эпичный (30)</button>
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-pink-950 text-pink-300 border border-pink-600/60 hover:border-pink-400"
-            data-rarity="classified">Засекреченный (25)</button>
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-red-950 text-red-300 border border-red-600/60 hover:border-red-400"
-            data-rarity="covert">Тайный (25)</button>
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-gradient-to-r from-red-900/60 via-purple-900/60 to-blue-900/60 text-yellow-300 border border-yellow-400 hover:brightness-125"
-            data-rarity="rainbow">Радужный (20)</button>
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-cyan-950 text-cyan-300 border border-cyan-400 hover:brightness-125"
-            data-rarity="celestial">Небесный (15)</button>
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-teal-950 text-teal-300 border border-teal-400 hover:brightness-125"
-            data-rarity="titanium">Титановый (10)</button>
-          <button
-            class="index-rarity-filter-btn px-2 py-0.5 rounded-full shrink-0 bg-yellow-950 text-yellow-300 border border-yellow-400 hover:brightness-125 font-black"
-            data-rarity="godly">Божественный (5)</button>
+        <div class="shrink-0 bg-stone-900/80 border border-stone-700 rounded-xl px-2 py-2 mt-2 mb-2">
+          <div class="text-[9px] text-stone-500 font-bold uppercase tracking-wider mb-1.5 select-none">Фильтр по редкости:</div>
+          <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-0.5 text-[10px] font-bold"
+            id="knifeRarityFiltersBar">
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-yellow-500 text-stone-950 font-black border border-yellow-400"
+              data-rarity="all">Все (200)</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-stone-800 text-stone-300 border border-stone-600 hover:border-stone-400"
+              data-rarity="common">Обычный (20)</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-sky-950 text-sky-300 border border-sky-500/70 hover:border-sky-400"
+              data-rarity="rare">Редкий (25)</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-indigo-950 text-indigo-300 border border-indigo-500/70 hover:border-indigo-400"
+              data-rarity="very_rare">Очень редкий (25)</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-purple-950 text-purple-300 border border-purple-500/70 hover:border-purple-400"
+              data-rarity="epic">Эпичный (30)</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-pink-950 text-pink-300 border border-pink-500/70 hover:border-pink-400"
+              data-rarity="classified">Засекреченный (25)</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-red-950 text-red-300 border border-red-500/70 hover:border-red-400"
+              data-rarity="covert">Тайный (25)</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-gradient-to-r from-red-900/60 via-purple-900/60 to-blue-900/60 text-yellow-300 border border-yellow-400 hover:brightness-125"
+              data-rarity="rainbow">Радужный (20)</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-cyan-950 text-cyan-300 border border-cyan-400 hover:brightness-125"
+              data-rarity="celestial">Небесный (15)</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-teal-950 text-teal-300 border border-teal-400 hover:brightness-125"
+              data-rarity="titanium">Титановый (10)</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-yellow-950 text-yellow-300 border border-yellow-400 hover:brightness-125 font-black"
+              data-rarity="godly">Божественный (5)</button>
+          </div>
         </div>
 
         <!-- Knives Cards Grid (Scrollable viewport for 200 knives) -->
