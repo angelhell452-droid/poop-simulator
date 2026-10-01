@@ -7,7 +7,7 @@ import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife } fro
 import { saveLocal } from '../save/saveManager.js';
 import { requestCloudSync } from '../save/cloudSync.js';
 import { updateHUD } from './hudView.js';
-import { renderCharacterInventory, openCharacterInventoryModal } from './characterInventoryView.js';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js';
 import { events } from '../core/events.js';
 
 let csgoAudioEnabled = true;
@@ -250,6 +250,47 @@ export function openCaseRoulette(caseId) {
   }, 750);
 }
 
+export const KNIFE_RARITY_WEIGHTS = {
+  godly: 0.15,
+  special: 0.25,
+  titanium: 0.50,
+  celestial: 1.20,
+  rainbow: 2.50,
+  covert: 6.00,
+  classified: 14.00,
+  epic: 24.00,
+  very_rare: 36.00,
+  restricted: 36.00,
+  rare: 50.00,
+  common: 70.00,
+  'mil-spec': 70.00
+};
+
+export function getKnifePoolWithChances(poolKnives) {
+  let totalWeight = 0;
+  poolKnives.forEach(k => {
+    totalWeight += (KNIFE_RARITY_WEIGHTS[k.rarity] || 15.0);
+  });
+
+  return poolKnives.map(k => {
+    const weight = KNIFE_RARITY_WEIGHTS[k.rarity] || 15.0;
+    const chancePercent = totalWeight > 0 ? (weight / totalWeight) * 100 : (100 / poolKnives.length);
+    return { knife: k, weight, chancePercent };
+  });
+}
+
+export function pickWeightedKnife(poolKnives) {
+  if (!poolKnives || poolKnives.length === 0) return null;
+  const list = getKnifePoolWithChances(poolKnives);
+  const totalWeight = list.reduce((sum, item) => sum + item.weight, 0);
+  let rand = Math.random() * totalWeight;
+  for (const item of list) {
+    if (rand <= item.weight) return item.knife;
+    rand -= item.weight;
+  }
+  return list[list.length - 1].knife;
+}
+
 export function setupAndRunRouletteTape(caseObj, instantSkip = false) {
   const track = document.getElementById('rouletteTrack');
   if (!track) return;
@@ -258,40 +299,7 @@ export function setupAndRunRouletteTape(caseObj, instantSkip = false) {
   track.style.filter = 'none';
 
   const poolKnives = caseObj.pool.map(id => KNIVES.find(k => k.id === id)).filter(Boolean);
-  const roll = Math.random();
-
-  const godlys = poolKnives.filter(k => k.rarity === 'godly' || k.rarity === 'special');
-  const titaniums = poolKnives.filter(k => k.rarity === 'titanium');
-  const celestials = poolKnives.filter(k => k.rarity === 'celestial');
-  const rainbows = poolKnives.filter(k => k.rarity === 'rainbow');
-  const coverts = poolKnives.filter(k => k.rarity === 'covert');
-  const classifieds = poolKnives.filter(k => k.rarity === 'classified');
-  const epics = poolKnives.filter(k => k.rarity === 'epic');
-  const veryRares = poolKnives.filter(k => k.rarity === 'very_rare' || k.rarity === 'restricted');
-  const rares = poolKnives.filter(k => k.rarity === 'rare');
-  const commons = poolKnives.filter(k => k.rarity === 'common' || k.rarity === 'mil-spec');
-
-  if (roll < 0.04 && godlys.length > 0) {
-    rouletteWinningKnife = godlys[Math.floor(Math.random() * godlys.length)];
-  } else if (roll < 0.09 && titaniums.length > 0) {
-    rouletteWinningKnife = titaniums[Math.floor(Math.random() * titaniums.length)];
-  } else if (roll < 0.16 && celestials.length > 0) {
-    rouletteWinningKnife = celestials[Math.floor(Math.random() * celestials.length)];
-  } else if (roll < 0.25 && rainbows.length > 0) {
-    rouletteWinningKnife = rainbows[Math.floor(Math.random() * rainbows.length)];
-  } else if (roll < 0.38 && coverts.length > 0) {
-    rouletteWinningKnife = coverts[Math.floor(Math.random() * coverts.length)];
-  } else if (roll < 0.54 && classifieds.length > 0) {
-    rouletteWinningKnife = classifieds[Math.floor(Math.random() * classifieds.length)];
-  } else if (roll < 0.70 && epics.length > 0) {
-    rouletteWinningKnife = epics[Math.floor(Math.random() * epics.length)];
-  } else if (roll < 0.85 && veryRares.length > 0) {
-    rouletteWinningKnife = veryRares[Math.floor(Math.random() * veryRares.length)];
-  } else if (rares.length > 0) {
-    rouletteWinningKnife = rares[Math.floor(Math.random() * rares.length)];
-  } else {
-    rouletteWinningKnife = (commons.length > 0 ? commons : poolKnives)[Math.floor(Math.random() * (commons.length > 0 ? commons : poolKnives).length)];
-  }
+  rouletteWinningKnife = pickWeightedKnife(poolKnives) || poolKnives[0];
 
   const winnerIndex = 48;
   currentWinnerIndex = winnerIndex;
@@ -485,27 +493,32 @@ function onRouletteFinished() {
   if (!GAME.knifeStars) GAME.knifeStars = {};
   let isDuplicate = false;
   let star = 1;
+  let duplicateCashback = 0;
+  const isPlungers = activeRouletteCase?.currency === 'plungers';
+  const currSym = isPlungers ? '🪠' : '🧻';
+
   if (!GAME.unlockedKnives.includes(rouletteWinningKnife.id)) {
     GAME.unlockedKnives.push(rouletteWinningKnife.id);
     GAME.knifeStars[rouletteWinningKnife.id] = 1;
     star = 1;
   } else {
     isDuplicate = true;
-    const cur = GAME.knifeStars[rouletteWinningKnife.id] || 1;
-    if (cur < 25) {
-      GAME.knifeStars[rouletteWinningKnife.id] = cur + 1;
-      star = cur + 1;
+    star = GAME.knifeStars[rouletteWinningKnife.id] || 1;
+    // 50% Cashback of case cost
+    duplicateCashback = Math.max(1, Math.round((activeRouletteCase ? activeRouletteCase.cost : 10) * 0.5));
+    if (isPlungers) {
+      GAME.transcendPlungers = (GAME.transcendPlungers || 0) + duplicateCashback;
     } else {
-      star = 25;
+      GAME.prestigeRolls = (GAME.prestigeRolls || 0) + duplicateCashback;
     }
   }
 
   const rarityEl = document.getElementById('rouletteResultRarity');
   if (rarityEl) {
     if (isDuplicate) {
-      rarityEl.textContent = `${rouletteWinningKnife.rarityName} (ДУБЛИКАТ! ★ Звезда повышена до Lv.${star})`;
+      rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${rouletteWinningKnife.rarityName}</span> • <span class="text-yellow-400 font-bold">🔁 ДУБЛИКАТ! (Кэшбэк 50%: +${formatNumber(duplicateCashback)} ${currSym})</span>`;
     } else {
-      rarityEl.textContent = `${rouletteWinningKnife.rarityName} (НОВЫЙ НОЖ! ★ Lv.1)`;
+      rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${rouletteWinningKnife.rarityName}</span> • <span class="text-emerald-400 font-bold">✨ НОВЫЙ НОЖ! (★ Lv.1)</span>`;
     }
   }
 
@@ -514,6 +527,11 @@ function onRouletteFinished() {
 
   const pbEl = document.getElementById('rouletteResultPassiveBoost');
   if (pbEl) pbEl.textContent = `+${Math.round((rouletteWinningKnife.passiveMult * (1 + (star - 1) * 0.25) - 1) * 100)}% Заводы`;
+
+  showKnifeToast(isDuplicate
+    ? `🔁 Дубликат "${rouletteWinningKnife.name}"! Кэшбэк 50%: +${formatNumber(duplicateCashback)} ${currSym}`
+    : `🎉 Новый нож получен: ${rouletteWinningKnife.name}!`
+  );
 
   GAME.casesOpened = (GAME.casesOpened || 0) + 1;
   saveLocal();
@@ -569,26 +587,27 @@ export function renderCasesSystem() {
         : '';
 
       const currIcon = c.currency === 'plungers' ? '<span class="plunger-icon"></span>' : '<span class="roll-icon"></span>';
-      const currSymbol = c.currency === 'plungers' ? '🪠' : '🧻';
       const btnText = !isUnlocked
         ? `🔒 ${c.reqTranscend ? `${c.reqTranscend} Прорыв` : `${c.reqPrestiges} Смыв`}`
-        : (hasCurrency ? `Открыть (${formatNumber(c.cost)} ${currSymbol}) 🎰` : `Мало ${currSymbol} (${formatNumber(c.cost)})`);
+        : (hasCurrency ? `Открыть 🎰` : `Мало валюты ❌`);
 
       return `
-        <div class="p-3 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-lg flex flex-col justify-between relative overflow-hidden ${!isUnlocked ? 'opacity-70 grayscale-[25%]' : ''}">
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-xl flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${!isUnlocked ? 'opacity-70 grayscale-[25%]' : ''}">
           <div>
-            <div class="flex items-center justify-between mb-1 gap-2">
-              <div class="flex items-center gap-1.5 shrink-0">
-                <span class="text-2xl">${c.icon}</span>
-                <button class="case-info-btn w-6 h-6 rounded-full bg-stone-900/90 hover:bg-stone-800 text-yellow-300 border border-yellow-400/70 flex items-center justify-center text-xs font-black transition shadow jelly-btn cursor-pointer" data-case="${c.id}" title="Просмотреть шансы выпадения и список ножей">!</button>
+            <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-white/10 gap-2">
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="text-3xl select-none filter drop-shadow">${c.icon}</span>
+                <button class="case-info-btn w-6 h-6 rounded-full bg-stone-900/90 hover:bg-stone-800 text-yellow-300 border border-yellow-400/80 flex items-center justify-center text-xs font-black transition shadow jelly-btn cursor-pointer" data-case="${c.id}" title="Просмотреть шансы выпадения и список ножей">!</button>
               </div>
-              <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-stone-900/90 text-yellow-300 border border-yellow-500/40 inline-flex items-center gap-1 shrink-0 whitespace-nowrap shadow-sm">${formatNumber(c.cost)} ${currIcon}</span>
+              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-stone-950/90 text-yellow-300 border border-yellow-500/50 inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap shadow-sm">${formatNumber(c.cost)} ${currIcon}</span>
             </div>
-            <div class="font-game text-xs text-yellow-200 mt-1 truncate">${c.name}</div>
-            <div class="text-[10px] text-stone-300 mt-0.5 leading-snug line-clamp-2">${c.desc}</div>
-            ${lockBadge}
+            <div class="text-center my-1.5 px-1">
+              <div class="font-game text-sm text-yellow-200 font-bold truncate tracking-wide">${c.name}</div>
+              <div class="text-[11px] text-stone-300 mt-1 leading-snug line-clamp-2">${c.desc}</div>
+              ${lockBadge}
+            </div>
           </div>
-          <button class="open-case-btn mt-3 w-full py-1.5 px-2 rounded-xl font-game text-xs transition jelly-btn truncate ${canOpen ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${canOpen ? '' : 'disabled'}>
+          <button class="open-case-btn mt-3.5 w-full py-2 px-3 rounded-xl font-game text-xs font-bold transition jelly-btn truncate shadow-md ${canOpen ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${canOpen ? '' : 'disabled'}>
             ${btnText}
           </button>
         </div>
@@ -635,35 +654,16 @@ export function openCasePreviewModal(caseId) {
   if (listEl) {
     listEl.innerHTML = '';
     const poolKnives = caseObj.pool.map(id => KNIVES.find(k => k.id === id)).filter(Boolean);
+    const poolWithChances = getKnifePoolWithChances(poolKnives);
 
-    // Tier weights matching roulette probability model
-    const tierWeights = {
-      godly: 4,
-      special: 4,
-      titanium: 5,
-      celestial: 7,
-      rainbow: 9,
-      covert: 13,
-      classified: 16,
-      epic: 16,
-      very_rare: 15,
-      restricted: 15,
-      rare: 15,
-      common: 15,
-      'mil-spec': 15
-    };
+    // Sort by rarity (rarest knives first), then by clickMult descending
+    poolWithChances.sort((a, b) => (a.weight - b.weight) || (b.knife.clickMult - a.knife.clickMult));
 
-    let totalWeight = 0;
-    poolKnives.forEach(k => {
-      totalWeight += (tierWeights[k.rarity] || 10);
-    });
-
-    // Sort by power descending
-    poolKnives.sort((a, b) => (b.power || 0) - (a.power || 0));
-
-    poolKnives.forEach(knife => {
-      const w = tierWeights[knife.rarity] || 10;
-      const pct = totalWeight > 0 ? ((w / totalWeight) * 100).toFixed(1) : (100 / poolKnives.length).toFixed(1);
+    poolWithChances.forEach(item => {
+      const knife = item.knife;
+      const clickPct = Math.round(((knife.clickMult || 1.0) - 1) * 100);
+      const passPct = Math.round(((knife.passiveMult || 1.0) - 1) * 100);
+      const pct = item.chancePercent < 1.0 ? item.chancePercent.toFixed(2) : item.chancePercent.toFixed(1);
 
       let rColor = 'border-stone-700 bg-stone-900/80';
       let badgeColor = 'bg-stone-800 text-stone-300';
@@ -703,9 +703,12 @@ export function openCasePreviewModal(caseId) {
               <span class="font-bold text-xs text-stone-100 truncate">${knife.name}</span>
               <span class="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${badgeColor}">${knife.rarityName}</span>
             </div>
-            <div class="text-[10px] text-stone-400 mt-0.5 flex items-center gap-2 flex-wrap">
-              <span>Сила клика: <b class="text-amber-300">+${formatNumber(knife.clickPower || 0)}</b></span>
-              <span>Пассивный CPS: <b class="text-emerald-300">+${formatNumber(knife.passiveBoost || 0)}/с</b></span>
+            <div class="text-[10px] text-stone-400 mt-1 flex items-center gap-2 flex-wrap font-mono">
+              <span>Клик: <b class="text-emerald-300 font-bold">+${formatNumber(clickPct)}%</b></span>
+              <span class="text-stone-600">•</span>
+              <span>Заводы: <b class="text-cyan-300 font-bold">+${formatNumber(passPct)}%</b></span>
+              <span class="text-stone-600">•</span>
+              <span>Множитель: <b class="text-amber-300 font-bold">x${knife.clickMult}</b></span>
             </div>
           </div>
         </div>

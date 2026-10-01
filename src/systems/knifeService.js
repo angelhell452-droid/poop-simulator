@@ -5,23 +5,35 @@ import { getKnifeStar, getHatLevel } from '../economy/production.js';
 import { events } from '../core/events.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 
-export function getKnifeSharpenCost(knife) {
-  const currentStar = getKnifeStar(knife.id);
-  if (currentStar >= 25) return { maxReached: true, cost: 0, currency: 'rolls', symbol: '🧻' };
+const BASE_RARITY_SPARKLES = {
+  common: 500,
+  rare: 1500,
+  very_rare: 5000,
+  restricted: 5000,
+  epic: 15000,
+  classified: 45000,
+  covert: 120000,
+  rainbow: 350000,
+  titanium: 800000,
+  celestial: 1800000,
+  godly: 3500000,
+  special: 3500000
+};
 
-  if (knife.rarity === 'celestial' || knife.rarity === 'godly') {
-    const cost = Math.max(5, Math.floor(5 * Math.pow(1.60, currentStar - 1)));
-    return { maxReached: false, cost, currency: 'plungers', symbol: '🪠' };
-  } else {
-    let baseCost = 50;
-    let growth = 1.65;
-    if (knife.rarity === 'restricted') { baseCost = 120; growth = 1.70; }
-    if (knife.rarity === 'classified') { baseCost = 300; growth = 1.75; }
-    if (knife.rarity === 'covert') { baseCost = 750; growth = 1.80; }
-    if (knife.rarity === 'special') { baseCost = 2000; growth = 1.85; }
-    const cost = Math.floor(baseCost * Math.pow(growth, currentStar - 1));
-    return { maxReached: false, cost, currency: 'rolls', symbol: '🧻' };
-  }
+export function getKnifeSharpenCost(knifeOrId, explicitStar = null) {
+  const knife = typeof knifeOrId === 'string' ? KNIVES.find(k => k.id === knifeOrId) : knifeOrId;
+  if (!knife) return { maxReached: true, cost: 0, currency: 'sparkles', symbol: '✨' };
+
+  const currentStar = explicitStar !== null && explicitStar !== undefined ? explicitStar : getKnifeStar(knife.id);
+  if (currentStar >= 25) return { maxReached: true, cost: 0, currency: 'sparkles', symbol: '✨' };
+
+  const baseCost = BASE_RARITY_SPARKLES[knife.rarity] || 500;
+  // Scaled by knife click multiplier power
+  const powerFactor = 1 + (knife.clickMult || 1) * 0.05;
+  const growth = 1.45;
+  const cost = Math.max(500, Math.floor(baseCost * powerFactor * Math.pow(growth, currentStar - 1)));
+
+  return { maxReached: false, cost, currency: 'sparkles', symbol: '✨' };
 }
 
 export function sharpenKnife(knifeId) {
@@ -33,17 +45,10 @@ export function sharpenKnife(knifeId) {
     return { success: false, msg: 'Этот нож уже имеет максимальный уровень заточки (★ Lv.25)!' };
   }
 
-  if (costInfo.currency === 'plungers') {
-    if ((GAME.transcendPlungers || 0) < costInfo.cost) {
-      return { success: false, msg: `Недостаточно Астральных Вантузов (🪠)! Требуется: ${costInfo.cost} 🪠` };
-    }
-    GAME.transcendPlungers -= costInfo.cost;
-  } else {
-    if ((GAME.prestigeRolls || 0) < costInfo.cost) {
-      return { success: false, msg: `Недостаточно Золотых Втулок (🧻)! Требуется: ${costInfo.cost} 🧻` };
-    }
-    GAME.prestigeRolls -= costInfo.cost;
+  if ((GAME.sparkles || 0) < costInfo.cost) {
+    return { success: false, msg: `Недостаточно Блестяшек (✨)! Требуется: ${formatNumber(costInfo.cost)} ✨` };
   }
+  GAME.sparkles -= costInfo.cost;
 
   if (!GAME.knifeStars) GAME.knifeStars = {};
   GAME.knifeStars[knifeId] = (GAME.knifeStars[knifeId] || 1) + 1;

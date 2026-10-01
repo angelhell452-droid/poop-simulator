@@ -299,6 +299,14 @@ export async function bootstrap() {
   // 10. Start High-Resolution Game Loop (100ms)
   startGameLoop();
 
+  // Dynamic live chronicles update on any evolution
+  events.on('evolution:success', () => {
+    const panelEvo = document.getElementById('panelEvo');
+    if (panelEvo && !panelEvo.classList.contains('hidden')) {
+      renderEvoChronicles();
+    }
+  });
+
   // 11. Auto-sync to Cloudflare D1 every 10s
   setInterval(() => {
     syncToCloudDatabase();

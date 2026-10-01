@@ -522,13 +522,17 @@ export function catchGoldenMeteor() {
     GAME.cycleBiomass += burst;
     label = `💰 ЗОЛОТОЙ ВЗРЫВ: +${formatNumber(burst)} 💨!`;
   } else if (roll < 0.90) {
-    const spGain = Math.round((75 + Math.random() * 175) * rewardMult);
-    GAME.sparkles += spGain;
-    label = `✨ ЗВЕЗДНЫЙ ДОЖДЬ: +${spGain} Блестяшек!`;
+    const stageMultiplier = 1 + (GAME.evoStage || 0) * 0.5;
+    const prestigeMultiplier = 1 + (GAME.totalPrestiges || 0) * 0.35 + (GAME.totalTranscend || 0) * 2.5;
+    const baseSparkles = (350 + Math.random() * 450) * stageMultiplier * prestigeMultiplier * rewardMult;
+    const spGain = Math.max(500, Math.round(baseSparkles));
+    GAME.sparkles = (GAME.sparkles || 0) + spGain;
+    label = `✨ ЗВЕЗДНЫЙ ДОЖДЬ: +${formatNumber(spGain)} Блестяшек!`;
   } else {
-    const rollGain = Math.round((5 + Math.random() * 20) * rewardMult);
-    GAME.prestigeRolls += rollGain;
-    label = `🧻 СВЯЩЕННЫЙ РУЛОН: +${rollGain} Втулок Судьбы!`;
+    const rollMultiplier = 1 + (GAME.totalPrestiges || 0) * 0.15 + (GAME.totalTranscend || 0) * 1.5;
+    const rollGain = Math.max(10, Math.round((15 + Math.random() * 35) * rollMultiplier * rewardMult));
+    GAME.prestigeRolls = (GAME.prestigeRolls || 0) + rollGain;
+    label = `🧻 СВЯЩЕННЫЙ РУЛОН: +${formatNumber(rollGain)} Втулок Судьбы!`;
   }
 
   addVisualParticle(label, '#facc15', 1.6, 2.2, -2.5);

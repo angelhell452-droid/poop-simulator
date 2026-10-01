@@ -78,7 +78,7 @@ export function getAffordableFactoryInfo(fac) {
 
   if (isMax) {
     if (GAME.biomass < costCurrent) {
-      return { count: 1, totalCost: Math.round(costCurrent), canBuy: false };
+      return { count: 1, totalCost: Math.round(costCurrent), singleCost: Math.round(costCurrent), canBuy: false };
     }
     let maxM = Math.floor(Math.log(1 + (GAME.biomass * (r - 1)) / costCurrent) / Math.log(r));
     maxM = Math.max(1, Math.min(100000, maxM));
@@ -87,7 +87,7 @@ export function getAffordableFactoryInfo(fac) {
       maxM--;
       totalCost = Math.round(costCurrent * (Math.pow(r, maxM) - 1) / (r - 1));
     }
-    return { count: maxM, totalCost, canBuy: GAME.biomass >= totalCost && maxM > 0 };
+    return { count: maxM, totalCost, singleCost: Math.round(costCurrent), canBuy: GAME.biomass >= totalCost && maxM > 0 };
   }
 
   const count = parseInt(rawMult) || 1;
@@ -95,5 +95,5 @@ export function getAffordableFactoryInfo(fac) {
     ? Math.round(costCurrent)
     : Math.round(costCurrent * (Math.pow(r, count) - 1) / (r - 1));
 
-  return { count, totalCost, canBuy: GAME.biomass >= totalCost };
+  return { count, totalCost, singleCost: Math.round(costCurrent), canBuy: GAME.biomass >= totalCost };
 }

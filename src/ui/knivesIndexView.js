@@ -166,9 +166,19 @@ export function renderKnivesIndexBook() {
               ` : `
                 <span class="flex-1 py-1 text-center text-[10px] font-game text-yellow-300 font-bold">✓ В руке</span>
               `}
-              <button class="index-sharpen-btn px-2 py-1 rounded-xl text-[10px] font-game ${costInfo.maxReached ? 'bg-stone-800 text-stone-500 cursor-not-allowed' : 'bg-stone-800 hover:bg-stone-700 text-yellow-300 border border-yellow-500/40'} font-bold shadow" data-id="${knife.id}" title="Заточить нож (+1 Lv)">
-                ${costInfo.maxReached ? 'MAX' : `⭐ +1 (${formatNumber(costInfo.cost)} ${costInfo.symbol})`}
-              </button>
+              ${costInfo.maxReached ? `
+                <button class="px-2 py-1 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed" disabled>
+                  ★ МАКС
+                </button>
+              ` : ((GAME.sparkles || 0) < costInfo.cost ? `
+                <button class="px-2 py-1 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="Недостаточно Блестяшек">
+                  <span>🔒</span> <span>${formatNumber(costInfo.cost)} ✨</span>
+                </button>
+              ` : `
+                <button class="index-sharpen-btn px-2 py-1 rounded-xl text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 border border-yellow-500/40 font-bold shadow jelly-btn flex items-center gap-1" data-id="${knife.id}" title="Заточить нож (+1 Lv)">
+                  ⭐ +1 (${formatNumber(costInfo.cost)} ✨)
+                </button>
+              `)}
             </div>
           ` : `
             <div class="text-[9px] text-stone-500 text-center py-1">

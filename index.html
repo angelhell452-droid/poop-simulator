@@ -23,10 +23,13 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.2 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.3 PRO</span>
         </div>
 
-        <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <p class="text-[11px] text-amber-300 font-bold" id="topStageTitle">Форма 1: Исходная Кварк-Капля</p>
+          <span id="topArchetypeBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500/20 text-yellow-300 border border-yellow-400/40 cursor-pointer shadow-sm hover:bg-amber-500/30 transition select-none" title="Специализация смыва"></span>
+        </div>
       </div>
     </div>
 
@@ -365,13 +368,19 @@
           </button>
         </div>
 
-        <!-- 1-Click Fast Flush Floating Pill (Positioned BELOW the header buttons so it never appears between them) -->
-        <div class="absolute top-12 sm:top-14 right-3 z-30 select-none pointer-events-auto">
+        <!-- 1-Click Fast Flush & Transcend Floating Pills (Positioned BELOW the header buttons) -->
+        <div class="absolute top-12 sm:top-14 right-3 z-30 select-none pointer-events-auto flex flex-col items-end gap-1.5">
           <button id="btnQuickPrestige"
             class="hidden bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 hover:brightness-115 active:scale-95 text-stone-950 border-2 border-yellow-200 rounded-2xl px-3 py-1.5 text-xs font-game flex items-center gap-1.5 shadow-[0_4px_20px_rgba(234,179,8,0.7)] animate-pulse transition font-black cursor-pointer"
             title="Мгновенный Быстрый Смыв в 1 клик!">
             <span class="text-sm">⚡</span>
             <span id="btnQuickPrestigeText" class="truncate font-black">Смыв!</span>
+          </button>
+          <button id="btnQuickTranscend"
+            class="hidden bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 hover:brightness-115 active:scale-95 text-white border-2 border-cyan-300 rounded-2xl px-3 py-1.5 text-xs font-game flex items-center gap-1.5 shadow-[0_4px_20px_rgba(6,182,212,0.6)] animate-pulse transition font-black cursor-pointer"
+            title="Мгновенный Быстрый Астральный Прорыв в 1 клик!">
+            <span class="text-sm">🌌</span>
+            <span id="btnQuickTranscendText" class="truncate font-black">Прорыв!</span>
           </button>
         </div>
 

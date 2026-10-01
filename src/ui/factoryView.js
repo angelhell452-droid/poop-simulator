@@ -92,7 +92,11 @@ export function renderFactories() {
               ${tierBadge}
               ${isLocked ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-red-950/80 text-red-300 border border-red-700/50 font-bold">Форма #${fac.reqStage + 1}</span>` : ''}
             </div>
-            <div class="text-[11px] text-emerald-400 font-game">+${formatNumber(fac.baseCps * (currentCount || 1))} /сек</div>
+            <div class="flex items-center gap-2 text-[11px] font-game flex-wrap">
+              <span class="text-emerald-400">+${formatNumber(fac.baseCps * (currentCount || 1))} /сек</span>
+              <span class="text-stone-600">•</span>
+              <span class="text-stone-400">1 шт: <b class="text-amber-300 font-mono">${formatNumber(facInfo.singleCost)} 💨</b></span>
+            </div>
           </div>
         </div>
         <div class="text-right">

@@ -14,8 +14,13 @@ import { getPoopSkinInfo } from '../progression/evolutionService.js';
 import { updateSmartAssistant } from './smartAssistantView.js';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { getPrestigeRewardBreakdown, executePrestige } from '../prestige/prestigeService.js';
+import { getTranscendRewardBreakdown, executeTranscend } from '../prestige/transcendService.js';
+import { renderEvoChronicles } from './evoChroniclesView.js';
+import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal } from './modalManager.js';
+import { showKnifeToast } from './characterInventoryView.js';
 
 const FLUSH_COOLDOWN = 35000;
+let lastEvoRenderStage = -1;
 
 
 export function updateHUD() {
@@ -86,6 +91,14 @@ export function updateHUD() {
   const currEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const topStTitle = document.getElementById('topStageTitle');
   if (topStTitle) topStTitle.textContent = `Форма #${formatNumber(currEvo.id + 1)}: ${currEvo.name}`;
+
+  const topArchBadge = document.getElementById('topArchetypeBadge');
+  if (topArchBadge) {
+    const arch = ARCHETYPES[GAME.archetype] || ARCHETYPES.balanced;
+    topArchBadge.classList.remove('hidden');
+    topArchBadge.textContent = arch.badge;
+    topArchBadge.title = `Специализация Смыва: ${arch.name} (${arch.desc}). Нажмите для настройки.`;
+  }
   const badgeEvo = document.getElementById('evoProgressBadge');
   if (badgeEvo) badgeEvo.textContent = `${formatNumber(currEvo.id + 1)} / ${formatNumber(20000)}`;
   const nameEvo = document.getElementById('evoStageName');
@@ -225,6 +238,35 @@ export function updateHUD() {
     }
   }
 
+  // Quick Transcend Button Check
+  const tBreakdown = getTranscendRewardBreakdown();
+  const btnQuickTrans = document.getElementById('btnQuickTranscend');
+  const btnQuickTransText = document.getElementById('btnQuickTranscendText');
+  if (btnQuickTrans) {
+    if (tBreakdown.isMet) {
+      btnQuickTrans.classList.remove('hidden');
+      const newTransText = `Прорыв (+${formatNumber(tBreakdown.totalGain)} 🪠)`;
+      if (btnQuickTransText && btnQuickTransText.textContent !== newTransText) {
+        btnQuickTransText.textContent = newTransText;
+      }
+    } else {
+      btnQuickTrans.classList.add('hidden');
+    }
+  }
+
+  // Real-time update of Forms Panel (Task 6)
+  const panelEvo = document.getElementById('panelEvo');
+  if (panelEvo && !panelEvo.classList.contains('hidden')) {
+    if (lastEvoRenderStage !== GAME.evoStage) {
+      lastEvoRenderStage = GAME.evoStage;
+      renderEvoChronicles();
+    }
+  }
+
+  // Real-time update of open Prestige / Transcend Modals (Task 8)
+  updatePrestigeModalRealtime();
+  updateTranscendModalRealtime();
+
   updateActiveBuffsUI();
   updateAutomationTogglesUI();
   updateSmartAssistant();
@@ -316,6 +358,50 @@ export function initAutocareListeners() {
 
     btnQuick.addEventListener('pointerdown', triggerQuickPrestige);
     btnQuick.addEventListener('click', triggerQuickPrestige);
+  }
+
+  // Top Archetype Badge click to open Prestige Modal
+  document.getElementById('topArchetypeBadge')?.addEventListener('click', () => {
+    openPrestigeModal();
+  });
+
+  // 1-Click Fast Transcend Button listener
+  const btnQuickTrans = document.getElementById('btnQuickTranscend');
+  if (btnQuickTrans) {
+    let lastQuickTranscendTime = 0;
+    const triggerQuickTranscend = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - lastQuickTranscendTime < 500) return;
+      lastQuickTranscendTime = now;
+
+      const tBreakdown = getTranscendRewardBreakdown();
+      if (!tBreakdown.isMet) return;
+
+      const plungersBefore = GAME.transcendPlungers || 0;
+      if (executeTranscend()) {
+        const gained = (GAME.transcendPlungers || 0) - plungersBefore;
+        saveLocal();
+        updateHUD();
+
+        const flash = document.getElementById('rouletteFlashOverlay');
+        if (flash) {
+          flash.style.opacity = '0.9';
+          flash.style.transition = 'opacity 0.2s ease';
+          setTimeout(() => {
+            flash.style.opacity = '0';
+            flash.style.transition = 'opacity 0.5s ease';
+          }, 350);
+        }
+        showWelcomeGreeting(`🌌 Быстрый Прорыв совершен! Получено: +${formatNumber(gained)} 🪠 Вантузов!`);
+      }
+    };
+
+    btnQuickTrans.addEventListener('pointerdown', triggerQuickTranscend);
+    btnQuickTrans.addEventListener('click', triggerQuickTranscend);
   }
 }
 

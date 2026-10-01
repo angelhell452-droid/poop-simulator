@@ -40,7 +40,7 @@ export function handleEquipBestKnife() {
   }
 }
 
-function showKnifeToast(text) {
+export function showKnifeToast(text) {
   const existing = document.getElementById('knifeToastNotification');
   if (existing) existing.remove();
 
@@ -135,11 +135,19 @@ export function renderCharacterInventory() {
       const eqClickPct = Math.round((equippedObj.clickMult * (1 + (eqStar - 1) * 0.35) - 1) * 100);
       const eqPassPct = Math.round((equippedObj.passiveMult * (1 + (eqStar - 1) * 0.25) - 1) * 100);
       const costInfo = getKnifeSharpenCost(equippedObj);
-      const sharpenBtnHtml = costInfo.maxReached
-        ? `<span class="text-[10px] text-amber-400 font-bold px-2 py-1 bg-amber-950/40 rounded-xl border border-amber-800/40">★ MAX</span>`
-        : `<button id="btnSharpenEquippedKnife" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 text-stone-950 font-black text-[11px] px-2 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="Заточить надетый нож (+1 Lv)">
-            ⭐ Точить (${formatNumber(costInfo.cost)} ${costInfo.symbol})
-           </button>`;
+      const canAffordSharpen = (GAME.sparkles || 0) >= costInfo.cost;
+      let sharpenBtnHtml = '';
+      if (costInfo.maxReached) {
+        sharpenBtnHtml = `<button class="bg-stone-900 text-stone-500 font-black text-[11px] px-2.5 py-1.5 rounded-xl border border-stone-800 cursor-not-allowed" disabled>★ МАКС</button>`;
+      } else if (!canAffordSharpen) {
+        sharpenBtnHtml = `<button class="bg-stone-900 text-stone-500 font-bold text-[11px] px-2.5 py-1.5 rounded-xl border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="Недостаточно Блестяшек">
+          <span>🔒</span> <span>${formatNumber(costInfo.cost)} ✨</span>
+        </button>`;
+      } else {
+        sharpenBtnHtml = `<button id="btnSharpenEquippedKnife" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 text-stone-950 font-black text-[11px] px-2.5 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="Заточить надетый нож (+1 Lv)">
+          ⭐ Точить (${formatNumber(costInfo.cost)} ✨)
+        </button>`;
+      }
 
       equippedCard.innerHTML = `
         <div class="flex items-center justify-between gap-2 w-full">
@@ -298,10 +306,33 @@ function renderKnivesGrid() {
   filteredKnives.forEach(kn => {
     const isEq = GAME.equippedKnife === kn.id;
     const star = getKnifeStar(kn.id);
-    const starCostInfo = getKnifeSharpenCost(kn.id);
+    const starCostInfo = getKnifeSharpenCost(kn);
+    const canAffordSharpen = (GAME.sparkles || 0) >= starCostInfo.cost;
     const clickBonus = Math.round((kn.clickMult * (1 + (star - 1) * 0.35) - 1) * 100);
     const passBonus = Math.round((kn.passiveMult * (1 + (star - 1) * 0.25) - 1) * 100);
-    const recyclePrice = Math.max(1, Math.round((kn.clickMult + kn.passiveMult) * 1.5 + star));
+
+    // Balanced realistic recycle returns
+    const isAstral = ['godly', 'special', 'celestial'].includes(kn.rarity);
+    const recycleCurrency = isAstral ? 'plungers' : 'rolls';
+    const recycleSymbol = isAstral ? getPlungerIcon() : getRollIcon();
+    const baseRecycleTable = {
+      common: 30,
+      rare: 90,
+      very_rare: 280,
+      restricted: 280,
+      epic: 850,
+      classified: 2600,
+      covert: 8500,
+      rainbow: 28000,
+      titanium: 75000,
+      celestial: 15,
+      godly: 85,
+      special: 85
+    };
+    const baseRecycle = baseRecycleTable[kn.rarity] || 30;
+    const powerBonus = Math.round((kn.clickMult || 1) * (isAstral ? 1 : 12));
+    const starRecycleBonus = Math.round((star - 1) * baseRecycle * 0.25);
+    const recyclePrice = Math.max(1, baseRecycle + powerBonus + starRecycleBonus);
     const isInfoOpen = activeInfoCardId === kn.id;
 
     let rarityBorder = 'border-stone-700 bg-stone-950';
@@ -366,14 +397,22 @@ function renderKnivesGrid() {
             Надеть
           </button>
         `}
-        ${!starCostInfo.maxReached ? `
-          <button class="sharpen-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold border border-stone-600 jelly-btn flex items-center gap-1" data-id="${kn.id}" title="Повысить уровень заточки">
-            <span>⭐</span> <span>${formatNumber(starCostInfo.cost)} ${starCostInfo.currency === 'plungers' ? getPlungerIcon() : getRollIcon()}</span>
+        ${starCostInfo.maxReached ? `
+          <button class="py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed" disabled>
+            ★ МАКС
           </button>
-        ` : ''}
+        ` : (!canAffordSharpen ? `
+          <button class="py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="Недостаточно Блестяшек">
+            <span>🔒</span> <span>${formatNumber(starCostInfo.cost)} ✨</span>
+          </button>
+        ` : `
+          <button class="sharpen-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold border border-yellow-500/40 jelly-btn flex items-center gap-1" data-id="${kn.id}" title="Повысить уровень заточки (+1 Lv)">
+            <span>⭐</span> <span>${formatNumber(starCostInfo.cost)} ✨</span>
+          </button>
+        `)}
         ${!isEq ? `
-          <button class="sell-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 hover:bg-red-950 text-stone-400 hover:text-red-300 border border-stone-700 jelly-btn flex items-center gap-1" data-id="${kn.id}" data-price="${recyclePrice}" title="Утилизировать за +${recyclePrice} Втулок">
-            +${recyclePrice} ${getRollIcon()}
+          <button class="sell-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 hover:bg-red-950 text-stone-400 hover:text-red-300 border border-stone-700 jelly-btn flex items-center gap-1" data-id="${kn.id}" data-price="${recyclePrice}" data-currency="${recycleCurrency}" data-symbol="${isAstral ? '🪠' : '🧻'}" title="Утилизировать нож за +${formatNumber(recyclePrice)} ${isAstral ? '🪠' : '🧻'}">
+            +${formatNumber(recyclePrice)} ${recycleSymbol}
           </button>
         ` : ''}
       </div>
@@ -419,13 +458,20 @@ function renderKnivesGrid() {
     btn.addEventListener('click', () => {
       const kid = btn.dataset.id;
       const kn = KNIVES.find(k => k.id === kid);
-      const price = parseInt(btn.dataset.price) || 2;
-      if (confirm(`Утилизировать нож "${kn ? kn.name : kid}" и получить +${price} 🧻 Втулок Судьбы?`)) {
+      const price = parseInt(btn.dataset.price) || 25;
+      const curr = btn.dataset.currency || 'rolls';
+      const sym = btn.dataset.symbol || '🧻';
+      const currName = curr === 'plungers' ? 'Астральных Вантузов' : 'Втулок Судьбы';
+      if (confirm(`Утилизировать нож "${kn ? kn.name : kid}" и получить +${formatNumber(price)} ${sym} ${currName}?`)) {
         const idx = GAME.unlockedKnives.indexOf(kid);
         if (idx !== -1) {
           GAME.unlockedKnives.splice(idx, 1);
           if (GAME.equippedKnife === kid) GAME.equippedKnife = null;
-          GAME.prestigeRolls += price;
+          if (curr === 'plungers') {
+            GAME.transcendPlungers = (GAME.transcendPlungers || 0) + price;
+          } else {
+            GAME.prestigeRolls = (GAME.prestigeRolls || 0) + price;
+          }
           updateHUD();
           renderCharacterInventory();
           saveLocal();
