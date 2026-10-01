@@ -543,56 +543,332 @@ export function drawKnifeVectorOnCanvas(ctx, knife, time) {
   ctx.strokeStyle = '#09090b';
   ctx.lineWidth = 1.5;
 
-  // Отрисовка геометрии по стилям
+  // Отрисовка индивидуальной геометрии для каждого из 19 стилей ножей
   switch (knife.style) {
-    case 'karambit':
-    case 'talon': {
-      // Кольцо
-      ctx.beginPath(); ctx.arc(-6, 8, 6.5, 0, Math.PI * 2);
+    case 'karambit': {
+      // Karambit: Изогнутый коготь тигра с кольцом под палец
+      ctx.beginPath(); ctx.arc(-7, 8, 6.5, 0, Math.PI * 2);
       ctx.fillStyle = hc; ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.arc(-6, 8, 3.2, 0, Math.PI * 2);
+      ctx.beginPath(); ctx.arc(-7, 8, 3.2, 0, Math.PI * 2);
+      ctx.fillStyle = '#0f172a'; ctx.fill();
+      // Рукоять с выемками под пальцы
+      ctx.fillStyle = hc;
+      ctx.beginPath();
+      ctx.moveTo(-2, 5); ctx.lineTo(13, 0); ctx.lineTo(10, 10); ctx.lineTo(-4, 11);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Серповидный клинок
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(13, 0);
+      ctx.quadraticCurveTo(38, -6, 48, 16);
+      ctx.quadraticCurveTo(28, 8, 10, 10);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Ребро жесткости
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(14, 1); ctx.quadraticCurveTo(34, -4, 46, 14); ctx.stroke();
+      break;
+    }
+
+    case 'talon': {
+      // Talon: Серповидный нож с зубьями на обухе
+      ctx.beginPath(); ctx.arc(-7, 8, 6.5, 0, Math.PI * 2);
+      ctx.fillStyle = hc; ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(-7, 8, 3.2, 0, Math.PI * 2);
       ctx.fillStyle = '#0f172a'; ctx.fill();
       // Рукоять
       ctx.fillStyle = hc;
       ctx.beginPath();
-      ctx.moveTo(-1, 5); ctx.lineTo(14, 0); ctx.lineTo(11, 10); ctx.lineTo(-3, 11);
+      ctx.moveTo(-2, 5); ctx.lineTo(13, 0); ctx.lineTo(10, 10); ctx.lineTo(-4, 11);
       ctx.closePath(); ctx.fill(); ctx.stroke();
-      // Изогнутый коготь
+      // Зубья на обухе
       ctx.fillStyle = bladeFill;
       ctx.beginPath();
-      ctx.moveTo(14, 0);
-      ctx.quadraticCurveTo(38, -6, 48, 16);
-      ctx.quadraticCurveTo(28, 8, 11, 10);
+      ctx.moveTo(17, -1); ctx.lineTo(19, -4); ctx.lineTo(21, -1);
+      ctx.moveTo(23, -2); ctx.lineTo(25, -5); ctx.lineTo(27, -2);
+      ctx.moveTo(29, -3); ctx.lineTo(31, -6); ctx.lineTo(33, -3);
+      ctx.fill();
+      // Клинок
+      ctx.beginPath();
+      ctx.moveTo(13, 0);
+      ctx.quadraticCurveTo(38, -8, 50, 15);
+      ctx.quadraticCurveTo(28, 8, 10, 10);
       ctx.closePath(); ctx.fill(); ctx.stroke();
-      // Блик
-      ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1.2;
-      ctx.beginPath(); ctx.moveTo(15, 1); ctx.quadraticCurveTo(34, -4, 46, 14); ctx.stroke();
       break;
     }
 
     case 'butterfly': {
-      // Рукояти бабочки
+      // Butterfly (Балисонг): Раздельные рукоятки с зазором и шарнирами
       ctx.fillStyle = hc;
       ctx.fillRect(-8, -8, 20, 5.5);
       ctx.fillRect(-8, 5, 20, 5.5);
       ctx.fillStyle = '#e2e8f0';
       ctx.beginPath(); ctx.arc(11, -5.5, 1.8, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(11, 7.5, 1.8, 0, Math.PI * 2); ctx.fill();
-      // Клинок
+      // Обоюдоострый штыковой клинок
       ctx.fillStyle = bladeFill;
       ctx.beginPath();
       ctx.moveTo(12, -3); ctx.lineTo(46, -1); ctx.lineTo(52, 0); ctx.lineTo(46, 1); ctx.lineTo(12, 3);
       ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(48, 0); ctx.stroke();
+      break;
+    }
+
+    case 'bowie': {
+      // Bowie: Большой массивный тесак с гардой и скосом обуха Clip-Point
+      ctx.fillStyle = hc; ctx.fillRect(-8, -4, 18, 9);
+      // Массивная золотая/латунная гарда
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(10, -11, 4, 23);
+      ctx.strokeRect(10, -11, 4, 23);
+      // Широкий клинок со скосом
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(14, -5); ctx.lineTo(36, -5);
+      ctx.quadraticCurveTo(46, -4, 54, 1);
+      ctx.quadraticCurveTo(42, 10, 14, 6);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Скос Clip-point
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.3;
+      ctx.beginPath(); ctx.moveTo(36, -5); ctx.quadraticCurveTo(46, -4, 54, 1); ctx.stroke();
+      break;
+    }
+
+    case 'huntsman': {
+      // Huntsman: Шоковые зубья на обухе и рубленое танто-остриё
+      ctx.fillStyle = hc; ctx.fillRect(-7, -4, 17, 9);
+      // Зубья на обухе
+      ctx.fillStyle = bladeFill;
+      for (let s = 14; s < 30; s += 4) {
+        ctx.beginPath(); ctx.moveTo(s, -5); ctx.lineTo(s + 2, -8); ctx.lineTo(s + 4, -5); ctx.fill(); ctx.stroke();
+      }
+      // Клинок Танто
+      ctx.beginPath();
+      ctx.moveTo(10, -5); ctx.lineTo(38, -5); ctx.lineTo(52, 2); ctx.lineTo(42, 6); ctx.lineTo(10, 6);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Грань Танто
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(38, -5); ctx.lineTo(42, 6); ctx.stroke();
+      break;
+    }
+
+    case 'gut': {
+      // Gut Knife: Массивный клинок с детальным шкуродёрным крюком
+      ctx.fillStyle = hc; ctx.fillRect(-6, -4, 18, 9);
+      ctx.fillStyle = '#fcd34d';
+      ctx.beginPath(); ctx.arc(-1, 0, 1.3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(7, 0, 1.3, 0, Math.PI * 2); ctx.fill();
+      // Клинок с брюшком и крюком
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(12, -5); ctx.lineTo(38, -5);
+      ctx.quadraticCurveTo(46, -5, 50, -10);
+      ctx.quadraticCurveTo(53, -8, 48, -2);
+      ctx.lineTo(44, 1);
+      ctx.quadraticCurveTo(38, 10, 12, 6);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Заточка крюка
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 1.3;
+      ctx.beginPath(); ctx.moveTo(42, -7); ctx.quadraticCurveTo(48, -8, 47, -3); ctx.stroke();
+      break;
+    }
+
+    case 'falchion': {
+      // Falchion: Расширяющийся восточный клинок
+      ctx.fillStyle = hc;
+      ctx.beginPath();
+      ctx.moveTo(-8, 3); ctx.lineTo(12, 0); ctx.lineTo(10, 8); ctx.lineTo(-6, 9);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Расширяющееся лезвие
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(12, 0);
+      ctx.quadraticCurveTo(32, -3, 42, -8);
+      ctx.lineTo(52, -4);
+      ctx.quadraticCurveTo(40, 8, 10, 8);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      break;
+    }
+
+    case 'flip': {
+      // Flip: Складной изогнутый нож с плавником-флиппером
+      ctx.fillStyle = hc;
+      ctx.beginPath();
+      ctx.moveTo(-8, 2); ctx.lineTo(12, -1); ctx.lineTo(10, 8); ctx.lineTo(-6, 8);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Осевой винт
+      ctx.fillStyle = '#94a3b8';
+      ctx.beginPath(); ctx.arc(11, 2, 2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      // Флиппер
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath(); ctx.moveTo(12, 6); ctx.lineTo(16, 8); ctx.lineTo(14, 4); ctx.fill();
+      // Изогнутый клинок
+      ctx.beginPath();
+      ctx.moveTo(12, -1);
+      ctx.quadraticCurveTo(32, -6, 50, -2);
+      ctx.quadraticCurveTo(36, 6, 10, 5);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      break;
+    }
+
+    case 'stiletto': {
+      // Stiletto: Тонкий итальянский стилет-игла с крестовиной
+      ctx.fillStyle = hc; ctx.fillRect(-8, -2.5, 18, 5);
+      // Крестовина (гарда)
+      ctx.fillStyle = '#94a3b8'; ctx.fillRect(10, -8, 3.5, 16); ctx.strokeRect(10, -8, 3.5, 16);
+      // Игольчатый тонкий клинок
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(13.5, -2); ctx.lineTo(54, 0); ctx.lineTo(13.5, 2);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Центральное ребро
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(14, 0); ctx.lineTo(52, 0); ctx.stroke();
+      break;
+    }
+
+    case 'navaja': {
+      // Navaja: Традиционная испанская наваха с изогнутой рукоятью
+      ctx.fillStyle = hc;
+      ctx.beginPath();
+      ctx.moveTo(-8, 5); ctx.lineTo(12, 1); ctx.lineTo(10, 9); ctx.lineTo(-6, 9);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Листовидный клинок
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(12, 1);
+      ctx.quadraticCurveTo(30, -5, 48, -3);
+      ctx.quadraticCurveTo(34, 7, 10, 5);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      break;
+    }
+
+    case 'ursus': {
+      // Ursus: Прямой массивный тактический нож танто
+      ctx.fillStyle = hc; ctx.fillRect(-7, -4, 18, 8);
+      // Клинок Танто
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(11, -4); ctx.lineTo(38, -4); ctx.lineTo(50, 1); ctx.lineTo(38, 4); ctx.lineTo(11, 4);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(38, -4); ctx.lineTo(38, 4); ctx.stroke();
+      break;
+    }
+
+    case 'paracord': {
+      // Paracord: Рукоять с цветными витками тактического шнура
+      ctx.fillStyle = '#1e293b'; ctx.fillRect(-7, -4, 18, 8); ctx.strokeRect(-7, -4, 18, 8);
+      ctx.strokeStyle = '#ea580c'; ctx.lineWidth = 2;
+      for (let s = -4; s < 9; s += 3.5) {
+        ctx.beginPath(); ctx.moveTo(s, -4); ctx.lineTo(s + 2, 4); ctx.stroke();
+      }
+      // Клинок Drop-Point с отверстием
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(11, -4); ctx.lineTo(40, -4);
+      ctx.quadraticCurveTo(50, -2, 52, 1);
+      ctx.quadraticCurveTo(42, 5, 11, 4);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.arc(19, 0, 2, 0, Math.PI * 2); ctx.fill();
+      break;
+    }
+
+    case 'survival': {
+      // Survival: Нож выживания с пилой и стропорезом
+      ctx.fillStyle = hc; ctx.fillRect(-7, -4, 18, 8);
+      // Пила на обухе
+      ctx.fillStyle = bladeFill;
+      for (let s = 13; s < 25; s += 3.5) {
+        ctx.beginPath(); ctx.moveTo(s, -4); ctx.lineTo(s + 1.8, -7); ctx.lineTo(s + 3.5, -4); ctx.fill(); ctx.stroke();
+      }
+      // Клинок со стропорезом
+      ctx.beginPath();
+      ctx.moveTo(11, -4); ctx.lineTo(32, -4);
+      ctx.quadraticCurveTo(36, -8, 39, -4);
+      ctx.lineTo(49, 1);
+      ctx.quadraticCurveTo(40, 5, 11, 4);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      break;
+    }
+
+    case 'nomad': {
+      // Nomad: Полевой складной нож с отверстием в клинке
+      ctx.fillStyle = hc;
+      ctx.beginPath();
+      ctx.moveTo(-8, 3); ctx.lineTo(12, -1); ctx.lineTo(10, 7); ctx.lineTo(-6, 7);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Клинок
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(12, -1);
+      ctx.quadraticCurveTo(32, -6, 50, -1);
+      ctx.quadraticCurveTo(38, 6, 10, 5);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Продольное отверстие
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.roundRect(22, -2, 11, 2.2, 1); ctx.fill();
+      break;
+    }
+
+    case 'classic': {
+      // Classic: Легендарный нож CS 1.6 с гардой
+      ctx.fillStyle = hc; ctx.fillRect(-7, -4, 17, 8);
+      ctx.fillStyle = '#cbd5e1'; ctx.fillRect(10, -7, 3, 14); ctx.strokeRect(10, -7, 3, 14);
+      // Клинок CS 1.6
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(13, -4); ctx.lineTo(38, -4); ctx.lineTo(49, 0);
+      ctx.quadraticCurveTo(38, 5, 13, 4);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Кровосток
+      ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.3;
+      ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(36, 0); ctx.stroke();
+      break;
+    }
+
+    case 'm9': {
+      // M9 Bayonet: Гарда с кольцом, пила на обухе и широкий клинок
+      ctx.fillStyle = hc; ctx.fillRect(-8, -4, 16, 8);
+      // Гарда с кольцом
+      ctx.fillStyle = '#64748b'; ctx.fillRect(8, -10, 4.5, 20); ctx.strokeRect(8, -10, 4.5, 20);
+      ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(10.2, -7.5, 2, 0, Math.PI * 2); ctx.fill();
+      // Пила на обухе
+      ctx.fillStyle = bladeFill;
+      for (let s = 14; s < 34; s += 3.5) {
+        ctx.beginPath(); ctx.moveTo(s, -5); ctx.lineTo(s + 1.8, -8); ctx.lineTo(s + 3.5, -5); ctx.fill(); ctx.stroke();
+      }
+      // Клинок M9 с долом
+      ctx.beginPath();
+      ctx.moveTo(12.5, -5); ctx.lineTo(44, -5); ctx.lineTo(53, 1); ctx.lineTo(42, 5); ctx.lineTo(12.5, 5);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(18, 0); ctx.lineTo(38, 0); ctx.stroke();
+      break;
+    }
+
+    case 'bayonet': {
+      // Bayonet: Прямой армейский штык-нож с гардой
+      ctx.fillStyle = hc; ctx.fillRect(-8, -4, 16, 8);
+      ctx.fillStyle = '#52525b'; ctx.fillRect(8, -9, 4, 18); ctx.strokeRect(8, -9, 4, 18);
+      // Клинок
+      ctx.fillStyle = bladeFill;
+      ctx.beginPath();
+      ctx.moveTo(12, -4.5); ctx.lineTo(44, -4.5); ctx.lineTo(52, 0); ctx.lineTo(42, 4.5); ctx.lineTo(12, 4.5);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(38, 0); ctx.stroke();
       break;
     }
 
     case 'katana': {
-      // Рукоять катаны
+      // Katana: Самурайский меч с длинным клинком и цубой
       ctx.fillStyle = hc; ctx.fillRect(-14, -3.5, 20, 7);
-      // Цуба
+      // Золотая цуба (гарда)
       ctx.fillStyle = '#f59e0b';
       ctx.beginPath(); ctx.arc(7, 0, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      // Длинный клинок
+      // Грациозный длинный клинок
       ctx.fillStyle = bladeFill;
       ctx.beginPath();
       ctx.moveTo(7, -3);
@@ -600,63 +876,34 @@ export function drawKnifeVectorOnCanvas(ctx, knife, time) {
       ctx.lineTo(66, -1);
       ctx.quadraticCurveTo(38, 2, 7, 3);
       ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(8, -2.5); ctx.quadraticCurveTo(38, -7.5, 62, -2.5); ctx.stroke();
       break;
     }
 
     case 'scythe': {
-      // Древко
+      // Scythe: Боевая коса смерти
       ctx.strokeStyle = hc; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.moveTo(-10, 16); ctx.lineTo(14, -10); ctx.stroke();
-      // Лезвие косы
+      // Дугообразное лезвие косы
       ctx.fillStyle = bladeFill;
       ctx.beginPath();
       ctx.moveTo(14, -10);
       ctx.quadraticCurveTo(46, -18, 52, 8);
       ctx.quadraticCurveTo(34, -2, 10, -5);
       ctx.closePath(); ctx.fill(); ctx.stroke();
-      break;
-    }
-
-    case 'gut': {
-      // Рукоять
-      ctx.fillStyle = hc; ctx.fillRect(-6, -4, 18, 8);
-      // Клинок с крюком
-      ctx.fillStyle = bladeFill;
-      ctx.beginPath();
-      ctx.moveTo(12, -5); ctx.lineTo(40, -5);
-      ctx.quadraticCurveTo(48, -5, 52, -10);
-      ctx.quadraticCurveTo(55, -8, 50, -2);
-      ctx.quadraticCurveTo(42, 8, 12, 5);
-      ctx.closePath(); ctx.fill(); ctx.stroke();
-      break;
-    }
-
-    case 'm9':
-    case 'bayonet': {
-      // Гарда
-      ctx.fillStyle = '#64748b'; ctx.fillRect(8, -9, 4, 18);
-      ctx.fillStyle = hc; ctx.fillRect(-8, -4, 16, 8);
-      // Лезвие
-      ctx.fillStyle = bladeFill;
-      ctx.beginPath();
-      ctx.moveTo(12, -5); ctx.lineTo(44, -5); ctx.lineTo(52, 0); ctx.lineTo(44, 5); ctx.lineTo(12, 5);
-      ctx.closePath(); ctx.fill(); ctx.stroke();
-      // Зубья для M9
-      if (knife.style === 'm9') {
-        ctx.fillStyle = '#09090b';
-        for (let s = 16; s < 36; s += 4) {
-          ctx.beginPath(); ctx.moveTo(s, -5); ctx.lineTo(s + 2, -8); ctx.lineTo(s + 4, -5); ctx.fill();
-        }
-      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(15, -9); ctx.quadraticCurveTo(44, -16, 49, 6); ctx.stroke();
       break;
     }
 
     default: {
-      // Bowie, Huntsman, Falchion, Flip, Stiletto, Navaja, Ursus, Paracord, Survival, Nomad, Classic
+      // Универсальный кинжал (daggers, skeleton или fallback)
       ctx.fillStyle = hc; ctx.fillRect(-6, -4, 16, 8);
+      ctx.fillStyle = '#64748b'; ctx.fillRect(10, -7, 3, 14); ctx.strokeRect(10, -7, 3, 14);
       ctx.fillStyle = bladeFill;
       ctx.beginPath();
-      ctx.moveTo(10, -5); ctx.lineTo(42, -5); ctx.lineTo(50, 0); ctx.lineTo(10, 5);
+      ctx.moveTo(13, -4); ctx.lineTo(44, -4); ctx.lineTo(52, 0); ctx.lineTo(44, 4); ctx.lineTo(13, 4);
       ctx.closePath(); ctx.fill(); ctx.stroke();
       break;
     }
