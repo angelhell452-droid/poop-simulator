@@ -13,6 +13,7 @@ import { updateCasesButtons } from './casesView.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js';
 import { updateSmartAssistant } from './smartAssistantView.js';
 import { ARCHETYPES } from '../progression/archetypes.js';
+import { getPrestigeRewardBreakdown, executePrestige } from '../prestige/prestigeService.js';
 
 const FLUSH_COOLDOWN = 35000;
 
@@ -207,6 +208,19 @@ export function updateHUD() {
       }
     }
   }
+
+  // Quick Prestige Button Check
+  const pBreakdown = getPrestigeRewardBreakdown();
+  const btnQuick = document.getElementById('btnQuickPrestige');
+  if (btnQuick) {
+    if (pBreakdown.isMet) {
+      btnQuick.classList.remove('hidden');
+      btnQuick.innerHTML = `<span>⚡</span> <span class="truncate">Смыв (+${formatNumber(pBreakdown.totalGain)} 🧻)</span>`;
+    } else {
+      btnQuick.classList.add('hidden');
+    }
+  }
+
   updateAutomationTogglesUI();
   updateSmartAssistant();
 }
@@ -259,6 +273,34 @@ export function initAutocareListeners() {
   document.getElementById('btnAutoFeed')?.addEventListener('click', () => handleAutoClick('autoFeed'));
   document.getElementById('btnAutoWash')?.addEventListener('click', () => handleAutoClick('autoWash'));
   document.getElementById('btnAutoTickle')?.addEventListener('click', () => handleAutoClick('autoTickle'));
+
+  const btnQuick = document.getElementById('btnQuickPrestige');
+  if (btnQuick) {
+    btnQuick.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const pBreakdown = getPrestigeRewardBreakdown();
+      if (!pBreakdown.isMet) return;
+
+      const arch = GAME.archetype || 'balanced';
+      const rollsBefore = GAME.prestigeRolls || 0;
+      if (executePrestige(arch)) {
+        const gained = (GAME.prestigeRolls || 0) - rollsBefore;
+        saveLocal();
+        updateHUD();
+
+        const overlay = document.getElementById('waterFlushOverlay');
+        if (overlay) {
+          overlay.style.opacity = '0.9';
+          overlay.style.transition = 'opacity 0.2s ease';
+          setTimeout(() => {
+            overlay.style.opacity = '0';
+            overlay.style.transition = 'opacity 0.6s ease';
+          }, 400);
+        }
+        showWelcomeGreeting(`⚡ Быстрый Смыв выполнен! +${formatNumber(gained)} 🧻 Втулок Судьбы!`);
+      }
+    });
+  }
 }
 
 export function updateAutomationTogglesUI() {
@@ -324,4 +366,25 @@ export function initAutomationToggleListeners() {
     document.getElementById('btnPrestigeModal')?.click();
   });
 }
+
+export function showWelcomeGreeting(customText = null) {
+  const name = GAME.playerName || 'Игрок';
+  const text = customText || `Привет, какашечка ${name}! 💩✨`;
+
+  const existing = document.getElementById('welcomeGreetingToast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'welcomeGreetingToast';
+  toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-stone-950 font-game font-black text-xs sm:text-sm px-5 py-2.5 rounded-3xl shadow-[0_10px_35px_rgba(245,158,11,0.5)] border-2 border-yellow-200 flex items-center gap-2 animate-bounce select-none pointer-events-none transition-all duration-500';
+  toast.innerHTML = `<span class="text-2xl">💩</span><span>${text}</span>`;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translate(-50%, -20px) scale(0.95)';
+    setTimeout(() => toast.remove(), 500);
+  }, 3500);
+}
+
 
