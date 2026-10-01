@@ -11,11 +11,11 @@
   <link rel="stylesheet" href="styles/main.css">
 </head>
 
-<body class="bg-stone-900 text-stone-100 min-h-screen flex flex-col overflow-x-hidden selection:bg-amber-400">
+<body class="bg-stone-900 text-stone-100 h-screen max-h-screen flex flex-col overflow-hidden selection:bg-amber-400">
 
   <!-- TOP APP HEADER -->
   <header
-    class="bg-amber-950 text-amber-50 shadow-2xl px-3 sm:px-6 py-2 border-b-4 border-amber-900 z-30 flex flex-wrap items-center justify-between gap-2">
+    class="bg-amber-950 text-amber-50 shadow-xl px-3 sm:px-4 py-1.5 border-b-2 sm:border-b-4 border-amber-900 z-30 flex items-center justify-between gap-2 shrink-0">
     <div class="flex items-center gap-3">
       <div class="text-3xl filter drop-shadow cursor-pointer select-none" id="logoSecretClick">💩</div>
       <div>
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.4 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.5 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -108,119 +108,114 @@
     </div>
   </header>
 
-  <!-- DYNAMIC PROGRESSION & MILESTONE TRACKER -->
-  <div class="max-w-7xl w-full mx-auto px-2 sm:px-4 pt-2 pb-0" id="progressionTrackerBar">
+  <!-- DYNAMIC PROGRESSION & SMART ASSISTANT STRIP (1-Row Compact Fit) -->
+  <div class="max-w-7xl w-full mx-auto px-2 sm:px-4 pt-1.5 pb-0 shrink-0" id="progressionTrackerBar">
     <div
-      class="bg-stone-900/90 border-2 border-amber-600/50 hover:border-amber-500 rounded-2xl px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-lg transition">
-      <div class="flex items-center gap-2">
-        <span class="text-lg animate-bounce" id="milestoneIcon">🎯</span>
-        <div class="flex flex-col">
-          <div class="flex items-center gap-2">
-            <span class="text-[9px] text-amber-400 font-black uppercase tracking-wider">Текущая цель</span>
+      class="bg-stone-900/90 border border-amber-600/50 hover:border-amber-500 rounded-xl px-2.5 py-1 flex items-center justify-between gap-2 shadow-md text-xs">
+      
+      <!-- Left: Milestone Goal & Progress -->
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="text-base shrink-0 animate-bounce" id="milestoneIcon">🎯</span>
+        <div class="flex items-center gap-1.5 truncate">
+          <span class="text-[9px] text-amber-400 font-black uppercase tracking-wider shrink-0 hidden xs:inline">Цель:</span>
+          <span class="text-xs text-stone-100 font-bold truncate" id="milestoneTitle">Форма 5 (Открытие фабрики Мух)</span>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0 w-24 sm:w-36">
+          <div class="flex-1 bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700 relative">
+            <div id="milestoneProgressBar"
+              class="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400 transition-all duration-300"
+              style="width: 0%"></div>
           </div>
-          <span class="text-xs text-stone-100 font-bold" id="milestoneTitle">Форма 5 (Открытие фабрики Мух)</span>
+          <span id="milestoneProgressText" class="text-[10px] font-mono text-yellow-300 font-bold shrink-0">0 / 5</span>
+        </div>
+        <div id="milestoneRewardBadge"
+          class="hidden md:flex items-center gap-1 text-[9px] bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 px-1.5 py-0.2 rounded font-bold shrink-0">
+          <span id="milestoneRewardText">Награда: 🏭 Первая фабрика</span>
         </div>
       </div>
-      <div class="flex items-center gap-2 flex-1 max-w-xs sm:max-w-md">
-        <div class="flex-1 bg-stone-800 h-2.5 rounded-full overflow-hidden border border-stone-700 relative">
-          <div id="milestoneProgressBar"
-            class="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400 transition-all duration-300"
-            style="width: 0%"></div>
-        </div>
-        <span id="milestoneProgressText" class="text-[11px] font-mono text-yellow-300 font-bold shrink-0">0 / 5</span>
-      </div>
-      <div id="milestoneRewardBadge"
-        class="hidden sm:flex items-center gap-1 text-[10px] bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 px-2 py-0.5 rounded-lg font-bold">
-        <span id="milestoneRewardText">Награда: 🏭 Первая фабрика</span>
-      </div>
-    </div>
 
-    <!-- DYNAMIC SMART ASSISTANT BANNER (Beginner-Friendly Contextual Hints) -->
-    <div id="smartHintBanner"
-      class="mt-1.5 bg-gradient-to-r from-amber-950/80 via-stone-900 to-indigo-950/80 border-2 border-yellow-500/40 rounded-2xl px-3 py-1.5 flex items-center justify-between gap-2 shadow-lg transition">
-      <div class="flex items-center gap-2 overflow-hidden">
-        <span class="text-xl shrink-0" id="smartHintIcon">💡</span>
-        <div class="text-[11px] text-stone-200 truncate" id="smartHintText">
-          Загрузка советов помощника...
-        </div>
+      <!-- Right: Smart Assistant Hint -->
+      <div id="smartHintBanner"
+        class="flex items-center gap-1.5 min-w-0 max-w-xs sm:max-w-sm shrink-0 bg-stone-950/70 border border-yellow-500/30 rounded-lg px-2 py-0.5">
+        <span class="text-xs shrink-0" id="smartHintIcon">💡</span>
+        <div class="text-[10px] text-stone-300 truncate" id="smartHintText">Загрузка советов...</div>
+        <button id="smartHintBtn"
+          class="shrink-0 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-[9px] font-black px-2 py-0.5 rounded shadow border border-yellow-300 jelly-btn">
+          Действие ⚡
+        </button>
       </div>
-      <button id="smartHintBtn"
-        class="shrink-0 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-[10px] font-black px-3 py-1 rounded-xl shadow border border-yellow-300 jelly-btn">
-        Действие ⚡
-      </button>
+
     </div>
   </div>
 
   <!-- MAIN VIEWPORT -->
-  <main class="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto p-2 sm:p-4 gap-3 sm:gap-4 overflow-hidden">
+  <main class="flex-1 min-h-0 flex flex-col lg:flex-row max-w-7xl w-full mx-auto p-1.5 sm:p-2.5 gap-2 sm:gap-3 overflow-hidden">
 
     <!-- LEFT: INTERACTIVE CANVAS PET ZONE -->
     <section
-      class="flex-1 flex flex-col bg-stone-800 rounded-3xl border-4 border-amber-900 shadow-2xl overflow-hidden relative min-h-[480px]">
+      class="flex-1 min-h-0 flex flex-col bg-stone-800 rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900 shadow-2xl overflow-hidden relative">
 
       <!-- MASTER CENTRAL CURRENCY COMMAND DECK -->
       <div id="masterCurrencyDeck"
-        class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-2 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 border-b-2 border-amber-900/80 z-20 shadow-md">
+        class="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 sm:p-1.5 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 border-b border-amber-900/80 z-20 shadow-md shrink-0">
 
         <!-- Biomass -->
         <div
-          class="flex items-center gap-2 bg-stone-900/90 hover:bg-stone-850 px-2.5 py-1.5 rounded-2xl border border-emerald-500/40 shadow-inner transition select-none">
-          <span class="text-xl shrink-0" id="iconBiomass">💨</span>
+          class="flex items-center gap-1.5 bg-stone-900/90 hover:bg-stone-850 px-2 py-1 rounded-xl border border-emerald-500/40 shadow-inner transition select-none">
+          <span class="text-lg shrink-0" id="iconBiomass">💨</span>
           <div class="min-w-0 flex-1">
             <div
-              class="flex items-center justify-between text-[10px] text-amber-400 font-bold uppercase tracking-wider">
+              class="flex items-center justify-between text-[9px] text-amber-400 font-bold uppercase tracking-wider">
               <span id="labelBiomass">Биомасса</span>
             </div>
-            <div class="font-game text-sm sm:text-base text-emerald-400 tracking-wide font-mono tabular-nums truncate"
+            <div class="font-game text-xs sm:text-sm text-emerald-400 tracking-wide font-mono tabular-nums truncate"
               id="topBiomass">0</div>
           </div>
         </div>
 
         <!-- Sparkles -->
         <div
-          class="flex items-center gap-2 bg-stone-900/90 hover:bg-stone-850 px-2.5 py-1.5 rounded-2xl border border-yellow-500/40 shadow-inner transition select-none">
-          <span class="text-xl shrink-0" id="iconSparkles">✨</span>
+          class="flex items-center gap-1.5 bg-stone-900/90 hover:bg-stone-850 px-2 py-1 rounded-xl border border-yellow-500/40 shadow-inner transition select-none">
+          <span class="text-lg shrink-0" id="iconSparkles">✨</span>
           <div class="min-w-0 flex-1">
             <div
-              class="flex items-center justify-between text-[10px] text-yellow-400 font-bold uppercase tracking-wider">
+              class="flex items-center justify-between text-[9px] text-yellow-400 font-bold uppercase tracking-wider">
               <span id="labelSparkles">Блестяшки</span>
             </div>
-            <div class="font-game text-sm sm:text-base text-yellow-300 tracking-wide font-mono tabular-nums truncate"
+            <div class="font-game text-xs sm:text-sm text-yellow-300 tracking-wide font-mono tabular-nums truncate"
               id="topSparkles">0</div>
           </div>
         </div>
 
         <!-- Rolls (Clickable to open Prestige) -->
         <div id="currencyPrestigeBox"
-          class="flex items-center gap-2 bg-purple-950/80 hover:bg-purple-900/90 px-2.5 py-1.5 rounded-2xl border border-yellow-400/60 shadow transition cursor-pointer select-none jelly-btn"
+          class="flex items-center gap-1.5 bg-purple-950/80 hover:bg-purple-900/90 px-2 py-1 rounded-xl border border-yellow-400/60 shadow transition cursor-pointer select-none jelly-btn"
           title="Втулки Судьбы: нажмите, чтобы открыть окно Смыва">
-          <span class="roll-icon text-xl shrink-0"></span>
+          <span class="roll-icon text-lg shrink-0"></span>
           <div class="min-w-0 flex-1">
             <div
-              class="flex items-center justify-between text-[10px] text-yellow-300 font-bold uppercase tracking-wider">
+              class="flex items-center justify-between text-[9px] text-yellow-300 font-bold uppercase tracking-wider">
               <span>Втулки</span>
               <span id="masterPrestigeLvl"
-                class="text-[9px] bg-purple-900 text-yellow-200 border border-yellow-400/40 px-1 py-0.2 rounded font-black">Ур.
-                0</span>
+                class="text-[8px] bg-purple-900 text-yellow-200 border border-yellow-400/40 px-1 rounded font-black">Ур. 0</span>
             </div>
-            <div class="font-game text-sm sm:text-base text-yellow-200 tracking-wide font-mono tabular-nums truncate"
+            <div class="font-game text-xs sm:text-sm text-yellow-200 tracking-wide font-mono tabular-nums truncate"
               id="topPrestige">0</div>
           </div>
         </div>
 
         <!-- Plungers (Clickable to open Transcend) -->
         <div id="currencyPlungersBox"
-          class="flex items-center gap-2 bg-indigo-950/80 hover:bg-indigo-900/90 px-2.5 py-1.5 rounded-2xl border border-cyan-400/60 shadow transition cursor-pointer select-none jelly-btn"
+          class="flex items-center gap-1.5 bg-indigo-950/80 hover:bg-indigo-900/90 px-2 py-1 rounded-xl border border-cyan-400/60 shadow transition cursor-pointer select-none jelly-btn"
           title="Астральные Вантузы: нажмите, чтобы открыть окно Прорыва">
-          <span class="plunger-icon text-xl shrink-0"></span>
+          <span class="plunger-icon text-lg shrink-0"></span>
           <div class="min-w-0 flex-1">
-            <div class="flex items-center justify-between text-[10px] text-cyan-300 font-bold uppercase tracking-wider">
+            <div class="flex items-center justify-between text-[9px] text-cyan-300 font-bold uppercase tracking-wider">
               <span>Вантузы</span>
               <span id="masterTranscendLvl"
-                class="text-[9px] bg-indigo-900 text-cyan-200 border border-cyan-400/40 px-1 py-0.2 rounded font-black">Ур.
-                0</span>
+                class="text-[8px] bg-indigo-900 text-cyan-200 border border-cyan-400/40 px-1 rounded font-black">Ур. 0</span>
             </div>
-            <div class="font-game text-sm sm:text-base text-cyan-200 tracking-wide font-mono tabular-nums truncate"
+            <div class="font-game text-xs sm:text-sm text-cyan-200 tracking-wide font-mono tabular-nums truncate"
               id="topPlungers">0</div>
           </div>
         </div>
@@ -228,20 +223,20 @@
 
       <!-- COMBO HEAT & TURBO FRENZY BAR (Zero-jitter layout) -->
       <div
-        class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between gap-2 z-10 h-[34px] min-h-[34px] max-h-[34px] overflow-hidden select-none">
+        class="px-2.5 py-0.5 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between gap-2 z-10 h-[26px] min-h-[26px] max-h-[26px] overflow-hidden select-none shrink-0">
         <div
-          class="flex items-center gap-1.5 w-[140px] min-w-[140px] max-w-[140px] shrink-0 text-[10px] font-bold text-amber-400">
+          class="flex items-center gap-1.5 w-[130px] min-w-[130px] max-w-[130px] shrink-0 text-[9px] font-bold text-amber-400">
           <span id="comboFlameIcon" class="text-xs shrink-0">⚡</span>
           <span id="comboLabel" class="truncate font-mono tabular-nums">ЯРОСТЬ: 0%</span>
         </div>
-        <div class="flex-1 bg-stone-800 h-2.5 rounded-full overflow-hidden relative border border-stone-700/80">
+        <div class="flex-1 bg-stone-800 h-2 rounded-full overflow-hidden relative border border-stone-700/80">
           <div id="comboBar"
             class="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 transition-all duration-100"
             style="width: 0%"></div>
         </div>
-        <div class="w-[110px] min-w-[110px] max-w-[110px] shrink-0 flex justify-end items-center">
+        <div class="w-[100px] min-w-[100px] max-w-[100px] shrink-0 flex justify-end items-center">
           <span id="turboRushTimer"
-            class="text-[10px] font-mono tabular-nums font-bold text-yellow-300 bg-red-950/90 px-2 py-0.5 rounded-lg border border-red-500/80 select-none opacity-0 pointer-events-none transition-opacity duration-150">
+            class="text-[9px] font-mono tabular-nums font-bold text-yellow-300 bg-red-950/90 px-1.5 py-0.2 rounded border border-red-500/80 select-none opacity-0 pointer-events-none transition-opacity duration-150">
             🔥 x10 (12с)
           </span>
         </div>
@@ -249,43 +244,43 @@
 
       <!-- DYNAMIC ACTIVE BUFFS TRAY -->
       <div id="activeBuffsTray"
-        class="px-2.5 py-1 bg-stone-950/90 border-b border-amber-900/60 flex items-center gap-1.5 overflow-x-auto custom-scroll min-h-[32px] max-h-[36px] z-10 select-none">
-        <span class="text-[10px] text-stone-500 font-bold uppercase tracking-wider shrink-0 flex items-center gap-1">
+        class="px-2 py-0.5 bg-stone-950/90 border-b border-amber-900/60 flex items-center gap-1.5 overflow-x-auto custom-scroll min-h-[24px] max-h-[26px] z-10 select-none shrink-0">
+        <span class="text-[9px] text-stone-500 font-bold uppercase tracking-wider shrink-0 flex items-center gap-1">
           <span>✨</span> <span class="hidden sm:inline">Баффы:</span>
         </span>
         <div id="activeBuffsList" class="flex items-center gap-1.5 flex-nowrap">
-          <span class="text-[10px] text-stone-500 italic">Нет активных баффов</span>
+          <span class="text-[9px] text-stone-500 italic">Нет активных баффов</span>
         </div>
       </div>
 
       <!-- BUILT-IN AUTOCLICKER CONTROL DECK (1 ms Overdrive) -->
       <div
-        class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex flex-wrap items-center justify-between gap-2 z-10 text-xs">
+        class="px-2.5 py-1 bg-stone-950/95 border-b border-amber-900/60 flex flex-wrap items-center justify-between gap-1.5 z-10 text-xs shrink-0">
         <div class="flex items-center gap-2">
           <button id="btnToggleAutoclicker"
-            class="font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 border-stone-600 text-stone-300">
-            <span id="autoclickLed" class="w-2.5 h-2.5 rounded-full bg-stone-500"></span>
+            class="font-game px-2.5 py-0.5 rounded-lg border text-[11px] flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 border-stone-600 text-stone-300">
+            <span id="autoclickLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
             <span id="autoclickLabel">АВТОКЛИКЕР: ВЫКЛ</span>
           </button>
-          <span class="text-[10px] text-stone-400 hidden sm:inline">(Пробел / A)</span>
+          <span class="text-[9px] text-stone-400 hidden sm:inline">(Пробел / A)</span>
         </div>
-        <div class="flex items-center gap-1 text-[10px] flex-wrap">
-          <span class="text-stone-400 font-bold mr-1">Интервал:</span>
-          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
+        <div class="flex items-center gap-1 text-[9px] flex-wrap">
+          <span class="text-stone-400 font-bold mr-0.5">Интервал:</span>
+          <button class="autoclick-spd-btn px-1.5 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
             data-cps="10">100мс</button>
-          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
+          <button class="autoclick-spd-btn px-1.5 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
             data-cps="50">20мс</button>
-          <button class="autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
+          <button class="autoclick-spd-btn px-1.5 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
             data-cps="200">5мс</button>
           <button
-            class="autoclick-spd-btn px-2 py-0.5 rounded bg-amber-600 text-white font-bold border border-yellow-400"
+            class="autoclick-spd-btn px-1.5 py-0.5 rounded bg-amber-600 text-white font-bold border border-yellow-400"
             data-cps="1000">1мс ⚡</button>
         </div>
       </div>
 
       <!-- ASTRAL TRANSCENDENCE AUTOMATION DECK -->
       <div id="transcendAutomationsDeck"
-        class="px-3 py-1.5 bg-indigo-950/90 border-b border-indigo-500/50 flex flex-wrap items-center justify-between gap-2 z-10 text-xs">
+        class="px-2.5 py-1 bg-indigo-950/90 border-b border-indigo-500/50 flex flex-wrap items-center justify-between gap-1.5 z-10 text-xs shrink-0">
 
         <!-- Locked State Notice (Before midgame Astral Transcendence) -->
         <div id="transcendAutoLockedNotice"
@@ -389,46 +384,45 @@
       </div>
 
       <!-- UNIFIED PET CARE & NEEDS STATION (Bottom Console) -->
-      <div id="petNeedsStation" class="bg-stone-900/95 border-t-2 border-amber-900/80 z-10 select-none">
+      <div id="petNeedsStation" class="bg-stone-900/95 border-t-2 border-amber-900/80 z-10 select-none shrink-0">
 
         <!-- Status Ribbon: Ideal Care (Shown when all 3 >= 90%) -->
         <div id="buffIdealPill"
-          class="hidden py-0.5 px-3 bg-gradient-to-r from-yellow-500/20 via-amber-400/30 to-yellow-500/20 border-b border-yellow-400/50 text-center text-[11px] font-bold text-yellow-300 animate-pulse flex items-center justify-center gap-2">
+          class="hidden py-0.5 px-3 bg-gradient-to-r from-yellow-500/20 via-amber-400/30 to-yellow-500/20 border-b border-yellow-400/50 text-center text-[10px] font-bold text-yellow-300 animate-pulse flex items-center justify-center gap-2">
           <span>👑</span> <span>СТАТУС «ИДЕАЛ x2»: Все потребности удовлетворены! Доход и криты удвоены!</span>
           <span>👑</span>
         </div>
 
         <!-- 3 Unified Need Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 p-1 sm:p-1.5">
 
           <!-- Need 1: Сытость / Hunger -->
           <div
-            class="bg-stone-950/80 rounded-2xl p-2 border border-orange-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
+            class="bg-stone-950/80 rounded-xl p-1.5 border border-orange-600/30 flex flex-col justify-between gap-1 shadow-sm">
             <div class="flex items-center justify-between text-xs font-bold">
               <div class="flex items-center gap-1 text-stone-200">
                 <span>🍗</span>
-                <span class="text-[11px]">Сытость:</span>
+                <span class="text-[10px]">Сытость:</span>
                 <span id="txtHunger" class="font-mono text-orange-400 font-black">100%</span>
               </div>
               <span id="buffHungerText"
-                class="text-[9px] px-1.5 py-0.5 rounded bg-orange-950/90 text-orange-300 border border-orange-600/40 font-bold">+50%
-                Клик</span>
+                class="text-[8px] px-1 py-0.2 rounded bg-orange-950/90 text-orange-300 border border-orange-600/40 font-bold">+50% Клик</span>
             </div>
-            <div class="w-full bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700/60">
+            <div class="w-full bg-stone-800 h-1.5 rounded-full overflow-hidden border border-stone-700/60">
               <div id="barHunger"
                 class="bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all duration-300"
                 style="width: 100%"></div>
             </div>
             <div class="flex items-center gap-1 pt-0.5">
               <button id="btnFeed"
-                class="flex-1 jelly-btn bg-gradient-to-r from-orange-600 to-amber-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[11px] py-1 px-2 rounded-xl shadow border border-orange-400/50 flex items-center justify-center gap-1 cursor-pointer"
+                class="flex-1 jelly-btn bg-gradient-to-r from-orange-600 to-amber-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[10px] py-0.5 px-1.5 rounded-lg shadow border border-orange-400/50 flex items-center justify-center gap-1 cursor-pointer"
                 title="Покормить (+30% сытости, +50% к клику)">
                 <span>🍔</span> <span>Покормить</span>
               </button>
               <button id="btnAutoFeed"
-                class="px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
+                class="px-1.5 py-0.5 rounded-lg border text-[9px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
                 title="Авто-Кормление (открывается в Астральном Прорыве, Тир I)">
-                <span id="autoFeedLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+                <span id="autoFeedLed" class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
                 <span id="autoFeedText">Авто</span>
               </button>
             </div>
@@ -436,36 +430,35 @@
 
           <!-- Need 2: Чистота / Clean -->
           <div
-            class="bg-stone-950/80 rounded-2xl p-2 border border-cyan-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
+            class="bg-stone-950/80 rounded-xl p-1.5 border border-cyan-600/30 flex flex-col justify-between gap-1 shadow-sm">
             <div class="flex items-center justify-between text-xs font-bold">
               <div class="flex items-center gap-1 text-stone-200">
                 <span>🫧</span>
-                <span class="text-[11px]">Чистота:</span>
+                <span class="text-[10px]">Чистота:</span>
                 <span id="txtClean" class="font-mono text-cyan-400 font-black">100%</span>
               </div>
               <span id="buffCleanText"
-                class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950/90 text-cyan-300 border border-cyan-600/40 font-bold">+40%
-                Заводы</span>
+                class="text-[8px] px-1 py-0.2 rounded bg-cyan-950/90 text-cyan-300 border border-cyan-600/40 font-bold">+40% Заводы</span>
             </div>
-            <div class="w-full bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700/60">
+            <div class="w-full bg-stone-800 h-1.5 rounded-full overflow-hidden border border-stone-700/60">
               <div id="barClean" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full transition-all duration-300"
                 style="width: 100%"></div>
             </div>
             <div class="flex items-center gap-1 pt-0.5">
               <button id="btnWash"
-                class="flex-1 jelly-btn bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[11px] py-1 px-2 rounded-xl shadow border border-cyan-400/50 flex items-center justify-center gap-1 cursor-pointer"
+                class="flex-1 jelly-btn bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[10px] py-0.5 px-1.5 rounded-lg shadow border border-cyan-400/50 flex items-center justify-center gap-1 cursor-pointer"
                 title="Вымыть какашечку (+35% чистоты, +40% к заводам)">
                 <span>🧼</span> <span>Вымыть</span>
               </button>
               <button id="btnPolish"
-                class="jelly-btn bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-stone-950 font-black text-[10px] py-1 px-2 rounded-xl shadow border border-yellow-300 flex items-center justify-center gap-1 shrink-0 cursor-pointer"
+                class="jelly-btn bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-stone-950 font-black text-[9px] py-0.5 px-1.5 rounded-lg shadow border border-yellow-300 flex items-center justify-center gap-1 shrink-0 cursor-pointer"
                 title="Полировать до блеска (+4 блестяшки, заполняет чистоту при 70%+)">
                 <span>✨</span> <span>Глянец</span>
               </button>
               <button id="btnAutoWash"
-                class="px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
+                class="px-1.5 py-0.5 rounded-lg border text-[9px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
                 title="Авто-Мытье и Полировка (открывается в Астральном Прорыве, Тир I)">
-                <span id="autoWashLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+                <span id="autoWashLed" class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
                 <span id="autoWashText">Авто</span>
               </button>
             </div>
@@ -473,31 +466,30 @@
 
           <!-- Need 3: Настроение / Happy -->
           <div
-            class="bg-stone-950/80 rounded-2xl p-2 border border-pink-600/30 flex flex-col justify-between gap-1.5 shadow-sm">
+            class="bg-stone-950/80 rounded-xl p-1.5 border border-pink-600/30 flex flex-col justify-between gap-1 shadow-sm">
             <div class="flex items-center justify-between text-xs font-bold">
               <div class="flex items-center gap-1 text-stone-200">
                 <span>💖</span>
-                <span class="text-[11px]">Настроение:</span>
+                <span class="text-[10px]">Настроение:</span>
                 <span id="txtHappy" class="font-mono text-pink-400 font-black">100%</span>
               </div>
               <span id="buffHappyText"
-                class="text-[9px] px-1.5 py-0.5 rounded bg-pink-950/90 text-pink-300 border border-pink-600/40 font-bold">x2
-                Криты</span>
+                class="text-[8px] px-1 py-0.2 rounded bg-pink-950/90 text-pink-300 border border-pink-600/40 font-bold">x2 Криты</span>
             </div>
-            <div class="w-full bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700/60">
+            <div class="w-full bg-stone-800 h-1.5 rounded-full overflow-hidden border border-stone-700/60">
               <div id="barHappy" class="bg-gradient-to-r from-pink-500 to-rose-400 h-full transition-all duration-300"
                 style="width: 100%"></div>
             </div>
             <div class="flex items-center gap-1 pt-0.5">
               <button id="btnTickle"
-                class="flex-1 jelly-btn bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[11px] py-1 px-2 rounded-xl shadow border border-pink-400/50 flex items-center justify-center gap-1 cursor-pointer"
+                class="flex-1 jelly-btn bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[10px] py-0.5 px-1.5 rounded-lg shadow border border-pink-400/50 flex items-center justify-center gap-1 cursor-pointer"
                 title="Щекотать какашечку (+15% радости, +8 комбо-ярости, x2 шанс крита)">
                 <span>🪶</span> <span>Щекотать</span>
               </button>
               <button id="btnAutoTickle"
-                class="px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
+                class="px-1.5 py-0.5 rounded-lg border text-[9px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
                 title="Авто-Щекотка (открывается в Астральном Прорыве, Тир I)">
-                <span id="autoTickleLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
+                <span id="autoTickleLed" class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
                 <span id="autoTickleText">Авто</span>
               </button>
             </div>
@@ -510,77 +502,77 @@
 
     <!-- RIGHT: MULTI-TAB EXPANDED DASHBOARD -->
     <aside
-      class="w-full lg:w-[480px] flex flex-col bg-stone-900 rounded-3xl border-4 border-amber-900 shadow-2xl overflow-hidden h-[590px]">
+      class="w-full lg:w-[460px] xl:w-[490px] flex flex-col bg-stone-900 rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900 shadow-2xl overflow-hidden h-full min-h-0 shrink-0">
 
       <!-- Nav Tabs (6 Tabs) -->
-      <div class="grid grid-cols-6 bg-stone-950 border-b border-amber-900/80 text-[10px] sm:text-[11px] font-black">
-        <button class="dash-tab py-2.5 text-center bg-amber-700 text-white" data-target="panelEvo">🧬 Формы</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelFactories">🏭
+      <div class="grid grid-cols-6 bg-stone-950 border-b border-amber-900/80 text-[10px] sm:text-[11px] font-black shrink-0">
+        <button class="dash-tab py-1.5 text-center bg-amber-700 text-white" data-target="panelEvo">🧬 Формы</button>
+        <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelFactories">🏭
           Заводы</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelCases">🔪
+        <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelCases">🔪
           Кейсы</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelShop">💎
+        <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelShop">💎
           Бутик</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTalents">🌟
+        <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelTalents">🌟
           Таланты</button>
-        <button class="dash-tab py-2.5 text-center text-stone-400 hover:text-white" data-target="panelTrophies">🏆
+        <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelTrophies">🏆
           Подвиги</button>
       </div>
 
       <!-- Universal Multiplier Toolbar (x1 / x10 / x100 / xMAX) -->
       <div id="buyMultiplierBar"
-        class="px-3 py-1.5 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between text-xs">
+        class="px-2.5 py-1 bg-stone-950/95 border-b border-amber-900/60 flex items-center justify-between text-xs shrink-0">
         <div class="flex items-center gap-1.5">
           <span class="text-amber-400 font-bold">🛒</span>
-          <span class="text-[10px] uppercase font-bold text-stone-300">Режим покупки:</span>
+          <span class="text-[9px] uppercase font-bold text-stone-300">Режим покупки:</span>
         </div>
         <div class="flex items-center gap-1">
           <button
-            class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-amber-600 text-white font-bold border border-yellow-400 shadow jelly-btn"
+            class="buy-mult-btn px-2 py-0.5 rounded font-game text-[10px] bg-amber-600 text-white font-bold border border-yellow-400 shadow jelly-btn"
             data-mult="1">x1</button>
           <button
-            class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn"
+            class="buy-mult-btn px-2 py-0.5 rounded font-game text-[10px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn"
             data-mult="10">x10</button>
           <button
-            class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn"
+            class="buy-mult-btn px-2 py-0.5 rounded font-game text-[10px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn"
             data-mult="100">x100</button>
           <button
-            class="buy-mult-btn px-2.5 py-0.5 rounded-lg font-game text-[11px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn"
+            class="buy-mult-btn px-2 py-0.5 rounded font-game text-[10px] bg-stone-800 text-stone-300 border border-stone-700 hover:text-white jelly-btn"
             data-mult="max">xМАКС</button>
         </div>
       </div>
 
-      <!-- Panel Body -->
-      <div class="flex-1 overflow-y-auto p-3 custom-scroll space-y-3 text-xs" id="dashPanels">
+      <!-- Panel Body (Single Natural Scroll Container) -->
+      <div class="flex-1 min-h-0 overflow-y-auto p-2 sm:p-2.5 custom-scroll space-y-2 text-xs" id="dashPanels">
 
         <!-- 1. EVOLUTIONS (20,000 FORMS) -->
-        <div id="panelEvo" class="space-y-3">
+        <div id="panelEvo" class="space-y-2">
           <div
-            class="bg-gradient-to-r from-amber-900/80 to-yellow-900/80 p-3 rounded-2xl border border-yellow-500/50 shadow">
+            class="bg-gradient-to-r from-amber-900/80 to-yellow-900/80 p-2.5 rounded-2xl border border-yellow-500/50 shadow">
             <div class="flex justify-between items-center mb-1">
               <span class="font-bold text-amber-200 uppercase text-[10px]">Текущая Ступень:</span>
               <span class="font-black bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded" id="evoProgressBadge">1 /
                 20,000</span>
             </div>
-            <div class="font-game text-base text-yellow-300" id="evoStageName">Форма 1: Исходная Кварк-Капля</div>
+            <div class="font-game text-sm sm:text-base text-yellow-300" id="evoStageName">Форма 1: Исходная Кварк-Капля</div>
             <div class="text-[11px] text-stone-300 mt-0.5" id="evoStageDesc">Микроскопическое начало органической
               вселенной.</div>
-            <div class="mt-2.5 flex items-center justify-between pt-2 border-t border-amber-800/80">
+            <div class="mt-2 flex items-center justify-between pt-1.5 border-t border-amber-800/80">
               <span class="font-bold text-stone-300" id="evoCostLabel">След: 100 💨</span>
               <button id="btnEvolve"
-                class="bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-xs px-4 py-1.5 rounded-xl border border-yellow-300 shadow jelly-btn disabled:opacity-40 disabled:cursor-not-allowed">
+                class="bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-xs px-3.5 py-1 rounded-xl border border-yellow-300 shadow jelly-btn disabled:opacity-40 disabled:cursor-not-allowed">
                 Мутировать! 🧬
               </button>
             </div>
           </div>
 
           <div class="font-bold text-stone-400 uppercase text-[10px] px-1">Хроники 20,000 Мутаций:</div>
-          <div class="space-y-1.5 max-h-[360px] overflow-y-auto custom-scroll pr-1" id="evoListContainer"></div>
+          <div class="space-y-1.5 pr-1" id="evoListContainer"></div>
         </div>
 
         <!-- 2. FACTORIES PRODUCTION -->
         <div id="panelFactories" class="hidden space-y-2">
-          <div class="text-stone-400 text-[11px] px-1">Автоматические био-заводы дают стабильный доход каждую секунду:</div>
+          <div class="text-stone-400 text-[10.5px] px-1">Автоматические био-заводы дают стабильный доход каждую секунду:</div>
           <!-- Factory Tier Sub-Sections -->
           <div class="flex items-center gap-1.5 pb-1 overflow-x-auto custom-scroll" id="factoryTierFilters">
             <button class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 shadow border border-yellow-300" data-tier="all">Все</button>
@@ -589,13 +581,13 @@
             <button class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800" data-tier="3">🔮 Тир 3</button>
             <button class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800" data-tier="4">🌌 Тир 4</button>
           </div>
-          <div class="space-y-2 max-h-[460px] overflow-y-auto custom-scroll pr-1" id="factoriesContainer"></div>
+          <div class="space-y-2 pr-1" id="factoriesContainer"></div>
         </div>
 
         <!-- 3. CS:GO KNIFE CASES & WEAPON LOADOUT -->
-        <div id="panelCases" class="hidden space-y-3">
+        <div id="panelCases" class="hidden space-y-2.5">
           <div
-            class="bg-gradient-to-r from-yellow-950/80 via-amber-900/80 to-stone-900 p-3 rounded-2xl border border-yellow-500/50 shadow">
+            class="bg-gradient-to-r from-yellow-950/80 via-amber-900/80 to-stone-900 p-2.5 rounded-2xl border border-yellow-500/50 shadow">
             <div class="flex justify-between items-center">
               <span class="font-game text-yellow-300 text-sm">📦 Оружейные Кейсы CS:GO</span>
               <div class="flex items-center gap-2 text-xs">
@@ -603,38 +595,37 @@
                 <span class="text-cyan-300 font-game" id="casesPlungersLabel">0 🪠</span>
               </div>
             </div>
-            <p class="text-[10px] text-stone-300 mt-1">Открывайте кейсы за валюту перерождений (Втулки и Вантузы)!
+            <p class="text-[10px] text-stone-300 mt-0.5">Открывайте кейсы за валюту перерождений (Втулки и Вантузы)!
               Выбитые ножи отправляются в ваш Инвентарь Персонажа и дают сокрушительные множители силы.</p>
           </div>
 
           <!-- Shortcut to Dedicated Character Inventory Modal -->
           <div
-            class="p-3 rounded-2xl bg-gradient-to-r from-amber-950/90 to-stone-900 border-2 border-yellow-500/60 shadow flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5">
-              <span class="text-2xl">🎒</span>
+            class="p-2.5 rounded-2xl bg-gradient-to-r from-amber-950/90 to-stone-900 border-2 border-yellow-500/60 shadow flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🎒</span>
               <div>
                 <div class="font-game text-xs text-yellow-300">Инвентарь Снаряжения</div>
-                <div class="text-[10px] text-stone-300">Экипируйте выбитые ножи, головные уборы и выберите лучший клинок
-                </div>
+                <div class="text-[10px] text-stone-300">Экипируйте выбитые ножи, головные уборы и выберите лучший клинок</div>
               </div>
             </div>
             <button id="btnOpenCharacterInventoryFromCases"
-              class="shrink-0 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-[11px] font-black px-3 py-1.5 rounded-xl border border-yellow-300 shadow jelly-btn">
+              class="shrink-0 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-[10px] font-black px-2.5 py-1 rounded-xl border border-yellow-300 shadow jelly-btn">
               🎒 Инвентарь
             </button>
           </div>
 
           <!-- Knife Index Book Showcase Button -->
-          <div class="my-2">
+          <div class="my-1.5">
             <button id="btnOpenKnivesIndexModal"
-              class="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:brightness-110 text-white font-game text-xs sm:text-sm flex items-center justify-between gap-2 shadow-lg shadow-purple-500/25 border-2 border-yellow-300/40 jelly-btn">
+              class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:brightness-110 text-white font-game text-xs flex items-center justify-between gap-2 shadow-lg shadow-purple-500/25 border border-yellow-300/40 jelly-btn">
               <div class="flex items-center gap-2">
-                <span class="text-xl">📖</span>
+                <span class="text-lg">📖</span>
                 <span class="tracking-wide">КНИГА ИНДЕКСА НОЖЕЙ (200 НОЖЕЙ)</span>
               </div>
               <div class="flex items-center gap-1.5">
                 <span id="indexBookHeaderBadge"
-                  class="bg-black/50 px-2 py-0.5 rounded-full text-[11px] text-yellow-300 font-bold border border-yellow-400/50">0
+                  class="bg-black/50 px-2 py-0.5 rounded-full text-[10px] text-yellow-300 font-bold border border-yellow-400/50">0
                   / 200</span>
                 <span class="text-xs">➔</span>
               </div>
@@ -648,30 +639,30 @@
           </div>
         </div>
 
-        <!-- 3. LUXURY WARDROBE & SPARKLE BOUTIQUE -->
-        <div id="panelShop" class="hidden space-y-3">
-          <div class="bg-gradient-to-r from-yellow-950/70 to-amber-900/70 p-3 rounded-2xl border border-yellow-500/40">
+        <!-- 4. LUXURY WARDROBE & SPARKLE BOUTIQUE -->
+        <div id="panelShop" class="hidden space-y-2.5">
+          <div class="bg-gradient-to-r from-yellow-950/70 to-amber-900/70 p-2.5 rounded-2xl border border-yellow-500/40">
             <div class="flex justify-between items-center">
               <span class="font-game text-yellow-300 text-sm">Королевский Гардероб & Баффы</span>
               <span class="font-game text-xs text-yellow-400" id="shopSparkleLabel">0 ✨</span>
             </div>
-            <p class="text-[10px] text-stone-300 mt-1">Одежда и реликвии дают постоянные множители к клику,
+            <p class="text-[10px] text-stone-300 mt-0.5">Одежда и реликвии дают постоянные множители к клику,
               автосборщикам и шансу критического шмяка!</p>
           </div>
-          <div class="space-y-2 max-h-[460px] overflow-y-auto custom-scroll pr-1" id="shopItemsContainer"></div>
+          <div class="space-y-2 pr-1" id="shopItemsContainer"></div>
         </div>
 
-        <!-- 4. PRESTIGE & TRANSCEND TALENTS / RELICS -->
-        <div id="panelTalents" class="hidden space-y-2.5">
+        <!-- 5. PRESTIGE & TRANSCEND TALENTS / RELICS -->
+        <div id="panelTalents" class="hidden space-y-2">
           <!-- Sub-tabs navigation -->
-          <div class="flex items-center gap-2 border-b border-stone-800 pb-2">
+          <div class="flex items-center gap-2 border-b border-stone-800 pb-1.5">
             <button id="tabTalentsFlush"
-              class="talent-sub-tab flex-1 py-1.5 px-3 rounded-xl font-game text-xs flex items-center justify-center gap-1.5 transition font-bold bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-md border border-yellow-400">
+              class="talent-sub-tab flex-1 py-1 px-3 rounded-xl font-game text-xs flex items-center justify-center gap-1.5 transition font-bold bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-md border border-yellow-400">
               <span class="roll-icon"></span>
               <span>Таланты Смыва</span>
             </button>
             <button id="tabTalentsTranscend"
-              class="talent-sub-tab flex-1 py-1.5 px-3 rounded-xl font-game text-xs flex items-center justify-center gap-1.5 transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800">
+              class="talent-sub-tab flex-1 py-1 px-3 rounded-xl font-game text-xs flex items-center justify-center gap-1.5 transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800">
               <span class="plunger-icon"></span>
               <span>Реликвии Прорыва</span>
             </button>
@@ -679,12 +670,12 @@
 
           <!-- SUB-VIEW 1: FLUSH TALENTS (Втулки) -->
           <div id="viewTalentsFlush" class="space-y-2">
-            <div class="bg-purple-950/80 p-3 rounded-2xl border border-yellow-400/50">
+            <div class="bg-purple-950/80 p-2.5 rounded-2xl border border-yellow-400/50">
               <div class="flex justify-between items-center">
                 <span class="font-game text-yellow-300 text-sm">Древние Знания Втулок</span>
                 <span class="font-game text-xs text-yellow-200" id="talentRollsLabel">0 🧻</span>
               </div>
-              <p class="text-[10px] text-purple-200 mt-1">Бонусы сохраняются при Смыве Судьбы навсегда. Развивайте ветви
+              <p class="text-[10px] text-purple-200 mt-0.5">Бонусы сохраняются при Смыве Судьбы навсегда. Развивайте ветви
                 по тирам!</p>
             </div>
             <!-- Tier Filter Sub-Buttons -->
@@ -695,17 +686,17 @@
               <button class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800" data-tier="3">🔮 Тир 3</button>
               <button class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800" data-tier="4">🌌 Тир 4</button>
             </div>
-            <div class="space-y-2 max-h-[385px] overflow-y-auto custom-scroll pr-1" id="talentsContainer"></div>
+            <div class="space-y-2 pr-1" id="talentsContainer"></div>
           </div>
 
           <!-- SUB-VIEW 2: TRANSCEND RELICS (Вантузы) -->
           <div id="viewTalentsTranscend" class="hidden space-y-2">
-            <div class="bg-indigo-950/80 p-3 rounded-2xl border border-cyan-400/50">
+            <div class="bg-indigo-950/80 p-2.5 rounded-2xl border border-cyan-400/50">
               <div class="flex justify-between items-center">
                 <span class="font-game text-cyan-300 text-sm">Астральные Реликвии Омниверса</span>
                 <span class="font-game text-xs text-cyan-200" id="talentPlungersLabel">0 🪠</span>
               </div>
-              <p class="text-[10px] text-indigo-200 mt-1">Высшие артефакты автоматизации и космической силы, открываемые
+              <p class="text-[10px] text-indigo-200 mt-0.5">Высшие артефакты автоматизации и космической силы, открываемые
                 за Астральные Вантузы.</p>
             </div>
             <!-- Tier Filter Sub-Buttons -->
@@ -716,24 +707,24 @@
               <button class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800" data-tier="3">🔮 Тир 3</button>
               <button class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800" data-tier="4">🌌 Тир 4</button>
             </div>
-            <div class="space-y-2 max-h-[385px] overflow-y-auto custom-scroll pr-1" id="transcendRelicsContainer"></div>
+            <div class="space-y-2 pr-1" id="transcendRelicsContainer"></div>
           </div>
         </div>
 
-        <!-- 5. 50+ ACHIEVEMENTS -->
+        <!-- 6. 50+ ACHIEVEMENTS -->
         <div id="panelTrophies" class="hidden space-y-2">
           <div class="flex justify-between items-center px-1 text-[11px] font-bold text-stone-400">
             <span>Выполнено испытаний:</span>
             <span id="achievementsCountText" class="font-game text-yellow-400">0 / 52</span>
           </div>
-          <div class="space-y-1.5 max-h-[460px] overflow-y-auto custom-scroll pr-1" id="achievementsContainer"></div>
+          <div class="space-y-1.5 pr-1" id="achievementsContainer"></div>
         </div>
 
       </div>
 
       <!-- Performance Rate Footer (Locked height zero-jitter) -->
       <div
-        class="p-2.5 bg-stone-950 border-t border-amber-900/60 text-[10px] text-stone-400 flex justify-between items-center h-[38px] min-h-[38px] overflow-hidden whitespace-nowrap">
+        class="p-2 bg-stone-950 border-t border-amber-900/60 text-[10px] text-stone-400 flex justify-between items-center h-[34px] min-h-[34px] overflow-hidden whitespace-nowrap shrink-0">
         <div class="truncate flex items-center gap-1.5 font-mono">
           <span>Доход: <b class="text-emerald-400 tabular-nums" id="footPassiveRate">+0 /сек</b></span>
           <span class="text-stone-600">|</span>
