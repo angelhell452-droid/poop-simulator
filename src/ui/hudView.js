@@ -185,13 +185,6 @@ export function updateHUD() {
   if (mBar) mBar.style.width = `${mGoal.percent.toFixed(1)}%`;
   const mText = document.getElementById('milestoneProgressText');
   if (mText) mText.textContent = mGoal.progressText;
-  const arch = ARCHETYPES[GAME.archetype] || ARCHETYPES.balanced;
-  const mBadge = document.getElementById('archetypeBadge');
-  if (mBadge) {
-    mBadge.textContent = arch.badge;
-    mBadge.title = `Активная специализация: ${arch.name} (${arch.desc}). Кликните для выбора при Смыве.`;
-    mBadge.style.cursor = 'pointer';
-  }
 
 
   // Auto-care UI state update
@@ -522,9 +515,6 @@ export function initAutomationToggleListeners() {
   });
   document.getElementById('btnTranscendAutoInfo')?.addEventListener('click', () => {
     document.getElementById('btnTranscendModal')?.click();
-  });
-  document.getElementById('archetypeBadge')?.addEventListener('click', () => {
-    document.getElementById('btnPrestigeModal')?.click();
   });
 }
 

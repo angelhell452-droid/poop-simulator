@@ -592,22 +592,25 @@ export function renderCasesSystem() {
         : (hasCurrency ? `Открыть 🎰` : `Мало валюты ❌`);
 
       return `
-        <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-xl flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${!isUnlocked ? 'opacity-70 grayscale-[25%]' : ''}">
+        <div class="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-xl flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${!isUnlocked ? 'opacity-70 grayscale-[25%]' : ''}">
           <div>
-            <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-white/10 gap-2">
-              <div class="flex items-center gap-2 shrink-0">
-                <span class="text-3xl select-none filter drop-shadow">${c.icon}</span>
-                <button class="case-info-btn w-6 h-6 rounded-full bg-stone-900/90 hover:bg-stone-800 text-yellow-300 border border-yellow-400/80 flex items-center justify-center text-xs font-black transition shadow jelly-btn cursor-pointer" data-case="${c.id}" title="Просмотреть шансы выпадения и список ножей">!</button>
-              </div>
-              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-stone-950/90 text-yellow-300 border border-yellow-500/50 inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap shadow-sm">${formatNumber(c.cost)} ${currIcon}</span>
+            <!-- Top Bar: Info button & Price badge cleanly separated -->
+            <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-white/10 gap-2">
+              <button class="case-info-btn w-6 h-6 rounded-full bg-stone-950/80 hover:bg-stone-850 text-yellow-300 border border-yellow-400/70 flex items-center justify-center text-xs font-black transition shadow-sm jelly-btn cursor-pointer shrink-0" data-case="${c.id}" title="Просмотреть шансы выпадения и список ножей">ⓘ</button>
+              <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-stone-950/90 text-yellow-300 border border-yellow-500/50 inline-flex items-center gap-1.5 shrink-0 shadow-sm whitespace-nowrap">${formatNumber(c.cost)} ${currIcon}</span>
             </div>
-            <div class="text-center my-1.5 px-1">
-              <div class="font-game text-sm text-yellow-200 font-bold truncate tracking-wide">${c.name}</div>
-              <div class="text-[11px] text-stone-300 mt-1 leading-snug line-clamp-2">${c.desc}</div>
+
+            <!-- Central Showcase: Centered big icon, full readable title and description -->
+            <div class="flex flex-col items-center text-center my-1 px-1">
+              <div class="text-4xl my-1 select-none filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transform transition-transform duration-200 hover:scale-110">${c.icon}</div>
+              <div class="font-game text-xs sm:text-sm text-yellow-200 font-bold tracking-wide leading-tight min-h-[2.2rem] flex items-center justify-center text-center">${c.name}</div>
+              <div class="text-[10.5px] text-stone-300 mt-1 leading-snug line-clamp-2 min-h-[26px]">${c.desc}</div>
               ${lockBadge}
             </div>
           </div>
-          <button class="open-case-btn mt-3.5 w-full py-2 px-3 rounded-xl font-game text-xs font-bold transition jelly-btn truncate shadow-md ${canOpen ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${canOpen ? '' : 'disabled'}>
+
+          <!-- Bottom Action Button: only action name, NO repeated price -->
+          <button class="open-case-btn mt-3 w-full py-2 px-2.5 rounded-xl font-game text-xs font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1.5 ${canOpen ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${canOpen ? '' : 'disabled'}>
             ${btnText}
           </button>
         </div>
@@ -816,19 +819,18 @@ export function updateCasesButtons() {
     const canOpen = isUnlocked && hasCurrency;
     btn.disabled = !canOpen;
 
-    const currSymbol = c.currency === 'plungers' ? '🪠' : '🧻';
     const newText = !isUnlocked
       ? `🔒 ${c.reqTranscend ? `${c.reqTranscend} Прорыв` : `${c.reqPrestiges} Смыв`}`
-      : (hasCurrency ? `Открыть (${formatNumber(c.cost)} ${currSymbol}) 🎰` : `Мало ${currSymbol} (${formatNumber(c.cost)})`);
+      : (hasCurrency ? `Открыть 🎰` : `Мало валюты ❌`);
 
     if (btn.textContent.trim() !== newText) {
       btn.textContent = newText;
     }
 
     if (canOpen) {
-      btn.className = 'open-case-btn mt-3 w-full py-1.5 px-2 rounded-xl font-game text-xs transition jelly-btn truncate bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md';
+      btn.className = 'open-case-btn mt-3 w-full py-2 px-2.5 rounded-xl font-game text-xs font-bold transition jelly-btn bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black shadow-md text-center flex items-center justify-center gap-1.5';
     } else {
-      btn.className = 'open-case-btn mt-3 w-full py-1.5 px-2 rounded-xl font-game text-xs transition jelly-btn truncate bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700';
+      btn.className = 'open-case-btn mt-3 w-full py-2 px-2.5 rounded-xl font-game text-xs font-bold transition jelly-btn bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700 text-center flex items-center justify-center gap-1.5';
     }
   });
 }
