@@ -20,6 +20,8 @@ let autoSaveTimer = 0;
 let passiveRollAccumulator = 0;
 let lastSecondClicks = 0;
 export let liveCps = 0;
+// Autoclicker fractional accumulator — prevents bulk batching of 100+ clicks per tick
+let autoClickAccumulator = 0;
 
 export function gameEngineTick() {
   const now = performance.now();
@@ -38,15 +40,25 @@ export function gameEngineTick() {
   GAME.cycleBiomass += passiveGained;
 
   // 2. High-Speed Autoclicker Engine
-  let targetCps = 0;
+  // Uses a fractional accumulator so we add exactly 1 click at a time,
+  // matching the behaviour of a manual click. This prevents the batch-crit
+  // explosion where 100 clicks/tick × 20× crit = absurd mass at level 0.
   if (GAME.autoclickerActive) {
-    targetCps += (GAME.autoclickerSpeed || 1000);
+    const cps = Math.min(GAME.autoclickerSpeed || 10, 20); // hard cap at 20 CPS for balance
+    autoClickAccumulator += cps * dt;
+    const clicksThisTick = Math.floor(autoClickAccumulator);
+    autoClickAccumulator -= clicksThisTick;
+    if (clicksThisTick > 0) {
+      // Process each click individually (same path as manual click) to keep crits fair
+      for (let i = 0; i < clicksThisTick; i++) {
+        addPendingClicks(1);
+        processBatchedClicks();
+      }
+      triggerPetSquash(1.12, 0.9);
+    }
+  } else {
+    processBatchedClicks();
   }
-  if (targetCps > 0) {
-    addPendingClicks(targetCps * dt);
-    triggerPetSquash(1.12, 0.9);
-  }
-  processBatchedClicks();
 
   // 3. Transcendence Artifact: Auto-Evolution (every 1.0s)
   autoEvoTimer += dt;

@@ -2,7 +2,7 @@ import { GAME } from '../core/state.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 
 const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1555324109133578281/2I6OMFH4hZm_QUnSVcceMJtb_3DSyw8aT4vl9zXaC1IknsV9F41768tK5csbj6o7QjYW';
-const GAME_VERSION = 'v4.9.15 PRO';
+const GAME_VERSION = 'v4.9.16 PRO';
 
 // Cooldown: один репорт в 60 секунд чтобы не флудили
 let lastReportTime = 0;

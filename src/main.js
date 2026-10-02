@@ -42,14 +42,15 @@ export function updateAutoclickerUI() {
   const label = document.getElementById('autoclickLabel');
   if (!btn || !led || !label) return;
 
-  const spd = GAME.autoclickerSpeed || 1000;
-  const intervalMs = Math.round(1000 / spd);
-  const intervalText = intervalMs <= 1 ? '1мс' : `${intervalMs}мс`;
+  // Clamp legacy saves that had 50/200/1000 CPS (the bug source) to max 20
+  const rawSpd = GAME.autoclickerSpeed || 10;
+  const spd = Math.min(rawSpd, 20);
+  if (rawSpd !== spd) GAME.autoclickerSpeed = spd;
 
   if (GAME.autoclickerActive) {
     btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-amber-600 hover:bg-amber-500 border-yellow-400 text-white shadow-[0_0_10px_#f59e0b]';
     led.className = 'w-2.5 h-2.5 rounded-full bg-yellow-300 shadow-[0_0_8px_#facc15] animate-ping';
-    label.textContent = `АВТОКЛИКЕР: ВКЛ (${intervalText} ⚡)`;
+    label.textContent = `АВТОКЛИКЕР: ВКЛ (${spd} CPS ⚡)`;
   } else {
     btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 hover:bg-stone-700 border-stone-600 text-stone-300';
     led.className = 'w-2.5 h-2.5 rounded-full bg-stone-500';
@@ -65,6 +66,7 @@ export function updateAutoclickerUI() {
     }
   });
 }
+
 
 export function setGameMode(mode) {
   GAME.gameMode = mode;

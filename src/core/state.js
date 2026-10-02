@@ -41,7 +41,7 @@ export function getDefaultGameState() {
     equippedHat: null,
 
     autoclickerActive: false,
-    autoclickerSpeed: 1000,
+    autoclickerSpeed: 10, // CPS — capped at 20 max in gameLoop to prevent crit batching exploit
 
     gameMode: 'boys', // 'boys' | 'girls'
     girlyMode: false,
