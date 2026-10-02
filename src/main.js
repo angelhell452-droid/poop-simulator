@@ -28,7 +28,7 @@ import { ACHIEVEMENTS } from './data/achievements.data.js';
 import { SHOP_ITEMS } from './data/shop.data.js';
 import { formatNumber } from './utils/numberFormatter.js';
 import { formatDurationAway } from './utils/timeUtils.js';
-import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, takeClickBudget } from './systems/autoclickService.js';
+import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap, takeClickBudget } from './systems/autoclickService.js';
 import { events } from './core/events.js';
 
 export function toggleAutoclicker() {
@@ -62,7 +62,7 @@ export function updateAutoclickerUI() {
     btn.disabled = false;
     btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 hover:bg-stone-700 border-stone-600 text-stone-300';
     led.className = 'w-2.5 h-2.5 rounded-full bg-stone-500';
-    label.textContent = 'АВТОКЛИКЕР: ВЫКЛ';
+    label.textContent = `АВТОКЛИКЕР: ВЫКЛ · ${formatNumber(cap)} CPS`;
   }
 
   document.querySelectorAll('.autoclick-spd-btn').forEach(b => {
@@ -153,6 +153,17 @@ export async function bootstrap() {
     updateAutoclickerUI();
   });
   events.on('save:loaded', () => updateAutoclickerUI());
+
+  let shownClickCap = -1;
+  events.on('tick', () => {
+    const cap = getClickCapCps();
+    if (cap === shownClickCap) return;
+    shownClickCap = cap;
+    syncAutoclickSpeedToCap();
+    updateAutoclickerUI();
+    const cpsEl = document.getElementById('invTotalCps');
+    if (cpsEl) cpsEl.textContent = `${formatNumber(cap)} CPS`;
+  });
 
   // 2. Load Save (Local + Cloud D1)
   await loadFromCloudDatabaseOrLocal();

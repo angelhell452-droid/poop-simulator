@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.19 PRO</title>
+  <title>Poop Simulator v4.9.20 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.19 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.20 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -1572,7 +1572,7 @@
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Клики по персонажу (усиливаются ножами, сытостью и талантами)</li>
                 <li>Автоматические заводы (15 фабрик: от Мух до Сингулярности)</li>
-                <li>Ловля пролетающих золотых метеоритов</li>
+                <li>Ловля пролетающей золотой звезды</li>
               </ul>
             </div>
             <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
@@ -1584,6 +1584,24 @@
               </ul>
             </div>
           </div>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-yellow-950/40 border border-yellow-500/50 shadow">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-2xl">🌟</span>
+            <span class="font-game text-sm text-yellow-300">Золотая звезда</span>
+            <span class="text-[10px] bg-yellow-500/20 text-yellow-200 px-2 py-0.5 rounded-full border border-yellow-500/40 font-bold ml-auto">Событие на экране</span>
+          </div>
+          <p class="text-stone-300 leading-relaxed">
+            Время от времени по экрану пролетает золотая звезда. Нажми на неё, пока она не ушла. Один клик выбирает одну награду.
+          </p>
+          <ul class="list-disc list-inside text-stone-300 mt-2 space-y-0.5 text-[11px]">
+            <li>Чаще всего: турбо на 8 секунд или большой всплеск биомассы.</li>
+            <li>Реже: пачка блестяшек.</li>
+            <li>Реже всего: втулки судьбы.</li>
+            <li>Охотник за метеоритами, радар и буря усиливают награду и зовут звезду чаще.</li>
+            <li>Примерно каждая шестая звезда открывает звёздный рой на 12 секунд: мелкие звёзды тоже ловятся, каждая даёт блестяшки.</li>
+          </ul>
         </div>
 
         <!-- 2. SPARKLES -->
@@ -1773,6 +1791,11 @@
           <h3 class="font-game text-xl sm:text-2xl text-yellow-300 tracking-wide">ИНВЕНТАРЬ ПЕРСОНАЖА</h3>
           <p class="text-xs text-amber-200">Снаряжение какашечки, головные уборы и арсенал боевых ножей</p>
         </div>
+      </div>
+
+      <div class="flex items-center justify-between rounded-2xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2">
+        <span class="text-[11px] font-bold text-cyan-200">Доступный CPS</span>
+        <span id="invTotalCps" class="font-game text-sm text-cyan-100">40 CPS</span>
       </div>
 
       <!-- DEDICATED SLOTS: KNIFE SLOT & HAT SLOT -->

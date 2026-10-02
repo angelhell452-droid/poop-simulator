@@ -37,6 +37,11 @@ export let goldenMeteor = {
   rotation: 0
 };
 let nextMeteorSpawn = Date.now() + 25000;
+const showerMeteors = [];
+let showerUntil = 0;
+let showerNextSpawn = 0;
+const SHOWER_CHANCE = 0.18;
+const SHOWER_MS = 12000;
 function scheduleNextMeteor(extraMs = 0) {
   const hunter = TALENTS.find(t => t.id === 'meteor_hunter');
   const hunterScale = Math.pow(0.92, hunter ? hunter.level : 0);
@@ -455,6 +460,8 @@ function renderPetLoop(time) {
     goldenMeteor.vy = (Math.random() - 0.5) * 0.8;
   }
 
+  tickMeteorShower(ctx, w, h);
+
   // 1. Lightweight atmospheric spark particles (fast circle batch, zero font cost)
   if (sparkParticles.length > 0) {
     for (let i = sparkParticles.length - 1; i >= 0; i--) {
@@ -558,6 +565,9 @@ export function catchGoldenMeteor() {
   addVisualParticle(label, '#facc15', 1.6, 2.2, -2.5);
 
   scheduleNextMeteor();
+  if (Date.now() >= showerUntil && Math.random() < SHOWER_CHANCE) {
+    startMeteorShower();
+  }
 
   checkAchievements();
   updateHUD();
@@ -566,16 +576,89 @@ export function catchGoldenMeteor() {
 }
 
 export function checkMeteorClick(clientX, clientY) {
-  if (!goldenMeteor.active || !canvas) return false;
+  if (!canvas) return false;
   const rect = canvas.getBoundingClientRect();
   const clickX = clientX - rect.left;
   const clickY = clientY - rect.top;
-  const dist = Math.hypot(clickX - goldenMeteor.x, clickY - goldenMeteor.y);
-  if (dist < goldenMeteor.radius + 18) {
-    catchGoldenMeteor();
+
+  let nearestShower = -1;
+  let nearestDist = Infinity;
+  showerMeteors.forEach((meteor, index) => {
+    const dist = Math.hypot(clickX - meteor.x, clickY - meteor.y);
+    if (dist < meteor.radius + 14 && dist < nearestDist) {
+      nearestDist = dist;
+      nearestShower = index;
+    }
+  });
+
+  if (goldenMeteor.active) {
+    const goldenDist = Math.hypot(clickX - goldenMeteor.x, clickY - goldenMeteor.y);
+    if (goldenDist < goldenMeteor.radius + 18 && goldenDist <= nearestDist) {
+      catchGoldenMeteor();
+      return true;
+    }
+  }
+
+  if (nearestShower >= 0) {
+    catchShowerMeteor(nearestShower);
     return true;
   }
   return false;
+}
+
+function startMeteorShower() {
+  showerUntil = Date.now() + SHOWER_MS;
+  showerNextSpawn = Date.now();
+  addVisualParticle('🌠 ЗВЁЗДНЫЙ РОЙ! Лови звёзды 12с', '#67e8f9', 1.5, 2.2, -2.2);
+}
+
+function tickMeteorShower(drawCtx, w, h) {
+  const now = Date.now();
+  if (now < showerUntil && now >= showerNextSpawn && showerMeteors.length < 5) {
+    const fromLeft = Math.random() < 0.5;
+    showerMeteors.push({
+      x: fromLeft ? -20 : w + 20,
+      y: 36 + Math.random() * Math.max(80, h * 0.7),
+      vx: (fromLeft ? 1 : -1) * (1.7 + Math.random() * 1.1),
+      vy: (Math.random() - 0.5) * 0.7,
+      radius: 16,
+      life: 380,
+      rotation: Math.random() * Math.PI
+    });
+    showerNextSpawn = now + 850;
+  }
+
+  for (let i = showerMeteors.length - 1; i >= 0; i--) {
+    const meteor = showerMeteors[i];
+    meteor.x += meteor.vx;
+    meteor.y += meteor.vy;
+    meteor.rotation += 0.08;
+    meteor.life--;
+    if (meteor.life <= 0 || meteor.x < -50 || meteor.x > w + 50 || meteor.y < -50 || meteor.y > h + 50) {
+      showerMeteors.splice(i, 1);
+      continue;
+    }
+    drawCtx.save();
+    drawCtx.translate(meteor.x, meteor.y);
+    drawCtx.rotate(meteor.rotation);
+    drawCtx.font = '22px sans-serif';
+    drawCtx.textAlign = 'center';
+    drawCtx.textBaseline = 'middle';
+    drawCtx.fillText('⭐', 0, 0);
+    drawCtx.restore();
+  }
+}
+
+function catchShowerMeteor(index) {
+  if (!showerMeteors[index]) return;
+  showerMeteors.splice(index, 1);
+  GAME.meteorsCaught = (GAME.meteorsCaught || 0) + 1;
+  const sparkGain = Math.max(8, Math.round(18 + Math.random() * 36));
+  GAME.sparkles = (Number(GAME.sparkles) || 0) + sparkGain;
+  addVisualParticle(`⭐ +${formatNumber(sparkGain)} ✨`, '#fde68a', 1.05);
+  checkAchievements();
+  updateHUD();
+  saveLocal();
 }
 
 // DRAW EQUIPPED WARDROBE HATS WITH RICH PROCEDURAL CANVAS VECTORS

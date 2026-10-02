@@ -24,14 +24,31 @@ export function isAutoclickUnlocked() {
   return (GAME.totalPrestiges || 0) >= 1;
 }
 
+/** Clicks per second this knife adds to the player's cap. */
+export function getKnifeCpsBonus(knife) {
+  if (!knife) return 0;
+  const rarity = KNIFE_CPS_BONUS[knife.rarity] || 6;
+  const stars = Math.min(15, Math.max(0, getKnifeStar(knife.id) - 1));
+  return rarity + stars;
+}
+
+const CLICK_SPEED_PRESETS = [10, 20, 30];
+
+/** If the player is on MAX, the chosen speed follows the live cap. */
+export function syncAutoclickSpeedToCap() {
+  if (!isAutoclickUnlocked()) return;
+  const cap = getClickCapCps();
+  const speed = Math.round(GAME.autoclickerSpeed || 1);
+  if (!CLICK_SPEED_PRESETS.includes(speed) || speed > cap) {
+    GAME.autoclickerSpeed = cap;
+  }
+}
+
 /** Shared CPS ceiling for hands, the built-in autoclicker, and outside click tools. */
 export function getClickCapCps() {
   let cap = BARE_CLICK_CAP;
   const knife = getEquippedKnife();
-  if (knife) {
-    cap += KNIFE_CPS_BONUS[knife.rarity] || 6;
-    cap += Math.min(15, Math.max(0, getKnifeStar(knife.id) - 1));
-  }
+  if (knife) cap += getKnifeCpsBonus(knife);
   if (SHOP_ITEMS.find(i => i.id === 'upg_swift_click')?.owned) cap += 2;
   const sovereign = TALENTS.find(t => t.id === 'time_sovereign');
   cap += (sovereign ? sovereign.level : 0) * 0.15;

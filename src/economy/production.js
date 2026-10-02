@@ -50,9 +50,11 @@ export function getKnifePassiveMult(knife) {
 }
 
 export function getKnifeShownBonuses(knife) {
+  const passive = getKnifePassiveMult(knife);
   return {
     clickPct: Math.round((getKnifeClickMult(knife) - 1) * 100),
-    passPct: Math.round((getKnifePassiveMult(knife) - 1) * 100)
+    passPct: Math.round((passive - 1) * 100),
+    cpsMult: passive
   };
 }
 

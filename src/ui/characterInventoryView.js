@@ -6,12 +6,13 @@ import {
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js';
+import { getKnifeShownBonuses } from '../economy/production.js';
+import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js';
 import { saveLocal } from '../save/saveManager.js';
 import { updateHUD } from './hudView.js';
 import { renderShop } from './shopView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { formatNumber } from '../utils/numberFormatter.js';
-import { getKnifeShownBonuses } from '../economy/production.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 
@@ -67,6 +68,8 @@ export function renderCharacterInventory() {
   if (pName) pName.textContent = `Форма #${GAME.evoStage + 1}: ${skinInfo.name}`;
   const pTier = document.getElementById('invPoopTierBadge');
   if (pTier) pTier.textContent = `Тир ${skinInfo.tier}`;
+  const cpsEl = document.getElementById('invTotalCps');
+  if (cpsEl) cpsEl.textContent = `${formatNumber(getClickCapCps())} CPS`;
 
   // 2. Dedicated Hat Slot (Слот Шапки)
   const equippedHat = GAME.equippedHat ? SHOP_ITEMS.find(i => i.id === GAME.equippedHat) : null;
@@ -136,7 +139,6 @@ export function renderCharacterInventory() {
       const eqStar = getKnifeStar(equippedObj.id);
       const shown = getKnifeShownBonuses(equippedObj);
       const eqClickPct = shown.clickPct;
-      const eqPassPct = shown.passPct;
       const costInfo = getKnifeSharpenCost(equippedObj);
       const canAffordSharpen = (GAME.sparkles || 0) >= costInfo.cost;
       let sharpenBtnHtml = '';
@@ -160,7 +162,7 @@ export function renderCharacterInventory() {
               <div class="font-game text-sm text-white font-black truncate drop-shadow-md" style="text-shadow:0 1px 4px rgba(0,0,0,0.9)">${equippedObj.name}</div>
               <div class="flex items-center gap-1.5 text-[10px] mt-0.5">
                 <span class="text-emerald-300 font-bold bg-emerald-950/70 px-1.5 py-0.5 rounded">+${formatNumber(eqClickPct)}% 🗗️</span>
-                <span class="text-cyan-300 font-bold bg-cyan-950/70 px-1.5 py-0.5 rounded">+${formatNumber(eqPassPct)}% 🏷️</span>
+                <span class="text-cyan-300 font-bold bg-cyan-950/70 px-1.5 py-0.5 rounded">+${formatNumber(getKnifeCpsBonus(equippedObj))} CPS</span>
                 <span class="text-amber-300 font-black bg-amber-950/70 px-1.5 py-0.5 rounded">★ Lv.${eqStar}</span>
                 ${equippedObj.statTrak ? `<span class="text-orange-400 font-mono font-bold bg-orange-950/70 px-1.5 py-0.5 rounded">🔥 ${formatNumber(equippedObj.statTrak)}</span>` : ''}
               </div>
@@ -313,7 +315,6 @@ function renderKnivesGrid() {
     const canAffordSharpen = (GAME.sparkles || 0) >= starCostInfo.cost;
     const shown = getKnifeShownBonuses(kn);
     const clickBonus = shown.clickPct;
-    const passBonus = shown.passPct;
 
     // Balanced realistic recycle returns
     const isAstral = ['godly', 'special', 'celestial'].includes(kn.rarity);
@@ -376,7 +377,7 @@ function renderKnivesGrid() {
         <!-- Row 2: Compact Stats Badges -->
         <div class="flex items-center gap-1.5 my-1.5 text-[9px] sm:text-[10px] font-mono font-bold flex-wrap">
           <span class="bg-emerald-950/80 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30">🗡️ +${formatNumber(clickBonus)}%</span>
-          <span class="bg-cyan-950/80 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/30">🏭 +${formatNumber(passBonus)}%</span>
+          <span class="bg-cyan-950/80 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/30">+${formatNumber(getKnifeCpsBonus(kn))} CPS</span>
           ${kn.statTrak ? `<span class="bg-orange-950/80 text-orange-400 px-1.5 py-0.5 rounded border border-orange-500/30" title="Кликов StatTrak">🔥 ${formatNumber(kn.statTrak)}</span>` : ''}
         </div>
 

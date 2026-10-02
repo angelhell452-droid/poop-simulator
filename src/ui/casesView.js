@@ -12,6 +12,7 @@ import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast }
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { getKnifeShownBonuses } from '../economy/production.js';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js';
 
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -572,7 +573,7 @@ function onRouletteFinished() {
   if (cbEl) cbEl.textContent = `+${formatNumber(shown.clickPct)}% Клик`;
 
   const pbEl = document.getElementById('rouletteResultPassiveBoost');
-  if (pbEl) pbEl.textContent = `+${formatNumber(shown.passPct)}% Заводы`;
+  if (pbEl) pbEl.textContent = `+${formatNumber(getKnifeCpsBonus(rouletteWinningKnife))} CPS`;
 
   showKnifeToast(isDuplicate
     ? `🔁 Дубликат "${rouletteWinningKnife.name}"! Кэшбэк 50%: +${formatNumber(duplicateCashback)} ${currSym}`
@@ -828,7 +829,6 @@ export function openCasePreviewModal(caseId) {
       const knife = item.knife;
       const shown = getKnifeShownBonuses(knife);
       const clickPct = shown.clickPct;
-      const passPct = shown.passPct;
       const pct = item.chancePercent < 1.0 ? item.chancePercent.toFixed(2) : item.chancePercent.toFixed(1);
 
       let rColor = 'border-stone-700 bg-stone-900/80';
@@ -872,7 +872,7 @@ export function openCasePreviewModal(caseId) {
             <div class="text-[10px] text-stone-400 mt-1 flex items-center gap-2 flex-wrap font-mono">
               <span>Клик: <b class="text-emerald-300 font-bold">+${formatNumber(clickPct)}%</b></span>
               <span class="text-stone-600">•</span>
-              <span>Заводы: <b class="text-cyan-300 font-bold">+${formatNumber(passPct)}%</b></span>
+              <span>CPS: <b class="text-cyan-300 font-bold">+${formatNumber(getKnifeCpsBonus(knife))}</b></span>
               <span class="text-stone-600">•</span>
               <span>Множитель: <b class="text-amber-300 font-bold">x${knife.clickMult}</b></span>
             </div>

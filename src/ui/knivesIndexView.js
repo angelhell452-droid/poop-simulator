@@ -11,6 +11,7 @@ import { renderCasesSystem } from './casesView.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { getKnifeShownBonuses } from '../economy/production.js';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js';
 
 // Быстрый поиск кейса для ножа
 const KNIFE_CASE_MAP = new Map();
@@ -153,7 +154,6 @@ export function renderKnivesIndexBook() {
     const colorClass = rarityColors[knife.rarity] || 'border-stone-700 bg-stone-900 text-stone-400';
     const shown = getKnifeShownBonuses(knife);
     const clickPct = shown.clickPct;
-    const passPct = shown.passPct;
 
     return `
       <div class="p-2 sm:p-2.5 rounded-2xl border-2 flex flex-col justify-between relative transition duration-200 min-h-[195px] overflow-hidden ${isUnlocked ? colorClass : 'border-stone-800 bg-stone-950/80 opacity-65 grayscale'} ${isEquipped ? 'ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]' : ''}">
@@ -174,7 +174,7 @@ export function renderKnivesIndexBook() {
               <span class="text-amber-400">★ Lv.${star}</span>
               <span class="text-emerald-400">+${formatNumber(clickPct)}% Клик</span>
             </div>
-            <div class="text-[9px] text-cyan-300 font-mono text-center mb-1.5">+${formatNumber(passPct)}% Заводы</div>
+            <div class="text-[9px] text-cyan-300 font-mono text-center mb-1.5">+${formatNumber(getKnifeCpsBonus(knife))} CPS</div>
             <div class="flex gap-1">
               ${!isEquipped ? `
                 <button class="index-equip-btn flex-1 py-1 rounded-xl text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold transition shadow" data-id="${knife.id}">
