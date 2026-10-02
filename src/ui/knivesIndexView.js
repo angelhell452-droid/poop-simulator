@@ -1,6 +1,6 @@
 import { GAME } from '../core/state.js';
 import { KNIVES } from '../data/knives.data.js';
-import { CSGO_CASES } from '../data/cases.data.js';
+import { WEAPON_CASES } from '../data/cases.data.js';
 import { FACTORIES } from '../data/factories.data.js';
 import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js';
 import { TALENTS } from '../data/talents.data.js';
@@ -13,7 +13,7 @@ import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 
 // Быстрый поиск кейса для ножа
 const KNIFE_CASE_MAP = new Map();
-CSGO_CASES.forEach(c => {
+WEAPON_CASES.forEach(c => {
   (c.pool || []).forEach(kid => {
     if (!KNIFE_CASE_MAP.has(kid)) {
       KNIFE_CASE_MAP.set(kid, { id: c.id, name: c.name, icon: c.icon, cost: c.cost, currency: c.currency });

@@ -2,7 +2,7 @@ import { GAME } from '../core/state.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 
 const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1555324109133578281/2I6OMFH4hZm_QUnSVcceMJtb_3DSyw8aT4vl9zXaC1IknsV9F41768tK5csbj6o7QjYW';
-const GAME_VERSION = 'v4.9.16 PRO';
+const GAME_VERSION = 'v4.9.17 PRO';
 
 // Cooldown: один репорт в 60 секунд чтобы не флудили
 let lastReportTime = 0;
@@ -83,8 +83,8 @@ async function sendBugReport(textarea, categoryBtns, statusEl, btnSend) {
   const stage = GAME.evoStage || 0;
   const biomass = formatNumber(GAME.biomass || 0);
   const sparkles = formatNumber(GAME.sparkles || 0);
-  const prestigeLvl = GAME.prestigeLevel || 0;
-  const transcendLvl = GAME.transcendLevel || 0;
+  const prestigeLvl = GAME.totalPrestiges || 0;
+  const transcendLvl = GAME.totalTranscend || 0;
   const knivesCount = (GAME.unlockedKnives || []).length;
 
   // Цвет embed по категории

@@ -392,7 +392,7 @@ function renderPetLoop(time) {
     ctx.rotate(slashAngle);
 
     // 1. Сначала рисуем нож (рукоять ложится точно под лапку)
-    drawCSGOKnife(ctx, knife, time);
+    drawKnifeInHand(ctx, knife, time);
 
     // 2. Лапка питомца естественно сжимает рукоять поверх ножа
     ctx.fillStyle = isGirly ? '#fbcfe8' : (currentEvo.bodyColor || '#78350f');
@@ -921,8 +921,8 @@ function drawEquippedHat(ctx, hatId, time, isGirly) {
   ctx.restore();
 }
 
-// DRAW CS:GO KNIFE IN PET HAND WITH DYNAMIC SHADERS & VECTOR MODELS
-function drawCSGOKnife(ctx, knife, time) {
+// DRAW KNIFE IN PET HAND WITH DYNAMIC SHADERS & VECTOR MODELS
+function drawKnifeInHand(ctx, knife, time) {
   if (!knife) return;
   drawKnifeVectorOnCanvas(ctx, knife, time);
 }

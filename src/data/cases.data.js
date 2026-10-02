@@ -1,7 +1,7 @@
-export const CSGO_CASES = [
+export const WEAPON_CASES = [
   {
     "id": "case_classic",
-    "name": "CS:GO Weapon Case #1",
+    "name": "Оружейный Контейнер #1",
     "icon": "📦",
     "currency": "rolls",
     "cost": 1000,

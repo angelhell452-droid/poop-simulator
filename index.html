@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.16 PRO | Фикс АвтоКликера</title>
+  <title>Poop Simulator v4.9.17 PRO | Мега-Патч</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.16 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.17 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -278,14 +278,14 @@
         <div class="flex items-center gap-1 text-[9px] flex-wrap">
           <span class="text-stone-400 font-bold mr-0.5">Скорость:</span>
           <button class="autoclick-spd-btn px-1.5 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
-            data-cps="1">1 CPS</button>
-          <button class="autoclick-spd-btn px-1.5 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
-            data-cps="5">5 CPS</button>
-          <button class="autoclick-spd-btn px-1.5 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
             data-cps="10">10 CPS</button>
+          <button class="autoclick-spd-btn px-1.5 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
+            data-cps="100">100 CPS</button>
+          <button class="autoclick-spd-btn px-1.5 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700"
+            data-cps="500">500 CPS</button>
           <button
             class="autoclick-spd-btn px-1.5 py-0.5 rounded bg-amber-600 text-white font-bold border border-yellow-400"
-            data-cps="20">20 CPS ⚡</button>
+            data-cps="1000">1000 CPS ⚡</button>
         </div>
       </div>
 
@@ -617,7 +617,7 @@
           <div
             class="bg-gradient-to-r from-yellow-950/80 via-amber-900/80 to-stone-900 p-2.5 rounded-2xl border border-yellow-500/50 shadow">
             <div class="flex justify-between items-center">
-              <span class="font-game text-yellow-300 text-sm">📦 Оружейные Кейсы CS:GO</span>
+              <span class="font-game text-yellow-300 text-sm">📦 Оружейные Контейнеры</span>
               <div class="flex items-center gap-2 text-xs">
                 <span class="text-yellow-200 font-game" id="casesRollsLabel">0 🧻</span>
                 <span class="text-cyan-300 font-game" id="casesPlungersLabel">0 🪠</span>
@@ -803,7 +803,7 @@
         <div class="text-4xl mb-2 animate-bounce">👑</div>
         <h3 class="font-game text-xl text-yellow-300">Облачный Аккаунт D1</h3>
         <p class="text-[11px] text-stone-400 mt-1">
-          Создайте аккаунт, чтобы сохранять мутации, ножи CS:GO и возвращаться к игре с любого устройства!
+          Создайте аккаунт, чтобы сохранять мутации, ножи и возвращаться к игре с любого устройства!
         </p>
       </div>
 
@@ -1372,7 +1372,7 @@
     </div>
   </div>
 
-  <!-- CS:GO CASE ROULETTE MODAL -->
+  <!-- WEAPON CASE ROULETTE MODAL -->
   <div id="caseRouletteModal"
     class="fixed inset-0 bg-black/92 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div
@@ -1389,14 +1389,14 @@
       <div class="flex items-center justify-between mb-2">
         <button id="btnToggleRouletteAudio"
           class="bg-stone-800/90 hover:bg-stone-700 text-yellow-400 font-game text-[11px] px-3 py-1 rounded-xl border border-stone-600 flex items-center gap-1.5 transition">
-          <span id="rouletteAudioIcon">🔊</span> <span id="rouletteAudioText">ЗВУК CS:GO: ВКЛ</span>
+          <span id="rouletteAudioIcon">🔊</span> <span id="rouletteAudioText">🔊 ЗВУК: ВКЛ</span>
         </button>
         <button id="btnCloseCaseRoulette"
           class="modal-close text-stone-400 hover:text-white text-2xl font-bold p-1 leading-none">&times;</button>
       </div>
 
       <div class="text-[11px] font-bold text-amber-400 uppercase tracking-widest" id="rouletteCaseSubtitle">ОТКРЫТИЕ
-        КОНТЕЙНЕРА CS:GO</div>
+        КОНТЕЙНЕРА</div>
       <h3 class="font-game text-2xl sm:text-3xl text-yellow-300 tracking-wide mt-0.5" id="rouletteCaseTitle">Weapon Case
       </h3>
 
@@ -1410,7 +1410,7 @@
       <!-- Horizontal Roulette Wheel Viewport -->
       <div id="rouletteWheelBox"
         class="relative my-4 mx-auto w-full max-w-[560px] h-36 bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 border-4 border-amber-800/90 rounded-2xl overflow-hidden shadow-[inset_0_0_25px_rgba(0,0,0,0.9)] flex items-center">
-        <!-- CS:GO Center Target Needle with Mechanical Kick Physics -->
+        <!-- Center Target Needle with Mechanical Kick Physics -->
         <div id="rouletteNeedle"
           class="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-300 via-amber-400 to-yellow-300 -translate-x-1/2 z-30 shadow-[0_0_16px_#facc15] pointer-events-none origin-top transition-transform duration-75">
           <div
@@ -1428,7 +1428,7 @@
         </div>
       </div>
 
-      <!-- Result Inspect Banner (CS:GO Weapon Showcase Revealed after spin) -->
+      <!-- Result Inspect Banner (Weapon Showcase Revealed after spin) -->
       <div id="rouletteResultBanner"
         class="hidden my-2 p-4 rounded-3xl bg-gradient-to-b from-stone-900/95 via-stone-950 to-stone-900 border-2 border-yellow-400 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
         <!-- Sunburst God Rays behind weapon -->
@@ -1504,19 +1504,24 @@
         </div>
       </div>
 
-      <!-- Action Section during roulette -->
-      <div id="rouletteControlSection" class="mt-3 flex flex-wrap items-center gap-3 justify-center">
-        <span class="text-xs text-stone-400 font-bold animate-pulse">Рулетка крутится...</span>
-        <button id="btnSkipRoulette"
-          class="bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-stone-950 font-game text-xs px-4 py-1.5 rounded-xl border border-yellow-300 font-bold shadow jelly-btn flex items-center gap-1.5 cursor-pointer"
-          title="Мгновенно остановить рулетку и открыть нож">
-          <span>⏩</span> <span>Пропустить (Скип)</span>
-        </button>
+      <!-- Always-visible skip controls row -->
+      <div class="flex items-center justify-between gap-2 my-1 px-1">
         <label
-          class="flex items-center gap-1.5 text-[11px] text-stone-300 cursor-pointer select-none hover:text-yellow-300 transition ml-2">
+          class="flex items-center gap-1.5 text-[11px] text-stone-300 cursor-pointer select-none hover:text-yellow-300 transition"
+          title="Включить — рулетка пропускается всегда">
           <input type="checkbox" id="toggleFastCaseOpen" class="rounded accent-amber-500 cursor-pointer" />
-          <span>Быстрое открытие (Скипать всегда)</span>
+          <span>⚡ Быстрое открытие (всегда скип)</span>
         </label>
+        <button id="btnSkipRoulette"
+          class="bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-stone-950 font-game text-xs px-3 py-1 rounded-xl border border-yellow-300 font-bold shadow jelly-btn flex items-center gap-1 cursor-pointer"
+          title="Мгновенно остановить рулетку и открыть нож">
+          <span>⏩</span> <span>Скип</span>
+        </button>
+      </div>
+
+      <!-- Action Section during roulette (only spinning status) -->
+      <div id="rouletteControlSection" class="mt-1 flex items-center justify-center">
+        <span class="text-xs text-stone-400 font-bold animate-pulse">Рулетка крутится...</span>
       </div>
 
     </div>
@@ -1628,7 +1633,7 @@
               <b class="text-yellow-400">🎯 Зачем нужна:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Древо Талантов: 18 вечных умений прокачки</li>
-                <li>Открытие оружейных кейсов CS:GO (Фазы 1-3)</li>
+                <li>Открытие оружейных контейнеров (Фазы 1-3)</li>
                 <li>Разблокировка Астрального Прорыва (требует 5 смывов!)</li>
               </ul>
             </div>
@@ -1667,16 +1672,16 @@
           </div>
         </div>
 
-        <!-- 5. KNIVES & CSGO CASES -->
+        <!-- 5. KNIVES & WEAPON CASES -->
         <div class="p-3.5 rounded-2xl bg-amber-950/30 border border-yellow-400/50 shadow">
           <div class="flex items-center gap-2 mb-1">
             <span class="text-2xl">🗡️</span>
-            <span class="font-game text-sm text-amber-300">Коллекция 200 Ножей CS:GO & StatTrak™</span>
+            <span class="font-game text-sm text-amber-300">Коллекция 200 Ножей & Боевой Счётчик</span>
             <span
               class="text-[10px] bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded-full border border-yellow-500/40 font-bold ml-auto">Арсенал</span>
           </div>
           <p class="text-stone-300 leading-relaxed">
-            Все 200 легендарных ножей CS:GO с настоящей физической рулеткой, звуками открытия, анимацией в руке
+            Все 200 легендарных ножей с настоящей физической рулеткой, звуками открытия, анимацией в руке
             какашечки и счетчиком кликов StatTrak™!
           </p>
           <div class="mt-2 bg-stone-900/80 p-2 rounded-xl border border-stone-700 text-[11px] space-y-1">
@@ -1747,7 +1752,7 @@
         <span class="text-4xl">🎒</span>
         <div>
           <h3 class="font-game text-xl sm:text-2xl text-yellow-300 tracking-wide">ИНВЕНТАРЬ ПЕРСОНАЖА</h3>
-          <p class="text-xs text-amber-200">Снаряжение какашечки, головные уборы и арсенал боевых ножей CS:GO</p>
+          <p class="text-xs text-amber-200">Снаряжение какашечки, головные уборы и арсенал боевых ножей</p>
         </div>
       </div>
 

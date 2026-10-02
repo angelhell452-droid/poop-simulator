@@ -6,7 +6,7 @@ import { performEvolution } from '../progression/evolutionService.js';
 import { getBestKnife, equipBestKnife } from '../systems/knifeService.js';
 import { feedPet, washPet } from '../systems/petCareService.js';
 import { getPrestigeRollsReward } from '../prestige/prestigeService.js';
-import { CSGO_CASES } from '../data/cases.data.js';
+import { WEAPON_CASES } from '../data/cases.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
@@ -147,7 +147,7 @@ function determineBestHint() {
   }
 
   // 7. Affordable CS:GO Case
-  for (let c of CSGO_CASES) {
+  for (let c of WEAPON_CASES) {
     const meetsP = !c.reqPrestiges || (GAME.totalPrestiges || 0) >= c.reqPrestiges;
     const meetsT = !c.reqTranscend || (GAME.totalTranscend || 0) >= c.reqTranscend;
     if (meetsP && meetsT) {

@@ -1,5 +1,5 @@
 import { GAME } from '../core/state.js';
-import { CSGO_CASES } from '../data/cases.data.js';
+import { WEAPON_CASES } from '../data/cases.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { TALENTS } from '../data/talents.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
@@ -12,7 +12,7 @@ import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast }
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 
-let csgoAudioEnabled = true;
+let caseAudioEnabled = true;
 let audioCtx = null;
 let activeRouletteCase = null;
 let rouletteWinningKnife = null;
@@ -71,8 +71,8 @@ function getAudioCtx() {
   return audioCtx;
 }
 
-export function playCsgoTick(volume = 0.35, freq = 820) {
-  if (!csgoAudioEnabled) return;
+export function playCaseTick(volume = 0.35, freq = 820) {
+  if (!caseAudioEnabled) return;
   try {
     const ctx = getAudioCtx();
     if (!ctx) return;
@@ -91,8 +91,8 @@ export function playCsgoTick(volume = 0.35, freq = 820) {
   } catch (e) { }
 }
 
-export function playCsgoUnlock() {
-  if (!csgoAudioEnabled) return;
+export function playCaseUnlock() {
+  if (!caseAudioEnabled) return;
   try {
     const ctx = getAudioCtx();
     if (!ctx) return;
@@ -111,8 +111,8 @@ export function playCsgoUnlock() {
   } catch (e) { }
 }
 
-export function playCsgoWinFanfare(rarity) {
-  if (!csgoAudioEnabled) return;
+export function playCaseWinFanfare(rarity) {
+  if (!caseAudioEnabled) return;
   try {
     const ctx = getAudioCtx();
     if (!ctx) return;
@@ -199,7 +199,7 @@ export function launchConfettiFireworks(isGold = false) {
 
 export function openCaseRoulette(caseId) {
   if (isRouletteSpinning) return;
-  const caseObj = CSGO_CASES.find(c => c.id === caseId);
+  const caseObj = WEAPON_CASES.find(c => c.id === caseId);
   if (!caseObj) return;
 
   if (caseObj.reqPrestiges && (GAME.totalPrestiges || 0) < caseObj.reqPrestiges) {
@@ -260,7 +260,7 @@ export function openCaseRoulette(caseId) {
   const wheelBox = document.getElementById('rouletteWheelBox');
   if (unlockScreen) unlockScreen.classList.remove('hidden');
   if (wheelBox) wheelBox.classList.add('opacity-40');
-  playCsgoUnlock();
+  playCaseUnlock();
 
   unlockTimeoutId = setTimeout(() => {
     unlockTimeoutId = null;
@@ -481,7 +481,7 @@ export function runPhysicalRouletteSpin(winnerIndex) {
       lastCardIndex = currentCardIndex;
       const tickFreq = 860 - Math.min(320, progress * 320);
       const tickVol = Math.max(0.12, 0.42 * (1.0 - progress * 0.4));
-      playCsgoTick(tickVol, tickFreq);
+      playCaseTick(tickVol, tickFreq);
 
       if (needle) {
         needle.style.transform = 'translateX(-50%) rotate(-16deg)';
@@ -524,7 +524,7 @@ function onRouletteFinished() {
     launchConfettiFireworks(isGold);
   }
 
-  playCsgoWinFanfare(rouletteWinningKnife.rarity);
+  playCaseWinFanfare(rouletteWinningKnife.rarity);
 
   const resBanner = document.getElementById('rouletteResultBanner');
   if (resBanner) resBanner.classList.remove('hidden');
@@ -666,7 +666,7 @@ export function openMultipleCases(caseObj, count = 3) {
     rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${rouletteWinningKnife.rarityName}</span> • <span class="text-yellow-400 font-bold">✨ Открыто сразу 3 кейса!</span>`;
   }
 
-  playCsgoWinFanfare(rouletteWinningKnife.rarity);
+  playCaseWinFanfare(rouletteWinningKnife.rarity);
   launchConfettiFireworks(true);
 
   showKnifeToast(`🎁 Открыто 3 кейса! Лучший: "${rouletteWinningKnife.name}" (+ещё 2 в инвентаре)`);
@@ -706,7 +706,7 @@ export function renderCasesSystem() {
 
   const cratesList = document.getElementById('casesCratesList');
   if (cratesList) {
-    cratesList.innerHTML = CSGO_CASES.map(c => {
+    cratesList.innerHTML = WEAPON_CASES.map(c => {
       const meetsPrestige = !c.reqPrestiges || (GAME.totalPrestiges || 0) >= c.reqPrestiges;
       const meetsTranscend = !c.reqTranscend || (GAME.totalTranscend || 0) >= c.reqTranscend;
       // 🔒 Talent gate check
@@ -779,7 +779,7 @@ export function renderCasesSystem() {
     cratesList.querySelectorAll('.open-case-3x-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const cid = btn.dataset.case;
-        const caseObj = CSGO_CASES.find(c => c.id === cid);
+        const caseObj = WEAPON_CASES.find(c => c.id === cid);
         if (caseObj) openMultipleCases(caseObj, 3);
       });
     });
@@ -796,7 +796,7 @@ export function renderCasesSystem() {
 }
 
 export function openCasePreviewModal(caseId) {
-  const caseObj = CSGO_CASES.find(c => c.id === caseId);
+  const caseObj = WEAPON_CASES.find(c => c.id === caseId);
   if (!caseObj) return;
 
   const modal = document.getElementById('casePreviewModal');
@@ -961,11 +961,11 @@ export function initCasesListeners() {
   const btnAudioToggle = document.getElementById('btnToggleRouletteAudio');
   if (btnAudioToggle) {
     btnAudioToggle.addEventListener('click', () => {
-      csgoAudioEnabled = !csgoAudioEnabled;
+      caseAudioEnabled = !caseAudioEnabled;
       const icon = document.getElementById('rouletteAudioIcon');
       const text = document.getElementById('rouletteAudioText');
-      if (icon) icon.textContent = csgoAudioEnabled ? '🔊' : '🔇';
-      if (text) text.textContent = csgoAudioEnabled ? 'ЗВУК CS:GO: ВКЛ' : 'ЗВУК CS:GO: ВЫКЛ';
+      if (icon) icon.textContent = caseAudioEnabled ? '🔊' : '🔇';
+      if (text) text.textContent = caseAudioEnabled ? '🔊 ЗВУК: ВКЛ' : '🔇 ЗВУК: ВЫКЛ';
     });
   }
 
@@ -988,7 +988,7 @@ export function updateCasesButtons() {
   if (!cratesList) return;
 
   cratesList.querySelectorAll('.open-case-btn').forEach(btn => {
-    const c = CSGO_CASES.find(cs => cs.id === btn.dataset.case);
+    const c = WEAPON_CASES.find(cs => cs.id === btn.dataset.case);
     if (!c) return;
     const meetsPrestige = !c.reqPrestiges || (GAME.totalPrestiges || 0) >= c.reqPrestiges;
     const meetsTranscend = !c.reqTranscend || (GAME.totalTranscend || 0) >= c.reqTranscend;

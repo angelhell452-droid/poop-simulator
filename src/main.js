@@ -42,10 +42,7 @@ export function updateAutoclickerUI() {
   const label = document.getElementById('autoclickLabel');
   if (!btn || !led || !label) return;
 
-  // Clamp legacy saves that had 50/200/1000 CPS (the bug source) to max 20
-  const rawSpd = GAME.autoclickerSpeed || 10;
-  const spd = Math.min(rawSpd, 20);
-  if (rawSpd !== spd) GAME.autoclickerSpeed = spd;
+  const spd = GAME.autoclickerSpeed || 1000;
 
   if (GAME.autoclickerActive) {
     btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-amber-600 hover:bg-amber-500 border-yellow-400 text-white shadow-[0_0_10px_#f59e0b]';
@@ -66,6 +63,7 @@ export function updateAutoclickerUI() {
     }
   });
 }
+
 
 
 export function setGameMode(mode) {

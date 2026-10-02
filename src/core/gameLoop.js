@@ -44,7 +44,9 @@ export function gameEngineTick() {
   // matching the behaviour of a manual click. This prevents the batch-crit
   // explosion where 100 clicks/tick × 20× crit = absurd mass at level 0.
   if (GAME.autoclickerActive) {
-    const cps = Math.min(GAME.autoclickerSpeed || 10, 20); // hard cap at 20 CPS for balance
+    const cps = GAME.autoclickerSpeed || 10; // No cap — 1000 CPS is intentional game design!
+    // But each click is processed INDIVIDUALLY via the fractional accumulator,
+    // not as one giant batch. This keeps crits identical to manual clicks.
     autoClickAccumulator += cps * dt;
     const clicksThisTick = Math.floor(autoClickAccumulator);
     autoClickAccumulator -= clicksThisTick;

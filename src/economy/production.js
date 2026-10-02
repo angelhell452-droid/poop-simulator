@@ -382,7 +382,7 @@ export function getActiveBuffsList() {
       short: `x${formatNumber(knifeClickMult)}`,
       bonusText: `x${formatNumber(knifeClickMult)} к клику`,
       badgeColor: 'bg-stone-900 border-amber-400 text-yellow-300 shadow-[0_0_8px_rgba(234,179,8,0.2)]',
-      desc: `Боевой нож из кейса CS:GO. Умножает базовую силу клика пропорционально редкости и уровню заточки.`,
+      desc: `Боевой нож из контейнера. Умножает базовую силу клика пропорционально редкости и уровню заточки.`,
       progress: `Качество: ${knife.rarity || 'Армейское'} | Заточка: ${knifeStar}★ (${knife.knifeType || 'Нож'})`,
       source: 'Инвентарь персонажа',
       tip: 'Затачивайте нож в Инвентаре за Блестяшки или выбивайте ножи более высокой редкости из кейсов.'

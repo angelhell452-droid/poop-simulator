@@ -128,7 +128,7 @@ export function generateAchievements() {
     });
   });
 
-  // 5. CS:GO KNIVES ARSENAL
+  // 5. WEAPONS ARSENAL
   const achKnifeGoals = [
     { target: 1, reward: 1000 },
     { target: 5, reward: 15000, rolls: 25 },
@@ -143,7 +143,7 @@ export function generateAchievements() {
     list.push({
       id: `ach_knife_${kg.target}`,
       title: `Оружейник: ${kg.target} Ножей`,
-      desc: `Собрать коллекцию из ${kg.target} ножей CS:GO`,
+      desc: `Собрать коллекцию из ${kg.target} боевых ножей`,
       target: kg.target,
       type: 'knives',
       reward: kg.reward,

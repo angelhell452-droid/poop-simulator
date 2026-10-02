@@ -63,10 +63,10 @@ export async function fetchLeaderboardFromDb(force = false) {
     console.warn('Leaderboard fetch note (offline/local fallback):', err.message);
   }
 
-  // Graceful fallback with player's dynamic rank inserted
-  const merged = remoteData ? [...remoteData] : [...DEFAULT_RIVALS];
+  // Build local player entry from current GAME state
+  const myId = GAME.playerId || 'local_player';
   const playerEntry = {
-    playerId: GAME.playerId || 'current_local_player',
+    playerId: myId,
     playerName: GAME.playerName || 'Вы (Герой)',
     stage: (GAME.evoStage || 0) + 1,
     biomass: GAME.allTimeBiomass || GAME.biomass || 100,
@@ -77,19 +77,19 @@ export async function fetchLeaderboardFromDb(force = false) {
     isCurrent: true
   };
 
-  // Remove existing current player if duplicate
-  const existingIndex = merged.findIndex(p => p.playerId === playerEntry.playerId || p.isCurrent);
-  if (existingIndex !== -1) {
-    merged.splice(existingIndex, 1);
-  }
+  // Start with server data or fallback bots
+  const base = remoteData ? [...remoteData] : [...DEFAULT_RIVALS];
+
+  // Remove any existing entry for this player (by playerId ONLY — name match caused duplicates)
+  const merged = base.filter(p => p.playerId !== myId && !p.isCurrent);
   merged.push(playerEntry);
 
-  // Score every contestant
+  // Score every contestant using a deterministic formula
   merged.forEach(entry => {
     entry.score = calculatePlayerPowerScore(entry);
   });
 
-  // Sort strictly by power score
+  // Sort strictly by power score descending
   merged.sort((a, b) => (b.score || 0) - (a.score || 0));
 
   cachedLeaderboard = merged.slice(0, 20);
@@ -109,7 +109,7 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
   const currentPlayerName = GAME.playerName || '';
 
   containerEl.innerHTML = leaderboard.map((player, idx) => {
-    const isCurrent = player.isCurrent || (currentPlayerId && player.playerId === currentPlayerId) || (player.playerName === currentPlayerName);
+    const isCurrent = player.isCurrent || (currentPlayerId && player.playerId === currentPlayerId);
     
     let rankBadge = `#${idx + 1}`;
     let rankClass = 'text-stone-400 font-bold';
@@ -176,7 +176,7 @@ function updateDailyRewardCard(leaderboard) {
   const currentPlayerName = GAME.playerName || '';
 
   const playerIndex = (leaderboard || []).findIndex(p => 
-    p.isCurrent || (currentPlayerId && p.playerId === currentPlayerId) || (p.playerName === currentPlayerName)
+    p.isCurrent || (currentPlayerId && p.playerId === currentPlayerId)
   );
 
   const playerRank = playerIndex !== -1 ? playerIndex + 1 : 999;
