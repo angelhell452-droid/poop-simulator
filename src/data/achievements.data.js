@@ -54,8 +54,9 @@ export function generateAchievements() {
   achEvoGoals.forEach((e) => {
     list.push({
       id: `ach_e_${e.form}`,
-      title: `Эволюция: Форма ${formatNumber(e.form)}`,
-      desc: `Достичь ${formatNumber(e.form)}-й формы мутации`,
+      title: e.form >= 20000 ? 'Эволюция: эпоха без подписи' : `Эволюция: Форма ${formatNumber(e.form)}`,
+      desc: e.form >= 20000 ? 'Дойти до горизонта, который игра не подписывает' : `Достичь ${formatNumber(e.form)}-й формы мутации`,
+      concealTarget: e.form >= 20000,
       target: e.form - 1,
       type: 'evo',
       reward: e.reward,

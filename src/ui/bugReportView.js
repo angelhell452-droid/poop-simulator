@@ -1,8 +1,7 @@
 import { GAME } from '../core/state.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 
-const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1555324109133578281/2I6OMFH4hZm_QUnSVcceMJtb_3DSyw8aT4vl9zXaC1IknsV9F41768tK5csbj6o7QjYW';
-const GAME_VERSION = 'v4.9.17 PRO';
+const GAME_VERSION = 'v4.9.19 PRO';
 
 // Cooldown: один репорт в 60 секунд чтобы не флудили
 let lastReportTime = 0;
@@ -168,13 +167,15 @@ async function sendBugReport(textarea, categoryBtns, statusEl, btnSend) {
   showStatus(statusEl, '📡 Отправляем репорт в Discord...', 'info');
 
   try {
-    const res = await fetch(DISCORD_WEBHOOK, {
+    const res = await fetch('/api/bug-report', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
-    if (res.ok || res.status === 204) {
+    if (res.status === 503) {
+      showStatus(statusEl, 'Репорты сейчас не подключены на сервере.', 'error');
+    } else if (res.ok) {
       lastReportTime = Date.now();
       showStatus(statusEl, '✅ Репорт отправлен! Спасибо, мы разберёмся!', 'success');
       if (textarea) textarea.value = '';

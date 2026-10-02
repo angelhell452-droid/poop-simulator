@@ -10,7 +10,7 @@ import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { FACTORIES } from '../data/factories.data.js';
 import { buyFactory } from '../systems/factoryService.js';
 import { triggerPetSquash } from '../ui/petCanvasView.js';
-import { getAutoclickCps } from '../systems/autoclickService.js';
+import { getAutoclickCps, takeClickBudget } from '../systems/autoclickService.js';
 import { events } from './events.js';
 
 let lastTickTime = performance.now();
@@ -51,9 +51,9 @@ export function gameEngineTick() {
     autoClickAccumulator += cps * dt;
     const clicksThisTick = Math.floor(autoClickAccumulator);
     autoClickAccumulator -= clicksThisTick;
-    if (clicksThisTick > 0) {
-      // Process each click individually (same path as manual click) to keep crits fair
-      for (let i = 0; i < clicksThisTick; i++) {
+    const allowedClicks = takeClickBudget(clicksThisTick);
+    if (allowedClicks > 0) {
+      for (let i = 0; i < allowedClicks; i++) {
         addPendingClicks(1);
         processBatchedClicks();
       }
@@ -77,10 +77,12 @@ export function gameEngineTick() {
   if (autoBuyerTimer >= 1.2) {
     autoBuyerTimer = 0;
     if (GAME.transcendUpgrades?.autoBuyer && GAME.autoBuyerEnabled !== false) {
-      for (let i = FACTORIES.length - 1; i >= 0; i--) {
-        const fac = FACTORIES[i];
-        if (fac.reqStage === undefined || GAME.evoStage >= fac.reqStage) {
-          if (buyFactory(fac.id)) break;
+      const unlocked = FACTORIES.filter(fac => fac.reqStage === undefined || GAME.evoStage >= fac.reqStage);
+      if (GAME.autoBuyerMode === 'all') {
+        unlocked.forEach(fac => buyFactory(fac.id));
+      } else {
+        for (let i = unlocked.length - 1; i >= 0; i--) {
+          if (buyFactory(unlocked[i].id)) break;
         }
       }
     }

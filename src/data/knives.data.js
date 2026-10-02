@@ -2571,7 +2571,7 @@ export const KNIVES = [
         "bladeColor": "godly",
         "handleColor": "#ffd700",
         "style": "katana",
-        "desc": "Меч Первородного Творца, сотворившего все 20,000 форм вселенной!"
+        "desc": "Меч Первородного Творца. Он помнит формы, которым ещё не дали имени."
       },
       {
         "id": "knife_godly_scythe",

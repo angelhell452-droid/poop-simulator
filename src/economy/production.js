@@ -30,6 +30,32 @@ function softCap(raw, knee, power) {
   return raw > knee ? (knee + Math.pow(raw - knee, power)) : raw;
 }
 
+function knifeBonusStack(knife, perStar) {
+  const knifeStar = getKnifeStar(knife.id);
+  const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.08;
+  const diamondLvl = Math.min(20, GAME.boutiqueLevels?.diamond_sharpening || 0);
+  const diamondBoost = 1 + diamondLvl * 0.05;
+  const starForge = 1 + talentLevel('star_forge_master') * 0.05;
+  return (1 + Math.max(0, knifeStar - 1) * perStar) * knifeForgeBoost * diamondBoost * starForge;
+}
+
+export function getKnifeClickMult(knife) {
+  if (!knife) return 1;
+  return softCap(knife.clickMult || 1, 50, 0.65) * knifeBonusStack(knife, 0.35);
+}
+
+export function getKnifePassiveMult(knife) {
+  if (!knife) return 1;
+  return softCap(knife.passiveMult || 1, 30, 0.65) * knifeBonusStack(knife, 0.25);
+}
+
+export function getKnifeShownBonuses(knife) {
+  return {
+    clickPct: Math.round((getKnifeClickMult(knife) - 1) * 100),
+    passPct: Math.round((getKnifePassiveMult(knife) - 1) * 100)
+  };
+}
+
 export function getClickPower() {
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const rollsMult = getRollsIncomeMult();
@@ -51,16 +77,7 @@ export function getClickPower() {
   const turboMult = GAME.turboRushTime > 0 ? (turboBase * turboBonus) : 1;
 
   const knife = getEquippedKnife();
-  const knifeStar = knife ? getKnifeStar(knife.id) : 1;
-  const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.08;
-  const diamondLvl = Math.min(20, GAME.boutiqueLevels?.diamond_sharpening || 0);
-  const diamondBoost = 1 + diamondLvl * 0.05;
-  const starForgeMult = 1 + talentLevel('star_forge_master') * 0.05;
-  const rawKnifeClick = knife ? knife.clickMult : 1;
-  const effectiveKnifeClick = softCap(rawKnifeClick, 50, 0.65);
-  const knifeClickMult = knife
-    ? (effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost * diamondBoost * starForgeMult)
-    : 1;
+  const knifeClickMult = getKnifeClickMult(knife);
 
   const katanaBonus = knife && knife.style === 'katana'
     ? (1 + Math.floor(GAME.evoStage / 50) * 0.15)
@@ -93,7 +110,7 @@ export function getClickPower() {
     basePower += getPassiveIncome() * syncRate;
   }
 
-  return Math.max(1, Math.round(basePower));
+  return Math.max(1, basePower);
 }
 
 export function getPassiveIncome() {
@@ -150,16 +167,7 @@ export function getPassiveIncome() {
   const facOverdriveMult = 1 + (GAME.transcendUpgrades?.factoryOverdrive || 0) * 0.12;
   const cleanBuff = 1 + Math.max(0, (GAME.clean || 0) / 100) * 0.25;
 
-  const knifeStar = knife ? getKnifeStar(knife.id) : 1;
-  const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.08;
-  const diamondLvl = Math.min(20, GAME.boutiqueLevels?.diamond_sharpening || 0);
-  const diamondBoost = 1 + diamondLvl * 0.05;
-  const starForgeMult = 1 + talentLevel('star_forge_master') * 0.05;
-  const rawKnifePass = knife ? knife.passiveMult : 1;
-  const effectiveKnifePass = softCap(rawKnifePass, 30, 0.65);
-  const knifePassiveMult = knife
-    ? (effectiveKnifePass * (1 + (knifeStar - 1) * 0.25) * knifeForgeBoost * diamondBoost * starForgeMult)
-    : 1;
+  const knifePassiveMult = getKnifePassiveMult(knife);
 
   let archMult = 1;
   if (GAME.archetype === 'tycoon') archMult = 1.5;
@@ -308,13 +316,7 @@ export function getActiveBuffsList() {
   const knife = getEquippedKnife();
   if (knife) {
     const knifeStar = getKnifeStar(knife.id);
-    const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.08;
-    const diamondLvl = Math.min(20, GAME.boutiqueLevels?.diamond_sharpening || 0);
-    const diamondBoost = 1 + diamondLvl * 0.05;
-    const starForgeMult = 1 + talentLevel('star_forge_master') * 0.05;
-    const rawKnifeClick = knife.clickMult || 1;
-    const effectiveKnifeClick = softCap(rawKnifeClick, 50, 0.65);
-    const knifeClickMult = effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost * diamondBoost * starForgeMult;
+    const knifeClickMult = getKnifeClickMult(knife);
     buffs.push({
       id: 'equipped_knife',
       icon: '🔪',

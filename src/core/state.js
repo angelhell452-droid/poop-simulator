@@ -65,6 +65,7 @@ export function getDefaultGameState() {
     lastActiveTime: Date.now(),
 
     autoBuyerEnabled: true,
+    autoBuyerMode: 'latest',
     autoEvolutionEnabled: true,
 
     transcendUpgrades: {

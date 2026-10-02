@@ -7,7 +7,8 @@ export function formatNumber(num, decimals = 2) {
   const abs = Math.abs(num);
   if (abs < 0.001) return '0';
   if (abs < 1000) {
-    return (abs >= 10 ? Math.floor(num) : Number(num.toFixed(1))).toString();
+    if (Math.abs(num - Math.round(num)) < 1e-6) return String(Math.round(num));
+    return Number(num.toFixed(1)).toString();
   }
 
   const units = [

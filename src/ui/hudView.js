@@ -100,7 +100,7 @@ export function updateHUD() {
     topArchBadge.title = `Специализация Смыва: ${arch.name} (${arch.desc}). Нажмите для настройки.`;
   }
   const badgeEvo = document.getElementById('evoProgressBadge');
-  if (badgeEvo) badgeEvo.textContent = `${formatNumber(currEvo.id + 1)} / ${formatNumber(20000)}`;
+  if (badgeEvo) badgeEvo.textContent = `Форма ${formatNumber(currEvo.id + 1)}`;
   const nameEvo = document.getElementById('evoStageName');
   if (nameEvo) nameEvo.textContent = currEvo.name;
   const descEvo = document.getElementById('evoStageDesc');
@@ -132,7 +132,7 @@ export function updateHUD() {
   if (footClick) {
     const pwr = getClickPower();
     if (GAME.turboRushTime > 0) {
-      footClick.innerHTML = `${formatNumber(pwr)} <span class="text-[10px] text-yellow-300 font-normal animate-pulse">(🔥 ТУРБО x10)</span>`;
+      footClick.innerHTML = `${formatNumber(pwr)} <span class="text-[10px] text-yellow-300 font-normal animate-pulse">(🔥 ТУРБО x${formatNumber(GAME.archetype === 'combo' ? 6 : 4)})</span>`;
     } else {
       footClick.textContent = formatNumber(pwr);
     }
@@ -157,11 +157,11 @@ export function updateHUD() {
 
   if (GAME.turboRushTime > 0) {
     if (rushTimerEl) {
-      rushTimerEl.textContent = `🔥 x10 (${Math.ceil(GAME.turboRushTime)}с)`;
+      rushTimerEl.textContent = `🔥 x${formatNumber(GAME.archetype === 'combo' ? 6 : 4)} (${Math.ceil(GAME.turboRushTime)}с)`;
       rushTimerEl.classList.remove('opacity-0', 'pointer-events-none');
       rushTimerEl.classList.add('opacity-100');
     }
-    if (comboLbl) comboLbl.textContent = '🔥 ТУРБО x10!';
+    if (comboLbl) comboLbl.textContent = `🔥 ТУРБО x${formatNumber(GAME.archetype === 'combo' ? 6 : 4)}!`;
     if (comboIcon) comboIcon.textContent = '🔥';
   } else {
     if (rushTimerEl) {
@@ -207,10 +207,10 @@ export function updateHUD() {
     if (skinTierEl) skinTierEl.textContent = `Тир ${skinInfo.tier}`;
     const skinHintEl = document.getElementById('poopSkinProgressHint');
     if (skinHintEl) {
-      if (skinInfo.nextAt < 20000) {
-        skinHintEl.textContent = `Форма #${GAME.evoStage + 1} • След. скин на Форме #${skinInfo.nextAt}`;
+      if (skinInfo.nextAt >= 20000) {
+        skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • облик за горизонтом`;
       } else {
-        skinHintEl.textContent = `Форма #${GAME.evoStage + 1} • ВЫСШАЯ ФОРМА ОМНИВЕРСА!`;
+        skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • след. облик на форме #${formatNumber(skinInfo.nextAt)}`;
       }
     }
   }
@@ -473,16 +473,26 @@ export function updateAutomationTogglesUI() {
   if (buyerBtn && buyerLed && buyerLbl) {
     buyerBtn.classList.toggle('hidden', !hasAutoBuyer);
     const isOn = GAME.autoBuyerEnabled !== false;
+    const modeLabel = GAME.autoBuyerMode === 'all' ? 'все' : 'последний';
     if (isOn) {
       buyerBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-emerald-950 border-emerald-500 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
       buyerLed.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse';
-      buyerLbl.textContent = 'Заводы: ВКЛ';
+      buyerLbl.textContent = `Заводы: ВКЛ · ${modeLabel}`;
     } else {
       buyerBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700';
       buyerLed.className = 'w-2 h-2 rounded-full bg-stone-500';
       buyerLbl.textContent = 'Заводы: ВЫКЛ';
     }
   }
+
+  const gearBtn = document.getElementById('btnAutoBuyerGear');
+  if (gearBtn) gearBtn.classList.toggle('hidden', !hasAutoBuyer);
+  document.querySelectorAll('.auto-buyer-mode-btn').forEach(btn => {
+    const selected = btn.dataset.buyerMode === (GAME.autoBuyerMode === 'all' ? 'all' : 'latest');
+    btn.className = selected
+      ? 'auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-cyan-900/70 text-cyan-100 border border-cyan-400/50'
+      : 'auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-stone-200 hover:bg-stone-800 border border-transparent';
+  });
 
   const evoBtn = document.getElementById('btnToggleAutoEvolution');
   const evoLed = document.getElementById('autoEvolutionLed');
@@ -512,6 +522,22 @@ export function initAutomationToggleListeners() {
     GAME.autoEvolutionEnabled = !(GAME.autoEvolutionEnabled !== false);
     updateAutomationTogglesUI();
     saveLocal();
+  });
+  document.getElementById('btnAutoBuyerGear')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('autoBuyerModeMenu')?.classList.toggle('hidden');
+  });
+  document.querySelectorAll('.auto-buyer-mode-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      GAME.autoBuyerMode = btn.dataset.buyerMode === 'all' ? 'all' : 'latest';
+      document.getElementById('autoBuyerModeMenu')?.classList.add('hidden');
+      updateAutomationTogglesUI();
+      saveLocal();
+    });
+  });
+  document.addEventListener('click', () => {
+    document.getElementById('autoBuyerModeMenu')?.classList.add('hidden');
   });
   document.getElementById('btnTranscendAutoInfo')?.addEventListener('click', () => {
     document.getElementById('btnTranscendModal')?.click();

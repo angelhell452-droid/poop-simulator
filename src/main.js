@@ -28,7 +28,7 @@ import { ACHIEVEMENTS } from './data/achievements.data.js';
 import { SHOP_ITEMS } from './data/shop.data.js';
 import { formatNumber } from './utils/numberFormatter.js';
 import { formatDurationAway } from './utils/timeUtils.js';
-import { clampAutoclickerState, getAutoclickCap, isAutoclickUnlocked } from './systems/autoclickService.js';
+import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, takeClickBudget } from './systems/autoclickService.js';
 import { events } from './core/events.js';
 
 export function toggleAutoclicker() {
@@ -66,8 +66,10 @@ export function updateAutoclickerUI() {
   }
 
   document.querySelectorAll('.autoclick-spd-btn').forEach(b => {
-    const cps = parseInt(b.dataset.cps);
-    const selected = unlocked && ((cps >= 8 && spd >= 8) || cps === spd);
+    const raw = b.dataset.cps;
+    const liveCap = getClickCapCps();
+    if (raw === 'max') b.textContent = `MAX ${formatNumber(liveCap)}`;
+    const selected = unlocked && (raw === 'max' ? spd >= (cap || liveCap) : parseInt(raw, 10) === spd);
     b.disabled = !unlocked;
     if (selected) {
       b.className = 'autoclick-spd-btn px-2 py-0.5 rounded bg-amber-600 text-white font-bold border border-yellow-400 shadow';
@@ -146,6 +148,12 @@ export async function bootstrap() {
     }
   });
 
+  events.on('prestige:completed', () => {
+    clampAutoclickerState();
+    updateAutoclickerUI();
+  });
+  events.on('save:loaded', () => updateAutoclickerUI());
+
   // 2. Load Save (Local + Cloud D1)
   await loadFromCloudDatabaseOrLocal();
 
@@ -165,10 +173,12 @@ export async function bootstrap() {
   document.getElementById('btnToggleAutoclicker')?.addEventListener('click', toggleAutoclicker);
   document.querySelectorAll('.autoclick-spd-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const cps = parseInt(btn.dataset.cps);
-      if (!cps || !isAutoclickUnlocked()) return;
-      const cap = getAutoclickCap();
-      GAME.autoclickerSpeed = Math.max(1, Math.min(cap, cps >= 8 ? cap : cps));
+      const raw = btn.dataset.cps;
+      if (!isAutoclickUnlocked()) return;
+      const cap = getClickCapCps();
+      const cps = raw === 'max' ? cap : parseInt(raw, 10);
+      if (!cps) return;
+      GAME.autoclickerSpeed = Math.max(1, Math.min(cap, cps));
       updateAutoclickerUI();
       saveLocal();
     });
@@ -185,6 +195,7 @@ export async function bootstrap() {
       if (checkMeteorClick(e.clientX, e.clientY)) {
         return;
       }
+      if (takeClickBudget(1) < 1) return;
       addPendingClicks(1);
       triggerPetSquash(1.25, 0.8);
       processBatchedClicks(e.clientX, e.clientY);
@@ -334,12 +345,6 @@ export async function bootstrap() {
     if (document.visibilityState === 'hidden') saveLocal();
   });
 
-  // Expose global helpers for debugging / console
-  window.GAME = GAME;
-  window.wipePlayerData = wipePlayerData;
-  window.syncToCloudDatabase = syncToCloudDatabase;
-
-  // 13. Show welcome greeting & auto pop-up patch notes on launch
   showWelcomeGreeting();
   setTimeout(() => {
     openPatchNotesModal();

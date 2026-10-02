@@ -11,6 +11,7 @@ import { updateHUD } from './hudView.js';
 import { renderShop } from './shopView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { formatNumber } from '../utils/numberFormatter.js';
+import { getKnifeShownBonuses } from '../economy/production.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 
@@ -133,8 +134,9 @@ export function renderCharacterInventory() {
   if (equippedCard) {
     if (equippedObj) {
       const eqStar = getKnifeStar(equippedObj.id);
-      const eqClickPct = Math.round((equippedObj.clickMult * (1 + (eqStar - 1) * 0.35) - 1) * 100);
-      const eqPassPct = Math.round((equippedObj.passiveMult * (1 + (eqStar - 1) * 0.25) - 1) * 100);
+      const shown = getKnifeShownBonuses(equippedObj);
+      const eqClickPct = shown.clickPct;
+      const eqPassPct = shown.passPct;
       const costInfo = getKnifeSharpenCost(equippedObj);
       const canAffordSharpen = (GAME.sparkles || 0) >= costInfo.cost;
       let sharpenBtnHtml = '';
@@ -309,8 +311,9 @@ function renderKnivesGrid() {
     const star = getKnifeStar(kn.id);
     const starCostInfo = getKnifeSharpenCost(kn);
     const canAffordSharpen = (GAME.sparkles || 0) >= starCostInfo.cost;
-    const clickBonus = Math.round((kn.clickMult * (1 + (star - 1) * 0.35) - 1) * 100);
-    const passBonus = Math.round((kn.passiveMult * (1 + (star - 1) * 0.25) - 1) * 100);
+    const shown = getKnifeShownBonuses(kn);
+    const clickBonus = shown.clickPct;
+    const passBonus = shown.passPct;
 
     // Balanced realistic recycle returns
     const isAstral = ['godly', 'special', 'celestial'].includes(kn.rarity);

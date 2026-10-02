@@ -47,7 +47,7 @@ export function renderAchievements() {
       progressHtml = `
         <div class="mt-1 w-full max-w-[210px]">
           <div class="flex justify-between text-[9px] text-stone-400 mb-0.5">
-            <span>Прогресс: ${formatNumber(disp)} / ${formatNumber(ach.target)}</span>
+            <span>Прогресс: ${ach.concealTarget ? `${formatNumber(disp)} • без карты` : `${formatNumber(disp)} / ${formatNumber(ach.target)}`}</span>
             <span class="text-amber-400 font-bold">${pct}%</span>
           </div>
           <div class="h-1.5 w-full bg-stone-800 rounded-full overflow-hidden">

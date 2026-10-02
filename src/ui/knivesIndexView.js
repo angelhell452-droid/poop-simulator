@@ -10,6 +10,7 @@ import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
+import { getKnifeShownBonuses } from '../economy/production.js';
 
 // Быстрый поиск кейса для ножа
 const KNIFE_CASE_MAP = new Map();
@@ -150,8 +151,9 @@ export function renderKnivesIndexBook() {
     };
 
     const colorClass = rarityColors[knife.rarity] || 'border-stone-700 bg-stone-900 text-stone-400';
-    const clickPct = Math.round((knife.clickMult * (1 + (star - 1) * 0.35) - 1) * 100);
-    const passPct = Math.round((knife.passiveMult * (1 + (star - 1) * 0.25) - 1) * 100);
+    const shown = getKnifeShownBonuses(knife);
+    const clickPct = shown.clickPct;
+    const passPct = shown.passPct;
 
     return `
       <div class="p-2 sm:p-2.5 rounded-2xl border-2 flex flex-col justify-between relative transition duration-200 min-h-[195px] overflow-hidden ${isUnlocked ? colorClass : 'border-stone-800 bg-stone-950/80 opacity-65 grayscale'} ${isEquipped ? 'ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]' : ''}">

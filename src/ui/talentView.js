@@ -148,9 +148,13 @@ export function renderFlushTalents() {
         </button>
       `;
 
-      row.querySelector('.buy-talent-btn').addEventListener('click', () => {
+      row.querySelector('.buy-talent-btn').addEventListener('click', async () => {
         if (buyTalent(tl.id)) {
           renderTalents();
+          const inventory = await import('./characterInventoryView.js');
+          const index = await import('./knivesIndexView.js');
+          inventory.renderCharacterInventory();
+          index.renderKnivesIndexBook();
           updateHUD();
           saveLocal();
         }

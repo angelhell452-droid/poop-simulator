@@ -1,5 +1,6 @@
 import { GAME } from '../core/state.js';
 import { ARCHETYPES } from './archetypes.js';
+import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 
 export const MILESTONES = [
@@ -14,27 +15,44 @@ export const MILESTONES = [
   { form: 1000, icon: '👑', title: 'Форма 1,000: Демиург', reward: 'Сверх-ранг Эпохи' },
   { form: 2500, icon: '🔮', title: 'Форма 2,500: Омега-Разум', reward: 'Разрыв пространства' },
   { form: 5000, icon: '🪐', title: 'Форма 5,000: Повелитель Миров', reward: 'Священный статус' },
-  { form: 10000, icon: '✨', title: 'Форма 10,000: Высшая Сущность', reward: 'Вечный титул' },
-  { form: 20000, icon: '🏆', title: 'Форма 20,000: Финал Эволюции', reward: 'Абсолют Вселенной' }
+  { form: 10000, icon: '✨', title: 'Форма 10k: Высшая Сущность', reward: 'Вечный титул' }
 ];
 
 export function getNextMilestoneGoal() {
   const currentStage = (GAME.evoStage || 0) + 1;
+  const lastForm = EVOLUTIONS.length;
   let nextM = MILESTONES.find(m => currentStage < m.form);
-  if (!nextM) {
-    nextM = { form: 20000, icon: '🏆', title: 'Вершина Эволюции (20,000 / 20,000)', reward: 'Максимальный Ранг!' };
+  let hideTarget = false;
+
+  if (!nextM && currentStage >= lastForm) {
+    nextM = { form: currentStage, icon: '🌫️', title: 'Горизонт закрыт', reward: 'Эпоха без подписи' };
+    hideTarget = true;
+  } else if (!nextM) {
+    const step = currentStage < 12000 ? 150 : 250;
+    const horizon = Math.ceil((currentStage + step) / 50) * 50;
+    if (horizon >= lastForm) {
+      nextM = { form: currentStage, icon: '🌫️', title: 'Дальше без карты', reward: 'Эпоха не подписана' };
+      hideTarget = true;
+    } else {
+      nextM = { form: horizon, icon: '🌫️', title: 'Ближний горизонт', reward: 'Эпоха не подписана' };
+    }
   }
-  const pct = Math.min(100, Math.max(0, (currentStage / nextM.form) * 100));
+
+  const pct = hideTarget
+    ? 88
+    : Math.min(100, Math.max(0, (currentStage / nextM.form) * 100));
   const arch = ARCHETYPES[GAME.archetype] || ARCHETYPES.balanced;
 
   return {
     currentStage,
-    targetStage: nextM.form,
+    targetStage: hideTarget ? currentStage : nextM.form,
     title: nextM.title,
     icon: nextM.icon,
     reward: nextM.reward,
     percent: pct,
-    progressText: `${formatNumber(currentStage)} / ${formatNumber(nextM.form)}`,
+    progressText: hideTarget
+      ? `${formatNumber(currentStage)} • без карты`
+      : `${formatNumber(currentStage)} / ${formatNumber(nextM.form)}`,
     archetypeBadge: arch.badge
   };
 }

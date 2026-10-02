@@ -253,26 +253,8 @@ async function handleCloudSave(req, env) {
       const playerId = url.searchParams.get("playerId");
       const action = url.searchParams.get("action");
 
-      // Handle leaderboard
       if (action === "leaderboard") {
-        const { results } = await env.DB.prepare(`
-          SELECT
-            player_id as playerId,
-            player_name as playerName,
-            stage,
-            biomass,
-            sparkles,
-            prestige_currency as prestigeCurrency,
-            updated_at as updatedAt
-          FROM player_saves
-          ORDER BY biomass DESC
-          LIMIT 20
-        `).all();
-
-        return new Response(
-          JSON.stringify({ success: true, leaderboard: results || [] }),
-          { status: 200, headers }
-        );
+        return handleLeaderboard(url, env, headers);
       }
 
       // Handle account lookup
@@ -338,16 +320,102 @@ async function handleCloudSave(req, env) {
   }
 }
 
+function gloryScore(player) {
+  const transcends = Number(player.transcends || 0);
+  const plungers = Number(player.plungers || 0);
+  const prestiges = Number(player.prestiges || 0);
+  const rolls = Number(player.rolls || 0);
+  const stage = Number(player.stage || 1);
+  const bio = Number(player.biomass || 0);
+  const logBio = bio > 1 ? Math.floor(Math.log10(bio) * 150) : 0;
+  return Math.floor(
+    (transcends * 25000) +
+    (plungers * 100) +
+    (prestiges * 500) +
+    Math.min(rolls * 0.1, 50000) +
+    (stage * 100) +
+    logBio
+  );
+}
+
+async function handleLeaderboard(url, env, headers) {
+  const { results } = await env.DB.prepare(`
+    SELECT
+      player_id as playerId,
+      player_name as playerName,
+      stage,
+      biomass,
+      CAST(IFNULL(json_extract(save_data, '$.game.totalTranscend'), 0) AS INTEGER) as transcends,
+      CAST(IFNULL(json_extract(save_data, '$.game.transcendPlungers'), 0) AS INTEGER) as plungers,
+      CAST(IFNULL(json_extract(save_data, '$.game.totalPrestiges'), 0) AS INTEGER) as prestiges,
+      CAST(IFNULL(json_extract(save_data, '$.game.allTimePrestigeRolls'), 0) AS INTEGER) as rolls,
+      updated_at as updatedAt
+    FROM player_saves
+  `).all();
+
+  const ranked = (results || []).map((row) => {
+    const entry = {
+      playerId: row.playerId,
+      playerName: row.playerName,
+      stage: Number(row.stage) || 1,
+      biomass: Number(row.biomass) || 0,
+      transcends: Number(row.transcends) || 0,
+      plungers: Number(row.plungers) || 0,
+      prestiges: Number(row.prestiges) || 0,
+      rolls: Number(row.rolls) || 0,
+      updatedAt: row.updatedAt
+    };
+    entry.score = gloryScore(entry);
+    return entry;
+  }).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    if (b.stage !== a.stage) return b.stage - a.stage;
+    return String(a.playerId).localeCompare(String(b.playerId));
+  });
+
+  const top = ranked.slice(0, 50).map((entry, index) => ({ ...entry, rank: index + 1 }));
+  const viewerId = url.searchParams.get("playerId");
+  const youIndex = viewerId ? ranked.findIndex((entry) => entry.playerId === viewerId) : -1;
+  const you = youIndex >= 0 ? { ...ranked[youIndex], rank: youIndex + 1 } : null;
+
+  return new Response(
+    JSON.stringify({ success: true, leaderboard: top, you, total: ranked.length }),
+    { status: 200, headers }
+  );
+}
+
+async function handleBugReport(request, env, headers) {
+  const hook = env.DISCORD_WEBHOOK;
+  if (!hook) {
+    return new Response(JSON.stringify({ success: false, error: "not_configured" }), { status: 503, headers });
+  }
+  const body = await request.text();
+  if (!body || body.length > 8000) {
+    return new Response(JSON.stringify({ success: false, error: "bad_report" }), { status: 400, headers });
+  }
+  const discordRes = await fetch(hook, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body
+  });
+  return new Response(
+    JSON.stringify({ success: discordRes.ok }),
+    { status: discordRes.ok ? 200 : 502, headers }
+  );
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // 1. API endpoint for D1 Database
     if (url.pathname === "/api/cloud-save" || url.pathname === "/.netlify/functions/cloud-save") {
       return handleCloudSave(request, env);
     }
 
-    // 2. Static Assets (serves index.html and all frontend files)
+    if (url.pathname === "/api/bug-report" && request.method === "POST") {
+      return handleBugReport(request, env, headers);
+    }
+
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }

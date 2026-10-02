@@ -11,6 +11,7 @@ import { updateHUD } from './hudView.js';
 import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
+import { getKnifeShownBonuses } from '../economy/production.js';
 
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -566,11 +567,12 @@ function onRouletteFinished() {
     }
   }
 
+  const shown = getKnifeShownBonuses(rouletteWinningKnife);
   const cbEl = document.getElementById('rouletteResultClickBoost');
-  if (cbEl) cbEl.textContent = `+${Math.round((rouletteWinningKnife.clickMult * (1 + (star - 1) * 0.35) - 1) * 100)}% Клик`;
+  if (cbEl) cbEl.textContent = `+${formatNumber(shown.clickPct)}% Клик`;
 
   const pbEl = document.getElementById('rouletteResultPassiveBoost');
-  if (pbEl) pbEl.textContent = `+${Math.round((rouletteWinningKnife.passiveMult * (1 + (star - 1) * 0.25) - 1) * 100)}% Заводы`;
+  if (pbEl) pbEl.textContent = `+${formatNumber(shown.passPct)}% Заводы`;
 
   showKnifeToast(isDuplicate
     ? `🔁 Дубликат "${rouletteWinningKnife.name}"! Кэшбэк 50%: +${formatNumber(duplicateCashback)} ${currSym}`
@@ -697,10 +699,10 @@ export function renderCasesSystem() {
   if (skinTierEl) skinTierEl.textContent = `Тир ${skinInfo.tier}`;
   const skinHintEl = document.getElementById('poopSkinProgressHint');
   if (skinHintEl) {
-    if (skinInfo.nextAt < 20000) {
-      skinHintEl.textContent = `Форма #${GAME.evoStage + 1} • След. скин на Форме #${skinInfo.nextAt}`;
+    if (skinInfo.nextAt >= 20000) {
+      skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • облик за горизонтом`;
     } else {
-      skinHintEl.textContent = `Форма #${GAME.evoStage + 1} • ВЫСШАЯ ФОРМА ОМНИВЕРСА!`;
+      skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • след. облик на форме #${formatNumber(skinInfo.nextAt)}`;
     }
   }
 
@@ -824,8 +826,9 @@ export function openCasePreviewModal(caseId) {
 
     poolWithChances.forEach(item => {
       const knife = item.knife;
-      const clickPct = Math.round(((knife.clickMult || 1.0) - 1) * 100);
-      const passPct = Math.round(((knife.passiveMult || 1.0) - 1) * 100);
+      const shown = getKnifeShownBonuses(knife);
+      const clickPct = shown.clickPct;
+      const passPct = shown.passPct;
       const pct = item.chancePercent < 1.0 ? item.chancePercent.toFixed(2) : item.chancePercent.toFixed(1);
 
       let rColor = 'border-stone-700 bg-stone-900/80';
