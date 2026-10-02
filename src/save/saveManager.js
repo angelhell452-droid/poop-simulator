@@ -6,6 +6,7 @@ import { SHOP_ITEMS } from '../data/shop.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { migrateSaveData } from './migrations.js';
+import { clampAutoclickerState } from '../systems/autoclickService.js';
 import { events } from '../core/events.js';
 
 export const STORAGE_KEY = 'PoopSim_Pro_Save';
@@ -13,7 +14,7 @@ export const BACKUP_KEY = 'PoopSim_Pro_Backup';
 
 export function buildSavePayload() {
   return {
-    saveVersion: 2,
+    saveVersion: 3,
     saveTimestamp: Date.now(),
     game: { ...GAME, lastActiveTime: Date.now() },
     feedCount,
@@ -131,6 +132,8 @@ export function applySaveDataSafely(rawData) {
   } else if (!GAME.hatLevels) {
     GAME.hatLevels = {};
   }
+
+  clampAutoclickerState();
 
   events.emit('save:loaded');
 }

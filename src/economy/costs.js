@@ -22,8 +22,7 @@ export function getAffordableEvoInfo() {
   const unbreakEvo = TALENTS.find(t => t.id === 'unbreakable_evo');
 
   const omegaDisc = omegaTalent ? (1 - Math.pow(0.98, omegaTalent.level)) : 0;
-  const unbreakDisc = (unbreakEvo && unbreakEvo.level > 0) ? (1 - Math.pow(0.985, unbreakEvo.level)) : 0;
-  const costDiscount = getAsymptoticDiscountFactor([omegaDisc, unbreakDisc], 0.90);
+  const unbreakRaw = (unbreakEvo && unbreakEvo.level > 0) ? (1 - Math.pow(0.985, unbreakEvo.level)) : 0;
 
   if (GAME.evoStage >= EVOLUTIONS.length - 1) {
     return { count: 0, totalCost: 0, canBuy: false, maxReached: true };
@@ -38,6 +37,7 @@ export function getAffordableEvoInfo() {
   let currBio = GAME.biomass;
 
   for (let s = GAME.evoStage + 1; s < EVOLUTIONS.length; s++) {
+    const costDiscount = getAsymptoticDiscountFactor(s >= 5000 ? [omegaDisc, unbreakRaw] : [omegaDisc], 0.90);
     const cost = Math.max(1, Math.floor(EVOLUTIONS[s].cost * costDiscount));
     if (isMax) {
       if (currBio >= cost) {
@@ -58,7 +58,7 @@ export function getAffordableEvoInfo() {
   }
 
   if (count === 0) {
-    const nextCost = Math.max(1, Math.floor(EVOLUTIONS[GAME.evoStage + 1].cost * costDiscount));
+    const nextCost = Math.max(1, Math.floor(EVOLUTIONS[GAME.evoStage + 1].cost * getAsymptoticDiscountFactor((GAME.evoStage + 1) >= 5000 ? [omegaDisc, unbreakRaw] : [omegaDisc], 0.90)));
     return { count: 1, totalCost: nextCost, canBuy: false, maxReached: false };
   }
 

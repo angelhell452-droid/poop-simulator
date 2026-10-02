@@ -28,9 +28,11 @@ import { ACHIEVEMENTS } from './data/achievements.data.js';
 import { SHOP_ITEMS } from './data/shop.data.js';
 import { formatNumber } from './utils/numberFormatter.js';
 import { formatDurationAway } from './utils/timeUtils.js';
+import { clampAutoclickerState, getAutoclickCap, isAutoclickUnlocked } from './systems/autoclickService.js';
 import { events } from './core/events.js';
 
 export function toggleAutoclicker() {
+  if (!isAutoclickUnlocked()) return;
   GAME.autoclickerActive = !GAME.autoclickerActive;
   updateAutoclickerUI();
   saveLocal();
@@ -42,13 +44,22 @@ export function updateAutoclickerUI() {
   const label = document.getElementById('autoclickLabel');
   if (!btn || !led || !label) return;
 
-  const spd = GAME.autoclickerSpeed || 1000;
+  const unlocked = isAutoclickUnlocked();
+  const cap = getAutoclickCap();
+  const spd = Math.max(1, Math.round(Math.min(GAME.autoclickerSpeed || 1, cap || 1)));
 
-  if (GAME.autoclickerActive) {
+  if (!unlocked) {
+    btn.disabled = true;
+    btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 border-stone-600 text-stone-500';
+    led.className = 'w-2.5 h-2.5 rounded-full bg-stone-600';
+    label.textContent = 'АВТОКЛИКЕР: ПОСЛЕ 1 СМЫВА';
+  } else if (GAME.autoclickerActive) {
+    btn.disabled = false;
     btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-amber-600 hover:bg-amber-500 border-yellow-400 text-white shadow-[0_0_10px_#f59e0b]';
     led.className = 'w-2.5 h-2.5 rounded-full bg-yellow-300 shadow-[0_0_8px_#facc15] animate-ping';
-    label.textContent = `АВТОКЛИКЕР: ВКЛ (${spd} CPS ⚡)`;
+    label.textContent = `АВТОКЛИКЕР: ВКЛ (${formatNumber(spd)} CPS)`;
   } else {
+    btn.disabled = false;
     btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 hover:bg-stone-700 border-stone-600 text-stone-300';
     led.className = 'w-2.5 h-2.5 rounded-full bg-stone-500';
     label.textContent = 'АВТОКЛИКЕР: ВЫКЛ';
@@ -56,7 +67,9 @@ export function updateAutoclickerUI() {
 
   document.querySelectorAll('.autoclick-spd-btn').forEach(b => {
     const cps = parseInt(b.dataset.cps);
-    if (cps === spd) {
+    const selected = unlocked && ((cps >= 8 && spd >= 8) || cps === spd);
+    b.disabled = !unlocked;
+    if (selected) {
       b.className = 'autoclick-spd-btn px-2 py-0.5 rounded bg-amber-600 text-white font-bold border border-yellow-400 shadow';
     } else {
       b.className = 'autoclick-spd-btn px-2 py-0.5 rounded bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700';
@@ -153,11 +166,11 @@ export async function bootstrap() {
   document.querySelectorAll('.autoclick-spd-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const cps = parseInt(btn.dataset.cps);
-      if (cps) {
-        GAME.autoclickerSpeed = cps;
-        updateAutoclickerUI();
-        saveLocal();
-      }
+      if (!cps || !isAutoclickUnlocked()) return;
+      const cap = getAutoclickCap();
+      GAME.autoclickerSpeed = Math.max(1, Math.min(cap, cps >= 8 ? cap : cps));
+      updateAutoclickerUI();
+      saveLocal();
     });
   });
 
@@ -340,13 +353,14 @@ function checkOfflineProgress() {
   if (GAME.lastActiveTime && now - GAME.lastActiveTime > 45000) {
     const awaySeconds = Math.floor((now - GAME.lastActiveTime) / 1000);
     const slumberTalent = TALENTS.find(t => t.id === 'afk_slumber');
+    const sovereignTalent = TALENTS.find(t => t.id === 'time_sovereign');
     const godArtifact = GAME.transcendUpgrades?.afkCap || 0;
-    const maxHours = 4 + (slumberTalent ? slumberTalent.level * 3 : 0) + godArtifact * 12;
+    const maxHours = 4 + (slumberTalent ? slumberTalent.level * 2 : 0) + godArtifact * 12;
     const maxSeconds = maxHours * 3600;
     const effectiveSeconds = Math.min(awaySeconds, maxSeconds);
 
     const boosterActive = SHOP_ITEMS.find(i => i.id === 'upg_afk_booster')?.owned;
-    const efficiency = boosterActive ? 1.0 : (0.35 + (slumberTalent ? slumberTalent.level * 0.05 : 0));
+    const efficiency = boosterActive ? 1.0 : Math.min(1, 0.35 + (slumberTalent ? slumberTalent.level * 0.15 : 0) + (sovereignTalent ? sovereignTalent.level * 0.08 : 0));
     const basePassive = getPassiveIncome();
     const offlineBiomass = Math.round(basePassive * effectiveSeconds * efficiency);
     const offlineSparkles = Math.min(500, Math.floor(effectiveSeconds / 180));

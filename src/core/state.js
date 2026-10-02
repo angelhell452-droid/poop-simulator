@@ -11,7 +11,7 @@ export function getDefaultGameState() {
   let playerName = (typeof localStorage !== 'undefined' ? localStorage.getItem('PoopSim_PlayerName') : null) || ('Игрок #' + playerId.substring(playerId.length - 4));
 
   return {
-    saveVersion: 2,
+    saveVersion: 3,
     playerId: playerId,
     playerName: playerName,
 
@@ -41,7 +41,7 @@ export function getDefaultGameState() {
     equippedHat: null,
 
     autoclickerActive: false,
-    autoclickerSpeed: 1000, // CPS — processed individually via accumulator, no crit exploit
+    autoclickerSpeed: 1,
 
     gameMode: 'boys', // 'boys' | 'girls'
     girlyMode: false,

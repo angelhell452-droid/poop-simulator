@@ -55,3 +55,9 @@ export const FACTORIES = [
   { id: 'omni_singularity_matrix', name: 'Матрица Омни-Сингулярности', cost: 1e295, baseCps: 1e289, count: 0, icon: '🔮', tier: 'singularity', tierNumber: 4, tierTitle: '🌌 Тир 4: Омниверс и Сингулярность', reqStage: 19997 },
   { id: 'alpha_omega_apex', name: 'Вершина Альфа и Омега Бытия', cost: 1e305, baseCps: 1e299, count: 0, icon: '👑', tier: 'singularity', tierNumber: 4, tierTitle: '🌌 Тир 4: Омниверс и Сингулярность', reqStage: 19999 }
 ];
+
+for (const fac of FACTORIES) {
+  if (fac.tier === 'late' || fac.tier === 'endgame' || fac.tier === 'singularity') {
+    fac.baseCps *= 6;
+  }
+}

@@ -67,11 +67,11 @@ export function updateHUD() {
 
   // Buff texts (Concise & zero jitter)
   const buffH = document.getElementById('buffHungerText');
-  if (buffH) buffH.textContent = `+${formatNumber(Math.round((GAME.hunger / 100) * 50))}% Клик`;
+  if (buffH) buffH.textContent = `+${formatNumber(Math.round((GAME.hunger / 100) * 25))}% Клик`;
   const buffC = document.getElementById('buffCleanText');
-  if (buffC) buffC.textContent = `+${formatNumber(Math.round((GAME.clean / 100) * 40))}% Заводы`;
+  if (buffC) buffC.textContent = `+${formatNumber(Math.round((GAME.clean / 100) * 25))}% Заводы`;
   const buffHp = document.getElementById('buffHappyText');
-  if (buffHp) buffHp.textContent = `x2 Криты${GAME.happy >= 70 ? ' 🔥' : ''}`;
+  if (buffHp) buffHp.textContent = `+${formatNumber(Math.round((GAME.happy / 100) * 20))}% Крит`;
 
   const buffIdeal = document.getElementById('buffIdealPill');
   if (buffIdeal) {

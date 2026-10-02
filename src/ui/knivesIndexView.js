@@ -325,7 +325,7 @@ export function renderPerksIndex() {
 
   html += `
     <div class="col-span-1 sm:col-span-2 text-left mt-3 mb-1">
-      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">🔮 Бесконечные Усиления Бутика</h4>
+      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">🔮 Усиления Бутика</h4>
     </div>
   `;
 

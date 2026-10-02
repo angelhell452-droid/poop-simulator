@@ -55,13 +55,13 @@ export function renderFactories() {
     let nextMilestone = 25;
     let milestoneMultiplierDesc = 'x2';
     if (currentCount >= 25) { nextMilestone = 50; milestoneMultiplierDesc = 'x2'; }
-    if (currentCount >= 50) { nextMilestone = 100; milestoneMultiplierDesc = 'x4'; }
-    if (currentCount >= 100) { nextMilestone = 200; milestoneMultiplierDesc = 'x4'; }
-    if (currentCount >= 200) { nextMilestone = 500; milestoneMultiplierDesc = 'x8'; }
-    if (currentCount >= 500) { nextMilestone = 1000; milestoneMultiplierDesc = 'x16'; }
+    if (currentCount >= 50) { nextMilestone = 100; milestoneMultiplierDesc = 'x1.5'; }
+    if (currentCount >= 100) { nextMilestone = 200; milestoneMultiplierDesc = 'x1.5'; }
+    if (currentCount >= 200) { nextMilestone = 500; milestoneMultiplierDesc = 'x1.5'; }
+    if (currentCount >= 500) { nextMilestone = 1000; milestoneMultiplierDesc = 'x2'; }
     if (currentCount >= 1000) {
       nextMilestone = (Math.floor(currentCount / 1000) + 1) * 1000;
-      milestoneMultiplierDesc = 'x10';
+      milestoneMultiplierDesc = 'x1.5';
     }
 
     const milestonePct = Math.min(100, Math.round((currentCount / nextMilestone) * 100));

@@ -5,6 +5,7 @@ import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
+import { getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet } from './metaMultipliers.js';
 
 export function getEquippedKnife() {
   if (!GAME.equippedKnife) return null;
@@ -21,98 +22,73 @@ export function getHatLevel(hatId) {
   return GAME.hatLevels[hatId] || 1;
 }
 
+function talentLevel(id) {
+  return TALENTS.find(t => t.id === id)?.level || 0;
+}
+
+function softCap(raw, knee, power) {
+  return raw > knee ? (knee + Math.pow(raw - knee, power)) : raw;
+}
+
 export function getClickPower() {
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
-
-  // Permanent prestige passive boost based on all rolls earned (power-law curve: no runaway snowball)
-  const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
-  const rollPower = (GAME.totalPrestiges >= 25) ? 0.50 : 0.25; // Смыв #25: Втулочная Империя (удвоенный бонус)
-  const prestigePassiveBoost = 1 + Math.pow(Math.max(0, totalRolls), 0.45) * rollPower;
-  const totalPrestigesBoost = 1 + (GAME.totalPrestiges * 0.35);
-  const rollsMult = prestigePassiveBoost * totalPrestigesBoost;
-
-  // Direct Talent Multipliers (strictly increase power)
-  const softRolls = TALENTS.find(t => t.id === 'soft_rolls');
-  const softRollsMult = 1 + (softRolls ? softRolls.level * 0.25 : 0);
-
-  const omniMastery = TALENTS.find(t => t.id === 'omni_mastery');
-  const omniMasteryMult = 1 + (omniMastery ? omniMastery.level * 0.30 : 0);
-
-  const cosmicRes = TALENTS.find(t => t.id === 'cosmic_resonance');
-  const cosmicMult = cosmicRes ? Math.pow(1.5, Math.floor(cosmicRes.level / 2)) : 1;
+  const rollsMult = getRollsIncomeMult();
+  const softRollsMult = 1 + talentLevel('soft_rolls') * 0.04;
+  const cosmicMult = Math.pow(1.08, Math.floor(talentLevel('cosmic_resonance') / 2));
 
   let totalFactories = 0;
   FACTORIES.forEach(fac => { totalFactories += (fac.count || 0); });
-  const synergyTalent = TALENTS.find(t => t.id === 'golden_synergy');
-  const synergyMult = 1 + (synergyTalent ? Math.floor(totalFactories / 10) * (synergyTalent.level * 1.5) : 0);
+  const synergyMult = 1 + Math.floor(totalFactories / 10) * talentLevel('golden_synergy') * 0.03;
 
-  const hyperTalent = TALENTS.find(t => t.id === 'hyper_click');
-  const maxHyperStacks = 50;
-  const hyperStacks = Math.min(maxHyperStacks, Math.floor((GAME.totalClicks || 0) / 500));
-  const hyperMult = 1 + (hyperTalent ? hyperStacks * (hyperTalent.level * 0.05) : 0);
+  const hyperStacks = Math.min(30, Math.floor((GAME.totalClicks || 0) / 500));
+  const hyperMult = 1 + hyperStacks * talentLevel('hyper_click') * 0.02;
 
-  // Astral Plungers Tier 2 Breakthrough power-law scaling (safe against big number overflow)
-  const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
-  const plungerCount = Math.max(0, GAME.transcendPlungers || 0);
-  const plungersMult = Math.pow(1 + plungerCount * (1 + omniLvl * 0.25), 1.25);
+  const plungersMult = getPlungersIncomeMult();
+  const omniRelicMult = getOmniRelicMult();
 
-  // Turbo Frenzy Rush (Combo Master archetype: x15 base instead of x10)
-  const isComboArch = GAME.archetype === 'combo';
-  const turboBase = isComboArch ? 15.0 : 10.0;
-  const turboTalent = TALENTS.find(t => t.id === 'combo_master');
-  const turboBonus = 1 + (turboTalent ? turboTalent.level * 0.50 : 0);
-  const turboMult = GAME.turboRushTime > 0 ? (turboBase * turboBonus) : 1.0;
+  const turboBase = GAME.archetype === 'combo' ? 6 : 4;
+  const turboBonus = 1 + talentLevel('combo_master') * 0.15;
+  const turboMult = GAME.turboRushTime > 0 ? (turboBase * turboBonus) : 1;
 
-  // Equipped Knife Multiplier + Stars + Forge Artifact + Boutique Diamond Sharpening
   const knife = getEquippedKnife();
   const knifeStar = knife ? getKnifeStar(knife.id) : 1;
-  const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.30;
-  const diamondLvl = GAME.boutiqueLevels?.diamond_sharpening || 0;
-  const diamondBoost = 1 + diamondLvl * 0.15;
-  
-  // Soft-cap high knife multipliers to prevent early game destruction
-  let rawKnifeClick = knife ? knife.clickMult : 1.0;
-  let effectiveKnifeClick = rawKnifeClick > 50 ? (50 + Math.pow(rawKnifeClick - 50, 0.65)) : rawKnifeClick;
-  const knifeClickMult = knife ? (effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost * diamondBoost) : 1.0;
+  const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.08;
+  const diamondLvl = Math.min(20, GAME.boutiqueLevels?.diamond_sharpening || 0);
+  const diamondBoost = 1 + diamondLvl * 0.05;
+  const starForgeMult = 1 + talentLevel('star_forge_master') * 0.05;
+  const rawKnifeClick = knife ? knife.clickMult : 1;
+  const effectiveKnifeClick = softCap(rawKnifeClick, 50, 0.65);
+  const knifeClickMult = knife
+    ? (effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost * diamondBoost * starForgeMult)
+    : 1;
 
-  // Knife Synergy: Katana boosts Click Power by +15% per 50 evolution forms
-  const knifeStyle = knife ? knife.style : '';
-  const katanaBonus = knifeStyle === 'katana' ? (1 + Math.floor(GAME.evoStage / 50) * 0.15) : 1.0;
+  const katanaBonus = knife && knife.style === 'katana'
+    ? (1 + Math.floor(GAME.evoStage / 50) * 0.15)
+    : 1;
 
-  // Meaningful Pet Hunger Buff (+0% to +50% Click Power based on hunger)
-  const hungerBuff = 1 + Math.max(0, (GAME.hunger || 100) / 100) * 0.50;
+  const hungerBuff = 1 + Math.max(0, (GAME.hunger || 0) / 100) * 0.25;
 
-  // Archetype specialization multiplier (+50% Click for 'clicker', +15% for 'balanced')
-  let archMult = 1.0;
-  if (GAME.archetype === 'clicker') archMult = 1.50;
+  let archMult = 1;
+  if (GAME.archetype === 'clicker') archMult = 1.5;
   else if (GAME.archetype === 'balanced') archMult = 1.15;
 
-  const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.50;
+  const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.08;
 
-  // Hat click boost from Boutique (enhanced with Gem Inlaying)
   const equippedHatItem = GAME.equippedHat ? SHOP_ITEMS.find(i => i.id === GAME.equippedHat) : null;
-  const hatLvl = equippedHatItem ? getHatLevel(equippedHatItem.id) : 1;
-  const hatClickBoost = equippedHatItem ? ((equippedHatItem.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35)) : 1.0;
+  const hatLvl = equippedHatItem ? Math.min(15, getHatLevel(equippedHatItem.id)) : 1;
+  const rawHat = equippedHatItem ? ((equippedHatItem.clickBoost || 1) * (1 + (hatLvl - 1) * 0.08)) : 1;
+  const hatClickBoost = softCap(rawHat, 8, 0.55);
 
-  // Boutique Perk: Omniversal Wealth (+100% all income)
-  const omniWealthActive = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned;
-  const omniWealthMult = omniWealthActive ? 2.0 : 1.0;
+  const omniWealthMult = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned ? 1.2 : 1;
+  const sparkLvl = Math.min(12, GAME.boutiqueLevels?.singularity_spark || 0);
+  const sparkMult = 1 + sparkLvl * 0.04;
+  const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.06;
+  const riftMult = getRiftMult();
+  const idealMult = getIdealMult();
 
-  // Boutique Repeatable: Singularity Spark (+25% all income per level)
-  const sparkLvl = GAME.boutiqueLevels?.singularity_spark || 0;
-  const sparkMult = 1 + sparkLvl * 0.25;
-  // Transcendence Artifact: Cosmic Synergy (+50% per level)
-  const cosmicSynergyLvl = GAME.transcendUpgrades?.cosmicSynergy || 0;
-  const cosmicSynergyMult = 1 + cosmicSynergyLvl * 0.50;
-  // Transcendence Artifact: Singularity Rift (x2 all income)
-  const riftMult = GAME.transcendUpgrades?.singularityRift ? 2.0 : 1.0;
+  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * cosmicMult * synergyMult * hyperMult * plungersMult * omniRelicMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult;
 
-  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * synergyMult * hyperMult * plungersMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult;
-
-  // Quantum Mastery talent + Quantum Click upgrade: direct transfer of passive GPS to click
-  const qMastery = TALENTS.find(t => t.id === 'quantum_mastery');
-  const qClickActive = SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned;
-  const syncRate = (qMastery ? qMastery.level * 0.01 : 0) + (qClickActive ? 0.02 : 0);
+  const syncRate = talentLevel('quantum_mastery') * 0.004 + (SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned ? 0.02 : 0);
   if (syncRate > 0) {
     basePower += getPassiveIncome() * syncRate;
   }
@@ -122,21 +98,11 @@ export function getClickPower() {
 
 export function getPassiveIncome() {
   let base = 0;
-  const turbo = TALENTS.find(t => t.id === 'turbo_pipe');
-  const turboMult = 1 + (turbo ? turbo.level * 0.35 : 0);
-  const goldRushActive = SHOP_ITEMS.find(i => i.id === 'upg_goldrush')?.owned;
-  const goldRushMult = goldRushActive ? 2.0 : 1.0;
-  const overclockActive = SHOP_ITEMS.find(i => i.id === 'upg_factory_overclock')?.owned;
-  const overclockMult = overclockActive ? 2.0 : 1.0;
-
-  const qRepl = TALENTS.find(t => t.id === 'quantum_replication');
-  const qReplMult = 1 + (qRepl ? qRepl.level * 0.50 : 0);
-
-  const softRolls = TALENTS.find(t => t.id === 'soft_rolls');
-  const softRollsMult = 1 + (softRolls ? softRolls.level * 0.25 : 0);
-
-  const omniMastery = TALENTS.find(t => t.id === 'omni_mastery');
-  const omniMasteryMult = 1 + (omniMastery ? omniMastery.level * 0.30 : 0);
+  const turboMult = 1 + talentLevel('turbo_pipe') * 0.06;
+  const goldRushMult = SHOP_ITEMS.find(i => i.id === 'upg_goldrush')?.owned ? 1.25 : 1;
+  const overclockMult = SHOP_ITEMS.find(i => i.id === 'upg_factory_overclock')?.owned ? 1.25 : 1;
+  const qReplMult = 1 + talentLevel('quantum_replication') * 0.08;
+  const softRollsMult = 1 + talentLevel('soft_rolls') * 0.04;
 
   const knife = getEquippedKnife();
   const knifeStyle = knife ? knife.style : '';
@@ -150,14 +116,14 @@ export function getPassiveIncome() {
     let facMilestoneMult = 1;
     if (fac.count >= 25) facMilestoneMult *= 2;
     if (fac.count >= 50) facMilestoneMult *= 2;
-    if (fac.count >= 100) facMilestoneMult *= 4;
-    if (fac.count >= 200) facMilestoneMult *= 4;
-    if (fac.count >= 500) facMilestoneMult *= 8;
+    if (fac.count >= 100) facMilestoneMult *= 1.5;
+    if (fac.count >= 200) facMilestoneMult *= 1.5;
+    if (fac.count >= 500) facMilestoneMult *= 1.5;
     if (fac.count >= 1000) {
-      facMilestoneMult *= 16;
+      facMilestoneMult *= 2;
       const extraThousands = Math.floor((fac.count - 1000) / 1000);
       if (extraThousands > 0) {
-        facMilestoneMult *= Math.pow(10, extraThousands);
+        facMilestoneMult *= Math.pow(1.5, extraThousands);
       }
     }
 
@@ -169,75 +135,49 @@ export function getPassiveIncome() {
 
     // Singularity Core Boutique Perk: x3 to cosmic and singularity tier factories
     const singularityCoreActive = SHOP_ITEMS.find(i => i.id === 'upg_singularity_core')?.owned;
-    const singularityCoreMult = (singularityCoreActive && (fac.tier === 'cosmic' || fac.tier === 'singularity' || fac.tier === 'endgame')) ? 3.0 : 1.0;
+    const highTier = fac.tier === 'late' || fac.tier === 'endgame' || fac.tier === 'singularity';
+    const singularityCoreMult = (singularityCoreActive && highTier) ? 1.5 : 1;
 
     base += (fac.count || 0) * fac.baseCps * facMilestoneMult * tierKnifeMult * tierQuantumMult * singularityCoreMult;
   });
 
   base *= turboMult * goldRushMult * overclockMult * butterflyBladeBonus;
 
-  // Evolution Stage multiplier
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
+  const rollsMult = getRollsIncomeMult();
+  const cosmicMult = Math.pow(1.08, Math.floor(talentLevel('cosmic_resonance') / 2));
+  const plungersMult = getPlungersIncomeMult();
+  const facOverdriveMult = 1 + (GAME.transcendUpgrades?.factoryOverdrive || 0) * 0.12;
+  const cleanBuff = 1 + Math.max(0, (GAME.clean || 0) / 100) * 0.25;
 
-  // Permanent prestige passive boost based on all rolls earned (power-law curve: no runaway snowball)
-  const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
-  const rollPower = (GAME.totalPrestiges >= 25) ? 0.50 : 0.25; // Смыв #25: Втулочная Империя (удвоенный бонус)
-  const prestigePassiveBoost = 1 + Math.pow(Math.max(0, totalRolls), 0.45) * rollPower;
-  const totalPrestigesBoost = 1 + (GAME.totalPrestiges * 0.35);
-  const rollsMult = prestigePassiveBoost * totalPrestigesBoost;
-
-  const cosmicRes = TALENTS.find(t => t.id === 'cosmic_resonance');
-  const cosmicMult = cosmicRes ? Math.pow(1.5, Math.floor(cosmicRes.level / 2)) : 1;
-
-  // Astral Plungers Tier 2 Breakthrough power-law scaling (safe against big number overflow)
-  const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
-  const plungerCount = Math.max(0, GAME.transcendPlungers || 0);
-  const plungersMult = Math.pow(1 + plungerCount * (1 + omniLvl * 0.25), 1.25);
-
-  // Transcendence Artifact: Factory Overdrive
-  const facOverdriveMult = 1 + (GAME.transcendUpgrades?.factoryOverdrive || 0) * 1.0;
-
-  // Pet Clean Buff (+0% to +40% passive income based on clean meter)
-  const cleanBuff = 1 + Math.max(0, (GAME.clean || 100) / 100) * 0.40;
-
-  // Equipped Knife Multiplier + Stars + Forge Artifact + Boutique Diamond Sharpening
   const knifeStar = knife ? getKnifeStar(knife.id) : 1;
-  const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.30;
-  const diamondLvl = GAME.boutiqueLevels?.diamond_sharpening || 0;
-  const diamondBoost = 1 + diamondLvl * 0.15;
-  let rawKnifePass = knife ? knife.passiveMult : 1.0;
-  let effectiveKnifePass = rawKnifePass > 30 ? (30 + Math.pow(rawKnifePass - 30, 0.65)) : rawKnifePass;
-  const knifePassiveMult = knife ? (effectiveKnifePass * (1 + (knifeStar - 1) * 0.25) * knifeForgeBoost * diamondBoost) : 1.0;
+  const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.08;
+  const diamondLvl = Math.min(20, GAME.boutiqueLevels?.diamond_sharpening || 0);
+  const diamondBoost = 1 + diamondLvl * 0.05;
+  const starForgeMult = 1 + talentLevel('star_forge_master') * 0.05;
+  const rawKnifePass = knife ? knife.passiveMult : 1;
+  const effectiveKnifePass = softCap(rawKnifePass, 30, 0.65);
+  const knifePassiveMult = knife
+    ? (effectiveKnifePass * (1 + (knifeStar - 1) * 0.25) * knifeForgeBoost * diamondBoost * starForgeMult)
+    : 1;
 
-  // Archetype specialization multiplier (+50% passive for 'tycoon', +15% for 'balanced')
-  let archMult = 1.0;
-  if (GAME.archetype === 'tycoon') archMult = 1.50;
+  let archMult = 1;
+  if (GAME.archetype === 'tycoon') archMult = 1.5;
   else if (GAME.archetype === 'balanced') archMult = 1.15;
 
-  // Evolution Chapter Synergy: +2% passive per 100 stages unlocked
-  const chapterSynergy = 1 + Math.floor(GAME.evoStage / 100) * 0.02;
+  const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.08;
+  const omniWealthMult = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned ? 1.2 : 1;
+  const crystalLvl = Math.min(20, GAME.boutiqueLevels?.crystal_factory || 0);
+  const crystalMult = 1 + crystalLvl * 0.05;
+  const sparkLvl = Math.min(12, GAME.boutiqueLevels?.singularity_spark || 0);
+  const sparkMult = 1 + sparkLvl * 0.04;
+  const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.06;
+  const timeWarpMult = (GAME.totalTranscend >= 5) ? 1.25 : 1;
+  const riftMult = getRiftMult();
+  const idealMult = getIdealMult();
+  const omniRelicMult = getOmniRelicMult();
 
-  const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.50;
-
-  // Omniversal Wealth Boutique Perk: x2 to all passive income
-  const omniWealthActive = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned;
-  const omniWealthMult = omniWealthActive ? 2.0 : 1.0;
-
-  // Boutique Repeatables: Crystal Factory & Singularity Spark
-  const crystalLvl = GAME.boutiqueLevels?.crystal_factory || 0;
-  const crystalMult = 1 + crystalLvl * 0.20;
-  const sparkLvl = GAME.boutiqueLevels?.singularity_spark || 0;
-  const sparkMult = 1 + sparkLvl * 0.25;
-
-  // Transcendence Artifact: Cosmic Synergy (+50% per level)
-  const cosmicSynergyLvl = GAME.transcendUpgrades?.cosmicSynergy || 0;
-  const cosmicSynergyMult = 1 + cosmicSynergyLvl * 0.50;
-  // Transcendence Milestone #5: Time Warp (+25% factory speed)
-  const timeWarpMult = (GAME.totalTranscend >= 5) ? 1.25 : 1.0;
-  // Transcendence Artifact: Singularity Rift (x2 all income)
-  const riftMult = GAME.transcendUpgrades?.singularityRift ? 2.0 : 1.0;
-
-  const finalGPS = Math.max(0, Math.round(base * crystalMult * evo.mult * rollsMult * softRollsMult * omniMasteryMult * cosmicMult * plungersMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * chapterSynergy * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult));
+  const finalGPS = Math.max(0, Math.round(base * crystalMult * evo.mult * rollsMult * softRollsMult * cosmicMult * plungersMult * omniRelicMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult * idealMult));
   if (finalGPS > (GAME.currentRunPeakGPS || 0)) {
     GAME.currentRunPeakGPS = finalGPS;
   }
@@ -250,10 +190,10 @@ export function getActiveBuffsList() {
   // 1. Гипер-Кликер
   const hyperTalent = TALENTS.find(t => t.id === 'hyper_click');
   if (hyperTalent && hyperTalent.level > 0) {
-    const maxHyperStacks = 50;
+    const maxHyperStacks = 30;
     const hyperStacks = Math.min(maxHyperStacks, Math.floor((GAME.totalClicks || 0) / 500));
     if (hyperStacks > 0) {
-      const bonusPct = Math.round(hyperStacks * (hyperTalent.level * 5));
+      const bonusPct = Math.round(hyperStacks * (hyperTalent.level * 2));
       buffs.push({
         id: 'hyper_click',
         icon: '👆',
@@ -261,7 +201,7 @@ export function getActiveBuffsList() {
         short: `+${formatNumber(bonusPct)}%`,
         bonusText: `+${formatNumber(bonusPct)}% к силе клика`,
         badgeColor: 'bg-amber-950/90 border-yellow-400/80 text-yellow-300 shadow-[0_0_8px_rgba(234,179,8,0.25)]',
-        desc: 'Талант Смыва 2-го Тира: увеличивает силу каждого клика на +5% за каждые 500 сделанных кликов.',
+        desc: 'Талант Смыва: +2% к силе клика за каждые 500 кликов (до 30 стаков).',
         progress: `Накоплено: ${formatNumber(hyperStacks)} из ${formatNumber(maxHyperStacks)} стаков (всего кликов: ${formatNumber(GAME.totalClicks || 0)}). Уровень таланта: ${formatNumber(hyperTalent.level)}.`,
         source: 'Таланты Смыва (Тир 2)',
         tip: 'Делайте больше кликов мышкой или развивайте уровень таланта в Древе Втулок.'
@@ -271,10 +211,9 @@ export function getActiveBuffsList() {
 
   // 2. Турбо-Ярость (Frenzy)
   if ((GAME.turboRushTime || 0) > 0) {
-    const isComboArch = GAME.archetype === 'combo';
-    const turboBase = isComboArch ? 15.0 : 10.0;
+    const turboBase = GAME.archetype === 'combo' ? 6 : 4;
     const turboTalent = TALENTS.find(t => t.id === 'combo_master');
-    const turboBonus = 1 + (turboTalent ? turboTalent.level * 0.50 : 0);
+    const turboBonus = 1 + (turboTalent ? turboTalent.level * 0.15 : 0);
     const mult = Math.round(turboBase * turboBonus);
     buffs.push({
       id: 'turbo_rush',
@@ -291,18 +230,18 @@ export function getActiveBuffsList() {
   }
 
   // 3. Статус «Идеал x2»
-  if ((GAME.hunger || 0) >= 90 && (GAME.cleanliness || 0) >= 90 && (GAME.happiness || 0) >= 90) {
+  if (isIdealPet()) {
     buffs.push({
       id: 'ideal_status',
       icon: '👑',
-      name: 'Статус «Идеал x2»',
-      short: 'x2 Доход',
-      bonusText: 'x2 ко всему доходу и критам',
-      badgeColor: 'bg-gradient-to-r from-yellow-950 to-amber-900 border-yellow-300 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.5)]',
-      desc: 'Все 3 потребности питомца (Сытость, Чистота, Настроение) выше 90%! Питомец полностью счастлив и благодарит вас удвоенным производством.',
-      progress: `Сытость: ${formatNumber(Math.round(GAME.hunger))}% | Чистота: ${formatNumber(Math.round(GAME.cleanliness))}% | Настроение: ${formatNumber(Math.round(GAME.happiness))}%`,
+      name: 'Статус «Идеал»',
+      short: '+20% Доход',
+      bonusText: '+20% ко всему доходу, пока все потребности выше 90%',
+      badgeColor: 'bg-yellow-950 border-yellow-300 text-yellow-300',
+      desc: 'Сытость, чистота и настроение выше 90%. Доход выше, пока уход держится.',
+      progress: `Сытость: ${formatNumber(Math.round(GAME.hunger))}% | Чистота: ${formatNumber(Math.round(GAME.clean))}% | Настроение: ${formatNumber(Math.round(GAME.happy))}%`,
       source: 'Станция Заботы о Питомце',
-      tip: 'Используйте кнопки ухода (Покормить, Помыть, Пощекотать) или включите Авто-Уход Прорыва.'
+      tip: 'Кормите, мойте и щекочите питомца, либо включите авто-уход.'
     });
   }
 
@@ -313,7 +252,7 @@ export function getActiveBuffsList() {
     FACTORIES.forEach(fac => { totalFactories += (fac.count || 0); });
     const factoryBlocks = Math.floor(totalFactories / 10);
     if (factoryBlocks > 0) {
-      const bonusPct = Math.round(factoryBlocks * (synergyTalent.level * 150));
+      const bonusPct = Math.round(factoryBlocks * (synergyTalent.level * 3));
       buffs.push({
         id: 'golden_synergy',
         icon: '🏭',
@@ -321,7 +260,7 @@ export function getActiveBuffsList() {
         short: `+${formatNumber(bonusPct)}%`,
         bonusText: `+${formatNumber(bonusPct)}% к силе клика`,
         badgeColor: 'bg-purple-950/90 border-purple-400 text-purple-200 shadow-[0_0_8px_rgba(168,85,247,0.3)]',
-        desc: 'Талант Смыва 3-го Тира: за каждые 10 суммарно купленных заводов сила клика возрастает на +150% за уровень.',
+        desc: 'За каждые 10 купленных заводов сила клика растёт на +3% за уровень таланта.',
         progress: `Куплено заводов: ${formatNumber(totalFactories)} (активных десятков: ${formatNumber(factoryBlocks)}). Уровень таланта: ${formatNumber(synergyTalent.level)}.`,
         source: 'Таланты Смыва (Тир 3)',
         tip: 'Покупайте больше недорогих заводов в панели заводов, чтобы увеличивать количество десятков.'
@@ -330,9 +269,9 @@ export function getActiveBuffsList() {
   }
 
   // 5. Сытость Питомца
-  const hungerVal = Math.max(0, GAME.hunger || 100);
+  const hungerVal = Math.max(0, GAME.hunger ?? 100);
   if (hungerVal > 20) {
-    const hungerPct = Math.round((hungerVal / 100) * 50);
+    const hungerPct = Math.round((hungerVal / 100) * 25);
     buffs.push({
       id: 'pet_hunger',
       icon: '🍗',
@@ -340,7 +279,7 @@ export function getActiveBuffsList() {
       short: `+${formatNumber(hungerPct)}%`,
       bonusText: `+${formatNumber(hungerPct)}% к силе клика`,
       badgeColor: 'bg-orange-950/80 border-orange-500/50 text-orange-200',
-      desc: 'Качественное органическое питание наполняет какашечку энергией, давая до +50% к силе ручного клика.',
+      desc: 'Сытость даёт до +25% к силе ручного клика.',
       progress: `Текущая сытость: ${formatNumber(Math.round(hungerVal))}% из 100%`,
       source: 'Станция Заботы (Сытость)',
       tip: 'Регулярно жмите "Покормить 🍗" или активируйте авто-кормление.'
@@ -348,9 +287,9 @@ export function getActiveBuffsList() {
   }
 
   // 6. Чистота Питомца (Бонус к пассивному CPS)
-  const cleanVal = Math.max(0, GAME.cleanliness || 100);
+  const cleanVal = Math.max(0, GAME.clean || 0);
   if (cleanVal > 20) {
-    const cleanPct = Math.round((cleanVal / 100) * 50);
+    const cleanPct = Math.round((cleanVal / 100) * 25);
     buffs.push({
       id: 'pet_clean',
       icon: '🧼',
@@ -358,7 +297,7 @@ export function getActiveBuffsList() {
       short: `+${formatNumber(cleanPct)}% CPS`,
       bonusText: `+${formatNumber(cleanPct)}% к пассивному доходу`,
       badgeColor: 'bg-cyan-950/80 border-cyan-500/50 text-cyan-200',
-      desc: 'Чистота стимулирует непрерывную работу всех био-перерабатывающих фабрик (до +50% к пассивному доходу).',
+      desc: 'Чистота даёт до +25% к пассивному доходу заводов.',
       progress: `Текущая чистота: ${formatNumber(Math.round(cleanVal))}% из 100%`,
       source: 'Станция Заботы (Чистота)',
       tip: 'Регулярно жмите "Помыть 🧼" чтобы не давать фабрикам замедляться.'
@@ -369,12 +308,13 @@ export function getActiveBuffsList() {
   const knife = getEquippedKnife();
   if (knife) {
     const knifeStar = getKnifeStar(knife.id);
-    const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.30;
-    const diamondLvl = GAME.boutiqueLevels?.diamond_sharpening || 0;
-    const diamondBoost = 1 + diamondLvl * 0.15;
-    let rawKnifeClick = knife.clickMult || 1.0;
-    let effectiveKnifeClick = rawKnifeClick > 50 ? (50 + Math.pow(rawKnifeClick - 50, 0.65)) : rawKnifeClick;
-    const knifeClickMult = effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost * diamondBoost;
+    const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.08;
+    const diamondLvl = Math.min(20, GAME.boutiqueLevels?.diamond_sharpening || 0);
+    const diamondBoost = 1 + diamondLvl * 0.05;
+    const starForgeMult = 1 + talentLevel('star_forge_master') * 0.05;
+    const rawKnifeClick = knife.clickMult || 1;
+    const effectiveKnifeClick = softCap(rawKnifeClick, 50, 0.65);
+    const knifeClickMult = effectiveKnifeClick * (1 + (knifeStar - 1) * 0.35) * knifeForgeBoost * diamondBoost * starForgeMult;
     buffs.push({
       id: 'equipped_knife',
       icon: '🔪',
@@ -392,8 +332,7 @@ export function getActiveBuffsList() {
   // 8. Астральный Прорыв (Вантузы)
   const plungerCount = Math.max(0, GAME.transcendPlungers || 0);
   if (plungerCount > 0 || (GAME.totalTranscend || 0) > 0) {
-    const omniLvl = GAME.transcendUpgrades?.omniMult || 0;
-    const plungersMult = Math.pow(1 + plungerCount * (1 + omniLvl * 0.25), 1.25);
+    const plungersMult = getPlungersIncomeMult();
     buffs.push({
       id: 'astral_plungers',
       icon: '🪠',
@@ -411,8 +350,7 @@ export function getActiveBuffsList() {
   // 9. Смыв Судьбы (Втулки)
   if ((GAME.totalPrestiges || 0) > 0) {
     const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
-    const rollPower = (GAME.totalPrestiges >= 25) ? 0.50 : 0.25;
-    const boostPct = Math.round((Math.pow(Math.max(0, totalRolls), 0.45) * rollPower + (GAME.totalPrestiges * 0.35)) * 100);
+    const boostPct = Math.round((getRollsIncomeMult() - 1) * 100);
     buffs.push({
       id: 'prestige_rolls',
       icon: '🌀',

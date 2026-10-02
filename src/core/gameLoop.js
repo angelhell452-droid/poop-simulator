@@ -10,6 +10,7 @@ import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { FACTORIES } from '../data/factories.data.js';
 import { buyFactory } from '../systems/factoryService.js';
 import { triggerPetSquash } from '../ui/petCanvasView.js';
+import { getAutoclickCps } from '../systems/autoclickService.js';
 import { events } from './events.js';
 
 let lastTickTime = performance.now();
@@ -44,7 +45,7 @@ export function gameEngineTick() {
   // matching the behaviour of a manual click. This prevents the batch-crit
   // explosion where 100 clicks/tick × 20× crit = absurd mass at level 0.
   if (GAME.autoclickerActive) {
-    const cps = GAME.autoclickerSpeed || 10; // No cap — 1000 CPS is intentional game design!
+    const cps = getAutoclickCps();
     // But each click is processed INDIVIDUALLY via the fractional accumulator,
     // not as one giant batch. This keeps crits identical to manual clicks.
     autoClickAccumulator += cps * dt;
@@ -88,12 +89,11 @@ export function gameEngineTick() {
   // 4. Transcendence Artifact: Passive Toilet Rolls
   if (GAME.transcendUpgrades?.passiveRolls > 0) {
     passiveRollAccumulator += dt;
-    if (passiveRollAccumulator >= 5.0) {
+    if (passiveRollAccumulator >= 12.0) {
       passiveRollAccumulator = 0;
       const pRolls = GAME.transcendUpgrades.passiveRolls;
       GAME.prestigeRolls += pRolls;
       GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + pRolls;
-      GAME.transcendCycleRolls = (GAME.transcendCycleRolls || 0) + pRolls;
     }
   }
 

@@ -1,12 +1,15 @@
 // Save Data Migration Layer (Ensures 100% Backward Compatibility)
 
+import { TALENTS } from '../data/talents.data.js';
+import { SHOP_ITEMS } from '../data/shop.data.js';
+
 export function migrateSaveData(rawSave) {
   if (!rawSave) return null;
 
   // Check if save is v1 or flat object
   if (!rawSave.saveVersion || rawSave.saveVersion < 2) {
     const legacy = rawSave.game || rawSave;
-    return {
+    return applyEconomyV3({
       saveVersion: 2,
       saveTimestamp: Date.now(),
       game: {
@@ -63,7 +66,7 @@ export function migrateSaveData(rawSave) {
       purchasedItems: rawSave.purchasedItems || [],
       knifeStats: rawSave.knifeStats || [],
       knifeStars: rawSave.knifeStars || {}
-    };
+    });
   }
 
   if (rawSave && rawSave.game) {
@@ -74,5 +77,125 @@ export function migrateSaveData(rawSave) {
     }
   }
 
-  return rawSave;
+  return applyEconomyV3(rawSave);
+}
+
+const REMOVED_TALENTS = {
+  hyperspeed_flush: { cost: 20000, costMult: 1.32 },
+  omni_mastery: { cost: 2000000, costMult: 1.45 }
+};
+
+const OLD_TRANSCEND = {
+  cosmicSynergy: { cost: 50, costStep: 25, max: 15 },
+  passiveRolls: { cost: 100, costStep: 50, max: 12 },
+  afkCap: { cost: 150, costStep: 75, max: 8 },
+  plungerIncubator: { cost: 250, costStep: 100, max: 12 },
+  knifeForge: { cost: 7500, costStep: 2500, max: 12 },
+  meteorStorm: { cost: 10000, costStep: 3000, max: 8 },
+  factoryOverdrive: { cost: 50000, costStep: 15000, max: 15 },
+  evoBlessing: { cost: 75000, costStep: 20000, max: 12 },
+  omniMult: { cost: 250000, costStep: 100000, max: 20 }
+};
+
+const OLD_BOUTIQUE = {
+  diamond_sharpening: { baseCost: 20000, costMult: 1.25, max: 20 },
+  crystal_factory: { baseCost: 50000, costMult: 1.25, max: 20 },
+  golden_luck: { baseCost: 100000, costMult: 1.30, max: 20 },
+  singularity_spark: { baseCost: 500000, costMult: 1.35, max: 12 }
+};
+
+function talentLevelCost(cost, costMult, lvl) {
+  return Math.floor(cost * Math.pow(costMult || 1.12, lvl)) + lvl;
+}
+
+function sumLevelCosts(cost, costMult, from, toExclusive) {
+  let spent = 0;
+  for (let lvl = from; lvl < toExclusive; lvl++) {
+    spent += talentLevelCost(cost, costMult, lvl);
+  }
+  return spent;
+}
+
+function applyEconomyV3(save) {
+  if (!save || (save.saveVersion || 0) >= 3) return save;
+  const game = save.game || {};
+  let rollsRefund = 0;
+  let plungerRefund = 0;
+  let sparkleRefund = 0;
+
+  if (Array.isArray(save.talents)) {
+    const kept = [];
+    for (const row of save.talents) {
+      const removed = REMOVED_TALENTS[row.id];
+      const oldLevel = row.level || 0;
+      if (removed) {
+        rollsRefund += sumLevelCosts(removed.cost, removed.costMult, 0, oldLevel);
+        continue;
+      }
+      const def = TALENTS.find(t => t.id === row.id);
+      if (def && oldLevel > def.max) {
+        rollsRefund += Math.floor(sumLevelCosts(def.cost, def.costMult, def.max, oldLevel) * 0.6);
+        row.level = def.max;
+      }
+      kept.push(row);
+    }
+    save.talents = kept;
+  }
+
+  game.prestigeRolls = (game.prestigeRolls || 0) + rollsRefund;
+
+  const ups = game.transcendUpgrades || {};
+  for (const key of Object.keys(OLD_TRANSCEND)) {
+    const def = OLD_TRANSCEND[key];
+    const oldLevel = typeof ups[key] === 'number' ? ups[key] : 0;
+    if (oldLevel > def.max) {
+      for (let lvl = def.max; lvl < oldLevel; lvl++) {
+        plungerRefund += def.cost + lvl * def.costStep;
+      }
+      ups[key] = def.max;
+    }
+  }
+  game.transcendUpgrades = ups;
+  game.transcendPlungers = (game.transcendPlungers || 0) + Math.floor(plungerRefund * 0.6);
+
+  const boutique = game.boutiqueLevels || {};
+  for (const id of Object.keys(OLD_BOUTIQUE)) {
+    const def = OLD_BOUTIQUE[id];
+    const oldLevel = boutique[id] || 0;
+    if (oldLevel > def.max) {
+      for (let lvl = def.max; lvl < oldLevel; lvl++) {
+        sparkleRefund += Math.round(def.baseCost * Math.pow(def.costMult, lvl));
+      }
+      boutique[id] = def.max;
+    }
+  }
+  game.boutiqueLevels = boutique;
+
+  const hats = game.hatLevels || save.hatLevels || {};
+  for (const hatId of Object.keys(hats)) {
+    const oldLevel = hats[hatId] || 1;
+    if (oldLevel > 15) {
+      const hat = SHOP_ITEMS.find(i => i.id === hatId);
+      const baseCost = Math.max(1500, Math.floor(((hat && hat.cost) || 5000) * 0.35));
+      for (let lvl = 15; lvl < oldLevel; lvl++) {
+        sparkleRefund += Math.floor(baseCost * Math.pow(1.75, lvl - 1));
+      }
+      hats[hatId] = 15;
+    }
+  }
+  game.hatLevels = hats;
+  save.hatLevels = hats;
+  game.sparkles = (game.sparkles || 0) + Math.floor(sparkleRefund * 0.6);
+
+  if ((game.totalPrestiges || 0) < 1) {
+    game.autoclickerActive = false;
+    game.autoclickerSpeed = 1;
+  } else {
+    game.autoclickerSpeed = Math.max(1, Math.min(8, game.autoclickerSpeed || 1));
+  }
+
+  game.saveVersion = 3;
+  save.game = game;
+  save.saveVersion = 3;
+  return save;
 }

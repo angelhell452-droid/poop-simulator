@@ -37,6 +37,13 @@ export let goldenMeteor = {
   rotation: 0
 };
 let nextMeteorSpawn = Date.now() + 25000;
+function scheduleNextMeteor(extraMs = 0) {
+  const hunter = TALENTS.find(t => t.id === 'meteor_hunter');
+  const hunterScale = Math.pow(0.92, hunter ? hunter.level : 0);
+  const magnet = SHOP_ITEMS.find(i => i.id === 'upg_meteor_magnet')?.owned ? 0.6 : 1;
+  const base = 40000 + Math.random() * 35000 + extraMs;
+  nextMeteorSpawn = Date.now() + Math.max(18000, base * hunterScale * magnet);
+}
 let listenersInitialized = false;
 
 export function initPetCanvas() {
@@ -417,7 +424,7 @@ function renderPetLoop(time) {
 
     if (goldenMeteor.life <= 0 || goldenMeteor.x < -60 || goldenMeteor.x > w + 60 || goldenMeteor.y < -60 || goldenMeteor.y > h + 60) {
       goldenMeteor.active = false;
-      nextMeteorSpawn = Date.now() + 40000 + Math.random() * 30000;
+      scheduleNextMeteor();
     } else {
       ctx.save();
       ctx.translate(goldenMeteor.x, goldenMeteor.y);
@@ -518,16 +525,18 @@ export function catchGoldenMeteor() {
   GAME.meteorsCaught = (GAME.meteorsCaught || 0) + 1;
 
   const hunterTalent = TALENTS.find(t => t.id === 'meteor_hunter');
-  const luckBonus = 1 + (GAME.boutiqueLevels?.golden_luck || 0) * 0.25;
-  const rewardMult = (1 + (hunterTalent ? hunterTalent.level * 0.25 : 0)) * luckBonus;
+  const luckBonus = 1 + Math.min(20, GAME.boutiqueLevels?.golden_luck || 0) * 0.25;
+  const hunterBonus = 1 + (hunterTalent ? hunterTalent.level * 0.20 : 0);
+  const stormBonus = 1 + (GAME.transcendUpgrades?.meteorStorm || 0) * 0.40;
+  const lootMult = hunterBonus * luckBonus * stormBonus;
 
   const roll = Math.random();
   let label = '';
   if (roll < 0.35) {
-    GAME.turboRushTime = 15;
-    label = '⚡ УЛЬТРА-ЛИХОРАДКА: КЛИК x777 (15с)!';
+    GAME.turboRushTime = 8;
+    label = '⚡ УЛЬТРА-ЛИХОРАДКА: Турбо 8с!';
   } else if (roll < 0.70) {
-    const burst = Math.max(2500 * getClickPower(), getPassiveIncome() * 1200) * rewardMult;
+    const burst = Math.max(2500 * getClickPower(), getPassiveIncome() * 1200) * lootMult;
     GAME.biomass += burst;
     GAME.allTimeBiomass += burst;
     GAME.cycleBiomass += burst;
@@ -535,21 +544,20 @@ export function catchGoldenMeteor() {
   } else if (roll < 0.90) {
     const stageMultiplier = 1 + Math.min(20, (GAME.evoStage || 0) * 0.15);
     const prestigeMultiplier = 1 + Math.min(10, (GAME.totalPrestiges || 0) * 0.25) + Math.min(20, (GAME.totalTranscend || 0) * 1.5);
-    const baseSparkles = (150 + Math.random() * 200) * stageMultiplier * prestigeMultiplier * rewardMult;
+    const baseSparkles = (150 + Math.random() * 200) * stageMultiplier * prestigeMultiplier * lootMult;
     const spGain = Math.max(100, Math.min(5000000, Math.round(Number.isFinite(baseSparkles) ? baseSparkles : 500)));
     GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
     label = `✨ ЗВЕЗДНЫЙ ДОЖДЬ: +${formatNumber(spGain)} Блестяшек!`;
   } else {
     const rollMultiplier = 1 + (GAME.totalPrestiges || 0) * 0.15 + (GAME.totalTranscend || 0) * 1.5;
-    const rollGain = Math.max(10, Math.round((15 + Math.random() * 35) * rollMultiplier * rewardMult));
+    const rollGain = Math.max(10, Math.round((15 + Math.random() * 35) * rollMultiplier * lootMult));
     GAME.prestigeRolls = (GAME.prestigeRolls || 0) + rollGain;
     label = `🧻 СВЯЩЕННЫЙ РУЛОН: +${formatNumber(rollGain)} Втулок Судьбы!`;
   }
 
   addVisualParticle(label, '#facc15', 1.6, 2.2, -2.5);
 
-  const nextInterval = (40000 + Math.random() * 35000) * (SHOP_ITEMS.find(i => i.id === 'upg_meteor_magnet')?.owned ? 0.6 : 1.0);
-  nextMeteorSpawn = Date.now() + nextInterval;
+  scheduleNextMeteor();
 
   checkAchievements();
   updateHUD();

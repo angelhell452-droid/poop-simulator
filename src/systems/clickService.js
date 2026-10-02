@@ -15,16 +15,18 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
 
   const basePower = getClickPower();
   const critTalent = TALENTS.find(t => t.id === 'crit_master');
-  const luckLvl = GAME.boutiqueLevels?.golden_luck || 0;
-  let critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.002 : 0.05) + luckLvl * 0.01);
-  let critMultiplier = (20 + (critTalent ? critTalent.level * 0.4 : 0));
+  const luckLvl = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
+  const happyCrit = Math.max(0, (GAME.happy || 0) / 100) * 0.20;
+  const clickerCrit = GAME.archetype === 'clicker' ? 0.10 : 0;
+  let critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.004 : 0.05) + luckLvl * 0.004 + happyCrit + clickerCrit);
+  let critMultiplier = 20 * (1 + (critTalent ? critTalent.level * 0.10 : 0));
 
   const sparkleTalent = TALENTS.find(t => t.id === 'sparkle_alchemy');
   const magnetActive = SHOP_ITEMS.find(i => i.id === 'upg_magnet')?.owned;
   const hornActive = SHOP_ITEMS.find(i => i.id === 'upg_infinite_sparkles')?.owned;
   const isGambler = GAME.archetype === 'gambler';
   const gamblerMult = isGambler ? 2.0 : 1.0;
-  let sparkleChance = Math.min(0.95, (magnetActive ? 0.30 : 0.15) * (hornActive ? 3.0 : 1.0) * (1 + (sparkleTalent ? sparkleTalent.level * 0.15 : 0)) * gamblerMult);
+  let sparkleChance = Math.min(0.95, (magnetActive ? 0.30 : 0.15) * (hornActive ? 2.0 : 1.0) * (1 + (sparkleTalent ? sparkleTalent.level * 0.08 : 0)) * gamblerMult);
 
   let totalEarned = 0;
   let sparklesEarned = 0;
@@ -74,7 +76,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
 
   // Combo Heat & Turbo Rush
   const comboTalent = TALENTS.find(t => t.id === 'combo_master');
-  const bonusDuration = (comboTalent ? comboTalent.level * 0.5 : 0) + (SHOP_ITEMS.find(i => i.id === 'upg_comborush')?.owned ? 6 : 0);
+  const bonusDuration = (comboTalent ? comboTalent.level * 0.4 : 0) + (SHOP_ITEMS.find(i => i.id === 'upg_comborush')?.owned ? 6 : 0);
   const maxTurboDuration = Math.round(12 + bonusDuration);
 
   if (GAME.turboRushTime <= 0) {
@@ -86,8 +88,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
       events.emit('turbo:activated');
     }
   } else {
-    // While clicking actively continues, refresh and hold the Turbo timer at maximum!
-    GAME.turboRushTime = Math.max(GAME.turboRushTime, maxTurboDuration);
+    GAME.turboRushTime = Math.min(maxTurboDuration, GAME.turboRushTime + 2);
     GAME.comboHeat = 100;
   }
 

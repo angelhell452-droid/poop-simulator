@@ -56,17 +56,22 @@ export const ENTITIES = [
 
 // Piecewise smooth evolution cost formula (anti-runaway)
 export function calcEvolutionCost(i) {
-  if (i === 0) return 0;
+  if (i <= 0) return 0;
   if (i <= 25) {
     return Math.floor(15 * Math.pow(1.18, i) * Math.pow(i, 1.2));
-  } else if (i <= 100) {
-    const base25 = 15 * Math.pow(1.18, 25) * Math.pow(25, 1.2);
-    return Math.floor(base25 * Math.pow(1.12, i - 25) * Math.pow(i / 25, 1.5));
-  } else if (i <= 500) {
-    return Math.floor(1e13 * Math.pow(1.08, i - 100) * Math.pow(i / 100, 2.0));
-  } else {
-    return Math.floor(1e28 * Math.pow(1.035, i - 500) * Math.pow(i / 500, 2.5));
   }
+  const base25 = 15 * Math.pow(1.18, 25) * Math.pow(25, 1.2);
+  if (i <= 100) {
+    return Math.floor(base25 * Math.pow(1.12, i - 25) * Math.pow(i / 25, 1.5));
+  }
+  const cost100 = Math.floor(base25 * Math.pow(1.12, 75) * Math.pow(4, 1.5));
+  if (i <= 500) {
+    return Math.floor(cost100 * Math.pow(1.10, i - 100) * Math.pow(i / 100, 1.2));
+  }
+  const cost500 = Math.floor(cost100 * Math.pow(1.10, 400) * Math.pow(5, 1.2));
+  const cost = cost500 * Math.pow(1.02, i - 500) * Math.pow(i / 500, 1.15);
+  if (!Number.isFinite(cost)) return Number.MAX_VALUE;
+  return Math.floor(cost);
 }
 
 export function calcEvolutionMult(i) {

@@ -71,18 +71,18 @@ export function getTranscendRewardBreakdown() {
   // 5. Talents and Multipliers
   let mult = 1.0;
   const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');
-  const soulBonus = soulTalent && soulTalent.level > 0 ? soulTalent.level * 0.20 : 0;
+  const soulBonus = soulTalent && soulTalent.level > 0 ? soulTalent.level * 0.08 : 0;
   mult += soulBonus;
 
   const incubator = GAME.transcendUpgrades?.plungerIncubator || 0;
-  const incubatorBonus = incubator * 0.10;
+  const incubatorBonus = incubator * 0.08;
   mult += incubatorBonus;
 
   let totalGain = Math.max(1, Math.round(basePlungers * mult));
 
   const astralTalent = TALENTS.find(t => t.id === 'astral_splendor');
   if (astralTalent && astralTalent.level > 0) {
-    const doubleChance = Math.min(0.50, astralTalent.level * 0.02);
+    const doubleChance = Math.min(0.25, astralTalent.level * 0.015);
     if (Math.random() < doubleChance) totalGain *= 2;
   }
 

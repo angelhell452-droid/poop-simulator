@@ -15,6 +15,8 @@ export function getBoutiqueRepeatableCost(item) {
 export function buyBoutiqueRepeatable(itemId) {
   const item = BOUTIQUE_REPEATABLES.find(i => i.id === itemId);
   if (!item) return false;
+  const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[item.id]) || 0;
+  if (item.max && lvl >= item.max) return false;
   const cost = getBoutiqueRepeatableCost(item);
   const curSp = Number(GAME.sparkles) || 0;
   if (curSp < cost) return false;
@@ -58,13 +60,14 @@ export function renderShop() {
   // 2. REPEATABLE ENDLESS SPARKLE SINKS
   const repHeader = document.createElement('div');
   repHeader.className = 'font-game text-xs text-yellow-300 uppercase tracking-wider py-1 border-b border-amber-800/40 flex items-center justify-between';
-  repHeader.innerHTML = '<span>💎 Реликвии Омниверса (Многоуровневые)</span><span class="text-[9px] text-amber-400 font-normal">Бесконечные улучшения</span>';
+  repHeader.innerHTML = '<span>💎 Реликвии Омниверса (Многоуровневые)</span><span class="text-[9px] text-amber-400 font-normal">С потолком уровня</span>';
   container.appendChild(repHeader);
 
   BOUTIQUE_REPEATABLES.forEach(it => {
     const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[it.id]) || 0;
     const cost = getBoutiqueRepeatableCost(it);
-    const canBuy = (GAME.sparkles || 0) >= cost;
+    const maxed = it.max && lvl >= it.max;
+    const canBuy = !maxed && (GAME.sparkles || 0) >= cost;
 
     const row = document.createElement('div');
     row.className = 'p-2.5 rounded-xl border flex items-center justify-between bg-gradient-to-r from-amber-950/80 via-purple-950/70 to-stone-950 border-yellow-500/50 shadow-sm';
@@ -80,7 +83,7 @@ export function renderShop() {
       </div>
       <div class="shrink-0 ml-2">
         <button class="buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition ${canBuy ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-bold border-yellow-300 jelly-btn shadow' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${it.id}" ${canBuy ? '' : 'disabled'}>
-          ${formatNumber(cost)} ✨
+          ${maxed ? 'МАКС' : `${formatNumber(cost)} ✨`}
         </button>
       </div>
     `;
@@ -163,15 +166,17 @@ export function updateShopButtons() {
   container.querySelectorAll('.buy-repeatable-btn').forEach(btn => {
     const it = BOUTIQUE_REPEATABLES.find(i => i.id === btn.dataset.id);
     if (!it) return;
+    const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[it.id]) || 0;
+    const maxed = it.max && lvl >= it.max;
     const cost = getBoutiqueRepeatableCost(it);
-    const canBuy = curSparkles >= cost;
+    const canBuy = !maxed && curSparkles >= cost;
     btn.disabled = !canBuy;
     if (canBuy) {
       btn.className = 'buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-bold border-yellow-300 jelly-btn shadow';
     } else {
       btn.className = 'buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
     }
-    btn.textContent = `${formatNumber(cost)} ✨`;
+    btn.textContent = maxed ? 'МАКС' : `${formatNumber(cost)} ✨`;
   });
 
   container.querySelectorAll('.buy-shop-btn').forEach(btn => {

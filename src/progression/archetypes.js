@@ -10,7 +10,7 @@ export const ARCHETYPES = {
   clicker: {
     id: 'clicker',
     name: '🗡️ Кликер',
-    desc: '+50% к силе ручного клика и критам',
+    desc: '+50% к силе клика и +10% к шансу крита',
     badge: '🗡️ Кликер (+50%)',
     clickMult: 1.50,
     passiveMult: 1.00
@@ -34,8 +34,8 @@ export const ARCHETYPES = {
   combo: {
     id: 'combo',
     name: '🔥 Комбо',
-    desc: 'x15 к Турбо-Режиму ярости вместо x10',
-    badge: '🔥 Комбо (x15 Турбо)',
+    desc: 'Турбо x6 вместо x4',
+    badge: '🔥 Комбо (x6 Турбо)',
     clickMult: 1.00,
     passiveMult: 1.00
   }

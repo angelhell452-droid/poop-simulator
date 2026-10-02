@@ -2,7 +2,7 @@ import { GAME } from '../core/state.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js';
 import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown } from '../prestige/transcendService.js';
-import { TALENTS } from '../data/talents.data.js';
+import { getRollsIncomeMult } from '../economy/metaMultipliers.js';
 
 import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
@@ -47,17 +47,14 @@ export function updatePrestigeModalRealtime() {
 
   const calcEl = document.getElementById('prestigeCalcRolls');
   if (calcEl) {
-    const flushes = GAME.totalPrestiges || 0;
-    const bonusPerRoll = (flushes >= 25 ? 0.04 : 0.02) * (1 + (TALENTS.find(t => t.id === 'golden_leaf')?.level || 0) * 0.05);
-    const currentBoost = ((GAME.prestigeRolls || 0) * bonusPerRoll * 100);
-    const postBoost = (((GAME.prestigeRolls || 0) + gain) * bonusPerRoll * 100);
+    const flushes = b.flushes || GAME.totalPrestiges || 0;
+    const currentBoost = Math.round((getRollsIncomeMult() - 1) * 100);
+    const postBoost = Math.round((getRollsIncomeMult(gain, 1) - 1) * 100);
 
     let nextMilestoneText = '';
     if (flushes < 1) nextMilestoneText = '🎯 Смыв #1: Втулки Судьбы и Древо Талантов';
     else if (flushes < 5) nextMilestoneText = `🎯 Смыв #5: 🪠 Открытие Астрального Прорыва [${flushes}/5]`;
-    else if (flushes < 10) nextMilestoneText = `🎯 Смыв #10: 🌠 Золотая Лихорадка (x2 Метеориты) [${flushes}/10]`;
-    else if (flushes < 25) nextMilestoneText = `🎯 Смыв #25: 👑 Втулочная Империя (удвоенный бонус) [${flushes}/25]`;
-    else nextMilestoneText = `🏆 Высший Магистр Смыва (${flushes} смывов)!`;
+    else nextMilestoneText = `🏆 Смывов: ${formatNumber(flushes)}. Бонус смывов растёт к потолку x5.`;
 
     calcEl.innerHTML = `
       <div class="mt-2 p-2.5 rounded-xl bg-purple-950/80 border border-yellow-400/40 text-left space-y-1.5">
@@ -79,7 +76,7 @@ export function updatePrestigeModalRealtime() {
           <div class="text-purple-200/90 text-[9px] leading-tight">
             • Копите больше биомассы (до +1 втулки еще: <b>${formatNumber(b.nextRollBiomassNeeded)} 💨</b>)<br/>
             • Развивайте форму выше цели (каждая форма увеличивает награду!)<br/>
-            • Качайте таланты "Бесконечный Смыв" и "Гипер-Смыв"
+            • Качайте талант «Вечный Смыв Судьбы»
           </div>
         </div>
       </div>

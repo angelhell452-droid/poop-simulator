@@ -111,7 +111,7 @@ export function equipBestKnife() {
 export function getHatInlayCost(hat) {
   if (!hat) return { maxReached: true, cost: 0, currency: 'sparkles', symbol: '✨' };
   const currentLvl = getHatLevel(hat.id);
-  if (currentLvl >= 25) return { maxReached: true, cost: 0, currency: 'sparkles', symbol: '✨' };
+  if (currentLvl >= 15) return { maxReached: true, cost: 0, currency: 'sparkles', symbol: '✨' };
 
   const baseCost = Math.max(1500, Math.floor((hat.cost || 5000) * 0.35));
   const growth = 1.75;
@@ -125,7 +125,7 @@ export function inlayHat(hatId) {
 
   const costInfo = getHatInlayCost(hat);
   if (costInfo.maxReached) {
-    return { success: false, msg: 'Эта шапка уже инкрустирована до максимума (💎 Lv.25)!' };
+    return { success: false, msg: 'Эта шапка уже инкрустирована до максимума (💎 Lv.15)!' };
   }
 
   if ((GAME.sparkles || 0) < costInfo.cost) {

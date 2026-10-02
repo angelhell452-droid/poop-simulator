@@ -9,7 +9,7 @@ export function getPrestigeRequirement() {
   // Dynamic scaling: Form 15 for 1st flush, then +5 forms per prestige (Form 15, 20, 25, 30...)
   const reqForm = Math.min(500, 15 + p * 5);
   const reqStage = reqForm - 1;
-  const reqBiomass = Math.floor(100000 * Math.pow(1.85, Math.min(30, p)));
+  const reqBiomass = Math.floor(50000 * Math.pow(1.55, Math.min(25, p)));
 
   const currentStage = GAME.evoStage || 0;
   const currentForm = currentStage + 1;
@@ -45,17 +45,14 @@ export function getPrestigeRewardBreakdown() {
   const bioPart = Math.floor(15.0 * Math.pow(bioRatio, 0.18));
 
   // 2. Extra Form Evolution Bonus (+2 rolls per extra form beyond minimum)
-  const stagePart = Math.floor(extraForms * 2 + Math.pow(Math.max(1, currentForm), 0.5) * 3);
+  const stagePart = Math.floor(extraForms * 1.5 + Math.pow(Math.max(1, currentForm), 0.5) * 3);
 
-  // 3. Equipment Knife Bonus (Scythe gives +25%)
   const scythe = KNIVES.find(k => k.type === 'Scythe' && k.owned);
   const scytheActive = !!scythe;
   const scytheMult = scytheActive ? 1.25 : 1.0;
 
-  // 4. Talents bonuses
   const infFlush = TALENTS.find(t => t.id === 'infinity_flush');
-  const hyperFlush = TALENTS.find(t => t.id === 'hyperspeed_flush');
-  const flushTalentBonus = 1 + (infFlush ? infFlush.level * 0.08 : 0) + (hyperFlush ? hyperFlush.level * 0.08 : 0);
+  const flushTalentBonus = 1 + (infFlush ? infFlush.level * 0.06 : 0);
 
   const baseRolls = bioPart + stagePart;
   const totalGain = req.isMet ? Math.max(1, Math.round(baseRolls * scytheMult * flushTalentBonus)) : 0;
