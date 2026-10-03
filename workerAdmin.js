@@ -1,4 +1,4 @@
-// Admin sessions and grants. The creator is env.CREATOR_PLAYER_ID, with CREATOR_USERNAME still accepted.
+// Admin sessions and grants. Staff rows live in game_admins: level 1 is the creator, level 2 is an admin.
 
 const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 const RELIC_LEVELS = ["cosmicSynergy", "passiveRolls", "omniMult", "afkCap", "knifeForge", "factoryOverdrive", "plungerIncubator", "meteorStorm", "evoBlessing"];
@@ -16,7 +16,9 @@ export async function ensureAdminSchema(db) {
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS game_admins (
       username TEXT PRIMARY KEY COLLATE NOCASE,
+      player_id TEXT,
       added_by TEXT NOT NULL,
+      level INTEGER NOT NULL DEFAULT 2,
       created_at TEXT DEFAULT (datetime('now'))
     );
   `).run();
@@ -40,23 +42,27 @@ export async function ensureAdminSchema(db) {
   } catch (err) {
     // Column already exists.
   }
+  try {
+    await db.prepare(`ALTER TABLE game_admins ADD COLUMN level INTEGER NOT NULL DEFAULT 2`).run();
+  } catch (err) {
+    // Column already exists.
+  }
 }
 
-function creatorName(env) {
-  return String(env.CREATOR_USERNAME || "").trim();
+async function staffLevel(env, account) {
+  if (!account || typeof account === "string") return 0;
+  const row = await env.DB.prepare(`
+    SELECT level FROM game_admins
+    WHERE player_id = ? OR username = ? COLLATE NOCASE
+    ORDER BY level ASC
+    LIMIT 1
+  `).bind(account.playerId || "", account.username || "").first();
+  const level = Number(row?.level);
+  return level === 1 || level === 2 ? level : 0;
 }
 
-function creatorPlayerId(env) {
-  return String(env.CREATOR_PLAYER_ID || "").trim();
-}
-
-export function isCreator(env, account) {
-  const username = typeof account === "string" ? account : account?.username;
-  const playerId = typeof account === "string" ? "" : account?.playerId;
-  const byId = creatorPlayerId(env);
-  if (byId && playerId && byId === String(playerId).trim()) return true;
-  const byName = creatorName(env);
-  return byName.length > 0 && byName.toLowerCase() === String(username || "").trim().toLowerCase();
+export async function isCreator(env, account) {
+  return (await staffLevel(env, account)) === 1;
 }
 
 async function sha256Hex(text) {
@@ -101,13 +107,10 @@ export async function sessionUser(db, req) {
 }
 
 async function roleOf(env, account) {
-  if (isCreator(env, account)) return "creator";
-  const row = await env.DB.prepare(`
-    SELECT username FROM game_admins
-    WHERE player_id = ? OR username = ? COLLATE NOCASE
-    LIMIT 1
-  `).bind(account.playerId || "", account.username || "").first();
-  return row ? "admin" : null;
+  const level = await staffLevel(env, account);
+  if (level === 1) return "creator";
+  if (level === 2) return "admin";
+  return null;
 }
 
 async function requireStaff(env, req) {
@@ -274,9 +277,9 @@ export async function handleAdmin(req, env, headers, url) {
     return json(headers, {
       success: true,
       role,
+      level: role === "creator" ? 1 : role === "admin" ? 2 : 0,
       username: user.username,
-      playerId: user.playerId,
-      creatorReady: creatorName(env).length > 0 || creatorPlayerId(env).length > 0
+      playerId: user.playerId
     }, 200);
   }
 
@@ -300,8 +303,8 @@ export async function handleAdmin(req, env, headers, url) {
   if (req.method === "GET" && action === "admin_list") {
     if (staff.role !== "creator") return json(headers, { success: false, error: "Список админов видит только создатель." }, 403);
     const { results } = await env.DB.prepare(`
-      SELECT username, player_id as playerId, added_by as addedBy, created_at as createdAt
-      FROM game_admins ORDER BY username
+      SELECT username, player_id as playerId, level, added_by as addedBy, created_at as createdAt
+      FROM game_admins ORDER BY level, username
     `).all();
     return json(headers, { success: true, admins: results || [] }, 200);
   }
@@ -327,18 +330,22 @@ export async function handleAdmin(req, env, headers, url) {
       LIMIT 1
     `).bind(key, key).first();
     if (!account) return json(headers, { success: false, error: "Такого аккаунта нет." }, 404);
-    if (isCreator(env, account)) return json(headers, { success: false, error: "Создатель уже имеет полные права." }, 400);
+    if (await isCreator(env, account)) return json(headers, { success: false, error: "Создателя не меняют из панели. Его уровень 1 записан в базе." }, 400);
     if (action === "admin_add") {
-      const count = await env.DB.prepare(`SELECT COUNT(*) as n FROM game_admins`).first();
+      const count = await env.DB.prepare(`SELECT COUNT(*) as n FROM game_admins WHERE level = 2`).first();
       if (Number(count?.n || 0) >= 20) return json(headers, { success: false, error: "Уже 20 админов." }, 400);
       await env.DB.prepare(`
-        INSERT INTO game_admins (username, added_by, player_id) VALUES (?, ?, ?)
+        INSERT INTO game_admins (username, added_by, player_id, level) VALUES (?, ?, ?, 2)
         ON CONFLICT(username) DO UPDATE SET player_id = excluded.player_id
+        WHERE game_admins.level = 2
       `).bind(account.username, staff.user.username, account.playerId).run();
-      await audit(env.DB, staff.user.username, "add_admin", account.playerId, { username: account.username });
-      return json(headers, { success: true, username: account.username, playerId: account.playerId }, 200);
+      await audit(env.DB, staff.user.username, "add_admin", account.playerId, { username: account.username, level: 2 });
+      return json(headers, { success: true, username: account.username, playerId: account.playerId, level: 2 }, 200);
     }
-    await env.DB.prepare(`DELETE FROM game_admins WHERE player_id = ? OR username = ? COLLATE NOCASE`).bind(account.playerId, account.username).run();
+    await env.DB.prepare(`
+      DELETE FROM game_admins
+      WHERE level = 2 AND (player_id = ? OR username = ? COLLATE NOCASE)
+    `).bind(account.playerId, account.username).run();
     await audit(env.DB, staff.user.username, "remove_admin", account.playerId, { username: account.username });
     return json(headers, { success: true, username: account.username, playerId: account.playerId }, 200);
   }

@@ -1,5 +1,16 @@
 export const PATCH_NOTES = [
   {
+    version: 'v4.9.26 PRO',
+    title: '👑 Создатель в базе',
+    date: '3 Октября 2026',
+    badge: 'Сервер',
+    badgeClass: 'bg-rose-500/20 text-rose-200 border-rose-400/40',
+    changes: [
+      { type: 'feature', icon: '👑', text: 'Создатель и админы хранятся в базе. Уровень 1 — создатель, уровень 2 — админ. Переменные Cloudflare для роли больше не читаются.' },
+      { type: 'feature', icon: '🛡️', text: 'Из панели создатель добавляет только уровень 2. Строку создателя панель не снимает и не повышает.' }
+    ]
+  },
+  {
     version: 'v4.9.25 PRO',
     title: '🪪 Админка по Cloud ID',
     date: '3 Октября 2026',

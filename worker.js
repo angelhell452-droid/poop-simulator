@@ -86,7 +86,7 @@ async function handleCloudSave(req, env) {
       if (!actor) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
       }
-      if (targetId && (targetId === actor.playerId || isCreator(env, actor))) {
+      if (targetId && (targetId === actor.playerId || await isCreator(env, actor))) {
         await env.DB.prepare(`DELETE FROM player_saves WHERE player_id = ?`).bind(targetId).run();
         return new Response(JSON.stringify({ success: true, wiped: targetId }), { status: 200, headers });
       }
@@ -96,7 +96,7 @@ async function handleCloudSave(req, env) {
     // Full season reset belongs to the creator session, not to a key in the source.
     if (action === "wipe_all") {
       const actor = await sessionUser(env.DB, req);
-      if (actor && isCreator(env, actor)) {
+      if (actor && await isCreator(env, actor)) {
         await env.DB.prepare(`DELETE FROM player_saves`).run();
         return new Response(JSON.stringify({ success: true, message: "All player saves wiped" }), { status: 200, headers });
       }

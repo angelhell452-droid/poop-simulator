@@ -80,17 +80,21 @@ async function loadAdminList() {
     line.className = 'flex items-center justify-between gap-2 py-1';
     const name = document.createElement('span');
     name.className = 'text-amber-100';
-    name.textContent = row.playerId ? `${row.username} · ${row.playerId}` : row.username;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'text-[10px] px-2 py-1 rounded-lg bg-stone-800 border border-stone-600 text-stone-300';
-    btn.textContent = 'Снять';
-    btn.addEventListener('click', async () => {
-      const result = await adminRequest('admin_remove', { method: 'POST', body: { playerId: row.playerId || row.username } });
-      setAdminStatus(result.success ? `${row.username} больше не админ.` : (result.error || 'Не снялось'), !!result.success);
-      if (result.success) loadAdminList();
-    });
-    line.append(name, btn);
+    const level = Number(row.level) === 1 ? 1 : 2;
+    name.textContent = `ур.${level} · ${row.username}${row.playerId ? ` · ${row.playerId}` : ''}`;
+    line.append(name);
+    if (level === 2) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'text-[10px] px-2 py-1 rounded-lg bg-stone-800 border border-stone-600 text-stone-300';
+      btn.textContent = 'Снять';
+      btn.addEventListener('click', async () => {
+        const result = await adminRequest('admin_remove', { method: 'POST', body: { playerId: row.playerId || row.username } });
+        setAdminStatus(result.success ? `${row.username} больше не админ.` : (result.error || 'Не снялось'), !!result.success);
+        if (result.success) loadAdminList();
+      });
+      line.append(btn);
+    }
     box.appendChild(line);
   });
 }

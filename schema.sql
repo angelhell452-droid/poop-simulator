@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS game_admins (
   username TEXT PRIMARY KEY COLLATE NOCASE,
   player_id TEXT,
   added_by TEXT NOT NULL,
+  level INTEGER NOT NULL DEFAULT 2,
   created_at TEXT DEFAULT (datetime('now'))
 );
 

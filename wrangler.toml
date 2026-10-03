@@ -6,7 +6,7 @@ compatibility_date = "2024-09-29"
 directory = "."
 binding = "ASSETS"
 
-# CREATOR_PLAYER_ID and CREATOR_USERNAME are set in the Cloudflare dashboard, not in this file.
+# Staff access is a row in D1 game_admins. Level 1 is the creator, level 2 is an admin.
 # Cloudflare D1 Database Binding
 [[d1_databases]]
 binding = "DB"
