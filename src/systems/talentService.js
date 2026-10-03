@@ -1,6 +1,7 @@
 import { GAME } from '../core/state.js';
 import { TALENTS } from '../data/talents.data.js';
 import { events } from '../core/events.js';
+import { isTalentVisible } from '../progression/unlocks.js';
 
 export function getAffordableTalentInfo(tl) {
   const remainingLevels = tl.max - tl.level;
@@ -45,7 +46,7 @@ export function getAffordableTalentInfo(tl) {
 
 export function buyTalent(talentId) {
   const tl = TALENTS.find(t => t.id === talentId);
-  if (!tl) return false;
+  if (!tl || !isTalentVisible(tl)) return false;
 
   const tlInfo = getAffordableTalentInfo(tl);
   if (!tlInfo.canBuy || tlInfo.count <= 0) return false;

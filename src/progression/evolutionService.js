@@ -2,6 +2,7 @@ import { GAME } from '../core/state.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { getAffordableEvoInfo } from '../economy/costs.js';
 import { events } from '../core/events.js';
+import { notePeakForm } from './unlocks.js';
 
 export function performEvolution() {
   const evoInfo = getAffordableEvoInfo();
@@ -9,6 +10,7 @@ export function performEvolution() {
 
   GAME.biomass -= evoInfo.totalCost;
   GAME.evoStage += evoInfo.count;
+  notePeakForm();
 
   const target = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[EVOLUTIONS.length - 1];
   

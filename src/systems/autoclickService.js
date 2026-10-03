@@ -21,7 +21,7 @@ const KNIFE_CPS_BONUS = {
 };
 
 export function isAutoclickUnlocked() {
-  return (GAME.totalPrestiges || 0) >= 1;
+  return true;
 }
 
 /** Clicks per second this knife adds to the player's cap. */
@@ -79,24 +79,20 @@ export function clampAutoclickerState() {
   GAME.autoclickerSpeed = Math.max(1, Math.min(cap, speed));
 }
 
-let clickBank = BARE_CLICK_CAP;
-let clickBankAt = 0;
+const recentClickTimes = [];
 
-/** Drops any clicks above the character cap, including external autoclickers. */
+/** Drops clicks above the live cap in any rolling second, including external autoclickers. */
 export function takeClickBudget(requested) {
   const want = Math.max(0, Math.floor(requested) || 0);
   if (want <= 0) return 0;
   const cap = getClickCapCps();
   const now = performance.now();
-  if (!clickBankAt) {
-    clickBankAt = now;
-    clickBank = cap;
-  } else {
-    const dt = Math.min(1, (now - clickBankAt) / 1000);
-    clickBankAt = now;
-    clickBank = Math.min(cap, clickBank + dt * cap);
+  const horizon = now - 1000;
+  while (recentClickTimes.length && recentClickTimes[0] <= horizon) {
+    recentClickTimes.shift();
   }
-  const allowed = Math.min(want, Math.floor(clickBank));
-  if (allowed > 0) clickBank -= allowed;
+  const room = Math.max(0, cap - recentClickTimes.length);
+  const allowed = Math.min(want, room);
+  for (let i = 0; i < allowed; i++) recentClickTimes.push(now);
   return allowed;
 }

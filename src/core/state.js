@@ -29,6 +29,7 @@ export function getDefaultGameState() {
     flushesThisCycle: 0,
 
     evoStage: 0,
+    peakForm: 1,
     archetype: 'balanced', // 'balanced' | 'clicker' | 'tycoon' | 'gambler' | 'combo'
 
     hunger: 100,

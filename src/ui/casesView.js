@@ -13,6 +13,7 @@ import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { getKnifeShownBonuses } from '../economy/production.js';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js';
+import { isCasesUnlocked } from '../progression/unlocks.js';
 
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -201,6 +202,7 @@ export function launchConfettiFireworks(isGold = false) {
 
 export function openCaseRoulette(caseId) {
   if (isRouletteSpinning) return;
+  if (!isCasesUnlocked()) return;
   const caseObj = WEAPON_CASES.find(c => c.id === caseId);
   if (!caseObj) return;
 
@@ -589,7 +591,7 @@ function onRouletteFinished() {
 }
 
 export function openMultipleCases(caseObj, count = 3) {
-  if (!caseObj || count <= 0) return;
+  if (!caseObj || count <= 0 || !isCasesUnlocked()) return;
   const isPlungers = caseObj.currency === 'plungers';
   const totalCost = caseObj.cost * count;
   const available = isPlungers ? (GAME.transcendPlungers || 0) : GAME.prestigeRolls;
@@ -708,7 +710,9 @@ export function renderCasesSystem() {
   }
 
   const cratesList = document.getElementById('casesCratesList');
-  if (cratesList) {
+  if (cratesList && !isCasesUnlocked()) {
+    cratesList.innerHTML = `<div class="col-span-full p-4 rounded-2xl border border-amber-900/60 bg-stone-950 text-center"><div class="text-2xl mb-1">🔒</div><div class="font-game text-sm text-amber-200">Кейсы закрыты</div><p class="text-[11px] text-stone-400 mt-1">Раздел откроется после первого Смыва. Смывов сейчас: ${formatNumber(GAME.totalPrestiges || 0)}.</p></div>`;
+  } else if (cratesList) {
     cratesList.innerHTML = WEAPON_CASES.map(c => {
       const meetsPrestige = !c.reqPrestiges || (GAME.totalPrestiges || 0) >= c.reqPrestiges;
       const meetsTranscend = !c.reqTranscend || (GAME.totalTranscend || 0) >= c.reqTranscend;

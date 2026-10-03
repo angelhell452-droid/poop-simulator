@@ -14,6 +14,7 @@ import { getPoopSkinInfo } from '../progression/evolutionService.js';
 import { updateSmartAssistant } from './smartAssistantView.js';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js';
+import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
 import { getPrestigeRewardBreakdown, executePrestige } from '../prestige/prestigeService.js';
 import { getTranscendRewardBreakdown, executeTranscend } from '../prestige/transcendService.js';
 import { renderEvoChronicles } from './evoChroniclesView.js';
@@ -87,6 +88,8 @@ export function updateHUD() {
   if (btnWash) btnWash.disabled = GAME.clean >= 85;
   const btnPolish = document.getElementById('btnPolish');
   if (btnPolish) btnPolish.disabled = GAME.clean < 70;
+  const btnTickle = document.getElementById('btnTickle');
+  if (btnTickle) btnTickle.disabled = GAME.happy >= 100;
 
   // Evolution Info
   const currEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
@@ -269,6 +272,8 @@ export function updateHUD() {
   updatePrestigeModalRealtime();
   updateTranscendModalRealtime();
 
+  notePeakForm();
+  paintProgressTabs();
   updateActiveBuffsUI();
   updateAutomationTogglesUI();
   updateSmartAssistant();
@@ -464,6 +469,21 @@ export function showBuffDetailsModal(buff) {
   if (tipEl) tipEl.innerHTML = `💡 <b>Совет:</b> ${buff.tip || 'Развивайте эту механику для усиления множителя.'}`;
 
   modal.classList.remove('hidden');
+}
+
+function paintProgressTabs() {
+  const casesBtn = document.querySelector('.dash-tab[data-target="panelCases"]');
+  const shopBtn = document.querySelector('.dash-tab[data-target="panelShop"]');
+  const relicBtn = document.getElementById('tabTalentsTranscend');
+  if (casesBtn) {
+    casesBtn.classList.toggle('opacity-45', !isCasesUnlocked());
+    casesBtn.title = isCasesUnlocked() ? 'Кейсы' : 'Откроется после первого Смыва';
+  }
+  if (shopBtn) {
+    shopBtn.classList.toggle('opacity-45', !isBoutiqueUnlocked());
+    shopBtn.title = isBoutiqueUnlocked() ? 'Бутик' : `Откроется на форме ${formatNumber(100)}. Рекорд: ${formatNumber(peakForm())}`;
+  }
+  if (relicBtn) relicBtn.classList.toggle('hidden', !isRelicSectionUnlocked());
 }
 
 export function updateAutomationTogglesUI() {

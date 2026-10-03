@@ -2,6 +2,7 @@ import { GAME } from '../core/state.js';
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { getClickPower, getEquippedKnife } from '../economy/production.js';
+import { takeClickBudget } from './autoclickService.js';
 import { events } from '../core/events.js';
 
 export let pendingClicks = 0;
@@ -12,6 +13,10 @@ export function addPendingClicks(n = 1) {
 
 export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   if (pendingClicks <= 0) return null;
+  const allowed = takeClickBudget(pendingClicks);
+  pendingClicks = 0;
+  if (allowed <= 0) return null;
+  pendingClicks = allowed;
 
   const basePower = getClickPower();
   const critTalent = TALENTS.find(t => t.id === 'crit_master');

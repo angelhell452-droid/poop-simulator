@@ -97,6 +97,8 @@ export function executeTranscend() {
   GAME.cycleBiomass = 0;
   GAME.biomass = 0;
   GAME.currentRunPeakGPS = 0;
+  const reached = (GAME.evoStage || 0) + 1;
+  if (reached > (GAME.peakForm || 1)) GAME.peakForm = reached;
   GAME.evoStage = 0;
   FACTORIES.forEach(fac => { fac.count = 0; });
   GAME.clean = 100;

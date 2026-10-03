@@ -10,7 +10,7 @@ import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { FACTORIES } from '../data/factories.data.js';
 import { buyFactory } from '../systems/factoryService.js';
 import { triggerPetSquash } from '../ui/petCanvasView.js';
-import { getAutoclickCps, takeClickBudget } from '../systems/autoclickService.js';
+import { getAutoclickCps } from '../systems/autoclickService.js';
 import { events } from './events.js';
 
 let lastTickTime = performance.now();
@@ -51,9 +51,8 @@ export function gameEngineTick() {
     autoClickAccumulator += cps * dt;
     const clicksThisTick = Math.floor(autoClickAccumulator);
     autoClickAccumulator -= clicksThisTick;
-    const allowedClicks = takeClickBudget(clicksThisTick);
-    if (allowedClicks > 0) {
-      for (let i = 0; i < allowedClicks; i++) {
+    if (clicksThisTick > 0) {
+      for (let i = 0; i < clicksThisTick; i++) {
         addPendingClicks(1);
         processBatchedClicks();
       }

@@ -32,6 +32,7 @@ export function polishPet() {
 }
 
 export function ticklePet() {
+  if (GAME.happy >= 100) return false;
   GAME.happy = Math.min(100, GAME.happy + 15);
   GAME.comboHeat = Math.min(100, (GAME.comboHeat || 0) + 8);
   events.emit('pet:tickle');
@@ -72,7 +73,7 @@ export function runAutoCare() {
     incPolishCount();
     triggered = true;
   }
-  if (GAME.autoTickle) {
+  if (GAME.autoTickle && GAME.happy < 100) {
     GAME.happy = Math.min(100, GAME.happy + 8);
     GAME.comboHeat = Math.min(100, (GAME.comboHeat || 0) + 4);
     triggered = true;

@@ -13,6 +13,7 @@ import { updateHUD } from './hudView.js';
 import { renderShop } from './shopView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { formatNumber } from '../utils/numberFormatter.js';
+import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 
@@ -550,8 +551,8 @@ function renderHatsGrid() {
         ` : `
           <div class="flex items-center justify-between w-full">
             <span class="text-[10px] text-yellow-400 font-mono font-bold">${formatNumber(hat.cost)} ✨</span>
-            <button class="buy-hat-inv-btn py-1 px-2.5 rounded-xl text-[10px] font-game ${GAME.sparkles >= hat.cost ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'} font-bold border shadow" data-id="${hat.id}" ${GAME.sparkles >= hat.cost ? '' : 'disabled'}>
-              Купить 🎩
+            <button class="buy-hat-inv-btn py-1 px-2.5 rounded-xl text-[10px] font-game ${isBoutiqueUnlocked() && GAME.sparkles >= hat.cost ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'} font-bold border shadow" data-id="${hat.id}" ${isBoutiqueUnlocked() && GAME.sparkles >= hat.cost ? '' : 'disabled'}>
+              ${isBoutiqueUnlocked() ? 'Купить 🎩' : 'С формы 100'}
             </button>
           </div>
         `}
@@ -593,7 +594,7 @@ function renderHatsGrid() {
     btn.addEventListener('click', () => {
       const hat = SHOP_ITEMS.find(i => i.id === btn.dataset.id);
       const curSp = Number(GAME.sparkles) || 0;
-      if (hat && curSp >= hat.cost && !hat.owned) {
+      if (hat && isBoutiqueUnlocked() && curSp >= hat.cost && !hat.owned) {
         GAME.sparkles = Math.max(0, curSp - hat.cost);
         hat.owned = true;
         GAME.equippedHat = hat.id;

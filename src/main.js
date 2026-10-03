@@ -29,7 +29,7 @@ import { ACHIEVEMENTS } from './data/achievements.data.js';
 import { SHOP_ITEMS } from './data/shop.data.js';
 import { formatNumber } from './utils/numberFormatter.js';
 import { formatDurationAway } from './utils/timeUtils.js';
-import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap, takeClickBudget } from './systems/autoclickService.js';
+import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap } from './systems/autoclickService.js';
 import { events } from './core/events.js';
 
 export function toggleAutoclicker() {
@@ -209,10 +209,9 @@ export async function bootstrap() {
       if (checkMeteorClick(e.clientX, e.clientY)) {
         return;
       }
-      if (takeClickBudget(1) < 1) return;
       addPendingClicks(1);
+      if (!processBatchedClicks(e.clientX, e.clientY)) return;
       triggerPetSquash(1.25, 0.8);
-      processBatchedClicks(e.clientX, e.clientY);
     });
   }
 

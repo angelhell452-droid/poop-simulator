@@ -7,6 +7,7 @@ import { KNIVES } from '../data/knives.data.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { migrateSaveData } from './migrations.js';
 import { clampAutoclickerState } from '../systems/autoclickService.js';
+import { notePeakForm } from '../progression/unlocks.js';
 import { maxUnlockedStage } from '../progression/phases.data.js';
 import { events } from '../core/events.js';
 
@@ -155,6 +156,7 @@ export function applySaveDataSafely(rawData) {
   }
 
   clampAutoclickerState();
+  notePeakForm();
 
   events.emit('save:loaded');
 }

@@ -89,9 +89,9 @@ export const TRANSCEND_UPGRADES = [
     desc: 'Автоматически покупает доступный завод с конца списка.',
     cost: 4,
     max: 1,
-    tier: 2,
-    tierName: 'Тир 2: Продвинутый',
-    reqTranscend: 2
+    tier: 1,
+    tierName: 'Тир 1: Базовый',
+    reqTranscend: 1
   },
   {
     id: 'art_auto_evolution',

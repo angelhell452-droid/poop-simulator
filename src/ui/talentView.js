@@ -7,12 +7,14 @@ import { buyTranscendUpgrade } from '../prestige/transcendService.js';
 import { updateHUD } from './hudView.js';
 import { saveLocal } from '../save/saveManager.js';
 import { getRollIcon } from '../utils/icons.js';
+import { isRelicSectionUnlocked, isTalentVisible } from '../progression/unlocks.js';
 
 let activeTalentSubTab = 'flush'; // 'flush' | 'transcend'
 let activeFlushTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
 let activeTranscendTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
 
 export function switchTalentSubTab(tabName) {
+  if (tabName === 'transcend' && !isRelicSectionUnlocked()) return;
   activeTalentSubTab = tabName;
   const btnFlush = document.getElementById('tabTalentsFlush');
   const btnTranscend = document.getElementById('tabTalentsTranscend');
@@ -87,19 +89,32 @@ export function renderFlushTalents() {
 
   // Group by Tiers: 1, 2, 3, 4
   const tierConfigs = [
-    { tier: 1, title: '⭐ Тир 1: Базовые Знания Втулок', desc: 'Первичный фундамент дохода и офлайна' },
-    { tier: 2, title: '⚡ Тир 2: Продвинутый Разгон и Синергии', desc: 'Усиление кликов, комбо-ярости и метеоритов' },
-    { tier: 3, title: '🔮 Тир 3: Мастер-Таланты Смыва', desc: 'Мета-прогрессия и умножение Втулок' },
-    { tier: 4, title: '🌌 Тир 4: Астральные Титаны Омниверса', desc: 'Космические множители для эндгейма' }
+    { tier: 1, title: '⭐ Тир 1: Базовый', desc: 'Сразу, ещё до первого Смыва' },
+    { tier: 2, title: '⚡ Тир 2: Продвинутый', desc: 'После 1 Смыва' },
+    { tier: 3, title: '🔮 Тир 3: Мастер', desc: 'После 3 Смывов' },
+    { tier: 4, title: '🌌 Тир 4: Астральный', desc: 'После 6 Смывов' }
   ];
 
   const visibleConfigs = activeFlushTier === 'all'
     ? tierConfigs
     : tierConfigs.filter(t => t.tier === Number(activeFlushTier));
 
+  let showedNextLock = false;
   visibleConfigs.forEach(tInfo => {
     const tierTalents = TALENTS.filter(tl => tl.tier === tInfo.tier);
-    if (tierTalents.length === 0) return;
+    const openTalents = tierTalents.filter(isTalentVisible);
+    const closedTalents = tierTalents.filter(tl => !isTalentVisible(tl));
+    if (openTalents.length === 0) {
+      if (!showedNextLock && closedTalents.length) {
+        showedNextLock = true;
+        const need = Math.min(...closedTalents.map(tl => tl.reqFlushes || 0));
+        const lock = document.createElement('div');
+        lock.className = 'p-3 rounded-2xl border border-stone-800 bg-stone-950 text-[11px] text-stone-400';
+        lock.textContent = `${tInfo.title} откроется на смыве ${formatNumber(need)}. Сейчас смывов: ${formatNumber(GAME.totalPrestiges || 0)}.`;
+        container.appendChild(lock);
+      }
+      return;
+    }
 
     const tierHeader = document.createElement('div');
     tierHeader.className = 'text-[11px] font-game text-yellow-300 uppercase tracking-wider pt-2.5 pb-1 border-b border-yellow-500/30 flex items-center justify-between';
@@ -109,7 +124,7 @@ export function renderFlushTalents() {
     `;
     container.appendChild(tierHeader);
 
-    tierTalents.forEach(tl => {
+    openTalents.forEach(tl => {
       const tlInfo = getAffordableTalentInfo(tl);
       const maxed = tl.level >= tl.max;
       const canBuy = tlInfo.canBuy && !maxed;
@@ -177,7 +192,7 @@ export function renderTranscendRelics() {
 
   const tiers = [
     { tier: 1, name: '⭐ Тир 1: Базовые Реликвии (1+ Прорыв)', desc: 'Пассивный доход, авто-уход и защита времени' },
-    { tier: 2, name: '⚡ Тир 2: Продвинутая Автоматизация (2+ Прорывов)', desc: 'Авто-покупка заводов, мутаций и кузница' },
+    { tier: 2, name: '⚡ Тир 2: Продвинутая Автоматизация (2+ Прорывов)', desc: 'Авто-мутации и кузница. Авто-покупка заводов уже в тире 1' },
     { tier: 3, name: '🔮 Тир 3: Мастер-Реликвии Омниверса (3+ Прорывов)', desc: 'Метеоритные бури, разломы и сингулярность' },
     { tier: 4, name: '🌌 Тир 4: Космическая Сингулярность (5-10+ Прорывов)', desc: 'Эндгейм-квантование и бесконечная вечность' }
   ];
@@ -264,8 +279,12 @@ export function renderTranscendRelics() {
 }
 
 export function renderTalents() {
-  renderFlushTalents();
-  renderTranscendRelics();
+  const relicBtn = document.getElementById('tabTalentsTranscend');
+  const relicsOpen = isRelicSectionUnlocked();
+  if (relicBtn) relicBtn.classList.toggle('hidden', !relicsOpen);
+  if (!relicsOpen && activeTalentSubTab === 'transcend') activeTalentSubTab = 'flush';
+  if (activeTalentSubTab === 'transcend') switchTalentSubTab('transcend');
+  else switchTalentSubTab('flush');
 }
 
 export function updateTalentButtons() {
