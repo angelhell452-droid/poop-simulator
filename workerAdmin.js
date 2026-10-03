@@ -477,12 +477,33 @@ export async function wipePlayerProgress(db, playerId) {
   const account = await db.prepare(`
     SELECT username FROM user_accounts WHERE player_id = ? LIMIT 1
   `).bind(playerId).first();
-  const name = row?.player_name || account?.username || "Игрок";
+  const name = account?.username || row?.player_name || "Игрок";
   const seq = (Number(row?.admin_seq) || 0) + 1;
   const reset = await currentWorldReset(db);
   const save = blankProgressSave(playerId, name, reset, seq);
   await writePlayerSave(db, playerId, name, save, seq);
   return save;
+}
+
+export async function accountUsername(db, playerId) {
+  if (!playerId) return "";
+  const row = await db.prepare(`
+    SELECT username FROM user_accounts WHERE player_id = ? LIMIT 1
+  `).bind(playerId).first();
+  const name = row?.username ? String(row.username).trim() : "";
+  return name.substring(0, 32);
+}
+
+function usableName(name) {
+  const clean = typeof name === "string" ? name.trim() : "";
+  if (!clean || clean === "Игрок" || clean.startsWith("Игрок #") || clean.startsWith("Гость")) return "";
+  return clean.substring(0, 32);
+}
+
+export async function displayName(db, playerId, fallback) {
+  const login = await accountUsername(db, playerId);
+  if (login) return login;
+  return usableName(fallback) || ("Игрок #" + String(playerId || "").slice(-4));
 }
 
 export async function wipeWorldProgress(db) {
@@ -492,6 +513,7 @@ export async function wipeWorldProgress(db) {
     ON CONFLICT(key) DO UPDATE SET value = excluded.value
   `).bind(next).run();
   await db.prepare(`DELETE FROM player_saves`).run();
+  await db.prepare(`DELETE FROM auth_sessions`).run();
   return next;
 }
 
@@ -500,8 +522,9 @@ export async function replacementIfSeasonReset(db, playerId, playerName, saveDat
   if (reset <= 0) return null;
   const clientReset = Number(saveData?.worldReset ?? saveData?.game?.worldReset) || 0;
   if (clientReset === reset) return null;
-  const save = blankProgressSave(playerId, playerName || "Игрок", reset, 1);
-  await writePlayerSave(db, playerId, playerName || "Игрок", save, 1);
+  const name = await displayName(db, playerId, playerName);
+  const save = blankProgressSave(playerId, name, reset, 1);
+  await writePlayerSave(db, playerId, name, save, 1);
   return save;
 }
 

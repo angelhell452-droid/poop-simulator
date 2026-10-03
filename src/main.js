@@ -1,6 +1,6 @@
 import { GAME } from './core/state.js';
 import { startGameLoop } from './core/gameLoop.js';
-import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, wipePlayerData, requestCloudSync } from './save/cloudSync.js';
+import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, wipePlayerData, requestCloudSync, getStoredAccount } from './save/cloudSync.js';
 import { saveLocal } from './save/saveManager.js';
 import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting } from './ui/hudView.js';
 import { renderFactories, initFactoryListeners } from './ui/factoryView.js';
@@ -306,7 +306,7 @@ export async function bootstrap() {
     const inpId = document.getElementById('inpPlayerId');
     if (inpId) inpId.value = GAME.playerId;
     const inpName = document.getElementById('inpPlayerName');
-    if (inpName) inpName.value = GAME.playerName;
+    if (inpName) inpName.value = getStoredAccount()?.username || GAME.playerName;
     document.getElementById('accountModal')?.classList.remove('hidden');
   });
 

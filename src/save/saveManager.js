@@ -50,6 +50,23 @@ export function saveLocal() {
   }
 }
 
+function readStoredAccount() {
+  try {
+    const raw = localStorage.getItem('PoopSim_User_Account');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function loggedInUsername() {
+  const name = readStoredAccount()?.username;
+  if (typeof name !== 'string') return '';
+  const clean = name.trim();
+  if (clean.length < 3 || clean === 'Игрок') return '';
+  return clean.slice(0, 32);
+}
+
 function wipeRuntimeCatalogs() {
   FACTORIES.forEach((row) => { row.count = 0; });
   TALENTS.forEach((row) => { row.level = 0; });
@@ -206,6 +223,13 @@ export function applySaveDataSafely(rawData) {
     if ((row.level || 0) > row.max) row.level = row.max;
   });
   if (data.resetProgress) wipeRuntimeCatalogs();
+
+  const login = loggedInUsername();
+  if (login) {
+    GAME.playerName = login;
+    const acc = readStoredAccount();
+    if (acc?.playerId) GAME.playerId = acc.playerId;
+  }
 
   clampAutoclickerState();
   notePeakForm();

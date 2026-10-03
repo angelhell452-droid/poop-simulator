@@ -279,9 +279,9 @@ export function renderTranscendRelics() {
 }
 
 export function renderTalents() {
-  const relicBtn = document.getElementById('tabTalentsTranscend');
   const relicsOpen = isRelicSectionUnlocked();
-  if (relicBtn) relicBtn.classList.toggle('hidden', !relicsOpen);
+  const relicBtn = document.getElementById('tabTalentsTranscend');
+  if (relicBtn) relicBtn.classList.remove('hidden');
   if (!relicsOpen && activeTalentSubTab === 'transcend') activeTalentSubTab = 'flush';
   if (activeTalentSubTab === 'transcend') switchTalentSubTab('transcend');
   else switchTalentSubTab('flush');

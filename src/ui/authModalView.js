@@ -98,7 +98,10 @@ export function updateAccountHeaderUI() {
   const inpPlayerId = document.getElementById('inpPlayerId');
   if (inpPlayerId) inpPlayerId.value = GAME.playerId || '';
   const inpPlayerName = document.getElementById('inpPlayerName');
-  if (inpPlayerName) inpPlayerName.value = GAME.playerName || '';
+  if (inpPlayerName) {
+    inpPlayerName.value = (stored && stored.username) || GAME.playerName || '';
+    inpPlayerName.readOnly = !!(stored && stored.username);
+  }
 }
 
 function refreshAllGameUI() {

@@ -485,7 +485,14 @@ function paintProgressTabs() {
     shopBtn.classList.toggle('opacity-45', !isBoutiqueUnlocked());
     shopBtn.title = isBoutiqueUnlocked() ? 'Бутик' : `Откроется на форме ${formatNumber(100)}. Рекорд: ${formatNumber(peakForm())}`;
   }
-  if (relicBtn) relicBtn.classList.toggle('hidden', !isRelicSectionUnlocked());
+  if (relicBtn) {
+    const open = isRelicSectionUnlocked();
+    relicBtn.classList.remove('hidden');
+    relicBtn.classList.toggle('opacity-60', !open);
+    relicBtn.title = open ? 'Реликвии Прорыва' : 'Откроется после 1 Прорыва';
+    const label = document.getElementById('relicTabLabel');
+    if (label) label.textContent = open ? 'Реликвии Прорыва' : '🔒 Реликвии Прорыва';
+  }
 }
 
 export function updateAutomationTogglesUI() {

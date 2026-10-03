@@ -1,5 +1,5 @@
 // Cloudflare Worker with Static Assets & D1 Database
-import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset } from "./workerAdmin.js";
+import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, displayName } from "./workerAdmin.js";
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -236,9 +236,7 @@ async function handleCloudSave(req, env) {
         }
       }
 
-      const seasonName = typeof playerName === "string" && playerName.trim()
-        ? playerName.trim().substring(0, 50)
-        : "Игрок #" + playerId.substring(playerId.length - 4);
+      const seasonName = await displayName(env.DB, playerId, playerName);
       const seasonSave = await replacementIfSeasonReset(env.DB, playerId, seasonName, saveData);
       if (seasonSave) {
         return new Response(JSON.stringify({ success: false, error: "stale_save", saveData: seasonSave }), { status: 409, headers });
@@ -257,9 +255,7 @@ async function handleCloudSave(req, env) {
       const biomass = Number(saveData?.game?.allTimeBiomass ?? saveData?.game?.biomass) || 0;
       const sparkles = Number(saveData?.game?.sparkles) || 0;
       const prestigeCurrency = Number(saveData?.game?.prestigeRolls ?? saveData?.game?.prestigeCurrency) || 0;
-      const name = typeof playerName === "string" && playerName.trim()
-        ? playerName.trim().substring(0, 50)
-        : "Игрок #" + playerId.substring(playerId.length - 4);
+      const name = await displayName(env.DB, playerId, playerName);
       const jsonStr = typeof saveData === "string" ? saveData : JSON.stringify(saveData);
 
       await env.DB.prepare(`
@@ -321,7 +317,7 @@ async function handleCloudSave(req, env) {
       `).bind(playerId).first();
 
       if (!record) {
-        const fresh = await replacementIfSeasonReset(env.DB, playerId, "Игрок", null);
+        const fresh = await replacementIfSeasonReset(env.DB, playerId, "", null);
         if (fresh) {
           return new Response(JSON.stringify({ exists: true, data: fresh, wiped: true }), { status: 200, headers });
         }
@@ -338,9 +334,22 @@ async function handleCloudSave(req, env) {
         parsedData = null;
       }
 
-      const replaced = await replacementIfSeasonReset(env.DB, playerId, record.player_name, parsedData);
+      const loginName = await displayName(env.DB, playerId, record.player_name);
+      if (record.save_data && !parsedData) {
+        return new Response(JSON.stringify({
+          exists: true,
+          parseError: true,
+          playerName: loginName
+        }), { status: 200, headers });
+      }
+      if (loginName && record.player_name !== loginName) {
+        await env.DB.prepare(`UPDATE player_saves SET player_name = ? WHERE player_id = ?`).bind(loginName, playerId).run();
+        if (parsedData?.game) parsedData.game.playerName = loginName;
+      }
+
+      const replaced = await replacementIfSeasonReset(env.DB, playerId, loginName, parsedData);
       if (replaced) {
-        return new Response(JSON.stringify({ exists: true, data: replaced, wiped: true, playerName: record.player_name }), { status: 200, headers });
+        return new Response(JSON.stringify({ exists: true, data: replaced, wiped: true, playerName: loginName }), { status: 200, headers });
       }
 
       return new Response(
@@ -348,7 +357,7 @@ async function handleCloudSave(req, env) {
           exists: true,
           data: parsedData,
           updatedAt: record.updated_at,
-          playerName: record.player_name,
+          playerName: loginName,
           stage: record.stage,
         }),
         { status: 200, headers }

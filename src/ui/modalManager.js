@@ -11,6 +11,7 @@ import { renderTalents, switchTalentSubTab } from './talentView.js';
 import { renderFactories } from './factoryView.js';
 import { renderShop } from './shopView.js';
 import { events } from '../core/events.js';
+import { isRelicSectionUnlocked } from '../progression/unlocks.js';
 
 let pendingPrestigeArchetype = 'balanced';
 
@@ -192,6 +193,21 @@ export function updateTranscendModalRealtime() {
     `;
   }
 
+  const relicBranch = document.getElementById('btnOpenTranscendRelicsFromModal');
+  const relicBranchLabel = document.getElementById('relicBranchLabel');
+  const relicsOpen = isRelicSectionUnlocked();
+  if (relicBranch) {
+    relicBranch.disabled = !relicsOpen;
+    relicBranch.classList.toggle('opacity-60', !relicsOpen);
+    relicBranch.classList.toggle('cursor-not-allowed', !relicsOpen);
+    relicBranch.title = relicsOpen ? 'Открыть реликвии прорыва' : 'Откроется после 1 Прорыва';
+  }
+  if (relicBranchLabel) {
+    relicBranchLabel.textContent = relicsOpen
+      ? 'Открыть ветку Реликвий в Талантах ➔'
+      : '🔒 Ветка реликвий откроется после 1 Прорыва';
+  }
+
   const execTransBtn = document.getElementById('btnExecuteTranscend');
   if (execTransBtn) {
     if (!t.isMet) {
@@ -282,6 +298,7 @@ export function initModals() {
 
   // Quick navigation to Transcend Relics sub-tab in dashboard
   const navigateToTranscendRelics = () => {
+    if (!isRelicSectionUnlocked()) return;
     document.getElementById('transcendModal')?.classList.add('hidden');
     const talentDashBtn = document.querySelector('.dash-tab[data-target="panelTalents"]');
     if (talentDashBtn) talentDashBtn.click();

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.29 PRO</title>
+  <title>Poop Simulator v4.9.31 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.29 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.31 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -694,7 +694,7 @@
             <button id="tabTalentsTranscend"
               class="talent-sub-tab flex-1 py-1 px-3 rounded-xl font-game text-xs flex items-center justify-center gap-1.5 transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800">
               <span class="plunger-icon"></span>
-              <span>Реликвии Прорыва</span>
+              <span id="relicTabLabel">🔒 Реликвии Прорыва</span>
             </button>
           </div>
 
@@ -1181,7 +1181,7 @@
       <button id="btnOpenTranscendRelicsFromModal"
         class="w-full my-2.5 py-2 px-3 rounded-2xl bg-indigo-900/80 hover:bg-indigo-800 text-cyan-300 border border-cyan-400/60 text-xs font-game flex items-center justify-center gap-2 transition shadow-md jelly-btn">
         <span class="plunger-icon"></span>
-        <span>Открыть ветку Реликвий в Талантах ➔</span>
+        <span id="relicBranchLabel">🔒 Ветка реликвий откроется после 1 Прорыва</span>
       </button>
 
       <button id="btnExecuteTranscend"

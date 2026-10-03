@@ -6,6 +6,30 @@ export const LEGACY_SAVE_ENDPOINT = '/.netlify/functions/cloud-save';
 export const AUTH_STORAGE_KEY = 'PoopSim_User_Account';
 
 let cloudSyncDebounceTimer = null;
+let sessionPrompted = false;
+
+function sameSeasonBlank(parsed) {
+  if (!parsed?.resetProgress) return false;
+  const season = Number(parsed.worldReset ?? parsed.game?.worldReset) || 0;
+  const localSeason = Number(GAME.worldReset) || 0;
+  return season > 0 && localSeason === season;
+}
+
+function dropDeadSession() {
+  const acc = getStoredAccount();
+  if (!acc?.sessionToken) return;
+  delete acc.sessionToken;
+  saveStoredAccount(acc);
+  if (sessionPrompted) return;
+  sessionPrompted = true;
+  const box = document.getElementById('authStatusBox');
+  if (box) {
+    box.textContent = 'Сессия закрыта. Войдите снова тем же логином и паролем. Прогресс на этом устройстве не стирается.';
+    box.className = 'mt-3 text-[11px] text-center p-2 rounded-xl font-medium bg-amber-950/80 border border-amber-500 text-amber-200';
+    box.classList.remove('hidden');
+  }
+  document.getElementById('accountModal')?.classList.remove('hidden');
+}
 
 export async function hashPassword(password) {
   const enc = new TextEncoder().encode("poop_salt_2026_" + password);
@@ -78,9 +102,15 @@ export async function syncToCloudDatabase() {
   try {
     const res = await cloudFetch(CLOUD_SAVE_ENDPOINT, { method: 'POST', body: bodyStr });
 
+    if (res.status === 401) {
+      dropDeadSession();
+      if (statusIndicator) statusIndicator.textContent = "D1: Войдите";
+      return;
+    }
+
     if (res.status === 409) {
       const data = await res.json().catch(() => null);
-      if (data?.saveData) {
+      if (data?.saveData && !sameSeasonBlank(data.saveData)) {
         applySaveDataSafely(data.saveData);
         saveLocal();
       }
@@ -169,19 +199,18 @@ export async function loginAccount(username, password) {
 
     const data = await res.json();
     if (data.success) {
-      GAME.playerId = data.playerId;
-      GAME.playerName = data.username;
-
-      if (data.saveData) {
-        applySaveDataSafely(data.saveData);
-      }
-
       saveStoredAccount({
         username: data.username,
         playerId: data.playerId,
         passwordHash,
         sessionToken: data.sessionToken || ''
       });
+      GAME.playerId = data.playerId;
+      GAME.playerName = data.username;
+
+      if (data.saveData && !sameSeasonBlank(data.saveData)) {
+        applySaveDataSafely(data.saveData);
+      }
       saveLocal();
 
       return { success: true, username: data.username, playerId: data.playerId };
@@ -219,10 +248,16 @@ export async function loadFromCloudDatabaseOrLocal() {
     if (res.ok) {
       const data = await res.json();
       const cloudPayload = data.data || data.save_data;
-      if (data && cloudPayload) {
+      if (data?.parseError) {
+        if (statusIndicator) statusIndicator.textContent = "D1: Локально";
+      } else if (data && cloudPayload) {
         const parsed = typeof cloudPayload === 'string' ? JSON.parse(cloudPayload) : cloudPayload;
-        applySaveDataSafely(parsed);
-        saveLocal();
+        if (sameSeasonBlank(parsed)) {
+          requestCloudSync(800);
+        } else {
+          applySaveDataSafely(parsed);
+          saveLocal();
+        }
       }
     }
   } catch (e) {
