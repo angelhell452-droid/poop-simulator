@@ -178,8 +178,8 @@ export function updateTranscendModalRealtime() {
     const transcends = t.transcends;
     let tMilestoneText = '';
     if (transcends < 1) tMilestoneText = '🎯 Прорыв #1: Вантузы и Базовые Реликвии (Тир 1)';
-    else if (transcends < 2) tMilestoneText = `🎯 Прорыв #2: 🤖 Авто-Уход за Питомцем & Авто-Заводы [${formatNumber(transcends)}/2]`;
-    else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: 🌀 Авто-Эволюция Мутаций [${formatNumber(transcends)}/3]`;
+    else if (transcends < 2) tMilestoneText = `🎯 Прорыв #2: 🌀 Авто-мутации. Авто-заводы уже в тире 1 [${formatNumber(transcends)}/2]`;
+    else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: 🌠 Звёздный дождь и кузница [${formatNumber(transcends)}/3]`;
     else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⏳ Временной Разлом (+25% к CPS) [${formatNumber(transcends)}/5]`;
     else if (transcends < 10) tMilestoneText = `🎯 Прорыв #10: 🌌 Сингулярность & Корона Демиурга [${formatNumber(transcends)}/10]`;
     else tMilestoneText = `🏆 Повелитель Астральной Сингулярности (${formatNumber(transcends)} прорывов)!`;
@@ -226,15 +226,19 @@ export function initModals() {
   // Global modal close buttons
   document.querySelectorAll('.modal-close').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.fixed.inset-0').forEach(m => m.classList.add('hidden'));
+      const modal = btn.closest('.fixed.inset-0');
+      if (!modal || modal.id === 'offlineModal') return;
+      modal.classList.add('hidden');
+      if (modal.id === 'patchNotesModal') events.emit('journal:closed');
     });
   });
 
   // Universal click-outside dismiss on backdrop
   document.querySelectorAll('.fixed.inset-0').forEach(modal => {
     modal.addEventListener('pointerdown', (e) => {
-      if (e.target === modal) {
+      if (e.target === modal && modal.id !== 'offlineModal') {
         modal.classList.add('hidden');
+        if (modal.id === 'patchNotesModal') events.emit('journal:closed');
       }
     });
   });

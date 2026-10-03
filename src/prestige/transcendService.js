@@ -91,8 +91,6 @@ export function executeTranscend() {
   GAME.transcendPlungers = (GAME.transcendPlungers || 0) + gain;
   GAME.totalTranscend = (GAME.totalTranscend || 0) + 1;
 
-  GAME.prestigeRolls = 0;
-  GAME.transcendCycleRolls = 0;
   GAME.flushesThisCycle = 0;
   GAME.cycleBiomass = 0;
   GAME.biomass = 0;

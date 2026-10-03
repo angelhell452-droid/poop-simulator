@@ -590,8 +590,8 @@ export function catchGoldenMeteor() {
     GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
     label = `✨ ЗВЕЗДНЫЙ ДОЖДЬ: +${formatNumber(spGain)} Блестяшек!`;
   } else {
-    const rollMultiplier = 1 + (GAME.totalPrestiges || 0) * 0.15 + (GAME.totalTranscend || 0) * 1.5;
-    const rollGain = Math.max(10, Math.round((15 + Math.random() * 35) * rollMultiplier * lootMult));
+    const rollMultiplier = 1 + Math.min(1.5, (GAME.totalPrestiges || 0) * 0.02) + Math.min(1.5, (GAME.totalTranscend || 0) * 0.12);
+    const rollGain = Math.max(1, Math.min(3, Math.round((1 + Math.random()) * rollMultiplier * Math.min(1.5, lootMult))));
     GAME.prestigeRolls = (GAME.prestigeRolls || 0) + rollGain;
     label = `🧻 СВЯЩЕННЫЙ РУЛОН: +${formatNumber(rollGain)} Втулок Судьбы!`;
   }

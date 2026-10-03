@@ -31,6 +31,8 @@ export function updateHUD() {
 
   const topSp = document.getElementById('topSparkles');
   if (topSp) topSp.textContent = formatNumber(GAME.sparkles);
+  const invSp = document.getElementById('invSparkles');
+  if (invSp) invSp.textContent = `${formatNumber(GAME.sparkles)} ✨`;
 
   const topPr = document.getElementById('topPrestige');
   if (topPr) topPr.textContent = formatNumber(GAME.prestigeRolls);
@@ -569,28 +571,17 @@ export function initAutomationToggleListeners() {
     document.getElementById('autoBuyerModeMenu')?.classList.add('hidden');
   });
   document.getElementById('btnTranscendAutoInfo')?.addEventListener('click', () => {
-    document.getElementById('btnTranscendModal')?.click();
+    document.getElementById('btnCanvasTranscend')?.click();
   });
 }
 
 export function showWelcomeGreeting(customText = null) {
   const name = GAME.playerName || 'Игрок';
   const text = customText || `Привет, какашечка ${name}! 💩✨`;
-
-  const existing = document.getElementById('welcomeGreetingToast');
-  if (existing) existing.remove();
-
-  const toast = document.createElement('div');
-  toast.id = 'welcomeGreetingToast';
-  toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-stone-950 font-game font-black text-xs sm:text-sm px-5 py-2.5 rounded-3xl shadow-[0_10px_35px_rgba(245,158,11,0.5)] border-2 border-yellow-200 flex items-center gap-2 animate-bounce select-none pointer-events-none transition-all duration-500';
-  toast.innerHTML = `<span class="text-2xl">💩</span><span>${text}</span>`;
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translate(-50%, -20px) scale(0.95)';
-    setTimeout(() => toast.remove(), 500);
-  }, 3500);
+  const slot = document.getElementById('journalWelcome');
+  if (!slot) return;
+  slot.textContent = text;
+  slot.classList.remove('hidden');
 }
 
 

@@ -50,24 +50,71 @@ export function saveLocal() {
   }
 }
 
+function wipeRuntimeCatalogs() {
+  FACTORIES.forEach((row) => { row.count = 0; });
+  TALENTS.forEach((row) => { row.level = 0; });
+  ACHIEVEMENTS.forEach((row) => { row.done = false; });
+  SHOP_ITEMS.forEach((row) => { row.owned = false; });
+  KNIVES.forEach((row) => {
+    row.statTrak = 0;
+    row.owned = false;
+  });
+  GAME.unlockedKnives = [];
+  GAME.knifeStars = {};
+  GAME.hatLevels = {};
+  GAME.boutiqueLevels = {};
+  GAME.equippedHat = null;
+  GAME.equippedKnife = null;
+  GAME.peakForm = 1;
+  GAME.meteorsCaught = 0;
+  GAME.turboCount = 0;
+  GAME.casesOpened = 0;
+  GAME.totalClicks = 0;
+  GAME.phaseEcho = {};
+  GAME.biomass = 0;
+  GAME.cycleBiomass = 0;
+  GAME.allTimeBiomass = 0;
+  GAME.sparkles = 20;
+  GAME.prestigeRolls = 0;
+  GAME.allTimePrestigeRolls = 0;
+  GAME.transcendCycleRolls = 0;
+  GAME.totalPrestiges = 0;
+  GAME.transcendPlungers = 0;
+  GAME.totalTranscend = 0;
+  GAME.flushesThisCycle = 0;
+  GAME.evoStage = 0;
+  GAME.hunger = 100;
+  GAME.clean = 100;
+  GAME.happy = 100;
+  GAME.comboHeat = 0;
+  GAME.autoclickerActive = false;
+  setFeedCount(0);
+  setWashCount(0);
+  setPolishCount(0);
+  setFlushCount(0);
+  GAME.transcendUpgrades = {
+    cosmicSynergy: 0,
+    autoCare: false,
+    autoBuyer: false,
+    passiveRolls: 0,
+    omniMult: 0,
+    afkCap: 0,
+    knifeForge: 0,
+    factoryOverdrive: 0,
+    plungerIncubator: 0,
+    meteorStorm: 0,
+    evoBlessing: 0,
+    autoEvolution: false,
+    singularityRift: false
+  };
+}
+
 export function applySaveDataSafely(rawData) {
   if (!rawData) return;
   const data = migrateSaveData(rawData);
   if (!data) return;
 
-  if (data.resetProgress) {
-    FACTORIES.forEach((row) => { row.count = 0; });
-    TALENTS.forEach((row) => { row.level = 0; });
-    ACHIEVEMENTS.forEach((row) => { row.done = false; });
-    SHOP_ITEMS.forEach((row) => { row.owned = false; });
-    KNIVES.forEach((row) => { row.statTrak = 0; });
-    GAME.unlockedKnives = [];
-    GAME.knifeStars = {};
-    GAME.hatLevels = {};
-    GAME.boutiqueLevels = {};
-    GAME.equippedHat = null;
-    GAME.equippedKnife = null;
-  }
+  if (data.resetProgress) wipeRuntimeCatalogs();
 
   if (data.game) {
     for (const k in data.game) {
@@ -154,6 +201,11 @@ export function applySaveDataSafely(rawData) {
   } else if (!GAME.hatLevels) {
     GAME.hatLevels = {};
   }
+
+  TALENTS.forEach((row) => {
+    if ((row.level || 0) > row.max) row.level = row.max;
+  });
+  if (data.resetProgress) wipeRuntimeCatalogs();
 
   clampAutoclickerState();
   notePeakForm();

@@ -141,7 +141,7 @@ function determineBestHint() {
       text: `За Смыв Судьбы доступно <b>+${formatNumber(rollsGain)} 🧻 Втулок</b>! Пора совершить Смыв!`,
       btnText: 'Смыв 🌀',
       action: () => {
-        document.getElementById('btnPrestigeModal')?.click();
+        document.getElementById('btnCanvasPrestige')?.click();
       }
     };
   }

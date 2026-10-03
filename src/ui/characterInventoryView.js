@@ -19,6 +19,12 @@ import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats'
+
+function hatClickLabel(hat, level) {
+  const total = (hat.clickBoost || 1) * (1 + (Math.max(1, level) - 1) * 0.35);
+  const pct = Math.max(0, Math.round((total - 1) * 100));
+  return `+${formatNumber(pct)}% к силе клика`;
+}
 let knifeFilterRarity = 'all';
 let knifeSearchQuery = '';
 let knifeSortMode = 'power';
@@ -92,8 +98,7 @@ export function renderCharacterInventory() {
   if (hBonus) {
     if (equippedHat) {
       const hatLvl = getHatLevel(equippedHat.id);
-      const totalBoost = (equippedHat.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35);
-      hBonus.textContent = `${equippedHat.desc || ''} (Итог: x${formatNumber(totalBoost)} к клику)`;
+      hBonus.textContent = `${hatClickLabel(equippedHat, hatLvl)} · 💎 Lv.${formatNumber(hatLvl)}`;
       hBonus.className = 'text-[10px] text-pink-300 font-bold';
     } else {
       hBonus.textContent = 'Шапка не надета (+0% бонус)';
@@ -156,17 +161,13 @@ export function renderCharacterInventory() {
       }
 
       equippedCard.innerHTML = `
-        <div class="flex items-center justify-between gap-2 w-full">
-          <div class="flex items-center gap-2.5 overflow-hidden">
+        <div class="flex flex-col gap-2 w-full">
+          <div class="flex items-center justify-between gap-2 w-full">
+          <div class="flex items-center gap-2.5 min-w-0">
             <div class="shrink-0 flex items-center justify-center">${getKnifeImageHtml(equippedObj, 52)}</div>
-            <div class="truncate">
+            <div class="min-w-0">
               <div class="font-game text-sm text-white font-black truncate drop-shadow-md" style="text-shadow:0 1px 4px rgba(0,0,0,0.9)">${equippedObj.name}</div>
-              <div class="flex items-center gap-1.5 text-[10px] mt-0.5">
-                <span class="text-emerald-300 font-bold bg-emerald-950/70 px-1.5 py-0.5 rounded">+${formatNumber(eqClickPct)}% 🗗️</span>
-                <span class="text-cyan-300 font-bold bg-cyan-950/70 px-1.5 py-0.5 rounded">+${formatNumber(getKnifeCpsBonus(equippedObj))} CPS</span>
-                <span class="text-amber-300 font-black bg-amber-950/70 px-1.5 py-0.5 rounded">★ Lv.${eqStar}</span>
-                ${equippedObj.statTrak ? `<span class="text-orange-400 font-mono font-bold bg-orange-950/70 px-1.5 py-0.5 rounded">🔥 ${formatNumber(equippedObj.statTrak)}</span>` : ''}
-              </div>
+              <div class="text-[10px] text-stone-400 truncate">${equippedObj.rarityName || 'Нож'}</div>
             </div>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
@@ -177,6 +178,14 @@ export function renderCharacterInventory() {
             <button id="btnUnequipKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-600 text-[11px] px-2 py-1.5 rounded-xl font-bold jelly-btn">
               Снять
             </button>
+          </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
+            <span class="text-emerald-300 font-currency bg-emerald-950/70 px-1.5 py-0.5 rounded">Клик +${formatNumber(eqClickPct)}%</span>
+            <span class="text-lime-200 font-currency bg-lime-950/70 px-1.5 py-0.5 rounded">Заводы +${formatNumber(shown.passPct)}%</span>
+            <span class="text-cyan-300 font-currency bg-cyan-950/70 px-1.5 py-0.5 rounded">+${formatNumber(getKnifeCpsBonus(equippedObj))} CPS</span>
+            <span class="text-amber-300 font-currency bg-amber-950/70 px-1.5 py-0.5 rounded">★ Lv.${formatNumber(eqStar)}</span>
+            ${equippedObj.statTrak ? `<span class="text-orange-300 font-currency bg-orange-950/70 px-1.5 py-0.5 rounded">🔥 ${formatNumber(equippedObj.statTrak)}</span>` : ''}
           </div>
         </div>
       `;
@@ -498,7 +507,6 @@ function renderHatsGrid() {
     const isInfoOpen = activeInfoCardId === hat.id;
     const hatLvl = getHatLevel(hat.id);
     const costInfo = getHatInlayCost(hat);
-    const totalBoost = (hat.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35);
 
     const card = document.createElement('div');
     card.className = `p-2 sm:p-2.5 rounded-2xl border-2 transition relative flex flex-col justify-between ${isEquipped ? 'border-pink-500 ring-2 ring-pink-500/40 bg-stone-900' : (hat.owned ? 'border-stone-700 bg-stone-950' : 'border-stone-800 bg-stone-950/60 opacity-80')}`;
@@ -514,7 +522,7 @@ function renderHatsGrid() {
                 <span>${hat.name}</span>
                 ${hat.owned ? `<span class="text-pink-400 font-mono text-[10px]">💎 Lv.${hatLvl}</span>` : ''}
               </div>
-              <div class="text-[9px] text-pink-300 mt-0.5 font-bold">${hat.desc} ${hat.owned && hatLvl > 1 ? `(Итог: x${formatNumber(totalBoost)})` : ''}</div>
+              <div class="text-[9px] text-pink-300 mt-0.5 font-currency">${hatClickLabel(hat, hat.owned ? hatLvl : 1)}</div>
             </div>
           </div>
           <button class="hat-info-toggle w-5 h-5 shrink-0 rounded-full bg-stone-800 hover:bg-stone-700 text-pink-300 border border-stone-600 flex items-center justify-center font-bold text-[11px] transition shadow" data-id="${hat.id}" title="Подробности">
@@ -525,8 +533,8 @@ function renderHatsGrid() {
         <!-- Row 2: Collapsible Info Drawer -->
         <div id="hatInfo_${hat.id}" class="${isInfoOpen ? '' : 'hidden'} p-2 my-1.5 rounded-xl bg-stone-900 border border-stone-700 text-[10px] text-stone-300 space-y-1">
           <p class="text-stone-300 font-bold">${hat.desc}</p>
-          <div class="text-[9px] text-stone-400">Базовый множитель: x${hat.clickBoost || 1.0}</div>
-          ${hat.owned ? `<div class="text-[9px] text-pink-300 font-bold">Уровень инкрустации: 💎 Lv.${hatLvl} (Итог: x${totalBoost} к клику)</div>` : ''}
+          <div class="text-[9px] text-stone-400">Сейчас: ${hatClickLabel(hat, hat.owned ? hatLvl : 1)}</div>
+          ${hat.owned ? `<div class="text-[9px] text-pink-300 font-bold">Инкрустация 💎 Lv.${formatNumber(hatLvl)}</div>` : ''}
           <div class="text-[9px] text-amber-300">${hat.owned ? '✓ Куплено в Бутике' : `Стоимость: ${formatNumber(hat.cost)} ✨ Блестяшек`}</div>
         </div>
       </div>

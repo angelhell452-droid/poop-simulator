@@ -432,6 +432,9 @@ export function blankProgressSave(playerId, playerName, worldReset, seq) {
       totalClicks: 0,
       equippedHat: null,
       equippedKnife: null,
+      peakForm: 1,
+      meteorsCaught: 0,
+      turboCount: 0,
       unlockedKnives: [],
       knifeStars: {},
       hatLevels: {},
@@ -445,6 +448,7 @@ export function blankProgressSave(playerId, playerName, worldReset, seq) {
       worldReset,
       transcendUpgrades: {
         cosmicSynergy: 0,
+        autoCare: false,
         autoBuyer: false,
         passiveRolls: 0,
         omniMult: 0,

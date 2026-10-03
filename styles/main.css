@@ -118,6 +118,14 @@ body {
   font-family: var(--font-game);
 }
 
+.font-currency {
+  font-family: 'Nunito', var(--font-main), sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
 .custom-scroll::-webkit-scrollbar {
   width: 5px;
   height: 5px;

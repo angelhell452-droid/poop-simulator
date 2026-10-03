@@ -363,8 +363,17 @@ export async function bootstrap() {
     openPatchNotesModal();
   }, 350);
 
+  events.on('journal:closed', () => {
+    document.getElementById('journalWelcome')?.classList.add('hidden');
+    if (!pendingOfflineModal) return;
+    pendingOfflineModal = false;
+    document.getElementById('offlineModal')?.classList.remove('hidden');
+  });
+
   console.log('✅ Poop Simulator initialized successfully.');
 }
+
+let pendingOfflineModal = false;
 
 function checkOfflineProgress() {
   const now = Date.now();
@@ -396,7 +405,7 @@ function checkOfflineProgress() {
       const spEl = document.getElementById('offlineSparkleGain');
       if (spEl) spEl.textContent = `+${formatNumber(offlineSparkles)} ✨`;
 
-      document.getElementById('offlineModal')?.classList.remove('hidden');
+      if (awaySeconds >= 300) pendingOfflineModal = true;
     }
   }
   GAME.lastActiveTime = now;

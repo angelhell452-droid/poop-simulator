@@ -272,7 +272,8 @@ export function renderHatsIndex() {
     const isOwned = !!hat.owned;
     const isEquipped = GAME.equippedHat === hat.id;
     const hatLvl = getHatLevel(hat.id);
-    const totalBoost = (hat.clickBoost || 1.0) * (1 + (hatLvl - 1) * 0.35);
+    const liveBoost = (hat.clickBoost || 1) * (1 + (Math.max(1, isOwned ? hatLvl : 1) - 1) * 0.35);
+    const livePct = Math.max(0, Math.round((liveBoost - 1) * 100));
 
     return `
       <div class="p-2.5 rounded-2xl border ${isEquipped ? 'border-pink-500 bg-pink-950/30 ring-2 ring-pink-500/50' : (isOwned ? 'border-stone-700 bg-stone-900/80' : 'border-stone-800 bg-stone-950/60 opacity-70')} flex flex-col justify-between text-left">
@@ -284,7 +285,7 @@ export function renderHatsIndex() {
             </span>
           </div>
           <div class="font-game text-xs font-bold text-yellow-200 mt-1 truncate">${hat.name}</div>
-          <div class="text-[9px] text-pink-300 font-bold mt-0.5">${hat.desc}</div>
+          <div class="text-[9px] text-pink-300 font-currency mt-0.5">+${formatNumber(livePct)}% к силе клика</div>
         </div>
         <div class="mt-2 pt-1 border-t border-stone-800/80 text-[10px] flex justify-between items-center">
           <span class="text-yellow-400 font-mono font-bold">${formatNumber(hat.cost)} ✨</span>

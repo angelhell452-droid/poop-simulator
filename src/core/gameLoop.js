@@ -4,6 +4,7 @@ import { processBatchedClicks, addPendingClicks } from '../systems/clickService.
 import { decayNeeds, runAutoCare } from '../systems/petCareService.js';
 import { performEvolution } from '../progression/evolutionService.js';
 import { checkAchievements } from '../systems/achievementsService.js';
+import { renderAchievements } from '../ui/achievementsView.js';
 import { saveLocal } from '../save/saveManager.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
@@ -136,6 +137,8 @@ export function gameEngineTick() {
     autoSaveTimer = 0;
     lastSecondClicks = currentTotalClicks;
     GAME.lastActiveTime = Date.now();
+    const trophies = document.getElementById('panelTrophies');
+    if (trophies && !trophies.classList.contains('hidden')) renderAchievements();
     saveLocal();
   }
 

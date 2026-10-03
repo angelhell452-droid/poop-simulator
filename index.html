@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.28 PRO</title>
+  <title>Poop Simulator v4.9.29 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.28 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.29 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -50,19 +50,6 @@
         <span>📖</span> <span class="hidden sm:inline">Индекс:</span> <span id="topKnivesIndexCount"
           class="text-yellow-300 font-bold">0/200</span>
       </button>
-      <button id="btnPrestigeModal"
-        class="bg-gradient-to-r from-purple-700 to-indigo-700 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-400 text-xs jelly-btn flex items-center gap-1 shadow"
-        title="Смыв Судьбы (Престиж 1-го ранга: Втулки и Таланты)">
-        <span class="roll-icon"></span> <span>Смыв</span> <span id="headerPrestigeLvl"
-          class="text-yellow-300 font-black ml-0.5">Ур. 0</span>
-      </button>
-      <button id="btnTranscendModal"
-        class="bg-gradient-to-r from-cyan-600 via-indigo-700 to-purple-800 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-cyan-400 text-xs jelly-btn flex items-center gap-1 shadow"
-        title="Астральный Прорыв (Престиж 2-го ранга: Вантузы и Артефакты)">
-        <span class="plunger-icon"></span> <span>Прорыв</span> <span id="headerTranscendLvl"
-          class="text-cyan-300 font-black ml-0.5">Ур. 0</span>
-      </button>
-
       <!-- GROUP 2: COMMUNITY & INFO -->
       <button id="btnLeaderboardModal"
         class="bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-500 hover:brightness-110 text-stone-950 font-game px-2.5 sm:px-3 py-1 rounded-xl border border-yellow-300 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
@@ -182,7 +169,7 @@
             <div class="flex items-center justify-between text-[9px] text-amber-400 font-bold uppercase tracking-wider">
               <span id="labelBiomass">Биомасса</span>
             </div>
-            <div class="font-game text-xs sm:text-sm text-emerald-400 tracking-wide font-mono tabular-nums truncate"
+            <div class="font-currency text-sm sm:text-base text-emerald-400 truncate"
               id="topBiomass">0</div>
           </div>
         </div>
@@ -196,7 +183,7 @@
               class="flex items-center justify-between text-[9px] text-yellow-400 font-bold uppercase tracking-wider">
               <span id="labelSparkles">Блестяшки</span>
             </div>
-            <div class="font-game text-xs sm:text-sm text-yellow-300 tracking-wide font-mono tabular-nums truncate"
+            <div class="font-currency text-sm sm:text-base text-yellow-300 truncate"
               id="topSparkles">0</div>
           </div>
         </div>
@@ -214,7 +201,7 @@
                 class="text-[8px] bg-purple-900 text-yellow-200 border border-yellow-400/40 px-1 rounded font-black">Ур.
                 0</span>
             </div>
-            <div class="font-game text-xs sm:text-sm text-yellow-200 tracking-wide font-mono tabular-nums truncate"
+            <div class="font-currency text-sm sm:text-base text-yellow-200 truncate"
               id="topPrestige">0</div>
           </div>
         </div>
@@ -231,7 +218,7 @@
                 class="text-[8px] bg-indigo-900 text-cyan-200 border border-cyan-400/40 px-1 rounded font-black">Ур.
                 0</span>
             </div>
-            <div class="font-game text-xs sm:text-sm text-cyan-200 tracking-wide font-mono tabular-nums truncate"
+            <div class="font-currency text-sm sm:text-base text-cyan-200 truncate"
               id="topPlungers">0</div>
           </div>
         </div>
@@ -243,7 +230,7 @@
         <div
           class="flex items-center gap-1.5 w-[130px] min-w-[130px] max-w-[130px] shrink-0 text-[9px] font-bold text-amber-400">
           <span id="comboFlameIcon" class="text-xs shrink-0">⚡</span>
-          <span id="comboLabel" class="truncate font-mono tabular-nums">ЯРОСТЬ: 0%</span>
+          <span id="comboLabel" class="truncate font-currency text-[11px]">Ярость 0%</span>
         </div>
         <div class="flex-1 bg-stone-800 h-2 rounded-full overflow-hidden relative border border-stone-700/80">
           <div id="comboBar"
@@ -278,7 +265,7 @@
             <span id="autoclickLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
             <span id="autoclickLabel">АВТОКЛИКЕР: ВЫКЛ</span>
           </button>
-          <span class="text-[9px] text-stone-400 hidden sm:inline">(Пробел / A)</span>
+          <span class="text-[10px] text-amber-200/90 font-currency">Потолок CPS растёт от ножа</span>
         </div>
         <div class="flex items-center gap-1 text-[9px] flex-wrap">
           <span class="text-stone-400 font-bold mr-0.5">Скорость:</span>
@@ -303,8 +290,7 @@
           class="w-full flex items-center justify-between gap-2 py-0.5 text-[11px] text-stone-300">
           <div class="flex items-center gap-1.5 text-cyan-200">
             <span class="text-sm">🔒</span>
-            <span>Астральный Авто-Контроль (Авто-Заводы и Мутации) открывается в <strong>Астральном Прорыве</strong>
-              (Тир II)</span>
+            <span>Авто-заводы открываются на тире 1 Прорыва, авто-мутации — на тире 2</span>
           </div>
           <button id="btnTranscendAutoInfo"
             class="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold underline cursor-pointer bg-transparent border-0 flex items-center gap-1 shrink-0">
@@ -1749,7 +1735,7 @@
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Астральный Прорыв (кнопка 🪠 Прорыв)</li>
                 <li>Условие: 3 Смыва в текущей паре эпох и закрытый мост чётной эпохи. Награда — 1 или 2 вантуза и ключ следующей пары</li>
-                <li>Непотраченные втулки после Прорыва не переносятся. Эхо эпох остаётся</li>
+                <li>Втулки после Прорыва остаются. Сбрасываются форма, заводы и счётчик смывов этой пары эпох</li>
               </ul>
             </div>
             <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
@@ -1810,8 +1796,11 @@
   <!-- PATCH NOTES MODAL (ИСТОРИЯ ОБНОВЛЕНИЙ И ПАТЧ-НОУТЫ) -->
   <div id="patchNotesModal"
     class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="flex flex-col items-center gap-3 w-full max-w-xl">
+    <div id="journalWelcome"
+      class="hidden font-currency text-sm sm:text-base text-stone-950 bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 px-5 py-2 rounded-full border-2 border-yellow-100 shadow-[0_8px_24px_rgba(250,204,21,0.45)] text-center"></div>
     <div
-      class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-yellow-400 max-w-xl w-full p-5 relative shadow-2xl max-h-[92vh] overflow-y-auto custom-scroll text-left">
+      class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-yellow-400 w-full p-5 relative shadow-2xl max-h-[78vh] overflow-y-auto custom-scroll text-left">
       <button
         class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
 
@@ -1837,6 +1826,7 @@
         <!-- Rendered in JS -->
       </div>
     </div>
+    </div>
   </div>
 
   <!-- CHARACTER INVENTORY & LOADOUT MODAL -->
@@ -1856,9 +1846,15 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-between rounded-2xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2">
-        <span class="text-[11px] font-bold text-cyan-200">Доступный CPS</span>
-        <span id="invTotalCps" class="font-game text-sm text-cyan-100">40 CPS</span>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="flex items-center justify-between rounded-2xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2">
+          <span class="text-[11px] font-bold text-cyan-200">Доступный CPS</span>
+          <span id="invTotalCps" class="font-currency text-sm text-cyan-100">40 CPS</span>
+        </div>
+        <div class="flex items-center justify-between rounded-2xl border border-yellow-500/40 bg-yellow-950/40 px-3 py-2">
+          <span class="text-[11px] font-bold text-yellow-200">Блестяшки</span>
+          <span id="invSparkles" class="font-currency text-sm text-yellow-100">0 ✨</span>
+        </div>
       </div>
 
       <!-- DEDICATED SLOTS: KNIFE SLOT & HAT SLOT -->
