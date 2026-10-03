@@ -4,21 +4,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.47 PRO</title>
+  <title>Poop Simulator v4.9.50 PRO</title>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Comfortaa', 'Nunito', 'sans-serif'],
-            mono: ['Comfortaa', 'Nunito', 'sans-serif']
+            sans: ['Nunito', 'sans-serif'],
+            mono: ['Nunito', 'sans-serif']
           }
         }
       }
     };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;600;700&family=Nunito:wght@700&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="styles/main.css">
 </head>
@@ -35,7 +35,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.47 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.50 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -298,17 +298,12 @@
         class="px-2.5 py-1 bg-indigo-950/90 border-b border-indigo-500/50 flex flex-wrap items-center justify-between gap-1.5 z-10 text-xs shrink-0">
 
         <!-- Locked State Notice (Before midgame Astral Transcendence) -->
-        <div id="transcendAutoLockedNotice"
-          class="w-full flex items-center justify-between gap-2 py-0.5 text-[11px] text-stone-300">
-          <div class="flex items-center gap-1.5 text-cyan-200">
-            <span class="text-sm">🔒</span>
-            <span>Авто-заводы открываются на тире 1 Прорыва</span>
-          </div>
-          <button id="btnTranscendAutoInfo"
-            class="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold underline cursor-pointer bg-transparent border-0 flex items-center gap-1 shrink-0">
-            <span>К Прорыву</span> <span class="plunger-icon"></span>
-          </button>
-        </div>
+        <button id="transcendAutoLockedNotice" type="button"
+          class="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-full text-[11px] font-bold text-cyan-100 border border-cyan-300/40 bg-cyan-400/10 hover:bg-cyan-400/20 jelly-btn cursor-pointer"
+          title="Открыть Прорыв">
+          <span>🔒</span>
+          <span>Авто-заводы открываются на тире 1 Прорыва</span>
+        </button>
 
         <!-- Unlocked Controls (After Astral Transcendence purchase) -->
         <div id="transcendAutoControls" class="w-full hidden flex items-center justify-between gap-1 flex-wrap">
@@ -765,8 +760,6 @@
           <span id="footCpsRate"
             class="text-yellow-400 font-bold tabular-nums min-w-[65px] inline-block opacity-0 transition-opacity duration-150"></span>
         </div>
-        <button id="btnExportSave" class="text-stone-400 hover:text-white underline shrink-0 ml-2">Резервная
-          копия</button>
       </div>
     </aside>
   </main>
@@ -774,7 +767,7 @@
   <div id="evoXpDock" class="fixed bottom-0 inset-x-0 z-40">
     <div class="w-full bg-stone-950/95 border-t-2 border-amber-700 px-2 sm:px-4 py-2">
       <div class="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3">
-        <div id="evoStageName" class="shrink-0 font-game text-[11px] sm:text-xs text-yellow-300 truncate max-w-[26%] sm:max-w-[220px]">Форма #1</div>
+        <div id="evoStageName" class="shrink-0 font-game text-[11px] sm:text-xs text-yellow-300 truncate max-w-[42%] sm:max-w-[280px]">Форма №1 — Владыка</div>
         <div class="relative flex-1 h-6 bg-stone-800 rounded-full overflow-hidden border border-amber-500/70">
           <div id="evoXpFill" class="h-full bg-gradient-to-r from-amber-600 via-yellow-400 to-emerald-400 transition-all duration-300" style="width:0%"></div>
           <div id="evoXpLabel" class="absolute inset-0 flex items-center justify-center font-currency text-[11px] sm:text-xs text-white font-bold tabular-nums drop-shadow">0 / 1.43k</div>

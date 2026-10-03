@@ -112,6 +112,7 @@ html, body {
 
 html, body, button, input, textarea, select {
   font-family: var(--font-main);
+  font-weight: 700;
 }
 
 body {
@@ -316,7 +317,7 @@ body.girly-mode #btnModeGirls {
 body > main > section,
 body > main > aside {
   background: color-mix(in srgb, var(--bg-secondary) 92%, black) !important;
-  border: 1px solid var(--border-light) !important;
+  border: 3px solid var(--border-light) !important;
   border-radius: var(--radius-lg) !important;
   box-shadow: var(--shadow-sm) !important;
 }
@@ -401,8 +402,21 @@ button.dash-tab.bg-amber-700,
 
 .fixed.inset-0 > div {
   border-radius: var(--radius-lg) !important;
-  border: 1px solid var(--border-light) !important;
+  border: 3px solid var(--border-light) !important;
   box-shadow: 0 24px 70px rgba(4, 12, 10, 0.45);
+}
+
+.rounded,
+.rounded-sm,
+.rounded-md,
+.rounded-lg,
+.rounded-xl {
+  border-radius: var(--radius-md) !important;
+}
+
+.rounded-2xl,
+.rounded-3xl {
+  border-radius: var(--radius-lg) !important;
 }
 
 input,

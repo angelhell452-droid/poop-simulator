@@ -312,7 +312,7 @@ export function initModals() {
   };
 
   document.getElementById('btnOpenTranscendRelicsFromModal')?.addEventListener('click', navigateToTranscendRelics);
-  document.getElementById('btnTranscendAutoInfo')?.addEventListener('click', navigateToTranscendRelics);
+  document.getElementById('transcendAutoLockedNotice')?.addEventListener('click', navigateToTranscendRelics);
 
   // Execute Transcend
   const btnExecuteTranscend = document.getElementById('btnExecuteTranscend');

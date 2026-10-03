@@ -10,8 +10,8 @@
   --border-accent: #8ee0c0;
   --border-cyan: #7ec8e8;
 
-  --font-main: 'Comfortaa', 'Nunito', sans-serif;
-  --font-game: 'Comfortaa', 'Nunito', sans-serif;
+  --font-main: 'Nunito', sans-serif;
+  --font-game: 'Nunito', sans-serif;
 
   --text-primary: #f3f7f4;
   --text-secondary: #d5e4dc;
@@ -23,9 +23,9 @@
   --accent: #8ee0c0;
   --accent-ink: #143028;
 
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 28px;
+  --radius-sm: 20px;
+  --radius-md: 28px;
+  --radius-lg: 40px;
   --radius-full: 9999px;
 
   --shadow-sm: 0 10px 24px rgba(6, 16, 12, 0.28);

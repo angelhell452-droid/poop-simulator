@@ -133,7 +133,7 @@ export function updateHUD() {
   const currEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const phase = getPhaseForStage(GAME.evoStage);
   const topStTitle = document.getElementById('topStageTitle');
-  if (topStTitle) topStTitle.textContent = `Форма #${formatNumber(currEvo.id + 1)} · ${phaseLabel(phase)}`;
+  if (topStTitle) topStTitle.textContent = `Форма №${formatNumber(currEvo.id + 1)} · ${phaseLabel(phase)}`;
 
   const topArchBadge = document.getElementById('topArchetypeBadge');
   if (topArchBadge) {
@@ -143,7 +143,7 @@ export function updateHUD() {
     topArchBadge.title = `Специализация Смыва: ${arch.name} (${arch.desc}). Нажмите для настройки.`;
   }
   const nameEvo = document.getElementById('evoStageName');
-  if (nameEvo) nameEvo.textContent = `Форма #${formatNumber(currEvo.id + 1)} · ${currEvo.name}`;
+  if (nameEvo) nameEvo.textContent = `Форма №${formatNumber(currEvo.id + 1)} — ${currEvo.name}`;
   const descEvo = document.getElementById('evoStageDesc');
   if (descEvo) descEvo.textContent = currEvo.desc;
 
@@ -270,9 +270,10 @@ export function updateHUD() {
   if (btnQuick) {
     if (pBreakdown.isMet) {
       btnQuick.classList.remove('hidden');
-      const newText = `Смыв (+${formatNumber(pBreakdown.totalGain)} 🧻)`;
-      if (btnQuickText && btnQuickText.textContent !== newText) {
-        btnQuickText.textContent = newText;
+      const newText = `Смыв +${formatNumber(pBreakdown.totalGain)}`;
+      if (btnQuickText && btnQuickText.dataset.sig !== newText) {
+        btnQuickText.dataset.sig = newText;
+        btnQuickText.innerHTML = `${newText} <span class="roll-icon"></span>`;
       }
     } else {
       btnQuick.classList.add('hidden');
@@ -580,7 +581,7 @@ export function initAutomationToggleListeners() {
   document.addEventListener('click', () => {
     document.getElementById('autoBuyerModeMenu')?.classList.add('hidden');
   });
-  document.getElementById('btnTranscendAutoInfo')?.addEventListener('click', () => {
+  document.getElementById('transcendAutoLockedNotice')?.addEventListener('click', () => {
     document.getElementById('btnCanvasTranscend')?.click();
   });
 }

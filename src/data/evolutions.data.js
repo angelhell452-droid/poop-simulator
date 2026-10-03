@@ -1,4 +1,5 @@
 import { getPhaseForStage, PHASE_FORMS } from '../progression/phases.data.js';
+import { formatNumber } from '../utils/numberFormatter.js';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
@@ -43,13 +44,6 @@ export const EPOCH_NAMES = [
   { epoch: "Точка Омега: Абсолютный Бог", bg: "#000000", body: "#ffd700", aura: "omega", archetype: "omega" }
 ];
 
-export const PREFIXES = [
-  "Микро", "Первичный", "Склизкий", "Шестеренчатый", "Паровой", "Чугунный", "Янтарный", "Рубиновый", "Алмазный", "Неоновый",
-  "Квантовый", "Кибер", "Изотопный", "Гамма", "Магматический", "Плазменный", "Лунный", "Солнечный", "Звездный", "Астральный",
-  "Сингулярный", "Струнный", "Темный", "Галактический", "Хроно", "Мультиверс", "Серафический", "Псионический", "Гиперпространственный",
-  "Омега", "Титанический", "Эфирный", "Фотонный", "Гравитонный", "Божественный", "Абсолютный", "Трансцендентный", "Квазаровый", "Энергетический", "Имперский"
-];
-
 export const ENTITIES = [
   "Капля", "Комочек", "Завиток", "Шлам", "Брусок", "Монолит", "Сгусток", "Самородок", "Поршень", "Бойлер",
   "Процессор", "Сервер", "Мутант", "Аномалия", "Фонтан", "Шторм", "Владыка", "Ореол", "Страж", "Титан",
@@ -85,12 +79,11 @@ export function generateEvolutions() {
   for (let i = 0; i < 20000; i++) {
     const epochIdx = Math.min(EPOCH_NAMES.length - 1, Math.floor(i / 500));
     const ep = EPOCH_NAMES[epochIdx];
-    const pfx = PREFIXES[i % PREFIXES.length];
     const ent = ENTITIES[(i * 3 + Math.floor(i / 7)) % ENTITIES.length];
     const tier = (i % 100) + 1;
-    const name = (i === 19999) 
-      ? 'Точка Омега: Абсолютный Бог Омниверса' 
-      : (i % 500 === 0 ? 'Владыка Эпохи: ' + ep.epoch : pfx + ' ' + ent + ' ' + tier);
+    const name = (i === 19999)
+      ? 'Омега'
+      : (i % 500 === 0 ? 'Владыка' : `${ent} ${tier}`);
 
     const cost = calcEvolutionCost(i);
     const mult = calcEvolutionMult(i);
@@ -105,7 +98,7 @@ export function generateEvolutions() {
       bgColor: ep.bg,
       bodyColor: ep.body,
       aura: ep.aura,
-      desc: `Форма #${i + 1} [${ep.epoch}]. Умножает силу клика и доход!`
+      desc: `Форма №${formatNumber(i + 1)} — ${name}`
     });
   }
   return list;

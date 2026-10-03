@@ -516,7 +516,7 @@ function renderPetLoop(time) {
   if (visualParticles.length > 0) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = '700 16px Comfortaa, Nunito, sans-serif';
+    ctx.font = '800 16px Nunito, sans-serif';
     ctx.lineWidth = 2.5;
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
 
