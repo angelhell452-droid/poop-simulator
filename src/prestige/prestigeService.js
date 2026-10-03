@@ -52,10 +52,15 @@ export function getPrestigeRequirement() {
   };
 }
 
+export function flushRollPack(phaseId) {
+  const id = Math.max(1, phaseId || 1);
+  return Math.max(1, Math.round(12 + id * 2 + Math.pow(id, 1.85) * 0.42));
+}
+
 export function getPrestigeRewardBreakdown() {
   const req = getPrestigeRequirement();
   const phaseId = req.echoPhase || req.phase.id;
-  const pack = 12 + phaseId * 2;
+  const pack = flushRollPack(phaseId);
 
   const scythe = KNIVES.find(k => k.type === 'Scythe' && k.owned);
   const scytheActive = !!scythe;

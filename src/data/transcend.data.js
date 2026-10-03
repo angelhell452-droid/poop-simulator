@@ -26,10 +26,10 @@ export const TRANSCEND_UPGRADES = [
     id: 'art_passive_rolls',
     key: 'passiveRolls',
     name: '🧻 Хроно-Генератор Втулок',
-    desc: '+1 Втулка каждые 12 секунд. Не засчитывается в требование Прорыва.',
+    desc: '+1 втулка каждые 3 минуты за уровень. Не засчитывается в требование Прорыва.',
     cost: 2,
     costStep: 1,
-    max: 12,
+    max: 4,
     tier: 1,
     tierName: 'Тир 1: Базовый',
     reqTranscend: 1

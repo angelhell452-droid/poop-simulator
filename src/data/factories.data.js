@@ -1,5 +1,6 @@
 import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js';
 import { calcEvolutionMult } from './evolutions.data.js';
+import { expectedAccountMult } from '../economy/metaMultipliers.js';
 
 export const FACTORIES_PER_EPOCH = 3;
 
@@ -132,7 +133,8 @@ for (let i = 0; i < FACTORIES.length; i++) {
   const arrival = epoch === 1 ? 100 : 400000 * Math.pow(1000, epoch - 2);
   const income = arrival * Math.pow(10, decade);
   const formMult = Math.max(1, calcEvolutionMult(fac.reqStage));
-  const buffStack = 5.5;
+  const expected = expectedAccountMult(epoch);
+  const cpsFactor = 9 * Math.pow(pace, 0.45);
   fac.cost = Math.max(1, Math.round(income * spec.payback * pace));
-  fac.baseCps = (income * 9) / (formMult * buffStack);
+  fac.baseCps = (income * cpsFactor) / (formMult * expected);
 }

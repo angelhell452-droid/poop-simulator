@@ -91,9 +91,9 @@ export function gameEngineTick() {
   // 4. Transcendence Artifact: Passive Toilet Rolls
   if (GAME.transcendUpgrades?.passiveRolls > 0) {
     passiveRollAccumulator += dt;
-    if (passiveRollAccumulator >= 12.0) {
+    if (passiveRollAccumulator >= 180) {
       passiveRollAccumulator = 0;
-      const pRolls = GAME.transcendUpgrades.passiveRolls;
+      const pRolls = Math.min(4, GAME.transcendUpgrades.passiveRolls || 0);
       GAME.prestigeRolls += pRolls;
       GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + pRolls;
     }

@@ -222,6 +222,9 @@ export function applySaveDataSafely(rawData) {
   TALENTS.forEach((row) => {
     if ((row.level || 0) > row.max) row.level = row.max;
   });
+  if (GAME.transcendUpgrades && (Number(GAME.transcendUpgrades.passiveRolls) || 0) > 4) {
+    GAME.transcendUpgrades.passiveRolls = 4;
+  }
   if (data.resetProgress) wipeRuntimeCatalogs();
 
   const login = loggedInUsername();

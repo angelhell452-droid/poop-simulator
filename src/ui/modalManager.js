@@ -155,7 +155,7 @@ export function updateTranscendModalRealtime() {
         </div>
         <div class="text-[10px] text-indigo-200 space-y-0.5 font-mono">
           <div>├─ 🌀 Закрытая пара эпох: <b class="text-white">+${formatNumber(t.basePlungers)}</b> вантуз</div>
-          <div>├─ 🧬 Конец эпохи: <b class="text-white">${t.stagePart > 0 ? 'да, награда x2 до потолка 2' : 'ещё не дошли до конца эпохи'}</b></div>
+          <div>├─ 🧬 Конец эпохи: <b class="text-white">${t.stagePart > 0 ? `+${formatNumber(t.stagePart)} вантуз` : 'ещё не дошли до конца эпохи'}</b></div>
           <div>├─ <span class="plunger-icon"></span> Астральный Инкубатор: <b class="${t.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(t.incubatorBonus * 100))}%</b></div>
           <div>└─ 🔮 Душа Прорыва (Талант): <b class="${t.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(t.soulBonus * 100))}%</b></div>
         </div>
@@ -167,7 +167,7 @@ export function updateTranscendModalRealtime() {
           <div class="text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
             <div>• <b>Смывы</b>: три Смыва в этой паре эпох открывают Прорыв</div>
             <div>• <b>Мост</b>: дойдите до формы чётной эпохи и наберите биомассу её пояса</div>
-            <div>• <b>Ключ</b>: Прорыв открывает следующую пару эпох. Награда — 1 или 2 вантуза</div>
+            <div>• <b>Ключ</b>: Прорыв открывает следующую пару эпох. Награда — 1 вантуз, и ещё 1 за конец эпохи. Потолок ${formatNumber(4)}</div>
           </div>
         </div>
       </div>

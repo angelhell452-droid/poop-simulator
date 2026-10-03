@@ -92,7 +92,7 @@ export function renderFlushTalents() {
     { tier: 1, title: '⭐ Тир 1: Базовый', desc: 'Сразу, ещё до первого Смыва' },
     { tier: 2, title: '⚡ Тир 2: Продвинутый', desc: 'После 1 Смыва' },
     { tier: 3, title: '🔮 Тир 3: Мастер', desc: 'После 3 Смывов' },
-    { tier: 4, title: '🌌 Тир 4: Астральный', desc: 'После 6 Смывов' }
+    { tier: 4, title: '🌌 Тир 4: Астральный', desc: 'После 8 Прорывов' }
   ];
 
   const visibleConfigs = activeFlushTier === 'all'
@@ -107,10 +107,13 @@ export function renderFlushTalents() {
     if (openTalents.length === 0) {
       if (!showedNextLock && closedTalents.length) {
         showedNextLock = true;
-        const need = Math.min(...closedTalents.map(tl => tl.reqFlushes || 0));
+        const needFlush = Math.min(...closedTalents.map(tl => tl.reqFlushes || 0));
+        const needTranscend = Math.min(...closedTalents.map(tl => tl.reqTranscend || 0));
         const lock = document.createElement('div');
         lock.className = 'p-3 rounded-2xl border border-stone-800 bg-stone-950 text-[11px] text-stone-400';
-        lock.textContent = `${tInfo.title} откроется на смыве ${formatNumber(need)}. Сейчас смывов: ${formatNumber(GAME.totalPrestiges || 0)}.`;
+        lock.textContent = needTranscend > (GAME.totalTranscend || 0)
+          ? `${tInfo.title} откроется на прорыве ${formatNumber(needTranscend)}. Сейчас прорывов: ${formatNumber(GAME.totalTranscend || 0)}.`
+          : `${tInfo.title} откроется на смыве ${formatNumber(needFlush)}. Сейчас смывов: ${formatNumber(GAME.totalPrestiges || 0)}.`;
         container.appendChild(lock);
       }
       return;

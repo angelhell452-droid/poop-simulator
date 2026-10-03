@@ -33,6 +33,24 @@ export function getRollsIncomeMult(previewPhase = 0, previewAdd = 0, atPhaseId =
   return 1 + bonus;
 }
 
+/**
+ * Gear a run is expected to have by this epoch: echo, plungers, knife and hat.
+ * Factories are tuned to it. Live gear above the knee is dampened.
+ */
+export function expectedAccountMult(phaseId) {
+  const id = Math.min(PHASE_COUNT, Math.max(1, phaseId || 1));
+  if (id <= 4) return 4 + (id - 1) * 2.5;
+  return 11.5 * Math.pow(1.14, id - 4);
+}
+
+export function dampenGearMult(raw, phaseId) {
+  const knee = expectedAccountMult(phaseId);
+  const value = Math.max(1, Number(raw) || 1);
+  if (value <= knee) return value;
+  const extra = Math.min(Math.pow(value - knee, 0.72), knee * 1.25);
+  return knee + extra;
+}
+
 /** Plunger meta. 15 plungers ~ x3.4, 100 ~ x7.4, asymptote x9. */
 export function getPlungersIncomeMult() {
   const plungers = Math.max(0, GAME.transcendPlungers || 0);

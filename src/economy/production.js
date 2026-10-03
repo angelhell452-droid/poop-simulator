@@ -5,7 +5,8 @@ import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
-import { getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet } from './metaMultipliers.js';
+import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet } from './metaMultipliers.js';
+import { getPhaseForStage } from '../progression/phases.data.js';
 
 export function getEquippedKnife() {
   if (!GAME.equippedKnife) return null;
@@ -111,8 +112,9 @@ export function getClickPower() {
   const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.06;
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
+  const gearMult = dampenGearMult(rollsMult * plungersMult * knifeClickMult * hatClickBoost, getPhaseForStage(GAME.evoStage).id);
 
-  let basePower = evo.mult * rollsMult * softRollsMult * cosmicMult * synergyMult * hyperMult * plungersMult * omniRelicMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult;
+  let basePower = evo.mult * gearMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult;
 
   const syncRate = talentLevel('quantum_mastery') * 0.004 + (SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned ? 0.02 : 0);
   if (syncRate > 0) {
@@ -199,8 +201,9 @@ export function getPassiveIncome() {
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
   const omniRelicMult = getOmniRelicMult();
+  const gearMult = dampenGearMult(rollsMult * plungersMult * knifePassiveMult, getPhaseForStage(GAME.evoStage).id);
 
-  const finalGPS = Math.max(0, Math.round(base * crystalMult * evo.mult * rollsMult * softRollsMult * cosmicMult * plungersMult * omniRelicMult * facOverdriveMult * cleanBuff * knifePassiveMult * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult * idealMult));
+  const finalGPS = Math.max(0, Math.round(base * crystalMult * evo.mult * gearMult * softRollsMult * cosmicMult * omniRelicMult * facOverdriveMult * cleanBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult * idealMult));
   if (finalGPS > (GAME.currentRunPeakGPS || 0)) {
     GAME.currentRunPeakGPS = finalGPS;
   }

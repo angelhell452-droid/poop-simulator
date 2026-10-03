@@ -57,7 +57,7 @@ export const ENTITIES = [
 ];
 
 // Cost climbs about x1000 inside one epoch.
-// The multiplier climbs x6 across epoch 1 and stays there. Later epochs add about x2 each, with no drop on the boundary.
+// Epoch 1 climbs x6. Epochs 2–4 double. From epoch 5 each epoch adds x1.25, with no drop on the boundary.
 export function calcEvolutionCost(i) {
   if (i <= 0) return 0;
   const phase = getPhaseForStage(i);
@@ -73,7 +73,9 @@ export function calcEvolutionMult(i) {
   const local = (i - (phase.formStart - 1)) / PHASE_FORMS;
   const t = Math.min(1, Math.max(0, local));
   if (phase.id <= 1) return Math.pow(6, t);
-  return 6 * Math.pow(2, (phase.id - 2) + t);
+  if (phase.id <= 4) return 6 * Math.pow(2, (phase.id - 2) + t);
+  const atEndOfFourth = 6 * Math.pow(2, 3);
+  return atEndOfFourth * Math.pow(1.25, (phase.id - 5) + t);
 }
 
 export function generateEvolutions() {

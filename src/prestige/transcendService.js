@@ -49,26 +49,27 @@ export function getTranscendRequirement() {
 export function getTranscendRewardBreakdown() {
   const req = getTranscendRequirement();
   const overshot = req.currentForm >= req.phase.formEnd;
-  const basePlungers = overshot ? 2 : 1;
+  const basePlungers = 1;
+  const epochBonus = overshot ? 1 : 0;
 
   const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');
   const soulBonus = soulTalent && soulTalent.level > 0 ? soulTalent.level * 0.08 : 0;
   const incubator = GAME.transcendUpgrades?.plungerIncubator || 0;
   const incubatorBonus = incubator * 0.08;
 
-  let totalGain = Math.round(basePlungers * (1 + soulBonus + incubatorBonus));
+  let totalGain = Math.round((basePlungers + epochBonus) * (1 + soulBonus + incubatorBonus));
   const astralTalent = TALENTS.find(t => t.id === 'astral_splendor');
   if (astralTalent && astralTalent.level > 0) {
     const doubleChance = Math.min(0.25, astralTalent.level * 0.015);
     if (Math.random() < doubleChance) totalGain *= 2;
   }
-  totalGain = Math.max(1, Math.min(2, totalGain));
+  totalGain = Math.max(1, Math.min(4, totalGain));
 
   return {
     ...req,
     flushPart: basePlungers,
     rollsPart: 0,
-    stagePart: overshot ? 1 : 0,
+    stagePart: epochBonus,
     basePlungers,
     soulBonus,
     incubatorBonus,
