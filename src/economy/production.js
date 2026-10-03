@@ -26,6 +26,15 @@ function talentLevel(id) {
   return TALENTS.find(t => t.id === id)?.level || 0;
 }
 
+/** Click multiplier from Turbo. A caught star doubles it for a short timer that clicks do not refresh. */
+export function getTurboClickMult() {
+  if ((GAME.turboRushTime || 0) <= 0) return 1;
+  const turboBase = GAME.archetype === 'combo' ? 6 : 4;
+  const turboBonus = 1 + talentLevel('combo_master') * 0.15;
+  const star = (GAME.turboStarMultTime || 0) > 0 ? 2 : 1;
+  return turboBase * turboBonus * star;
+}
+
 function softCap(raw, knee, power) {
   return raw > knee ? (knee + Math.pow(raw - knee, power)) : raw;
 }
@@ -74,9 +83,7 @@ export function getClickPower() {
   const plungersMult = getPlungersIncomeMult();
   const omniRelicMult = getOmniRelicMult();
 
-  const turboBase = GAME.archetype === 'combo' ? 6 : 4;
-  const turboBonus = 1 + talentLevel('combo_master') * 0.15;
-  const turboMult = GAME.turboRushTime > 0 ? (turboBase * turboBonus) : 1;
+  const turboMult = getTurboClickMult();
 
   const knife = getEquippedKnife();
   const knifeClickMult = getKnifeClickMult(knife);
@@ -227,21 +234,22 @@ export function getActiveBuffsList() {
 
   // 2. Турбо-Ярость (Frenzy)
   if ((GAME.turboRushTime || 0) > 0) {
-    const turboBase = GAME.archetype === 'combo' ? 6 : 4;
-    const turboTalent = TALENTS.find(t => t.id === 'combo_master');
-    const turboBonus = 1 + (turboTalent ? turboTalent.level * 0.15 : 0);
-    const mult = Math.round(turboBase * turboBonus);
+    const mult = getTurboClickMult();
+    const starLeft = GAME.turboStarMultTime || 0;
+    const starNote = starLeft > 0 ? ` · звезда ${formatNumber(Math.ceil(starLeft))}с` : '';
     buffs.push({
       id: 'turbo_rush',
       icon: '⚡',
       name: 'Турбо-Ярость (Frenzy Rush)',
-      short: `x${formatNumber(mult)} (${Math.ceil(GAME.turboRushTime)}с)`,
+      short: `x${formatNumber(mult)}${starNote}`,
       bonusText: `x${formatNumber(mult)} к силе клика`,
       badgeColor: 'bg-red-950/90 border-red-500/80 text-red-200 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]',
-      desc: 'Временный ураганный режим! Сила клика колоссально умножается во время ярости.',
-      progress: `Осталось действия: ${Math.ceil(GAME.turboRushTime)} сек. Базовый множитель: x${formatNumber(turboBase)}.`,
+      desc: 'Временный ураганный режим! Сила клика колоссально умножается во время ярости. Звезда на время удваивает этот множитель.',
+      progress: starLeft > 0
+        ? `Звезда удваивает турбо ещё ${formatNumber(Math.ceil(starLeft))} сек. Клики это время не продлевают.`
+        : `Турбо держится, пока идут клики. База: x${formatNumber(GAME.archetype === 'combo' ? 6 : 4)}.`,
       source: 'Быстрые клики (Комбо) / Золотой метеорит',
-      tip: 'Кликайте чаще чтобы продлить ярость, или ловите золотые метеориты!'
+      tip: 'Кликайте, чтобы не дать турбо погаснуть. Звезда на 12 секунд удваивает его множитель.'
     });
   }
 

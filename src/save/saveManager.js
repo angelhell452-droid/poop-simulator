@@ -17,6 +17,7 @@ export function buildSavePayload() {
   return {
     saveVersion: GAME.saveVersion || 5,
     saveTimestamp: Date.now(),
+    adminSeq: Number(GAME.cloudAdminSeq) || 0,
     game: { ...GAME, lastActiveTime: Date.now() },
     feedCount,
     washCount,

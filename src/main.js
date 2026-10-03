@@ -13,6 +13,7 @@ import { initKnivesIndexListeners } from './ui/knivesIndexView.js';
 import { initPetCanvas, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js';
 import { initModals } from './ui/modalManager.js';
 import { initAuthModal } from './ui/authModalView.js';
+import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js';
 import { initLeaderboardView } from './ui/leaderboardView.js';
 import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js';
@@ -128,6 +129,7 @@ export async function bootstrap() {
   initAutocareListeners();
   initAutomationToggleListeners();
   initAuthModal();
+  initAdminPanel();
   initLeaderboardView();
   initPatchNotesListeners();
   initSmartAssistantListeners();
@@ -167,6 +169,7 @@ export async function bootstrap() {
 
   // 2. Load Save (Local + Cloud D1)
   await loadFromCloudDatabaseOrLocal();
+  await refreshAdminAccess();
 
   // 3. Apply Saved Game Mode
   applyGameModeUI();

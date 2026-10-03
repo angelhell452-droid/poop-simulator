@@ -221,7 +221,7 @@ export function renderCharacterInventory() {
   const invKnivesCount = document.getElementById('invKnivesCount');
   if (invKnivesCount) invKnivesCount.textContent = `${unlockedKnivesCount}/${KNIVES.length}`;
 
-  const allHats = SHOP_ITEMS.filter(i => i.type === 'hat');
+  const allHats = SHOP_ITEMS.filter(i => i.type === 'hat' && (!i.retired || i.owned || GAME.equippedHat === i.id));
   const ownedHatsCount = allHats.filter(i => i.owned).length;
   const invHatsCount = document.getElementById('invHatsCount');
   if (invHatsCount) invHatsCount.textContent = `${ownedHatsCount}/${allHats.length}`;
@@ -491,7 +491,7 @@ function renderHatsGrid() {
   if (!container) return;
   container.innerHTML = '';
 
-  const allHats = SHOP_ITEMS.filter(i => i.type === 'hat');
+  const allHats = SHOP_ITEMS.filter(i => i.type === 'hat' && (!i.retired || i.owned || GAME.equippedHat === i.id));
   allHats.forEach(hat => {
     const isEquipped = GAME.equippedHat === hat.id;
     const isInfoOpen = activeInfoCardId === hat.id;

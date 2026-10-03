@@ -1,7 +1,7 @@
 import { GAME } from '../core/state.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
-import { getPassiveIncome, getClickPower, getActiveBuffsList } from '../economy/production.js';
+import { getPassiveIncome, getClickPower, getActiveBuffsList, getTurboClickMult } from '../economy/production.js';
 import { getAffordableEvoInfo } from '../economy/costs.js';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
 import { liveCps } from '../core/gameLoop.js';
@@ -138,7 +138,7 @@ export function updateHUD() {
   if (footClick) {
     const pwr = getClickPower();
     if (GAME.turboRushTime > 0) {
-      footClick.innerHTML = `${formatNumber(pwr)} <span class="text-[10px] text-yellow-300 font-normal animate-pulse">(🔥 ТУРБО x${formatNumber(GAME.archetype === 'combo' ? 6 : 4)})</span>`;
+      footClick.innerHTML = `${formatNumber(pwr)} <span class="text-[10px] text-yellow-300 font-normal animate-pulse">(🔥 ТУРБО x${formatNumber(getTurboClickMult())})</span>`;
     } else {
       footClick.textContent = formatNumber(pwr);
     }
@@ -162,13 +162,16 @@ export function updateHUD() {
   const comboIcon = document.getElementById('comboFlameIcon');
 
   if (GAME.turboRushTime > 0) {
+    const turboShown = getTurboClickMult();
+    const starLeft = GAME.turboStarMultTime || 0;
+    const starNote = starLeft > 0 ? ` · звезда ${formatNumber(Math.ceil(starLeft))}с` : ` (${formatNumber(Math.ceil(GAME.turboRushTime))}с)`;
     if (rushTimerEl) {
-      rushTimerEl.textContent = `🔥 x${formatNumber(GAME.archetype === 'combo' ? 6 : 4)} (${Math.ceil(GAME.turboRushTime)}с)`;
+      rushTimerEl.textContent = `🔥 x${formatNumber(turboShown)}${starNote}`;
       rushTimerEl.classList.remove('opacity-0', 'pointer-events-none');
       rushTimerEl.classList.add('opacity-100');
     }
-    if (comboLbl) comboLbl.textContent = `🔥 ТУРБО x${formatNumber(GAME.archetype === 'combo' ? 6 : 4)}!`;
-    if (comboIcon) comboIcon.textContent = '🔥';
+    if (comboLbl) comboLbl.textContent = `🔥 ТУРБО x${formatNumber(turboShown)}!`;
+    if (comboIcon) comboIcon.textContent = starLeft > 0 ? '⭐' : '🔥';
   } else {
     if (rushTimerEl) {
       rushTimerEl.classList.remove('opacity-100');

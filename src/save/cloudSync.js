@@ -14,6 +14,22 @@ export async function hashPassword(password) {
   return arr.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+export function authHeaders(extra = {}) {
+  const headers = { 'Content-Type': 'application/json', ...extra };
+  const token = getStoredAccount()?.sessionToken;
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
+async function cloudFetch(path, options = {}) {
+  const opts = { ...options, headers: authHeaders(options.headers || {}) };
+  let res = await fetch(path, opts);
+  if (!res.ok && res.status === 404 && path.startsWith(CLOUD_SAVE_ENDPOINT)) {
+    res = await fetch(path.replace(CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT), opts);
+  }
+  return res;
+}
+
 export function getStoredAccount() {
   try {
     const raw = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -54,22 +70,21 @@ export async function syncToCloudDatabase() {
     biomass: GAME.biomass,
     sparkles: GAME.sparkles,
     prestige_currency: GAME.prestigeRolls,
+    adminSeq: Number(GAME.cloudAdminSeq) || 0,
     saveData: payload
   });
 
   try {
-    let res = await fetch(CLOUD_SAVE_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: bodyStr
-    });
+    const res = await cloudFetch(CLOUD_SAVE_ENDPOINT, { method: 'POST', body: bodyStr });
 
-    if (!res.ok && res.status === 404) {
-      res = await fetch(LEGACY_SAVE_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: bodyStr
-      });
+    if (res.status === 409) {
+      const data = await res.json().catch(() => null);
+      if (data?.saveData) {
+        applySaveDataSafely(data.saveData);
+        saveLocal();
+      }
+      if (statusIndicator) statusIndicator.textContent = "D1: Выдача";
+      return;
     }
 
     if (res.ok) {
@@ -105,19 +120,10 @@ export async function registerAccount(username, password) {
       saveData: payload
     };
 
-    let res = await fetch(`${CLOUD_SAVE_ENDPOINT}?action=register`, {
+    const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bodyObj)
     });
-
-    if (!res.ok && res.status === 404) {
-      res = await fetch(`${LEGACY_SAVE_ENDPOINT}?action=register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bodyObj)
-      });
-    }
 
     const data = await res.json();
     if (data.success) {
@@ -126,7 +132,8 @@ export async function registerAccount(username, password) {
       saveStoredAccount({
         username: data.username,
         playerId: data.playerId,
-        passwordHash
+        passwordHash,
+        sessionToken: data.sessionToken || ''
       });
       saveLocal();
       return { success: true, username: data.username, playerId: data.playerId };
@@ -154,19 +161,10 @@ export async function loginAccount(username, password) {
       passwordHash
     };
 
-    let res = await fetch(`${CLOUD_SAVE_ENDPOINT}?action=login`, {
+    const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bodyObj)
     });
-
-    if (!res.ok && res.status === 404) {
-      res = await fetch(`${LEGACY_SAVE_ENDPOINT}?action=login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bodyObj)
-      });
-    }
 
     const data = await res.json();
     if (data.success) {
@@ -180,7 +178,8 @@ export async function loginAccount(username, password) {
       saveStoredAccount({
         username: data.username,
         playerId: data.playerId,
-        passwordHash
+        passwordHash,
+        sessionToken: data.sessionToken || ''
       });
       saveLocal();
 
@@ -214,10 +213,7 @@ export async function loadFromCloudDatabaseOrLocal() {
   if (!GAME.playerId) return;
 
   try {
-    let res = await fetch(`${CLOUD_SAVE_ENDPOINT}?playerId=${encodeURIComponent(GAME.playerId)}`);
-    if (!res.ok && res.status === 404) {
-      res = await fetch(`${LEGACY_SAVE_ENDPOINT}?playerId=${encodeURIComponent(GAME.playerId)}`);
-    }
+    const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?playerId=${encodeURIComponent(GAME.playerId)}`);
 
     if (res.ok) {
       const data = await res.json();
@@ -233,10 +229,32 @@ export async function loadFromCloudDatabaseOrLocal() {
   }
 }
 
+export async function fetchAdminSession() {
+  const token = getStoredAccount()?.sessionToken;
+  if (!token) return { role: null };
+  try {
+    const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=admin_session`);
+    if (!res.ok) return { role: null };
+    return await res.json();
+  } catch (err) {
+    return { role: null };
+  }
+}
+
+export async function adminRequest(action, options = {}) {
+  const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=${encodeURIComponent(action)}${options.query || ''}`, {
+    method: options.method || 'GET',
+    body: options.body ? JSON.stringify(options.body) : undefined
+  });
+  const data = await res.json().catch(() => ({ success: false, error: 'Пустой ответ сервера' }));
+  if (!res.ok && !data.error) data.error = 'Запрос отклонён';
+  return data;
+}
+
 export async function wipePlayerData() {
   try {
     if (GAME.playerId) {
-      await fetch(`${CLOUD_SAVE_ENDPOINT}?action=wipe&playerId=${encodeURIComponent(GAME.playerId)}`, { method: 'POST' });
+      await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=wipe&playerId=${encodeURIComponent(GAME.playerId)}`, { method: 'POST' });
     }
   } catch (e) { }
   saveStoredAccount(null);

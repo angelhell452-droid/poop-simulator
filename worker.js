@@ -1,8 +1,9 @@
 // Cloudflare Worker with Static Assets & D1 Database
+import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator } from "./workerAdmin.js";
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Content-Type": "application/json",
 };
@@ -42,6 +43,7 @@ async function ensureSchema(db) {
     await db.prepare(`
       CREATE INDEX IF NOT EXISTS idx_user_accounts_username ON user_accounts(username);
     `).run();
+    await ensureAdminSchema(db);
   } catch (err) {
     console.warn("Schema initialization notice:", err);
   }
@@ -68,7 +70,10 @@ async function handleCloudSave(req, env) {
     const action = url.searchParams.get("action");
     const playerIdParam = url.searchParams.get("playerId");
 
-    // Handle wiping single player progress from cloud database
+    const adminResponse = await handleAdmin(req, env, headers, url);
+    if (adminResponse) return adminResponse;
+
+    // Own cloud wipe, or the creator wiping one account. A public playerId is not enough.
     if (action === "wipe" || action === "delete") {
       let targetId = playerIdParam;
       if (!targetId && req.method === "POST") {
@@ -77,21 +82,25 @@ async function handleCloudSave(req, env) {
           targetId = body.playerId;
         } catch (e) { }
       }
-      if (targetId) {
+      const actor = await sessionUser(env.DB, req);
+      if (!actor) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
+      }
+      if (targetId && (targetId === actor.playerId || isCreator(env, actor.username))) {
         await env.DB.prepare(`DELETE FROM player_saves WHERE player_id = ?`).bind(targetId).run();
         return new Response(JSON.stringify({ success: true, wiped: targetId }), { status: 200, headers });
       }
-      return new Response(JSON.stringify({ error: "Missing playerId" }), { status: 400, headers });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers });
     }
 
-    // Handle wiping ALL player saves from cloud database (admin / season reset)
+    // Full season reset belongs to the creator session, not to a key in the source.
     if (action === "wipe_all") {
-      const adminKey = url.searchParams.get("key");
-      if (adminKey === "poop2026_reset" || adminKey === "wipe") {
+      const actor = await sessionUser(env.DB, req);
+      if (actor && isCreator(env, actor.username)) {
         await env.DB.prepare(`DELETE FROM player_saves`).run();
         return new Response(JSON.stringify({ success: true, message: "All player saves wiped" }), { status: 200, headers });
       }
-      return new Response(JSON.stringify({ error: "Unauthorized key" }), { status: 403, headers });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers });
     }
 
     if (req.method === "POST") {
@@ -151,10 +160,12 @@ async function handleCloudSave(req, env) {
           `).bind(finalPlayerId, username, stage, biomass, sparkles, prestigeCurrency, jsonStr).run();
         }
 
+        const sessionToken = await issueSession(env.DB, username);
         return new Response(JSON.stringify({
           success: true,
           username,
           playerId: finalPlayerId,
+          sessionToken,
           message: "Аккаунт успешно создан!"
         }), { status: 200, headers });
       }
@@ -197,11 +208,13 @@ async function handleCloudSave(req, env) {
           }
         }
 
+        const sessionToken = await issueSession(env.DB, account.username);
         return new Response(JSON.stringify({
           success: true,
           username: account.username,
           playerId: account.player_id,
           saveData: parsedSave,
+          sessionToken,
           message: "Вход выполнен успешно!"
         }), { status: 200, headers });
       }
@@ -215,6 +228,23 @@ async function handleCloudSave(req, env) {
         );
       }
 
+      const owner = await env.DB.prepare(`SELECT username FROM user_accounts WHERE player_id = ? LIMIT 1`).bind(playerId).first();
+      if (owner) {
+        const actor = await sessionUser(env.DB, req);
+        if (!actor || actor.playerId !== playerId) {
+          return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
+        }
+      }
+
+      const incomingSeq = Number(body.adminSeq ?? saveData?.adminSeq ?? saveData?.game?.cloudAdminSeq) || 0;
+      const stale = await rejectStaleSave(env.DB, playerId, incomingSeq, headers);
+      if (stale.response) return stale.response;
+      const nextSeq = stale.current || 0;
+      if (saveData && typeof saveData === "object") {
+        saveData.adminSeq = nextSeq;
+        if (saveData.game && typeof saveData.game === "object") saveData.game.cloudAdminSeq = nextSeq;
+      }
+
       const stage = Number(saveData?.game?.evoStage !== undefined ? saveData.game.evoStage + 1 : saveData?.game?.stage) || 1;
       const biomass = Number(saveData?.game?.allTimeBiomass ?? saveData?.game?.biomass) || 0;
       const sparkles = Number(saveData?.game?.sparkles) || 0;
@@ -225,8 +255,8 @@ async function handleCloudSave(req, env) {
       const jsonStr = typeof saveData === "string" ? saveData : JSON.stringify(saveData);
 
       await env.DB.prepare(`
-        INSERT INTO player_saves (player_id, player_name, stage, biomass, sparkles, prestige_currency, save_data, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        INSERT INTO player_saves (player_id, player_name, stage, biomass, sparkles, prestige_currency, save_data, admin_seq, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
         ON CONFLICT(player_id) DO UPDATE SET
           player_name = excluded.player_name,
           stage = excluded.stage,
@@ -234,8 +264,9 @@ async function handleCloudSave(req, env) {
           sparkles = excluded.sparkles,
           prestige_currency = excluded.prestige_currency,
           save_data = excluded.save_data,
+          admin_seq = excluded.admin_seq,
           updated_at = datetime('now')
-      `).bind(playerId, name, stage, biomass, sparkles, prestigeCurrency, jsonStr).run();
+      `).bind(playerId, name, stage, biomass, sparkles, prestigeCurrency, jsonStr, nextSeq).run();
 
       return new Response(
         JSON.stringify({

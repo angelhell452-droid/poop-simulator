@@ -5,13 +5,14 @@ import { drawKnifeVectorOnCanvas } from '../utils/knifeVectorRenderer.js';
 
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
-import { getClickPower, getPassiveIncome } from '../economy/production.js';
+import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { updateHUD } from './hudView.js';
 import { saveLocal } from '../save/saveManager.js';
 import { requestCloudSync } from '../save/cloudSync.js';
 import { events } from '../core/events.js';
+import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js';
 
 let canvas = null;
 let ctx = null;
@@ -42,6 +43,31 @@ let showerUntil = 0;
 let showerNextSpawn = 0;
 const SHOWER_CHANCE = 0.18;
 const SHOWER_MS = 12000;
+
+/**
+ * Sparkle purse for a meteor. The frontier epoch sets the size: the open pair
+ * after a flush still counts, and the current epoch can only raise it.
+ * Walking through that epoch adds up to half again. Flushes add a soft bonus.
+ */
+export function meteorSparkleProfile(evoStage, transcends, flushes) {
+  const phase = getPhaseForStage(evoStage || 0);
+  const unlockedId = getPhaseForForm(maxUnlockedForm(transcends || 0)).id;
+  const phaseId = Math.max(phase.id, unlockedId);
+  const span = Math.max(1, phase.formEnd - phase.formStart);
+  const local = Math.min(1, Math.max(0, ((evoStage || 0) + 1 - phase.formStart) / span));
+  const purse = 1800 * Math.pow(1.075, phaseId - 1);
+  const localMult = 1 + local * 0.5;
+  const flushBonus = 1 + ((flushes || 0) / ((flushes || 0) + 20)) * 0.35;
+  return { phaseId, purse, localMult, flushBonus };
+}
+
+function meteorTalentSparkle() {
+  const hunter = TALENTS.find(t => t.id === 'meteor_hunter');
+  const luck = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
+  const storm = GAME.transcendUpgrades?.meteorStorm || 0;
+  const stacked = (hunter ? hunter.level : 0) * 0.06 + luck * 0.03 + storm * 0.05;
+  return 1 + Math.min(1.2, stacked);
+}
 function scheduleNextMeteor(extraMs = 0) {
   const hunter = TALENTS.find(t => t.id === 'meteor_hunter');
   const hunterScale = Math.pow(0.92, hunter ? hunter.level : 0);
@@ -301,7 +327,12 @@ function renderPetLoop(time) {
     ctx.fill();
   }
 
-  if (GAME.turboRushTime > 0) {
+  if ((GAME.turboStarMultTime || 0) > 0) {
+    ctx.fillStyle = 'rgba(250, 204, 21, 0.5)';
+    ctx.beginPath();
+    ctx.arc(0, -10, 96 + Math.sin(time * 0.03) * 10, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (GAME.turboRushTime > 0) {
     ctx.fillStyle = 'rgba(245, 158, 11, 0.4)';
     ctx.beginPath();
     ctx.arc(0, -10, 85 + Math.sin(time * 0.02) * 12, 0, Math.PI * 2);
@@ -540,8 +571,12 @@ export function catchGoldenMeteor() {
   const roll = Math.random();
   let label = '';
   if (roll < 0.35) {
-    GAME.turboRushTime = 8;
-    label = '⚡ УЛЬТРА-ЛИХОРАДКА: Турбо 8с!';
+    GAME.turboStarMultTime = 12;
+    if ((GAME.turboRushTime || 0) <= 0) {
+      GAME.comboHeat = 100;
+      GAME.turboRushTime = 12;
+    }
+    label = `⚡ ЗВЕЗДА: Турбо x${formatNumber(getTurboClickMult())} на 12с!`;
   } else if (roll < 0.70) {
     const burst = Math.max(2500 * getClickPower(), getPassiveIncome() * 1200) * lootMult;
     GAME.biomass += burst;
@@ -549,10 +584,9 @@ export function catchGoldenMeteor() {
     GAME.cycleBiomass += burst;
     label = `💰 ЗОЛОТОЙ ВЗРЫВ: +${formatNumber(burst)} 💨!`;
   } else if (roll < 0.90) {
-    const stageMultiplier = 1 + Math.min(20, (GAME.evoStage || 0) * 0.15);
-    const prestigeMultiplier = 1 + Math.min(10, (GAME.totalPrestiges || 0) * 0.25) + Math.min(20, (GAME.totalTranscend || 0) * 1.5);
-    const baseSparkles = (150 + Math.random() * 200) * stageMultiplier * prestigeMultiplier * lootMult;
-    const spGain = Math.max(100, Math.min(5000000, Math.round(Number.isFinite(baseSparkles) ? baseSparkles : 500)));
+    const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
+    const raw = profile.purse * (0.10 + Math.random() * 0.08) * profile.localMult * profile.flushBonus * lootMult;
+    const spGain = Math.max(20, Math.round(Math.min(profile.purse * 0.45, raw)));
     GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
     label = `✨ ЗВЕЗДНЫЙ ДОЖДЬ: +${formatNumber(spGain)} Блестяшек!`;
   } else {
@@ -653,7 +687,8 @@ function catchShowerMeteor(index) {
   if (!showerMeteors[index]) return;
   showerMeteors.splice(index, 1);
   GAME.meteorsCaught = (GAME.meteorsCaught || 0) + 1;
-  const sparkGain = Math.max(8, Math.round(18 + Math.random() * 36));
+  const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
+  const sparkGain = Math.max(8, Math.round(profile.purse * (0.012 + Math.random() * 0.010) * profile.localMult * profile.flushBonus * meteorTalentSparkle()));
   GAME.sparkles = (Number(GAME.sparkles) || 0) + sparkGain;
   addVisualParticle(`⭐ +${formatNumber(sparkGain)} ✨`, '#fde68a', 1.05);
   checkAchievements();

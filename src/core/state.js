@@ -58,6 +58,7 @@ export function getDefaultGameState() {
 
     comboHeat: 0,
     turboRushTime: 0,
+    turboStarMultTime: 0,
     turboCount: 0,
     meteorsCaught: 0,
     currentRunPeakGPS: 0,
@@ -65,6 +66,7 @@ export function getDefaultGameState() {
 
     lastSaveTime: Date.now(),
     lastActiveTime: Date.now(),
+    cloudAdminSeq: 0,
 
     autoBuyerEnabled: true,
     autoBuyerMode: 'latest',

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.22 PRO</title>
+  <title>Poop Simulator v4.9.24 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.22 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.24 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -106,6 +106,11 @@
         <span id="cloudStatusText" class="truncate font-mono">D1: OK</span>
       </div>
 
+      <button id="btnAdminPanel"
+        class="hidden bg-gradient-to-r from-rose-700 via-red-700 to-orange-700 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-rose-300 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
+        title="Админка создателя">
+        <span>🛡️</span> <span class="hidden sm:inline">Админ</span>
+      </button>
       <button id="btnAccountModal"
         class="bg-stone-900 hover:bg-stone-800 text-amber-200 px-2 sm:px-2.5 py-1 rounded-xl border border-amber-600/70 text-xs font-bold flex items-center gap-1.5 shadow jelly-btn"
         title="Облачный аккаунт и база данных Cloudflare D1">
@@ -800,6 +805,75 @@
     </aside>
   </main>
 
+  <div id="adminModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-stone-900 text-stone-100 rounded-3xl border-2 border-rose-500/70 max-w-lg w-full p-5 relative shadow-2xl max-h-[90vh] overflow-y-auto">
+      <button id="btnAdminClose" class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-2xl font-bold">&times;</button>
+      <div class="font-game text-lg text-rose-200 mb-1">Админка · <span id="adminRoleLabel">Админ</span></div>
+      <p class="text-[11px] text-stone-400 mb-3">Выдача пишется в облачное сохранение. Чужой игрок получит её при следующей синхронизации, своё — сразу.</p>
+      <form id="adminGrantForm" class="space-y-2 text-[11px]">
+        <label class="block">Логин игрока
+          <input id="adminTarget" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-sm" maxlength="32" autocomplete="off">
+          <div id="adminSuggest" class="mt-1"></div>
+        </label>
+        <div class="grid grid-cols-2 gap-2">
+          <label>Биомасса +<input id="adminBiomass" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+          <label>Блестяшки +<input id="adminSparkles" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+          <label>Втулки +<input id="adminRolls" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+          <label>Вантузы +<input id="adminPlungers" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+          <label>Форма #<input id="adminForm" type="number" min="1" max="20000" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+          <label>Смывы +<input id="adminFlushes" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+          <label>Прорывы +<input id="adminTranscends" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+          <label>Завод id<input id="adminFactoryId" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5" placeholder="fly_squad"></label>
+          <label>Завод штук<input id="adminFactoryCount" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+          <label>Талант id<input id="adminTalentId" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5" placeholder="soft_rolls"></label>
+          <label>Талант уровень<input id="adminTalentLevel" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+          <label>Нож id<input id="adminKnifeId" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5" placeholder="knife_"></label>
+          <label>Предмет id<input id="adminItemId" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5" placeholder="hat_cap или upg_"></label>
+          <label>Реликвия бутика id<input id="adminBoutiqueId" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5" placeholder="crystal_factory"></label>
+          <label>Уровень бутика<input id="adminBoutiqueLevel" type="number" min="0" max="20" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+        </div>
+        <label class="flex items-center gap-2"><input id="adminEquipKnife" type="checkbox"> Надеть выданный нож</label>
+        <label class="flex items-center gap-2"><input id="adminEquipHat" type="checkbox"> Надеть выданную шапку</label>
+        <div class="grid grid-cols-2 gap-2">
+          <label>Реликвия прорыва
+            <select id="adminRelicKey" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5">
+              <option value="">—</option>
+              <option value="cosmicSynergy">Космическая синергия</option>
+              <option value="passiveRolls">Пассивные втулки</option>
+              <option value="omniMult">Омни</option>
+              <option value="afkCap">AFK</option>
+              <option value="knifeForge">Кузница</option>
+              <option value="factoryOverdrive">Овердрайв заводов</option>
+              <option value="plungerIncubator">Инкубатор</option>
+              <option value="meteorStorm">Буря</option>
+              <option value="evoBlessing">Благословение</option>
+              <option value="autoBuyer">Автопокупка</option>
+              <option value="autoEvolution">Автоэволюция</option>
+              <option value="singularityRift">Врата</option>
+            </select>
+          </label>
+          <label>Уровень реликвии<input id="adminRelicLevel" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+        </div>
+        <label class="flex items-center gap-2"><input id="adminRelicOn" type="checkbox"> Включить флаговую реликвию</label>
+        <button type="submit" class="w-full py-2 rounded-xl bg-gradient-to-r from-rose-600 to-orange-500 text-white font-game text-sm">Выдать</button>
+      </form>
+      <div id="adminStatus" class="mt-2 text-[11px] text-stone-400"></div>
+      <div id="adminCreatorBox" class="hidden mt-4 border-t border-stone-800 pt-3">
+        <div class="font-game text-xs text-amber-200 mb-1">Админы</div>
+        <p class="text-[10px] text-stone-500 mb-2">Только создатель. Логин берётся из переменной CREATOR_USERNAME в Cloudflare, не из кода игры. Админ может выдавать, но не может назначить другого админа.</p>
+        <div class="flex gap-2">
+          <input id="adminNewName" class="flex-1 bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-sm" maxlength="32" placeholder="логин аккаунта">
+          <button id="btnAdminAdd" type="button" class="px-3 rounded-xl bg-amber-500 text-stone-950 font-bold text-xs">Добавить</button>
+        </div>
+        <div id="adminList" class="mt-2 text-[11px]"></div>
+      </div>
+      <div class="mt-3 text-[10px] text-stone-500">
+        <div class="font-game text-stone-400 mb-1">Журнал</div>
+        <div id="adminAudit" class="space-y-0.5"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- AUTHENTICATION & LOGIN MODAL -->
   <div id="authModal"
     class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
@@ -1218,7 +1292,7 @@
         <h3 class="font-game text-xl sm:text-2xl text-yellow-300 tracking-wide">ОМНИВЕРС ЭНЦИКЛОПЕДИЯ</h3>
       </div>
       <p class="text-[11px] text-stone-300 max-w-xl mx-auto mb-2">
-        Полный справочник вселенной: 200 ножей, 120 заводов (по три на эпоху), 12 головных уборов и постоянные перки!
+        Полный справочник вселенной: 200 ножей, 120 заводов (по три на эпоху), 7 шапок до потолка x8 и постоянные перки!
       </p>
 
       <!-- Category Tabs (Ножи, Заводы, Шапки, Перки) -->
@@ -1595,11 +1669,11 @@
             Время от времени по экрану пролетает золотая звезда. Нажми на неё, пока она не ушла. Один клик выбирает одну награду.
           </p>
           <ul class="list-disc list-inside text-stone-300 mt-2 space-y-0.5 text-[11px]">
-            <li>Чаще всего: турбо на 8 секунд или большой всплеск биомассы.</li>
+            <li>Чаще всего: турбо x2 на 12 секунд или большой всплеск биомассы. Клики это усиление не продлевают.</li>
             <li>Реже: пачка блестяшек.</li>
             <li>Реже всего: втулки судьбы.</li>
             <li>Охотник за метеоритами, радар и буря усиливают награду и зовут звезду чаще.</li>
-            <li>Примерно каждая шестая звезда открывает звёздный рой на 12 секунд: мелкие звёзды тоже ловятся, каждая даёт блестяшки.</li>
+            <li>Примерно каждая шестая звезда открывает звёздный рой на 12 секунд. Мелкие звёзды тоже ловятся: пачка блестяшек растёт с эпохой и с тем, как далеко уже зашёл забег.</li>
           </ul>
         </div>
 
@@ -1626,7 +1700,7 @@
             <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
               <b class="text-yellow-400">🎯 Зачем нужна:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
-                <li>Бутик аксессуаров: 14 шапок (со скрытыми бонусами к клику)</li>
+                <li>Бутик: шапки до короны. Потолок силы клика от шапки — x8</li>
                 <li>Заточка ножей StatTrak™ звездами (★ Lv.1 - Lv.10)</li>
                 <li>Покупка элитных перков бесконечного дохода</li>
               </ul>
@@ -1714,8 +1788,8 @@
           <div class="mt-2 bg-stone-900/80 p-2 rounded-xl border border-stone-700 text-[11px] space-y-1">
             <div><b class="text-cyan-300">⭐ Редкости:</b> Армейские ➔ Запрещенные ➔ Засекреченные ➔ Тайные (Covert) ➔
               Радужные (Rainbow) ➔ Титановые ➔ Небесные (Celestial) ➔ Божественные (Godly Omega)!</div>
-            <div><b class="text-yellow-300">⭐ Фазы кейсов:</b> Кейсы открываются поэтапно: ранние стоят втулки,
-              эндгейм-кейсы требуют нескольких Прорывов и Астральных Вантузов.</div>
+            <div><b class="text-yellow-300">⭐ Фазы кейсов:</b> Первый кейс стоит несколько Смывов во втулках,
+              каждый следующий примерно в 4 раза дороже. Поздние кейсы требуют Прорывов и Астральных Вантузов.</div>
             <div><b class="text-orange-400">⭐ StatTrak™:</b> Каждый клик экипированным ножом навсегда увеличивает
               счётчик его фрагов!</div>
           </div>
@@ -2067,3 +2141,4 @@
 
 </html>
 </html>
+

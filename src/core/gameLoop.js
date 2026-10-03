@@ -103,6 +103,10 @@ export function gameEngineTick() {
   const timeSinceLastClick = Date.now() - (GAME.lastClickTimestamp || 0);
   const isActivelyClicking = timeSinceLastClick < 800 || (liveCps > 0);
 
+  if ((GAME.turboStarMultTime || 0) > 0) {
+    GAME.turboStarMultTime = Math.max(0, GAME.turboStarMultTime - dt);
+  }
+
   if (GAME.turboRushTime > 0) {
     if (!isActivelyClicking) {
       GAME.turboRushTime = Math.max(0, GAME.turboRushTime - dt);

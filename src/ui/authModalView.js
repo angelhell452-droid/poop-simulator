@@ -7,6 +7,7 @@ import { renderShop } from './shopView.js';
 import { renderAchievements } from './achievementsView.js';
 import { renderEvoChronicles } from './evoChroniclesView.js';
 import { renderCasesSystem } from './casesView.js';
+import { refreshAdminAccess } from './adminView.js';
 
 export function openAuthModal(defaultTab = 'login') {
   const modal = document.getElementById('authModal');
@@ -102,6 +103,7 @@ export function updateAccountHeaderUI() {
 
 function refreshAllGameUI() {
   updateAccountHeaderUI();
+  refreshAdminAccess();
   updateHUD();
   renderFactories();
   renderTalents();
@@ -198,6 +200,7 @@ export function initAuthModal() {
       if (confirm('Вы уверены, что хотите выйти из аккаунта? Текущие данные сохранены в облаке.')) {
         logoutAccount();
         updateAccountHeaderUI();
+        refreshAdminAccess();
         openAuthModal('login');
       }
     } else {
