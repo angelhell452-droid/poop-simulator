@@ -11,7 +11,7 @@ export function getDefaultGameState() {
   let playerName = (typeof localStorage !== 'undefined' ? localStorage.getItem('PoopSim_PlayerName') : null) || ('Игрок #' + playerId.substring(playerId.length - 4));
 
   return {
-    saveVersion: 3,
+    saveVersion: 4,
     playerId: playerId,
     playerName: playerName,
 
@@ -25,6 +25,8 @@ export function getDefaultGameState() {
     totalPrestiges: 0,
     transcendPlungers: 0,
     totalTranscend: 0,
+    phaseEcho: {},
+    flushesThisCycle: 0,
 
     evoStage: 0,
     archetype: 'balanced', // 'balanced' | 'clicker' | 'tycoon' | 'gambler' | 'combo'

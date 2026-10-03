@@ -7,6 +7,7 @@ import { KNIVES } from '../data/knives.data.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { migrateSaveData } from './migrations.js';
 import { clampAutoclickerState } from '../systems/autoclickService.js';
+import { maxUnlockedStage } from '../progression/phases.data.js';
 import { events } from '../core/events.js';
 
 export const STORAGE_KEY = 'PoopSim_Pro_Save';
@@ -81,6 +82,10 @@ export function applySaveDataSafely(rawData) {
   if (!isFinite(GAME.transcendPlungers) || GAME.transcendPlungers < 0 || GAME.transcendPlungers > 1e308) GAME.transcendPlungers = 0;
   if (!isFinite(GAME.evoStage) || GAME.evoStage < 0) GAME.evoStage = 0;
   if (GAME.evoStage >= EVOLUTIONS.length) GAME.evoStage = EVOLUTIONS.length - 1;
+  if (!GAME.phaseEcho || typeof GAME.phaseEcho !== 'object') GAME.phaseEcho = {};
+  if (!Number.isFinite(GAME.flushesThisCycle) || GAME.flushesThisCycle < 0) GAME.flushesThisCycle = 0;
+  const phaseCap = maxUnlockedStage(GAME.totalTranscend || 0);
+  if (GAME.evoStage > phaseCap) GAME.evoStage = phaseCap;
 
   if (typeof data.feedCount === 'number') setFeedCount(data.feedCount);
   if (typeof data.washCount === 'number') setWashCount(data.washCount);

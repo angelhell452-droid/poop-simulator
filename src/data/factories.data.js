@@ -1,3 +1,5 @@
+import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js';
+
 export const FACTORIES = [
   // ⭐ ТИР 1: БЫТОВОЙ ДРЕНАЖ (ФОРМЫ 0 - 20)
   { id: 'fly_squad', name: 'Эскадрилья Мух-Курьеров', cost: 15, baseCps: 0.5, count: 0, icon: '🪰', tier: 'early', tierNumber: 1, tierTitle: '⭐ Тир 1: Бытовой Дренаж', reqStage: 0 },
@@ -56,8 +58,23 @@ export const FACTORIES = [
   { id: 'alpha_omega_apex', name: 'Вершина Альфа и Омега Бытия', cost: 1e305, baseCps: 1e299, count: 0, icon: '👑', tier: 'singularity', tierNumber: 4, tierTitle: '🌌 Тир 4: Омниверс и Сингулярность', reqStage: 19999 }
 ];
 
-for (const fac of FACTORIES) {
-  if (fac.tier === 'late' || fac.tier === 'endgame' || fac.tier === 'singularity') {
-    fac.baseCps *= 6;
-  }
+FACTORIES.length = PHASE_COUNT;
+
+const TIER_TITLES = [
+  '⭐ Тир 1: Бытовой Дренаж',
+  '⚡ Тир 2: Био-Индустрия',
+  '🔮 Тир 3: Космос и Темпорал',
+  '🌌 Тир 4: Омниверс'
+];
+
+for (let i = 0; i < FACTORIES.length; i++) {
+  const phase = getPhaseByIndex(i + 1);
+  const fac = FACTORIES[i];
+  const tierNumber = Math.floor(i / 10) + 1;
+  fac.reqStage = phase.formStart - 1;
+  fac.cost = i === 0 ? 20 : phase.ceiling * 0.4;
+  fac.baseCps = i === 0 ? 8 : phase.ceiling / 2400;
+  fac.tierNumber = tierNumber;
+  fac.tier = tierNumber === 1 ? 'early' : tierNumber === 2 ? 'mid' : tierNumber === 3 ? 'late' : 'endgame';
+  fac.tierTitle = TIER_TITLES[tierNumber - 1];
 }

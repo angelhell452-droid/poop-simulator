@@ -13,6 +13,7 @@ import { updateCasesButtons } from './casesView.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js';
 import { updateSmartAssistant } from './smartAssistantView.js';
 import { ARCHETYPES } from '../progression/archetypes.js';
+import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js';
 import { getPrestigeRewardBreakdown, executePrestige } from '../prestige/prestigeService.js';
 import { getTranscendRewardBreakdown, executeTranscend } from '../prestige/transcendService.js';
 import { renderEvoChronicles } from './evoChroniclesView.js';
@@ -89,8 +90,9 @@ export function updateHUD() {
 
   // Evolution Info
   const currEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
+  const phase = getPhaseForStage(GAME.evoStage);
   const topStTitle = document.getElementById('topStageTitle');
-  if (topStTitle) topStTitle.textContent = `Форма #${formatNumber(currEvo.id + 1)}: ${currEvo.name}`;
+  if (topStTitle) topStTitle.textContent = `Форма #${formatNumber(currEvo.id + 1)} · ${phaseLabel(phase)}`;
 
   const topArchBadge = document.getElementById('topArchetypeBadge');
   if (topArchBadge) {
@@ -113,6 +115,10 @@ export function updateHUD() {
     if (evoInfo.maxReached) {
       evoCostLabel.textContent = 'ВЫСШИЙ ВЛАДЫКА ОМНИВЕРСА';
       btnEvolve.textContent = 'МАКС 🏆';
+      btnEvolve.disabled = true;
+    } else if (evoInfo.phaseLocked) {
+      evoCostLabel.textContent = 'Дальше откроет Прорыв';
+      btnEvolve.textContent = 'Эпоха закрыта';
       btnEvolve.disabled = true;
     } else {
       const buyMultiplier = GAME.buyMultiplier || 1;

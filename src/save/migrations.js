@@ -2,6 +2,8 @@
 
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
+import { FACTORIES } from '../data/factories.data.js';
+import { getPhaseForForm } from '../progression/phases.data.js';
 
 export function migrateSaveData(rawSave) {
   if (!rawSave) return null;
@@ -77,7 +79,7 @@ export function migrateSaveData(rawSave) {
     }
   }
 
-  return applyEconomyV3(rawSave);
+  return applyPhaseV4(applyEconomyV3(rawSave));
 }
 
 const REMOVED_TALENTS = {
@@ -197,5 +199,48 @@ function applyEconomyV3(save) {
   game.saveVersion = 3;
   save.game = game;
   save.saveVersion = 3;
+  return save;
+}
+
+function applyPhaseV4(save) {
+  if (!save || (save.saveVersion || 0) >= 4) return save;
+  const game = save.game || {};
+  const formPhase = getPhaseForForm((game.evoStage || 0) + 1).id;
+  const fromOldTranscend = Math.min(4, Math.max(0, game.totalTranscend || 0) * 2);
+  const phaseId = Math.max(1, formPhase, fromOldTranscend);
+  const keys = Math.ceil(phaseId / 2) - 1;
+  game.totalTranscend = keys;
+
+  const echoes = {};
+  const flushes = Math.max(0, game.totalPrestiges || 0);
+  if (flushes > 0) {
+    const each = Math.floor(flushes / phaseId);
+    let rem = flushes % phaseId;
+    for (let id = 1; id <= phaseId; id++) {
+      echoes[id] = each + (rem > 0 ? 1 : 0);
+      if (rem > 0) rem--;
+    }
+  }
+  game.phaseEcho = echoes;
+  game.flushesThisCycle = 0;
+
+  const rollCap = 80 + phaseId * 15;
+  game.prestigeRolls = Math.min(game.prestigeRolls || 0, rollCap);
+  game.allTimePrestigeRolls = Math.min(game.allTimePrestigeRolls || 0, rollCap);
+  game.transcendCycleRolls = game.prestigeRolls;
+  game.transcendPlungers = Math.min(game.transcendPlungers || 0, keys * 2);
+
+  if (Array.isArray(save.factories)) {
+    save.factories.forEach(row => {
+      if (!row) return;
+      const known = FACTORIES.some(fac => fac.id === row.id);
+      if (!known) return;
+      row.count = Math.min(80, Math.max(0, row.count || 0));
+    });
+  }
+
+  game.saveVersion = 4;
+  save.game = game;
+  save.saveVersion = 4;
   return save;
 }

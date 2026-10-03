@@ -1,6 +1,7 @@
 import { GAME } from '../core/state.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { TALENTS } from '../data/talents.data.js';
+import { maxUnlockedStage } from '../progression/phases.data.js';
 
 /**
  * Asymptotic discount model with soft-cap guarantee.
@@ -24,19 +25,23 @@ export function getAffordableEvoInfo() {
   const omegaDisc = omegaTalent ? (1 - Math.pow(0.98, omegaTalent.level)) : 0;
   const unbreakRaw = (unbreakEvo && unbreakEvo.level > 0) ? (1 - Math.pow(0.985, unbreakEvo.level)) : 0;
 
+  const unlockedCap = Math.min(EVOLUTIONS.length - 1, maxUnlockedStage(GAME.totalTranscend || 0));
   if (GAME.evoStage >= EVOLUTIONS.length - 1) {
-    return { count: 0, totalCost: 0, canBuy: false, maxReached: true };
+    return { count: 0, totalCost: 0, canBuy: false, maxReached: true, phaseLocked: false };
+  }
+  if (GAME.evoStage >= unlockedCap) {
+    return { count: 0, totalCost: 0, canBuy: false, maxReached: false, phaseLocked: true };
   }
 
   const rawMult = GAME.buyMultiplier;
   const isMax = (rawMult === 'max' || rawMult === 'MAX');
-  const targetCount = isMax ? 20000 : (parseInt(rawMult) || 1);
+  const targetCount = isMax ? (unlockedCap - GAME.evoStage) : (parseInt(rawMult) || 1);
 
   let totalCost = 0;
   let count = 0;
   let currBio = GAME.biomass;
 
-  for (let s = GAME.evoStage + 1; s < EVOLUTIONS.length; s++) {
+  for (let s = GAME.evoStage + 1; s <= unlockedCap; s++) {
     const costDiscount = getAsymptoticDiscountFactor(s >= 5000 ? [omegaDisc, unbreakRaw] : [omegaDisc], 0.90);
     const cost = Math.max(1, Math.floor(EVOLUTIONS[s].cost * costDiscount));
     if (isMax) {

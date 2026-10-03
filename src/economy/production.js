@@ -82,7 +82,7 @@ export function getClickPower() {
   const knifeClickMult = getKnifeClickMult(knife);
 
   const katanaBonus = knife && knife.style === 'katana'
-    ? (1 + Math.floor(GAME.evoStage / 50) * 0.15)
+    ? Math.min(3, 1 + Math.floor(GAME.evoStage / 50) * 0.15)
     : 1;
 
   const hungerBuff = 1 + Math.max(0, (GAME.hunger || 0) / 100) * 0.25;
@@ -105,7 +105,7 @@ export function getClickPower() {
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
 
-  let basePower = (1 + GAME.evoStage * 0.5) * evo.mult * rollsMult * softRollsMult * cosmicMult * synergyMult * hyperMult * plungersMult * omniRelicMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult;
+  let basePower = evo.mult * rollsMult * softRollsMult * cosmicMult * synergyMult * hyperMult * plungersMult * omniRelicMult * turboMult * knifeClickMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * hatClickBoost * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult;
 
   const syncRate = talentLevel('quantum_mastery') * 0.004 + (SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned ? 0.02 : 0);
   if (syncRate > 0) {
@@ -362,8 +362,8 @@ export function getActiveBuffsList() {
       short: `+${formatNumber(boostPct)}%`,
       bonusText: `+${formatNumber(boostPct)}% ко всему доходу`,
       badgeColor: 'bg-purple-950/90 border-yellow-400 text-yellow-300 shadow-[0_0_8px_rgba(168,85,247,0.3)]',
-      desc: 'Постоянный множитель от всех завершенных циклов Смыва и накопленных Втулок Судьбы.',
-      progress: `Смывов совершено: ${formatNumber(GAME.totalPrestiges)} | Втулок: ${formatNumber(totalRolls)} 🧻`,
+      desc: 'Эхо закрытых эпох усиливает доход. Текущая и предыдущая эпоха считаются целиком, более старые — на четверть.',
+      progress: `Смывов совершено: ${formatNumber(GAME.totalPrestiges)} | Втулок в кошельке: ${formatNumber(totalRolls)} 🧻`,
       source: 'Смыв Судьбы',
       tip: 'Совершайте регулярные Смывы при достижении высоких наград Втулок.'
     });

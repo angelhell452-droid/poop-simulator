@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.20 PRO</title>
+  <title>Poop Simulator v4.9.21 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.20 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.21 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -1036,7 +1036,7 @@
       <div class="bg-purple-900/60 border border-yellow-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex flex-col gap-0.5">
           <span class="text-stone-300 text-[10px] uppercase font-bold">Условие доступа:</span>
-          <div id="prestigeReqLabel" class="text-yellow-300 font-bold">Форма 15 и 100,000 💨</div>
+          <div id="prestigeReqLabel" class="text-yellow-300 font-bold">Мост эпохи: форма и биомасса забега</div>
         </div>
         <div id="prestigeCalcRolls">
           <span class="font-game text-yellow-300 text-sm">+0 <span class="roll-icon"></span></span>
@@ -1104,13 +1104,12 @@
       </div>
       <h3 class="font-game text-2xl text-cyan-300">АСТРАЛЬНЫЙ ПРОРЫВ</h3>
       <p class="text-xs text-indigo-200 mt-1">Трансцендентное перерождение 2-го уровня! Получите священные <b>Астральные
-          Вантузы</b> за накопленные Втулки Судьбы.</p>
+          Вантузы</b> и открывает следующую пару эпох.</p>
 
       <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex flex-col gap-0.5">
           <span class="text-stone-300 text-[10px] uppercase font-bold">Условие доступа:</span>
-          <div id="transcendReqLabel" class="text-cyan-300 font-bold">Форма 50+, 5+ Смывов и 2,500+ <span
-              class="roll-icon"></span></div>
+          <div id="transcendReqLabel" class="text-cyan-300 font-bold">3 Смыва пары эпох и закрытый мост</div>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Запас Втулок Судьбы:</span>
@@ -1652,8 +1651,8 @@
             <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
               <b class="text-emerald-400">⚡ Как зарабатывать:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
-                <li>Ритуал Смыва Судьбы (после 100+ формы или 100K+ биомассы)</li>
-                <li>Каждая втулка даёт +2% ко всему доходу (+4% после 25-го смыва)</li>
+                <li>Смыв эпохи: около 70% форм эпохи и 10% её потолка биомассы. Награда — эхо эпохи и небольшая пачка втулок</li>
+                <li>Доход даёт эхо эпохи (потолок x3), а не число втулок. Втулки тратятся на таланты и кейсы</li>
                 <li>Пассивный Хроно-генератор втулок из Прорыва</li>
               </ul>
             </div>
@@ -1662,7 +1661,7 @@
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Древо Талантов: 18 вечных умений прокачки</li>
                 <li>Открытие оружейных контейнеров (Фазы 1-3)</li>
-                <li>Разблокировка Астрального Прорыва (требует 5 смывов!)</li>
+                <li>Астральный Прорыв открывается тремя Смывами пары эпох и закрытым мостом</li>
               </ul>
             </div>
           </div>
@@ -1685,8 +1684,8 @@
               <b class="text-emerald-400">⚡ Как зарабатывать:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Астральный Прорыв (кнопка 🪠 Прорыв)</li>
-                <li>Условие: совершить минимум 5 Смывов и накопить 2,500+ втулок</li>
-                <li>Сохраняет 35% всех втулок после Прорыва!</li>
+                <li>Условие: 3 Смыва в текущей паре эпох и закрытый мост чётной эпохи. Награда — 1 или 2 вантуза и ключ следующей пары</li>
+                <li>Непотраченные втулки после Прорыва не переносятся. Эхо эпох остаётся</li>
               </ul>
             </div>
             <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">

@@ -1,12 +1,35 @@
 import { GAME } from '../core/state.js';
+import { getPhaseForStage, PHASE_COUNT } from '../progression/phases.data.js';
 
-/** Soft prestige income from lifetime rolls and flush count. Approaches a cap. */
-export function getRollsIncomeMult(extraRolls = 0, extraPrestiges = 0) {
-  const bank = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0) + extraRolls;
-  const prestiges = (GAME.totalPrestiges || 0) + extraPrestiges;
-  const rollPart = 1 + Math.pow(Math.max(0, bank), 0.45) * 0.12;
-  const flushPart = 1 + 4 * (prestiges / (prestiges + 12));
-  return rollPart * flushPart;
+function echoCount(phaseId) {
+  const bag = GAME.phaseEcho || {};
+  const raw = bag[phaseId] ?? bag[String(phaseId)] ?? 0;
+  return Math.max(0, Number(raw) || 0);
+}
+
+/** Bonus from one epoch's echoes. Approaches +2, so the multiplier approaches x3. */
+export function getEchoBonus(count) {
+  const c = Math.max(0, count || 0);
+  return 2 * (c / (c + 8));
+}
+
+/**
+ * Flush income. The current epoch and the one before it count in full.
+ * Older echoes count at a quarter. Rolls in the wallet do not multiply income.
+ * previewPhase / previewAdd show the boost of one more echo on that epoch.
+ * atPhaseId previews the multiplier as if the run stood in that epoch.
+ */
+export function getRollsIncomeMult(previewPhase = 0, previewAdd = 0, atPhaseId = 0) {
+  const at = atPhaseId || getPhaseForStage(GAME.evoStage).id;
+  let bonus = 0;
+  for (let id = 1; id <= PHASE_COUNT; id++) {
+    const count = echoCount(id) + (id === previewPhase ? previewAdd : 0);
+    const part = getEchoBonus(count);
+    if (part <= 0) continue;
+    if (id === at || id === at - 1) bonus += part;
+    else if (id < at - 1) bonus += part * 0.25;
+  }
+  return 1 + bonus;
 }
 
 /** Plunger meta. 15 plungers ~ x3.4, 100 ~ x7.4, asymptote x9. */

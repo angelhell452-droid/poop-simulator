@@ -3,77 +3,81 @@ import { FACTORIES } from '../data/factories.data.js';
 import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { events } from '../core/events.js';
+import { getPhaseByIndex, getPhaseForForm, maxUnlockedForm } from '../progression/phases.data.js';
 
-export function getPrestigeRequirement() {
-  const p = GAME.totalPrestiges || 0;
-  // Dynamic scaling: Form 15 for 1st flush, then +5 forms per prestige (Form 15, 20, 25, 30...)
-  const reqForm = Math.min(500, 15 + p * 5);
-  const reqStage = reqForm - 1;
-  const reqBiomass = Math.floor(50000 * Math.pow(1.55, Math.min(25, p)));
-
+function gateStatus(phase) {
   const currentStage = GAME.evoStage || 0;
   const currentForm = currentStage + 1;
   const currentBiomass = GAME.cycleBiomass || 0;
+  const reqBiomass = phase.ceiling * 0.1;
+  return {
+    meetsStage: currentForm >= phase.flushForm,
+    meetsBiomass: currentBiomass >= reqBiomass,
+    reqForm: phase.flushForm,
+    reqBiomass
+  };
+}
 
-  const meetsStage = currentStage >= reqStage;
-  const meetsBiomass = currentBiomass >= reqBiomass;
-  // BOTH Form and Biomass MUST be achieved for true milestone progression!
-  const isMet = meetsStage && meetsBiomass;
+export function getPrestigeRequirement() {
+  const form = (GAME.evoStage || 0) + 1;
+  const capForm = maxUnlockedForm(GAME.totalTranscend || 0);
+  const limit = getPhaseForForm(Math.min(form, capForm)).id;
+  let bestMet = null;
+  let nextUnmet = null;
+
+  for (let id = 1; id <= limit; id++) {
+    const phase = getPhaseByIndex(id);
+    const gate = gateStatus(phase);
+    if (gate.meetsStage && gate.meetsBiomass) bestMet = phase;
+    else if (!nextUnmet) nextUnmet = phase;
+  }
+
+  const shown = bestMet || nextUnmet || getPhaseByIndex(1);
+  const gate = gateStatus(shown);
+  const isMet = !!bestMet;
 
   return {
-    flushes: p,
-    reqForm,
-    reqStage,
-    reqBiomass,
-    currentForm,
-    currentStage,
-    currentBiomass,
-    meetsStage,
-    meetsBiomass,
-    isMet
+    flushes: GAME.totalPrestiges || 0,
+    reqForm: isMet ? bestMet.flushForm : gate.reqForm,
+    reqStage: (isMet ? bestMet.flushForm : gate.reqForm) - 1,
+    reqBiomass: isMet ? bestMet.ceiling * 0.1 : gate.reqBiomass,
+    currentForm: form,
+    currentStage: GAME.evoStage || 0,
+    currentBiomass: GAME.cycleBiomass || 0,
+    meetsStage: isMet || gate.meetsStage,
+    meetsBiomass: isMet || gate.meetsBiomass,
+    isMet,
+    echoPhase: bestMet ? bestMet.id : 0,
+    phase: shown
   };
 }
 
 export function getPrestigeRewardBreakdown() {
   const req = getPrestigeRequirement();
-  const currentBiomass = GAME.cycleBiomass || 0;
-  const currentForm = (GAME.evoStage || 0) + 1;
-  const extraForms = Math.max(0, currentForm - req.reqForm);
-
-  // 1. Biomass Part (accumulated during current run)
-  const bioRatio = Math.max(1, currentBiomass / Math.max(1, req.reqBiomass));
-  const bioPart = Math.floor(15.0 * Math.pow(bioRatio, 0.18));
-
-  // 2. Extra Form Evolution Bonus (+2 rolls per extra form beyond minimum)
-  const stagePart = Math.floor(extraForms * 1.5 + Math.pow(Math.max(1, currentForm), 0.5) * 3);
+  const phaseId = req.echoPhase || req.phase.id;
+  const pack = 12 + phaseId * 2;
 
   const scythe = KNIVES.find(k => k.type === 'Scythe' && k.owned);
   const scytheActive = !!scythe;
-  const scytheMult = scytheActive ? 1.25 : 1.0;
+  const scytheMult = scytheActive ? 1.25 : 1;
 
   const infFlush = TALENTS.find(t => t.id === 'infinity_flush');
   const flushTalentBonus = 1 + (infFlush ? infFlush.level * 0.06 : 0);
 
-  const baseRolls = bioPart + stagePart;
-  const totalGain = req.isMet ? Math.max(1, Math.round(baseRolls * scytheMult * flushTalentBonus)) : 0;
-
-  // Calculate biomass needed for +1 next roll
-  const nextBioPart = bioPart + 1;
-  const nextTargetRatio = Math.pow(nextBioPart / 15.0, 1 / 0.18);
-  const nextBiomassThreshold = Math.ceil(req.reqBiomass * nextTargetRatio);
-  const nextRollBiomassNeeded = Math.max(0, nextBiomassThreshold - currentBiomass);
+  const totalGain = req.isMet ? Math.max(1, Math.round(pack * scytheMult * flushTalentBonus)) : 0;
 
   return {
     ...req,
-    extraForms,
-    bioPart,
-    stagePart,
-    baseRolls,
+    extraForms: 0,
+    bioPart: pack,
+    stagePart: 0,
+    baseRolls: pack,
     scytheActive,
     scytheMult,
     flushTalentBonus,
     totalGain,
-    nextRollBiomassNeeded
+    nextRollBiomassNeeded: 0,
+    echoGain: req.isMet ? 1 : 0
   };
 }
 
@@ -81,21 +85,25 @@ export function getPrestigeRollsReward() {
   return getPrestigeRewardBreakdown().totalGain;
 }
 
-
 export function executePrestige(chosenArchetype = 'balanced') {
-  const gain = getPrestigeRollsReward();
-  if (gain <= 0) return false;
+  const breakdown = getPrestigeRewardBreakdown();
+  if (!breakdown.isMet || breakdown.totalGain <= 0) return false;
 
-  GAME.prestigeRolls += gain;
-  GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + gain;
-  GAME.transcendCycleRolls = (GAME.transcendCycleRolls || 0) + gain;
+  const phaseId = breakdown.echoPhase;
+  if (!GAME.phaseEcho || typeof GAME.phaseEcho !== 'object') GAME.phaseEcho = {};
+  GAME.phaseEcho[phaseId] = (Number(GAME.phaseEcho[phaseId]) || 0) + 1;
+
+  GAME.prestigeRolls += breakdown.totalGain;
+  GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + breakdown.totalGain;
+  GAME.transcendCycleRolls = (GAME.transcendCycleRolls || 0) + breakdown.totalGain;
   GAME.totalPrestiges++;
+  GAME.flushesThisCycle = (GAME.flushesThisCycle || 0) + 1;
   GAME.cycleBiomass = 0;
   GAME.currentRunPeakGPS = 0;
   GAME.archetype = chosenArchetype;
 
   const startTalent = TALENTS.find(t => t.id === 'royal_gold');
-  const startBio = startTalent ? startTalent.level * 50000 : 0;
+  const startBio = startTalent ? startTalent.level * 200 : 0;
 
   GAME.biomass = startBio;
   GAME.evoStage = 0;
@@ -104,6 +112,6 @@ export function executePrestige(chosenArchetype = 'balanced') {
   GAME.hunger = 100;
   GAME.happy = 100;
 
-  events.emit('prestige:completed', { gain, archetype: chosenArchetype });
+  events.emit('prestige:completed', { gain: breakdown.totalGain, archetype: chosenArchetype, echoPhase: phaseId });
   return true;
 }

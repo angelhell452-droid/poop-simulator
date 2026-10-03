@@ -255,7 +255,7 @@ export function renderFactoriesIndex() {
             <span class="text-yellow-400 font-mono">База: ${formatNumber(fac.cost)} 💨</span>
           </div>
           <div class="text-[9px] text-stone-500 mt-0.5">
-            Тир: <b class="text-stone-300 uppercase">${fac.tier || 'early'}</b> (Требуется форма: #${(fac.reqStage || 0) + 1})
+            Тир: <b class="text-stone-300 uppercase">${fac.tier || 'early'}</b> (Требуется форма: #${formatNumber((fac.reqStage || 0) + 1)})
           </div>
         </div>
       </div>

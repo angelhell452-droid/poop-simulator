@@ -3,100 +3,78 @@ import { FACTORIES } from '../data/factories.data.js';
 import { TALENTS } from '../data/talents.data.js';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
 import { events } from '../core/events.js';
+import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js';
 
 export function getTranscendRequirement() {
   const t = GAME.totalTranscend || 0;
-  // Dynamic scaling:
-  // Transcend #0: Form 50, 5 Prestiges, 2,500 Rolls
-  // Transcend #1: Form 75, 8 Prestiges, 5,500 Rolls
-  // Transcend #2: Form 100, 11 Prestiges, 12,000 Rolls
-  // Transcend #3: Form 125, 14 Prestiges, 26,000 Rolls
-  const reqForm = Math.min(2000, 50 + t * 25);
+  const pair = Math.min(PHASE_COUNT / 2, 1 + t);
+  const evenPhase = getPhaseByIndex(pair * 2);
+  const reqForm = evenPhase.flushForm;
   const reqStage = reqForm - 1;
-  const reqPrestiges = 5 + t * 3;
-  const reqRolls = Math.floor(2500 * Math.pow(2.2, Math.min(10, t)));
+  const reqPrestiges = 3;
+  const reqBiomass = evenPhase.ceiling * 0.1;
 
   const currentStage = GAME.evoStage || 0;
   const currentForm = currentStage + 1;
-  const currentPrestiges = GAME.totalPrestiges || 0;
-  // Accumulated rolls strictly within the current Transcend cycle (resets on transcend)
-  const currentRolls = Math.max(GAME.transcendCycleRolls || 0, GAME.prestigeRolls || 0);
+  const currentPrestiges = GAME.flushesThisCycle || 0;
+  const currentBiomass = GAME.cycleBiomass || 0;
 
-  const meetsStage = currentStage >= reqStage;
+  const meetsStage = currentForm >= reqForm;
   const meetsPrestiges = currentPrestiges >= reqPrestiges;
-  const meetsRolls = currentRolls >= reqRolls;
-
-  const isMet = meetsPrestiges && meetsStage && meetsRolls;
+  const meetsBiomass = currentBiomass >= reqBiomass;
+  const isMet = meetsPrestiges && meetsStage && meetsBiomass;
 
   return {
     transcends: t,
+    pair,
+    phase: evenPhase,
     reqForm,
     reqStage,
     reqPrestiges,
-    reqRolls,
+    reqRolls: 0,
+    reqBiomass,
     currentForm,
     currentStage,
     currentPrestiges,
-    currentRolls,
+    currentRolls: GAME.prestigeRolls || 0,
+    currentBiomass,
     meetsStage,
     meetsPrestiges,
-    meetsRolls,
+    meetsRolls: meetsBiomass,
+    meetsBiomass,
     isMet
   };
 }
 
 export function getTranscendRewardBreakdown() {
   const req = getTranscendRequirement();
+  const overshot = req.currentForm >= req.phase.formEnd;
+  const basePlungers = overshot ? 2 : 1;
 
-  // 1. Direct Flush Contribution: Every flush completed guarantees +1 Plunger!
-  const currentPrestiges = Math.max(0, req.currentPrestiges || 0);
-  const flushPart = Math.floor(currentPrestiges * 1.0);
-
-  // 2. Rolls Contribution: Linear scaling (+1 Plunger per 500 rolls)
-  // At 2,500 rolls = 5 plungers. At 3,000 rolls = 6 plungers!
-  const rolls = Math.max(0, req.currentRolls || 0);
-  const rollsPart = Math.max(1, Math.floor(rolls / 500));
-  const nextTargetRolls = (rollsPart + 1) * 500;
-  const nextPlungerRollsNeeded = Math.max(0, nextTargetRolls - rolls);
-
-  // 3. Form Evolution Contribution: Every 10 forms of poop evolution yields +1 Plunger
-  const currentForm = Math.max(1, req.currentForm || 1);
-  const stagePart = Math.max(0, Math.floor(currentForm / 10));
-  const nextFormThreshold = (stagePart + 1) * 10;
-  const nextPlungerFormsNeeded = Math.max(0, nextFormThreshold - currentForm);
-
-  // 4. Base Plungers: sum of all three progression pillars
-  const basePlungers = Math.max(1, flushPart + rollsPart + stagePart);
-
-  // 5. Talents and Multipliers
-  let mult = 1.0;
   const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');
   const soulBonus = soulTalent && soulTalent.level > 0 ? soulTalent.level * 0.08 : 0;
-  mult += soulBonus;
-
   const incubator = GAME.transcendUpgrades?.plungerIncubator || 0;
   const incubatorBonus = incubator * 0.08;
-  mult += incubatorBonus;
 
-  let totalGain = Math.max(1, Math.round(basePlungers * mult));
-
+  let totalGain = Math.round(basePlungers * (1 + soulBonus + incubatorBonus));
   const astralTalent = TALENTS.find(t => t.id === 'astral_splendor');
   if (astralTalent && astralTalent.level > 0) {
     const doubleChance = Math.min(0.25, astralTalent.level * 0.015);
     if (Math.random() < doubleChance) totalGain *= 2;
   }
+  totalGain = Math.max(1, Math.min(2, totalGain));
 
   return {
     ...req,
-    flushPart,
-    rollsPart,
-    stagePart,
+    flushPart: basePlungers,
+    rollsPart: 0,
+    stagePart: overshot ? 1 : 0,
     basePlungers,
     soulBonus,
     incubatorBonus,
     totalGain,
-    nextPlungerRollsNeeded,
-    nextPlungerFormsNeeded
+    nextPlungerRollsNeeded: 0,
+    nextPlungerFormsNeeded: Math.max(0, req.phase.formEnd - req.currentForm)
   };
 }
 
@@ -106,16 +84,16 @@ export function getTranscendPlungersReward() {
 
 
 export function executeTranscend() {
-  const gain = getTranscendPlungersReward();
-  if (gain <= 0) return false;
+  const breakdown = getTranscendRewardBreakdown();
+  const gain = breakdown.totalGain;
+  if (!breakdown.isMet || gain <= 0) return false;
 
   GAME.transcendPlungers = (GAME.transcendPlungers || 0) + gain;
   GAME.totalTranscend = (GAME.totalTranscend || 0) + 1;
 
-  // Preserve 35% of rolls so player is never stalled after transcend
-  GAME.prestigeRolls = Math.floor((GAME.prestigeRolls || 0) * 0.35);
-  // Reset rolls accumulated in this transcend cycle for the new era
-  GAME.transcendCycleRolls = GAME.prestigeRolls || 0;
+  GAME.prestigeRolls = 0;
+  GAME.transcendCycleRolls = 0;
+  GAME.flushesThisCycle = 0;
   GAME.cycleBiomass = 0;
   GAME.biomass = 0;
   GAME.currentRunPeakGPS = 0;

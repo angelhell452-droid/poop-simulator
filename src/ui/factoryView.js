@@ -72,7 +72,7 @@ export function renderFactories() {
 
     let buttonLabel = `${countTxt}: ${formatNumber(facInfo.totalCost)} 💨`;
     if (isLocked) {
-      buttonLabel = `🔒 Требуется Форма #${fac.reqStage + 1}`;
+      buttonLabel = `🔒 Требуется Форма #${formatNumber(fac.reqStage + 1)}`;
     }
 
     let tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-stone-800 text-stone-300 border border-stone-700">⭐ Т1</span>`;

@@ -1,3 +1,5 @@
+import { getPhaseForStage, PHASE_FORMS } from '../progression/phases.data.js';
+
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
   { epoch: "Индустриальный Смог", bg: "#334155", body: "#57534e", aura: "steam", archetype: "industrial" },
@@ -54,32 +56,21 @@ export const ENTITIES = [
   "Коллапс", "Сингуляр", "Суперструна", "Квазар", "Парадокс", "Создатель", "Архитектор", "Абсолют", "Вулкан", "Дракон", "Архангел", "Демиург"
 ];
 
-// Piecewise smooth evolution cost formula (anti-runaway)
+// Cost climbs about x1000 inside one epoch. The multiplier climbs about x6, then the next epoch starts over.
 export function calcEvolutionCost(i) {
   if (i <= 0) return 0;
-  if (i <= 25) {
-    return Math.floor(15 * Math.pow(1.18, i) * Math.pow(i, 1.2));
-  }
-  const base25 = 15 * Math.pow(1.18, 25) * Math.pow(25, 1.2);
-  if (i <= 100) {
-    return Math.floor(base25 * Math.pow(1.12, i - 25) * Math.pow(i / 25, 1.5));
-  }
-  const cost100 = Math.floor(base25 * Math.pow(1.12, 75) * Math.pow(4, 1.5));
-  if (i <= 500) {
-    return Math.floor(cost100 * Math.pow(1.10, i - 100) * Math.pow(i / 100, 1.2));
-  }
-  const cost500 = Math.floor(cost100 * Math.pow(1.10, 400) * Math.pow(5, 1.2));
-  const cost = cost500 * Math.pow(1.02, i - 500) * Math.pow(i / 500, 1.15);
-  if (!Number.isFinite(cost)) return Number.MAX_VALUE;
-  return Math.floor(cost);
+  const phase = getPhaseForStage(i);
+  const local = (i - (phase.formStart - 1)) / PHASE_FORMS;
+  const cost = phase.floor * Math.pow(1000, Math.min(1, Math.max(0, local)));
+  if (!Number.isFinite(cost)) return phase.ceiling;
+  return Math.max(1, Math.floor(cost));
 }
 
 export function calcEvolutionMult(i) {
-  const linear = 1 + i * 0.20;
-  const centuryBonus = Math.pow(1.03, Math.floor(i / 100));
-  const epochBonus = Math.pow(1.15, Math.floor(i / 500));
-  const baseGrowth = Math.pow(1.0022, i);
-  return linear * baseGrowth * centuryBonus * epochBonus;
+  if (i <= 0) return 1;
+  const phase = getPhaseForStage(i);
+  const local = (i - (phase.formStart - 1)) / PHASE_FORMS;
+  return Math.pow(6, Math.min(1, Math.max(0, local)));
 }
 
 export function generateEvolutions() {

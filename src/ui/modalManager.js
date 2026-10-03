@@ -49,12 +49,12 @@ export function updatePrestigeModalRealtime() {
   if (calcEl) {
     const flushes = b.flushes || GAME.totalPrestiges || 0;
     const currentBoost = Math.round((getRollsIncomeMult() - 1) * 100);
-    const postBoost = Math.round((getRollsIncomeMult(gain, 1) - 1) * 100);
+    const postBoost = Math.round((getRollsIncomeMult(b.echoPhase || b.phase?.id || 1, b.isMet ? 1 : 0) - 1) * 100);
 
     let nextMilestoneText = '';
-    if (flushes < 1) nextMilestoneText = '🎯 Смыв #1: Втулки Судьбы и Древо Талантов';
-    else if (flushes < 5) nextMilestoneText = `🎯 Смыв #5: 🪠 Открытие Астрального Прорыва [${flushes}/5]`;
-    else nextMilestoneText = `🏆 Смывов: ${formatNumber(flushes)}. Бонус смывов растёт к потолку x5.`;
+    if (flushes < 1) nextMilestoneText = '🎯 Первый Смыв оставляет эхо эпохи и пачку втулок';
+    else if ((GAME.flushesThisCycle || 0) < 3) nextMilestoneText = `🎯 Смывы этой пары эпох: ${formatNumber(GAME.flushesThisCycle || 0)}/3 для Прорыва`;
+    else nextMilestoneText = `🏆 Смывов: ${formatNumber(flushes)}. Эхо эпохи стремится к x3.`;
 
     calcEl.innerHTML = `
       <div class="mt-2 p-2.5 rounded-xl bg-purple-950/80 border border-yellow-400/40 text-left space-y-1.5">
@@ -63,8 +63,8 @@ export function updatePrestigeModalRealtime() {
           <span class="font-game text-sm text-yellow-300 font-bold">+${formatNumber(gain)} <span class="roll-icon"></span></span>
         </div>
         <div class="text-[10px] text-purple-200 space-y-0.5 font-mono">
-          <div>├─ 💨 От биомассы забега: <b class="text-white">+${formatNumber(b.bioPart)}</b> втулок</div>
-          <div>├─ 🧬 От эволюции формы: <b class="text-white">+${formatNumber(b.stagePart)}</b> втулок ${b.extraForms > 0 ? `(+${formatNumber(b.extraForms)} сверх цели)` : ''}</div>
+          <div>├─ 🌀 Эхо эпохи ${formatNumber(b.echoPhase || b.phase?.id || 1)}: <b class="text-white">+${formatNumber(b.echoGain || 0)}</b></div>
+          <div>├─ 🧻 Пачка втулок за мост: <b class="text-white">+${formatNumber(b.bioPart)}</b></div>
           <div>├─ 🗡️ Бонус оружия (Коса): <b class="${b.scytheActive ? 'text-emerald-300' : 'text-stone-400'}">${b.scytheActive ? '+25% (АКТИВЕН)' : '0%'}</b></div>
           <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${formatNumber(Math.round((b.flushTalentBonus - 1) * 100))}%</b></div>
         </div>
@@ -74,9 +74,9 @@ export function updatePrestigeModalRealtime() {
             <span>Как получить больше Втулок?</span>
           </div>
           <div class="text-purple-200/90 text-[9px] leading-tight">
-            • Копите больше биомассы (до +1 втулки еще: <b>${formatNumber(b.nextRollBiomassNeeded)} 💨</b>)<br/>
-            • Развивайте форму выше цели (каждая форма увеличивает награду!)<br/>
-            • Качайте талант «Вечный Смыв Судьбы»
+            • Закройте мост эпохи: форма и биомасса забега<br/>
+            • Повторный Смыв той же эпохи усиливает её эхо, пока оно не упрётся в x3<br/>
+            • Качайте талант «Вечный Смыв Судьбы», чтобы пачка втулок была чуть больше
           </div>
         </div>
       </div>
@@ -138,11 +138,11 @@ export function updateTranscendModalRealtime() {
           </span>
         </div>
         <div class="flex items-center justify-between text-xs">
-          <span class="${t.meetsRolls ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-            <span class="roll-icon"></span> Накоплено Втулок: ${formatNumber(t.currentRolls)} / ${formatNumber(t.reqRolls)}
+          <span class="${t.meetsBiomass ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
+            💨 Биомасса забега: ${formatNumber(t.currentBiomass)} / ${formatNumber(t.reqBiomass)}
           </span>
-          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsRolls ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-            ${t.meetsRolls ? '✓ Накоплено' : `Нужно еще ${formatNumber(Math.max(0, t.reqRolls - t.currentRolls))} втулок`}
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsBiomass ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+            ${t.meetsBiomass ? '✓ Накоплено' : `Нужно еще ${formatNumber(Math.max(0, t.reqBiomass - t.currentBiomass))} 💨`}
           </span>
         </div>
       </div>
@@ -153,9 +153,8 @@ export function updateTranscendModalRealtime() {
           <span class="font-game text-sm text-cyan-300 font-bold">+${formatNumber(gain)} <span class="plunger-icon"></span></span>
         </div>
         <div class="text-[10px] text-indigo-200 space-y-0.5 font-mono">
-          <div>├─ 🌀 От числа Смывов (${formatNumber(t.currentPrestiges)}): <b class="text-white">+${formatNumber(t.flushPart)}</b> вантузов (+1 за каждый смыв)</div>
-          <div>├─ <span class="roll-icon"></span> От накопленных Втулок за Прорыв (${formatNumber(t.currentRolls)}): <b class="text-white">+${formatNumber(t.rollsPart)}</b> вантузов (+1 за 500 втулок)</div>
-          <div>├─ 🧬 От эволюции формы (Форма #${formatNumber(t.currentForm)}): <b class="text-white">+${formatNumber(t.stagePart)}</b> вантузов (+1 за каждые 10 форм)</div>
+          <div>├─ 🌀 Закрытая пара эпох: <b class="text-white">+${formatNumber(t.basePlungers)}</b> вантуз</div>
+          <div>├─ 🧬 Конец эпохи: <b class="text-white">${t.stagePart > 0 ? 'да, награда x2 до потолка 2' : 'ещё не дошли до конца эпохи'}</b></div>
           <div>├─ <span class="plunger-icon"></span> Астральный Инкубатор: <b class="${t.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(t.incubatorBonus * 100))}%</b></div>
           <div>└─ 🔮 Душа Прорыва (Талант): <b class="${t.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(t.soulBonus * 100))}%</b></div>
         </div>
@@ -165,10 +164,9 @@ export function updateTranscendModalRealtime() {
             <span>Как получить больше Вантузов?</span>
           </div>
           <div class="text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
-            <div>• <b>Смывы</b>: делайте больше Смывов! Каждый Смыв гарантирует <b>+1 Вантуз</b> (+${formatNumber(t.flushPart)} сейчас)</div>
-            <div>• <b>Втулки</b>: делайте Смывы и зарабатывайте Втулки! До следующего +1 вантуза нужно ещё: <b>${formatNumber(t.nextPlungerRollsNeeded)}</b> <span class="roll-icon"></span></div>
-            <div>• <b>Формы</b>: развивайте какашку дальше (до следующего +1 вантуза ещё <b>${formatNumber(t.nextPlungerFormsNeeded)}</b> форм)</div>
-            <div>• <b>Таланты</b>: качайте "Душа Прорыва" в Древе Смыва (+20% за ур.) и "Астральный Инкубатор" в Прорыве (+10% за ур.)</div>
+            <div>• <b>Смывы</b>: три Смыва в этой паре эпох открывают Прорыв</div>
+            <div>• <b>Мост</b>: дойдите до формы чётной эпохи и наберите биомассу её пояса</div>
+            <div>• <b>Ключ</b>: Прорыв открывает следующую пару эпох. Награда — 1 или 2 вантуза</div>
           </div>
         </div>
       </div>
@@ -203,7 +201,7 @@ export function updateTranscendModalRealtime() {
       } else if (!t.meetsStage) {
         execTransBtn.textContent = `ТРЕБУЕТСЯ ФОРМА #${formatNumber(t.reqForm)} (СЕЙЧАС #${formatNumber(t.currentForm)}) 🔒`;
       } else {
-        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(t.reqRolls)} ВТУЛОК 🔒`;
+        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(t.reqBiomass)} БИОМАССЫ 🔒`;
       }
     } else {
       execTransBtn.disabled = gain <= 0;
