@@ -451,7 +451,7 @@ export function updateActiveBuffsUI() {
   lastBuffsSignature = sig;
 
   if (buffs.length === 0) {
-    buffsListEl.innerHTML = `<span class="text-[10px] text-stone-500 italic">Нет активных баффов</span>`;
+    buffsListEl.innerHTML = `<span class="buff-pill px-2 py-0.5 rounded-full border border-stone-600/50 text-[10px] font-bold text-stone-400">Пока тихо</span>`;
     return;
   }
 

@@ -110,21 +110,28 @@ html, body {
   }
 }
 
-body {
+html, body, button, input, textarea, select {
   font-family: var(--font-main);
+}
+
+body {
+  background: radial-gradient(circle at 50% 0%, #1c2a26 0%, var(--bg-primary) 58%, #0c1210 100%);
+  color: var(--ink);
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
   transition: background 0.4s ease, color 0.4s ease;
 }
 
-.font-game {
-  font-family: var(--font-game);
+.font-game,
+.font-currency,
+.font-sans,
+.font-mono {
+  font-family: var(--font-main) !important;
 }
 
 .font-currency {
-  font-family: 'Nunito', var(--font-main), sans-serif;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
@@ -136,7 +143,7 @@ body {
 }
 
 .custom-scroll::-webkit-scrollbar-thumb {
-  background: #b45309;
+  background: #3d6b5c;
   border-radius: var(--radius-full);
 }
 
@@ -171,63 +178,22 @@ body {
   animation: pulseGlow 1.2s infinite ease-in-out;
 }
 
-/* BOYS GAMER MODE (DEFAULT STANDARD THEME) */
-body.boys-mode {
-  background: radial-gradient(circle at 50% 25%, #0f172a 0%, #090d16 55%, #020617 100%) !important;
-  color: #f1f5f9 !important;
-}
-
-.boys-mode header {
-  background: linear-gradient(90deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%) !important;
-  border-color: #38bdf8 !important;
-  box-shadow: 0 4px 30px rgba(56, 189, 248, 0.22) !important;
-}
-
-.boys-mode section,
-.boys-mode aside {
-  border-color: #0284c7 !important;
-  box-shadow: 0 0 30px rgba(14, 165, 233, 0.16) !important;
-}
-
-.boys-mode .bg-stone-800 { background-color: #0c1222 !important; }
-.boys-mode .bg-stone-900 { background-color: #070a14 !important; }
-.boys-mode .bg-stone-950 { background-color: #03060c !important; }
-.boys-mode .border-amber-900,
-.boys-mode .border-amber-700 { border-color: #0369a1 !important; }
-.boys-mode .text-amber-400,
-.boys-mode .text-yellow-300 { color: #38bdf8 !important; }
-.boys-mode .text-amber-200 { color: #7dd3fc !important; }
-.boys-mode .text-emerald-400 { color: #22d3ee !important; }
-.boys-mode .bg-amber-700 { background-color: #0284c7 !important; }
-
-/* GIRLY MODE CUTE KAWAII THEME */
+/* Modes tint the shell. Meaning colors (income, sparkles, needs) stay put. */
+body.boys-mode,
 body.girly-mode {
-  background: radial-gradient(circle at 50% 25%, #4a0433 0%, #1a0215 55%, #0d010a 100%) !important;
-  color: #fdf2f8 !important;
+  background: radial-gradient(circle at 50% 0%, #1c2a26 0%, #121816 58%, #0c1210 100%) !important;
+  color: var(--ink) !important;
 }
 
-.girly-mode header {
-  background: linear-gradient(90deg, #831843 0%, #9d174d 50%, #be185d 100%) !important;
-  border-color: #f472b6 !important;
-  box-shadow: 0 4px 30px rgba(236, 72, 153, 0.35) !important;
+body.boys-mode {
+  --accent: #9fd4ff;
+  --accent-ink: #173044;
 }
 
-.girly-mode section,
-.girly-mode aside {
-  border-color: #f472b6 !important;
-  box-shadow: 0 0 30px rgba(244, 114, 182, 0.22) !important;
+body.girly-mode {
+  --accent: #ffb3cf;
+  --accent-ink: #4a2434;
 }
-
-.girly-mode .bg-stone-800 { background-color: #2b0422 !important; }
-.girly-mode .bg-stone-900 { background-color: #20031a !important; }
-.girly-mode .bg-stone-950 { background-color: #140110 !important; }
-.girly-mode .border-amber-900,
-.girly-mode .border-amber-700 { border-color: #db2777 !important; }
-.girly-mode .text-amber-400,
-.girly-mode .text-yellow-300 { color: #fbcfe8 !important; }
-.girly-mode .text-amber-200 { color: #f9a8d4 !important; }
-.girly-mode .text-emerald-400 { color: #f472b6 !important; }
-.girly-mode .bg-amber-700 { background-color: #ec4899 !important; }
 
 /* WEAPON CASE RARITY COLOR STYLES */
 .rarity-common,
@@ -312,6 +278,158 @@ body.girly-mode {
 }
 
 /* Universal SVG Golden Paper Roll Icon (Втулка Судьбы - 100% crisp across all OS) */
+/* Soft clay: one shell for the permanent HUD, modals, and temporary pills. */
+header {
+  background: color-mix(in srgb, var(--bg-secondary) 86%, var(--accent)) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  box-shadow: none !important;
+  color: var(--ink);
+}
+
+header button.jelly-btn,
+#btnModeBoys,
+#btnModeGirls {
+  background: rgba(243, 247, 244, 0.08) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-full) !important;
+  box-shadow: none !important;
+  font-family: var(--font-main) !important;
+  font-weight: 700 !important;
+}
+
+body.boys-mode #btnModeBoys,
+body.girly-mode #btnModeGirls {
+  background: var(--accent) !important;
+  color: var(--accent-ink) !important;
+  border-color: transparent !important;
+}
+
+#versionTag,
+#topArchetypeBadge {
+  border-radius: var(--radius-full);
+  font-family: var(--font-main);
+  font-weight: 700;
+}
+
+body > main > section,
+body > main > aside {
+  background: color-mix(in srgb, var(--bg-secondary) 92%, black) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+[class*="border-amber"] {
+  border-color: var(--border-light) !important;
+}
+
+#masterCurrencyDeck,
+#petNeedsStation,
+#activeBuffsTray,
+#evoXpDock > div,
+aside > .bg-stone-950 {
+  background: transparent !important;
+  border-color: var(--border) !important;
+}
+
+#masterCurrencyDeck > div,
+#petNeedsStation .grid > div,
+#poopSkinPill,
+#smartHintText,
+#currencyPrestigeBox,
+#currencyPlungersBox {
+  border-radius: var(--radius-md) !important;
+}
+
+#masterCurrencyDeck > div {
+  background: var(--surface-card) !important;
+  box-shadow: none !important;
+}
+
+.dash-tab,
+.buy-mult-btn,
+.autoclick-spd-btn,
+.talent-flush-tier-btn,
+.talent-transcend-tier-btn,
+.buff-pill,
+button.jelly-btn {
+  border-radius: var(--radius-full) !important;
+  font-family: var(--font-main) !important;
+  font-weight: 700 !important;
+}
+
+.dash-tab {
+  margin: 4px 3px;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+}
+
+button.dash-tab.bg-amber-700,
+.buy-mult-btn.bg-amber-600,
+.autoclick-spd-btn.bg-amber-600 {
+  background: var(--accent) !important;
+  color: var(--accent-ink) !important;
+  border-color: transparent !important;
+}
+
+.buff-pill {
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+  box-shadow: none !important;
+}
+
+#buffIdealPill,
+#turboRushTimer,
+#knifeToastNotification {
+  border-radius: var(--radius-full) !important;
+  font-family: var(--font-main) !important;
+  font-weight: 700 !important;
+}
+
+#knifeToastNotification {
+  background: var(--accent) !important;
+  color: var(--accent-ink) !important;
+  border: none !important;
+  animation: none !important;
+}
+
+.fixed.inset-0 {
+  background: rgba(8, 16, 14, 0.72) !important;
+}
+
+.fixed.inset-0 > div {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: 0 24px 70px rgba(4, 12, 10, 0.45);
+}
+
+input,
+textarea,
+select {
+  font-family: var(--font-main);
+  border-radius: var(--radius-sm) !important;
+}
+
+.font-mono {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+#evoXpDock > div {
+  background: color-mix(in srgb, var(--bg-secondary) 94%, black) !important;
+  border-top: 1px solid var(--border-light) !important;
+}
+
+#evoXpDock .bg-stone-800,
+#comboBar,
+#barHunger,
+#barClean,
+#barHappy {
+  border-radius: var(--radius-full);
+}
+
 .roll-icon {
   display: inline-block;
   width: 1.15em;
