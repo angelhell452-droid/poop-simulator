@@ -1,6 +1,6 @@
 import { GAME } from './core/state.js';
 import { startGameLoop } from './core/gameLoop.js';
-import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, wipePlayerData, requestCloudSync, getStoredAccount } from './save/cloudSync.js';
+import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js';
 import { saveLocal } from './save/saveManager.js';
 import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting } from './ui/hudView.js';
 import { renderFactories, initFactoryListeners } from './ui/factoryView.js';
@@ -167,6 +167,7 @@ export async function bootstrap() {
 
   // 2. Load Save (Local + Cloud D1)
   await loadFromCloudDatabaseOrLocal();
+  await confirmLiveSession();
   await refreshAdminAccess();
 
   // 3. Apply Saved Game Mode

@@ -1,4 +1,5 @@
 import { GAME } from '../core/state.js';
+import { events } from '../core/events.js';
 import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase } from '../save/cloudSync.js';
 import { updateHUD } from './hudView.js';
 import { renderFactories } from './factoryView.js';
@@ -220,6 +221,16 @@ export function initAuthModal() {
 
   // Initialize UI
   updateAccountHeaderUI();
+
+  events.on('auth:relogin', () => {
+    openAuthModal('login');
+    const nameInput = document.getElementById('loginUsername');
+    const known = getStoredAccount()?.username;
+    if (nameInput && known && !nameInput.value) nameInput.value = known;
+    showAuthStatus('Сессия на сервере закрыта. Войдите тем же логином и паролем, иначе облако не примет прогресс. На этом устройстве игра остаётся.', false);
+    const box = document.getElementById('authStatusBox');
+    if (box) box.className = 'mt-3 text-[11px] text-center p-2 rounded-xl font-medium bg-amber-950/80 border border-amber-500 text-amber-200';
+  });
 
   // Startup check: if no stored account and not dismissed in session, open auth modal
   const stored = getStoredAccount();

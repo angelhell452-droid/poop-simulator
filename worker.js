@@ -301,6 +301,18 @@ async function handleCloudSave(req, env) {
       const playerId = url.searchParams.get("playerId");
       const action = url.searchParams.get("action");
 
+      if (action === "session") {
+        const user = await sessionUser(env.DB, req);
+        if (!user) {
+          return new Response(JSON.stringify({ online: false }), { status: 401, headers });
+        }
+        return new Response(JSON.stringify({
+          online: true,
+          username: user.username,
+          playerId: user.playerId
+        }), { status: 200, headers });
+      }
+
       if (action === "leaderboard") {
         return handleLeaderboard(url, env, headers);
       }

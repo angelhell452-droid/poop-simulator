@@ -1,4 +1,5 @@
 import { GAME } from '../core/state.js';
+import { events } from '../core/events.js';
 import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal } from './saveManager.js';
 
 export const CLOUD_SAVE_ENDPOINT = '/api/cloud-save';
@@ -18,20 +19,53 @@ function sameSeasonBlank(parsed) {
   return incomingSeq <= localSeq;
 }
 
-function dropDeadSession() {
+function askRelogin() {
   const acc = getStoredAccount();
-  if (!acc?.sessionToken) return;
-  delete acc.sessionToken;
-  saveStoredAccount(acc);
+  if (!acc?.username) return;
+  if (acc.sessionToken) {
+    delete acc.sessionToken;
+    saveStoredAccount(acc);
+  }
   if (sessionPrompted) return;
   sessionPrompted = true;
-  const box = document.getElementById('authStatusBox');
-  if (box) {
-    box.textContent = 'Сессия закрыта. Войдите снова тем же логином и паролем. Прогресс на этом устройстве не стирается.';
-    box.className = 'mt-3 text-[11px] text-center p-2 rounded-xl font-medium bg-amber-950/80 border border-amber-500 text-amber-200';
-    box.classList.remove('hidden');
+  events.emit('auth:relogin');
+}
+
+function dropDeadSession() {
+  askRelogin();
+}
+
+export function markSessionLive() {
+  sessionPrompted = false;
+}
+
+export async function confirmLiveSession() {
+  const stored = getStoredAccount();
+  if (!stored?.username) return true;
+  if (!stored.sessionToken) {
+    askRelogin();
+    return false;
   }
-  document.getElementById('accountModal')?.classList.remove('hidden');
+  try {
+    const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=session`);
+    if (res.status === 401) {
+      askRelogin();
+      return false;
+    }
+    if (!res.ok) return true;
+    const data = await res.json().catch(() => null);
+    if (!data || data.online !== true) {
+      askRelogin();
+      return false;
+    }
+    if (data.playerId && stored.playerId && data.playerId !== stored.playerId) {
+      askRelogin();
+      return false;
+    }
+    return true;
+  } catch (err) {
+    return true;
+  }
 }
 
 export async function hashPassword(password) {
@@ -87,6 +121,12 @@ export async function syncToCloudDatabase() {
   saveLocal();
 
   const statusIndicator = document.getElementById('cloudStatusText');
+  const stored = getStoredAccount();
+  if (stored?.username && !stored.sessionToken) {
+    if (statusIndicator) statusIndicator.textContent = "D1: Войдите";
+    askRelogin();
+    return;
+  }
   if (statusIndicator) statusIndicator.textContent = "D1: Сохр...";
 
   const payload = buildSavePayload();
@@ -169,6 +209,7 @@ export async function registerAccount(username, password) {
         passwordHash,
         sessionToken: data.sessionToken || ''
       });
+      markSessionLive();
       saveLocal();
       return { success: true, username: data.username, playerId: data.playerId };
     } else {
@@ -208,6 +249,7 @@ export async function loginAccount(username, password) {
         passwordHash,
         sessionToken: data.sessionToken || ''
       });
+      markSessionLive();
       GAME.playerId = data.playerId;
       GAME.playerName = data.username;
 
