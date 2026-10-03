@@ -1,8 +1,7 @@
 import { GAME } from '../core/state.js';
 import { FACTORIES } from '../data/factories.data.js';
 import { buyFactory } from '../systems/factoryService.js';
-import { getAffordableEvoInfo, getAffordableFactoryInfo } from '../economy/costs.js';
-import { performEvolution } from '../progression/evolutionService.js';
+import { getAffordableFactoryInfo } from '../economy/costs.js';
 import { getBestKnife, equipBestKnife } from '../systems/knifeService.js';
 import { feedPet, washPet } from '../systems/petCareService.js';
 import { getPrestigeRollsReward } from '../prestige/prestigeService.js';
@@ -115,20 +114,6 @@ function determineBestHint() {
           renderCharacterInventory();
           addVisualParticle(`⚔️ Экипирован: ${bestKnife.name}!`, '#facc15');
         }
-      }
-    };
-  }
-
-  // 5. Affordable Evolution Form
-  const evoInfo = getAffordableEvoInfo();
-  if (evoInfo.canBuy && !evoInfo.maxReached && evoInfo.count > 0) {
-    return {
-      icon: '🧬',
-      text: `Доступна мутация в <b>Форму #${GAME.evoStage + 2}</b> для роста множителя дохода!`,
-      btnText: 'Мутировать 🧬',
-      action: () => {
-        performEvolution();
-        updateHUD();
       }
     };
   }

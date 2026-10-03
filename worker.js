@@ -86,9 +86,22 @@ async function handleCloudSave(req, env) {
       if (!actor) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
       }
-      if (targetId && (targetId === actor.playerId || await isCreator(env, actor))) {
-        await wipePlayerProgress(env.DB, targetId);
-        return new Response(JSON.stringify({ success: true, wiped: targetId }), { status: 200, headers });
+      if (!targetId) {
+        return new Response(JSON.stringify({ error: "Укажите игрока" }), { status: 400, headers });
+      }
+      const resolved = await env.DB.prepare(`
+        SELECT player_id FROM user_accounts
+        WHERE player_id = ? OR username = ? COLLATE NOCASE
+        LIMIT 1
+      `).bind(targetId, targetId).first();
+      const resolvedId = resolved?.player_id || targetId;
+      const saveRow = await env.DB.prepare(`SELECT player_id FROM player_saves WHERE player_id = ? LIMIT 1`).bind(resolvedId).first();
+      if (!resolved && !saveRow) {
+        return new Response(JSON.stringify({ error: "Игрок не найден" }), { status: 404, headers });
+      }
+      if (resolvedId === actor.playerId || await isCreator(env, actor)) {
+        await wipePlayerProgress(env.DB, resolvedId);
+        return new Response(JSON.stringify({ success: true, wiped: resolvedId }), { status: 200, headers });
       }
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers });
     }

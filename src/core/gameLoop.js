@@ -2,12 +2,11 @@ import { GAME } from './state.js';
 import { getPassiveIncome } from '../economy/production.js';
 import { processBatchedClicks, addPendingClicks } from '../systems/clickService.js';
 import { decayNeeds, runAutoCare } from '../systems/petCareService.js';
-import { performEvolution } from '../progression/evolutionService.js';
+import { syncEvolutionToBiomass } from '../progression/evolutionService.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { renderAchievements } from '../ui/achievementsView.js';
 import { saveLocal } from '../save/saveManager.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
-import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { FACTORIES } from '../data/factories.data.js';
 import { buyFactory } from '../systems/factoryService.js';
 import { triggerPetSquash } from '../ui/petCanvasView.js';
@@ -63,13 +62,11 @@ export function gameEngineTick() {
     processBatchedClicks();
   }
 
-  // 3. Transcendence Artifact: Auto-Evolution (every 1.0s)
+  // Forms follow biomass earned this run. The relic only speeds that up.
   autoEvoTimer += dt;
-  if (autoEvoTimer >= 1.0) {
+  if (autoEvoTimer >= 0.4) {
     autoEvoTimer = 0;
-    if (GAME.transcendUpgrades?.autoEvolution && GAME.autoEvolutionEnabled !== false && GAME.evoStage < EVOLUTIONS.length - 1) {
-      performEvolution();
-    }
+    syncEvolutionToBiomass();
   }
 
   // 3.5 Transcendence Artifact: Auto-Buyer (every 1.2s)

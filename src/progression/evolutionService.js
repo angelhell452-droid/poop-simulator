@@ -1,26 +1,57 @@
 import { GAME } from '../core/state.js';
-import { EVOLUTIONS } from '../data/evolutions.data.js';
-import { getAffordableEvoInfo } from '../economy/costs.js';
+import { EVOLUTIONS, calcEvolutionCost } from '../data/evolutions.data.js';
+import { TALENTS } from '../data/talents.data.js';
+import { getAsymptoticDiscountFactor } from '../economy/costs.js';
 import { events } from '../core/events.js';
 import { notePeakForm } from './unlocks.js';
+import { maxUnlockedStage } from './phases.data.js';
+
+export function effectiveFormCost(stage) {
+  const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');
+  const unbreakEvo = TALENTS.find(t => t.id === 'unbreakable_evo');
+  const omegaDisc = omegaTalent ? (1 - Math.pow(0.98, omegaTalent.level || 0)) : 0;
+  const unbreakRaw = (unbreakEvo && unbreakEvo.level > 0) ? (1 - Math.pow(0.985, unbreakEvo.level)) : 0;
+  const discs = [];
+  if (stage >= 3999 && omegaDisc > 0) discs.push(omegaDisc);
+  if (stage >= 5000 && unbreakRaw > 0) discs.push(unbreakRaw);
+  return Math.max(1, Math.floor(calcEvolutionCost(stage) * getAsymptoticDiscountFactor(discs, 0.90)));
+}
+
+function stageForEarnedBiomass(earned, cap) {
+  let lo = 0;
+  let hi = cap;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    if (effectiveFormCost(mid) <= earned) lo = mid;
+    else hi = mid - 1;
+  }
+  return lo;
+}
+
+export function formBiomassCredit() {
+  return Math.max(0, GAME.cycleBiomass || 0);
+}
+
+export function syncEvolutionToBiomass() {
+  const cap = Math.min(EVOLUTIONS.length - 1, maxUnlockedStage(GAME.totalTranscend || 0));
+  const next = stageForEarnedBiomass(formBiomassCredit(), cap);
+  if (next === (GAME.evoStage || 0)) return false;
+  const before = GAME.evoStage || 0;
+  GAME.evoStage = next;
+  notePeakForm();
+  if (next > before) {
+    const target = EVOLUTIONS[next] || EVOLUTIONS[EVOLUTIONS.length - 1];
+    events.emit('evolution:success', {
+      count: next - before,
+      targetName: target.name,
+      evoStage: next
+    });
+  }
+  return next > before;
+}
 
 export function performEvolution() {
-  const evoInfo = getAffordableEvoInfo();
-  if (!evoInfo.canBuy || evoInfo.count <= 0) return false;
-
-  GAME.biomass -= evoInfo.totalCost;
-  GAME.evoStage += evoInfo.count;
-  notePeakForm();
-
-  const target = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[EVOLUTIONS.length - 1];
-  
-  events.emit('evolution:success', {
-    count: evoInfo.count,
-    targetName: target.name,
-    evoStage: GAME.evoStage
-  });
-
-  return true;
+  return syncEvolutionToBiomass();
 }
 
 export function getPoopSkinInfo(stage, isGirly) {

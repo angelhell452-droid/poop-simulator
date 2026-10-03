@@ -111,7 +111,7 @@ for (let i = 0; i < FACTORIES.length; i++) {
   if (epoch === 1 && slot === 0) {
     fac.reqStage = 0;
     fac.cost = 20;
-    fac.baseCps = 8;
+    fac.baseCps = 80;
     continue;
   }
   if (epoch === 1 && slot === 1) {
@@ -135,6 +135,10 @@ for (let i = 0; i < FACTORIES.length; i++) {
   const formMult = Math.max(1, calcEvolutionMult(fac.reqStage));
   const expected = expectedAccountMult(epoch);
   const cpsFactor = 9 * Math.pow(pace, 0.45);
+  // From epoch 11 the plant pays less, so clicks plus factories with no talents,
+  // rolls, plungers, knife or hat flatten out before form 20000.
+  // A built account catches back up through lateComboMult.
+  const lateDrag = Math.pow(1.18, Math.max(0, epoch - 10));
   fac.cost = Math.max(1, Math.round(income * spec.payback * pace));
-  fac.baseCps = (income * cpsFactor) / (formMult * expected);
+  fac.baseCps = (income * cpsFactor) / (formMult * expected * lateDrag);
 }

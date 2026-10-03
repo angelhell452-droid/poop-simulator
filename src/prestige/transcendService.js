@@ -5,14 +5,24 @@ import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
 import { events } from '../core/events.js';
 import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js';
 
-export function getTranscendRequirement() {
+export const BRIDGE_FLUSHES_NEEDED = 2;
+
+export function currentBridgePhase() {
   const t = GAME.totalTranscend || 0;
   const pair = Math.min(PHASE_COUNT / 2, 1 + t);
-  const evenPhase = getPhaseByIndex(pair * 2);
-  const reqForm = evenPhase.flushForm;
+  return getPhaseByIndex(pair * 2);
+}
+
+export function flushCountsForBridge(phaseId) {
+  return (phaseId || 0) >= currentBridgePhase().id;
+}
+
+export function getTranscendRequirement() {
+  const bridge = currentBridgePhase();
+  const reqForm = bridge.flushForm;
   const reqStage = reqForm - 1;
-  const reqPrestiges = 3;
-  const reqBiomass = evenPhase.ceiling * 0.1;
+  const reqPrestiges = BRIDGE_FLUSHES_NEEDED;
+  const reqBiomass = bridge.ceiling * 0.1;
 
   const currentStage = GAME.evoStage || 0;
   const currentForm = currentStage + 1;
@@ -25,9 +35,9 @@ export function getTranscendRequirement() {
   const isMet = meetsPrestiges && meetsStage && meetsBiomass;
 
   return {
-    transcends: t,
-    pair,
-    phase: evenPhase,
+    transcends: GAME.totalTranscend || 0,
+    pair: bridge.pair,
+    phase: bridge,
     reqForm,
     reqStage,
     reqPrestiges,

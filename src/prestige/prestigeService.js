@@ -4,6 +4,7 @@ import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { events } from '../core/events.js';
 import { getPhaseByIndex, getPhaseForForm, maxUnlockedForm } from '../progression/phases.data.js';
+import { flushCountsForBridge } from './transcendService.js';
 
 function gateStatus(phase) {
   const currentStage = GAME.evoStage || 0;
@@ -48,6 +49,7 @@ export function getPrestigeRequirement() {
     meetsBiomass: isMet || gate.meetsBiomass,
     isMet,
     echoPhase: bestMet ? bestMet.id : 0,
+    countsForBridge: !!(bestMet && flushCountsForBridge(bestMet.id)),
     phase: shown
   };
 }
@@ -102,7 +104,9 @@ export function executePrestige(chosenArchetype = 'balanced') {
   GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + breakdown.totalGain;
   GAME.transcendCycleRolls = (GAME.transcendCycleRolls || 0) + breakdown.totalGain;
   GAME.totalPrestiges++;
-  GAME.flushesThisCycle = (GAME.flushesThisCycle || 0) + 1;
+  if (flushCountsForBridge(phaseId)) {
+    GAME.flushesThisCycle = (GAME.flushesThisCycle || 0) + 1;
+  }
   GAME.cycleBiomass = 0;
   GAME.currentRunPeakGPS = 0;
   GAME.archetype = chosenArchetype;

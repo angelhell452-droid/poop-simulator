@@ -63,8 +63,10 @@ export function calcEvolutionCost(i) {
   const phase = getPhaseForStage(i);
   const local = (i - (phase.formStart - 1)) / PHASE_FORMS;
   const cost = phase.floor * Math.pow(1000, Math.min(1, Math.max(0, local)));
-  if (!Number.isFinite(cost)) return phase.ceiling;
-  return Math.max(1, Math.floor(cost));
+  const stretch = Math.pow(i + 1, 1.25);
+  const stretched = cost * stretch;
+  if (!Number.isFinite(stretched)) return phase.ceiling * stretch;
+  return Math.max(1, Math.floor(stretched));
 }
 
 export function calcEvolutionMult(i) {

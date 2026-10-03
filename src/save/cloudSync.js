@@ -12,7 +12,10 @@ function sameSeasonBlank(parsed) {
   if (!parsed?.resetProgress) return false;
   const season = Number(parsed.worldReset ?? parsed.game?.worldReset) || 0;
   const localSeason = Number(GAME.worldReset) || 0;
-  return season > 0 && localSeason === season;
+  if (!(season > 0 && localSeason === season)) return false;
+  const incomingSeq = Number(parsed.adminSeq ?? parsed.game?.cloudAdminSeq) || 0;
+  const localSeq = Number(GAME.cloudAdminSeq) || 0;
+  return incomingSeq <= localSeq;
 }
 
 function dropDeadSession() {

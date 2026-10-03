@@ -1,8 +1,8 @@
 import { GAME } from '../core/state.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown } from '../prestige/transcendService.js';
-import { getRollsIncomeMult } from '../economy/metaMultipliers.js';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, BRIDGE_FLUSHES_NEEDED, currentBridgePhase } from '../prestige/transcendService.js';
+import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js';
 
 import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
@@ -50,39 +50,45 @@ export function updatePrestigeModalRealtime() {
   if (calcEl) {
     const flushes = b.flushes || GAME.totalPrestiges || 0;
     const currentBoost = Math.round((getRollsIncomeMult() - 1) * 100);
-    const postBoost = Math.round((getRollsIncomeMult(b.echoPhase || b.phase?.id || 1, b.isMet ? 1 : 0) - 1) * 100);
+    const echoPhaseId = b.echoPhase || b.phase?.id || 1;
+    const hadEcho = Number((GAME.phaseEcho || {})[echoPhaseId] ?? (GAME.phaseEcho || {})[String(echoPhaseId)] ?? 0);
+    const nextEcho = 1 + getEchoBonus(hadEcho + 1);
+    const postBoost = Math.round((getRollsIncomeMult(echoPhaseId, b.isMet ? 1 : 0) - 1) * 100);
+    const bridge = currentBridgePhase();
+    const bridgeHave = GAME.flushesThisCycle || 0;
 
     let nextMilestoneText = '';
-    if (flushes < 1) nextMilestoneText = '🎯 Первый Смыв оставляет эхо эпохи и пачку втулок';
-    else if ((GAME.flushesThisCycle || 0) < 3) nextMilestoneText = `🎯 Смывы этой пары эпох: ${formatNumber(GAME.flushesThisCycle || 0)}/3 для Прорыва`;
-    else nextMilestoneText = `🏆 Смывов: ${formatNumber(flushes)}. Эхо эпохи стремится к x3.`;
+    if (!b.isMet) nextMilestoneText = 'Смыв откроется на мосте эпохи';
+    else if (!b.countsForBridge) nextMilestoneText = `Для прорыва не считается. Смывы моста: ${formatNumber(bridgeHave)}/${formatNumber(BRIDGE_FLUSHES_NEEDED)}`;
+    else nextMilestoneText = `Засчитается как смыв моста. Сейчас ${formatNumber(bridgeHave)}/${formatNumber(BRIDGE_FLUSHES_NEEDED)}`;
 
     calcEl.innerHTML = `
       <div class="mt-2 p-2.5 rounded-xl bg-purple-950/80 border border-yellow-400/40 text-left space-y-1.5">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] text-yellow-300 uppercase font-black tracking-wider">💰 Расчет награды Втулок:</span>
+          <span class="text-[10px] text-yellow-300 uppercase font-black tracking-wider">💰 Награда: втулки</span>
           <span class="font-game text-sm text-yellow-300 font-bold">+${formatNumber(gain)} <span class="roll-icon"></span></span>
         </div>
         <div class="text-[10px] text-purple-200 space-y-0.5 font-mono">
-          <div>├─ 🌀 Эхо эпохи ${formatNumber(b.echoPhase || b.phase?.id || 1)}: <b class="text-white">+${formatNumber(b.echoGain || 0)}</b></div>
-          <div>├─ 🧻 Пачка втулок за мост: <b class="text-white">+${formatNumber(b.bioPart)}</b></div>
+          <div>├─ 🧻 Втулки за этот мост: <b class="text-white">+${formatNumber(b.bioPart)}</b></div>
+          <div>├─ 🌀 Эхо эпохи ${formatNumber(echoPhaseId)} после смыва: <b class="text-white">доход x${formatNumber(nextEcho)}</b></div>
           <div>├─ 🗡️ Бонус оружия (Коса): <b class="${b.scytheActive ? 'text-emerald-300' : 'text-stone-400'}">${b.scytheActive ? '+25% (АКТИВЕН)' : '0%'}</b></div>
           <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${formatNumber(Math.round((b.flushTalentBonus - 1) * 100))}%</b></div>
         </div>
         <div class="pt-1.5 border-t border-purple-800/60 text-[10px] text-amber-300 font-sans space-y-0.5">
           <div class="font-bold flex items-center gap-1">
             <span>💡</span>
-            <span>Как получить больше Втулок?</span>
+            <span>Втулки, эхо и прорыв — разные вещи</span>
           </div>
           <div class="text-purple-200/90 text-[9px] leading-tight">
-            • Закройте мост эпохи: форма и биомасса забега<br/>
-            • Первый Смыв эпохи даёт эхо x2. Повторные Смывы усиливают его, пока оно не упрётся в x3<br/>
-            • Качайте талант «Вечный Смыв Судьбы», чтобы пачка втулок была чуть больше
+            • Втулки — валюта. Их тратят на таланты и кейсы<br/>
+            • Эхо — множитель дохода эпохи, которую смыли. Его не тратят и на прорыв оно не копится<br/>
+            • Первый смыв эпохи ставит эхо на x2. Следующие подходят к x3<br/>
+            • Прорыву нужны ${formatNumber(BRIDGE_FLUSHES_NEEDED)} смыва моста эпохи ${formatNumber(bridge.id)} (форма #${formatNumber(bridge.flushForm)}). Третий заход на этот мост — сам прорыв, награда там вантузы
           </div>
         </div>
       </div>
       <div class="text-[11px] text-purple-200 mt-2">
-        Бонус ко ВСЕМУ доходу: <b class="text-white">+${formatNumber(currentBoost)}%</b> ➔ После смыва: <b class="text-emerald-300">+${formatNumber(postBoost)}%</b>
+        Бонус эха к доходу: <b class="text-white">+${formatNumber(currentBoost)}%</b> ➔ После смыва: <b class="text-emerald-300">+${formatNumber(postBoost)}%</b>
       </div>
       <div class="mt-1.5 pt-1.5 border-t border-yellow-400/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px]">
         <span class="text-yellow-400 font-bold">Смыв: Ранг ${formatNumber(flushes)}</span>
@@ -124,10 +130,10 @@ export function updateTranscendModalRealtime() {
       <div class="space-y-1.5">
         <div class="flex items-center justify-between text-xs">
           <span class="${t.meetsPrestiges ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-            🌀 Смывы: ${formatNumber(t.currentPrestiges)} / ${formatNumber(t.reqPrestiges)}
+            🌀 Смывы моста: ${formatNumber(t.currentPrestiges)} / ${formatNumber(t.reqPrestiges)}
           </span>
           <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsPrestiges ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-            ${t.meetsPrestiges ? '✓ Выполнено' : `Нужно еще ${formatNumber(t.reqPrestiges - t.currentPrestiges)} смывов`}
+            ${t.meetsPrestiges ? '✓ Выполнено' : `Нужно еще ${formatNumber(t.reqPrestiges - t.currentPrestiges)} смыва моста`}
           </span>
         </div>
         <div class="flex items-center justify-between text-xs">
@@ -165,8 +171,9 @@ export function updateTranscendModalRealtime() {
             <span>Как получить больше Вантузов?</span>
           </div>
           <div class="text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
-            <div>• <b>Смывы</b>: три Смыва в этой паре эпох открывают Прорыв</div>
-            <div>• <b>Мост</b>: дойдите до формы чётной эпохи и наберите биомассу её пояса</div>
+            <div>• <b>Смывы моста</b>: ${formatNumber(t.reqPrestiges)} смыва, закрывших мост этой чётной эпохи. Ранний смыв даёт втулки и эхо, в этот счётчик он не входит</div>
+            <div>• <b>Третий заход</b>: форма и биомасса этого же моста. Это сам прорыв, отдельный третий смыв не нужен</div>
+            <div>• <b>Эхо</b> доход умножает и не тратится. Валюта прорыва — вантузы</div>
             <div>• <b>Ключ</b>: Прорыв открывает следующую пару эпох. Награда — 1 вантуз, и ещё 1 за конец эпохи. Потолок ${formatNumber(4)}</div>
           </div>
         </div>
@@ -179,7 +186,6 @@ export function updateTranscendModalRealtime() {
     const transcends = t.transcends;
     let tMilestoneText = '';
     if (transcends < 1) tMilestoneText = '🎯 Прорыв #1: Вантузы и Базовые Реликвии (Тир 1)';
-    else if (transcends < 2) tMilestoneText = `🎯 Прорыв #2: 🌀 Авто-мутации. Авто-заводы уже в тире 1 [${formatNumber(transcends)}/2]`;
     else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: 🌠 Звёздный дождь и кузница [${formatNumber(transcends)}/3]`;
     else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⏳ Временной Разлом (+25% к CPS) [${formatNumber(transcends)}/5]`;
     else if (transcends < 10) tMilestoneText = `🎯 Прорыв #10: 🌌 Сингулярность & Корона Демиурга [${formatNumber(transcends)}/10]`;
@@ -213,7 +219,7 @@ export function updateTranscendModalRealtime() {
     if (!t.isMet) {
       execTransBtn.disabled = true;
       if (!t.meetsPrestiges) {
-        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(t.reqPrestiges)} СМЫВОВ (${formatNumber(t.currentPrestiges)}/${formatNumber(t.reqPrestiges)}) 🔒`;
+        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(t.reqPrestiges)} СМЫВА МОСТА (${formatNumber(t.currentPrestiges)}/${formatNumber(t.reqPrestiges)}) 🔒`;
       } else if (!t.meetsStage) {
         execTransBtn.textContent = `ТРЕБУЕТСЯ ФОРМА #${formatNumber(t.reqForm)} (СЕЙЧАС #${formatNumber(t.currentForm)}) 🔒`;
       } else {
@@ -229,13 +235,13 @@ export function updateTranscendModalRealtime() {
 export function openPrestigeModal() {
   pendingPrestigeArchetype = GAME.archetype || 'balanced';
   renderArchetypeButtons();
-  updatePrestigeModalRealtime();
   document.getElementById('prestigeModal')?.classList.remove('hidden');
+  updatePrestigeModalRealtime();
 }
 
 export function openTranscendModal() {
-  updateTranscendModalRealtime();
   document.getElementById('transcendModal')?.classList.remove('hidden');
+  updateTranscendModalRealtime();
 }
 
 export function initModals() {

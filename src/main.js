@@ -7,7 +7,6 @@ import { renderFactories, initFactoryListeners } from './ui/factoryView.js';
 import { renderTalents, initTalentsListeners } from './ui/talentView.js';
 import { renderShop } from './ui/shopView.js';
 import { renderAchievements } from './ui/achievementsView.js';
-import { renderEvoChronicles } from './ui/evoChroniclesView.js';
 import { renderCasesSystem, initCasesListeners } from './ui/casesView.js';
 import { initKnivesIndexListeners } from './ui/knivesIndexView.js';
 import { initPetCanvas, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js';
@@ -21,7 +20,6 @@ import { initBugReportListeners } from './ui/bugReportView.js';
 import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
 import { addPendingClicks, processBatchedClicks } from './systems/clickService.js';
-import { performEvolution } from './progression/evolutionService.js';
 import { checkAchievements } from './systems/achievementsService.js';
 import { getPassiveIncome } from './economy/production.js';
 import { TALENTS } from './data/talents.data.js';
@@ -251,19 +249,6 @@ export async function bootstrap() {
   });
 
 
-  // Evolution button
-  document.getElementById('btnEvolve')?.addEventListener('click', () => {
-    if (performEvolution()) {
-      triggerPetSquash(1.4, 1.4);
-      addVisualParticle('🧬 Мутация!', '#facc15', 1.5);
-      checkAchievements();
-      renderEvoChronicles();
-      updateHUD();
-      saveLocal();
-      requestCloudSync(1500);
-    }
-  });
-
   // Multiplier switcher buttons (x1, x10, x100, xMAX)
   document.querySelectorAll('.buy-mult-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -281,7 +266,7 @@ export async function bootstrap() {
   document.querySelectorAll('.dash-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       const target = tab.dataset.target;
-      ['panelEvo', 'panelFactories', 'panelShop', 'panelTalents', 'panelCases', 'panelTrophies'].forEach(id => {
+      ['panelFactories', 'panelShop', 'panelTalents', 'panelCases', 'panelTrophies'].forEach(id => {
         document.getElementById(id)?.classList.add('hidden');
       });
       document.getElementById(target)?.classList.remove('hidden');
@@ -296,7 +281,6 @@ export async function bootstrap() {
       else if (target === 'panelTalents') renderTalents();
       else if (target === 'panelShop') renderShop();
       else if (target === 'panelCases') renderCasesSystem();
-      else if (target === 'panelEvo') renderEvoChronicles();
       else if (target === 'panelTrophies') renderAchievements();
     });
   });
@@ -325,7 +309,6 @@ export async function bootstrap() {
   renderTalents();
   renderShop();
   renderAchievements();
-  renderEvoChronicles();
   renderCasesSystem();
   renderCharacterInventory();
   updateHUD();
@@ -337,14 +320,6 @@ export async function bootstrap() {
 
   // 10. Start High-Resolution Game Loop (100ms)
   startGameLoop();
-
-  // Dynamic live chronicles update on any evolution
-  events.on('evolution:success', () => {
-    const panelEvo = document.getElementById('panelEvo');
-    if (panelEvo && !panelEvo.classList.contains('hidden')) {
-      renderEvoChronicles();
-    }
-  });
 
   // 11. Auto-sync to Cloudflare D1 every 10s
   setInterval(() => {

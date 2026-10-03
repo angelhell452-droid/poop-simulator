@@ -3,7 +3,8 @@ import { FACTORIES } from '../data/factories.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getAffordableFactoryInfo } from '../economy/costs.js';
 import { buyFactory } from '../systems/factoryService.js';
-import { updateHUD } from './hudView.js';
+import { updateHUD, openRateBreakdown } from './hudView.js';
+import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production.js';
 import { saveLocal } from '../save/saveManager.js';
 
 let activeFactoryTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
@@ -14,6 +15,13 @@ export function initFactoryListeners() {
       activeFactoryTier = btn.dataset.tier;
       renderFactories();
     });
+  });
+  document.getElementById('factoriesContainer')?.addEventListener('click', (e) => {
+    const income = e.target.closest('.factory-income-btn');
+    if (!income) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openRateBreakdown(getFactoryBreakdown(income.dataset.id));
   });
 }
 
@@ -65,6 +73,24 @@ export function renderFactories() {
     }
 
     const milestonePct = Math.min(100, Math.round((currentCount / nextMilestone) * 100));
+    const milestoneRank = factoryMilestoneRank(currentCount);
+    const starCount = Math.min(5, milestoneRank);
+    const frameRank = Math.max(0, milestoneRank - 5);
+    let starFrame = '';
+    let starTitle = `Вех: ${formatNumber(milestoneRank)}`;
+    if (frameRank === 1) {
+      starFrame = 'border border-slate-200 bg-slate-800/80 shadow-[0_0_6px_rgba(226,232,240,0.75)]';
+      starTitle += '. Серебряная рамка';
+    } else if (frameRank === 2) {
+      starFrame = 'border border-yellow-300 bg-amber-950/80 shadow-[0_0_6px_rgba(250,204,21,0.8)]';
+      starTitle += '. Золотая рамка';
+    } else if (frameRank >= 3) {
+      starFrame = 'border border-cyan-200 bg-cyan-950/70 shadow-[0_0_8px_rgba(103,232,249,0.85)]';
+      starTitle += `. Рамка сияния, ещё ${formatNumber(frameRank - 2)}`;
+    }
+    const starsHtml = starCount > 0
+      ? `<span class="inline-flex items-center text-[11px] leading-none text-amber-300 rounded px-0.5 ${starFrame}" title="${starTitle}">${'★'.repeat(starCount)}</span>`
+      : '';
 
     const countTxt = buyMultiplier === 'max'
       ? `+${formatNumber(facInfo.count)} (МАКС)`
@@ -89,11 +115,12 @@ export function renderFactories() {
           <div>
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="font-bold text-xs text-stone-200">${fac.name}</span>
+              ${starsHtml}
               ${tierBadge}
               ${isLocked ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-red-950/80 text-red-300 border border-red-700/50 font-bold">Форма #${fac.reqStage + 1}</span>` : ''}
             </div>
             <div class="flex items-center gap-2 text-[11px] font-game flex-wrap">
-              <span class="text-emerald-400">+${formatNumber(fac.baseCps * (currentCount || 1))} /сек</span>
+              <button type="button" class="factory-income-btn text-emerald-400 underline decoration-dotted decoration-emerald-700" data-id="${fac.id}" title="Сырой доход. Нажмите, чтобы увидеть множители">+${formatNumber(fac.baseCps * (currentCount || 1))} /сек</button>
               <span class="text-stone-600">•</span>
               <span class="text-stone-400">1 шт: <b class="text-amber-300 font-mono">${formatNumber(facInfo.singleCost)} 💨</b></span>
             </div>
@@ -108,7 +135,7 @@ export function renderFactories() {
         <div class="flex-1 bg-stone-950 h-1.5 rounded-full overflow-hidden border border-stone-800">
           <div class="h-full bg-gradient-to-r from-amber-500 to-yellow-400" style="width: ${milestonePct}%"></div>
         </div>
-        <span class="text-[9px] text-stone-400 shrink-0 font-bold">${formatNumber(currentCount)}/${formatNumber(nextMilestone)} (${milestoneMultiplierDesc})</span>
+        <span class="text-[9px] text-stone-400 shrink-0 font-bold" title="Следующая веха копий. Награда в скобках включается на этой отметке и остаётся. Прошлые вехи не снимаются.">${formatNumber(currentCount)}/${formatNumber(nextMilestone)} (след. ${milestoneMultiplierDesc})</span>
       </div>
 
       <button class="buy-factory-btn w-full py-1.5 px-3 rounded-xl border text-xs font-game transition ${canBuy ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 border-yellow-300 hover:brightness-110 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${fac.id}" ${canBuy ? '' : 'disabled'}>

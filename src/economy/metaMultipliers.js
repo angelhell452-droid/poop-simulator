@@ -43,6 +43,20 @@ export function expectedAccountMult(phaseId) {
   return 11.5 * Math.pow(1.14, id - 4);
 }
 
+/**
+ * From epoch 11 a built account pulls ahead of the factory curve.
+ * readiness 0 leaves income unchanged. readiness 1 is the tuned full set:
+ * knife, hat, plungers, and talents with the shop or relics.
+ * Tuned so that run reaches form 20000 in about 77 hours. Epochs 1–10 stay put.
+ */
+export function lateComboMult(phaseId, readiness) {
+  const phase = Math.max(1, phaseId || 1);
+  if (phase <= 10) return 1;
+  const ready = Math.max(0, Math.min(1, Number(readiness) || 0));
+  if (ready <= 0) return 1;
+  return Math.pow(1.34, (phase - 10) * ready);
+}
+
 export function dampenGearMult(raw, phaseId) {
   const knee = expectedAccountMult(phaseId);
   const value = Math.max(1, Number(raw) || 1);

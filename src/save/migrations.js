@@ -11,7 +11,7 @@ export function migrateSaveData(rawSave) {
   // Check if save is v1 or flat object
   if (!rawSave.saveVersion || rawSave.saveVersion < 2) {
     const legacy = rawSave.game || rawSave;
-    return applyFactoryV5(applyPhaseV4(applyEconomyV3({
+    return applyBridgeV6(applyFactoryV5(applyPhaseV4(applyEconomyV3({
       saveVersion: 2,
       saveTimestamp: Date.now(),
       game: {
@@ -68,7 +68,7 @@ export function migrateSaveData(rawSave) {
       purchasedItems: rawSave.purchasedItems || [],
       knifeStats: rawSave.knifeStats || [],
       knifeStars: rawSave.knifeStars || {}
-    })));
+    }))));
   }
 
   if (rawSave && rawSave.game) {
@@ -79,7 +79,7 @@ export function migrateSaveData(rawSave) {
     }
   }
 
-  return applyFactoryV5(applyPhaseV4(applyEconomyV3(rawSave)));
+  return applyBridgeV6(applyFactoryV5(applyPhaseV4(applyEconomyV3(rawSave))));
 }
 
 function saveVersionOf(save) {
@@ -264,5 +264,15 @@ function applyFactoryV5(save) {
   game.saveVersion = 5;
   save.game = game;
   save.saveVersion = 5;
+  return save;
+}
+
+function applyBridgeV6(save) {
+  if (!save || saveVersionOf(save) >= 6) return save;
+  const game = save.game || {};
+  game.flushesThisCycle = 0;
+  game.saveVersion = 6;
+  save.game = game;
+  save.saveVersion = 6;
   return save;
 }

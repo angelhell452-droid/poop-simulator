@@ -1,5 +1,6 @@
 import { applySaveDataSafely, saveLocal } from '../save/saveManager.js';
-import { adminRequest, fetchAdminSession, getStoredAccount, wipeAllCloudSaves, wipeCloudPlayer } from '../save/cloudSync.js';
+import { AUTH_STORAGE_KEY, adminRequest, fetchAdminSession, getStoredAccount, wipeAllCloudSaves, wipeCloudPlayer } from '../save/cloudSync.js';
+import { STORAGE_KEY, BACKUP_KEY } from '../save/saveManager.js';
 import { updateHUD } from './hudView.js';
 import { renderFactories } from './factoryView.js';
 import { renderTalents } from './talentView.js';
@@ -382,7 +383,9 @@ export function initAdminPanel() {
       setAdminStatus(result.error || 'Не сбросилось', false);
       return;
     }
-    if (playerId === (adminPlayerId || getStoredAccount()?.playerId)) {
+    if (playerId === (adminPlayerId || getStoredAccount()?.playerId) || result.wiped === (adminPlayerId || getStoredAccount()?.playerId)) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(BACKUP_KEY);
       location.reload();
       return;
     }
@@ -401,6 +404,13 @@ export function initAdminPanel() {
     if (!result.success) {
       setAdminStatus(result.error || 'Не сбросилось', false);
       return;
+    }
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(BACKUP_KEY);
+    const account = getStoredAccount();
+    if (account?.sessionToken) {
+      delete account.sessionToken;
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(account));
     }
     location.reload();
   });

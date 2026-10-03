@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.32 PRO</title>
+  <title>Poop Simulator v4.9.43 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.32 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.43 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -290,7 +290,7 @@
           class="w-full flex items-center justify-between gap-2 py-0.5 text-[11px] text-stone-300">
           <div class="flex items-center gap-1.5 text-cyan-200">
             <span class="text-sm">🔒</span>
-            <span>Авто-заводы открываются на тире 1 Прорыва, авто-мутации — на тире 2</span>
+            <span>Авто-заводы открываются на тире 1 Прорыва</span>
           </div>
           <button id="btnTranscendAutoInfo"
             class="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold underline cursor-pointer bg-transparent border-0 flex items-center gap-1 shrink-0">
@@ -321,11 +321,6 @@
                   class="auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-stone-200 hover:bg-stone-800">Все заводы по порядку</button>
               </div>
             </div>
-            <button id="btnToggleAutoEvolution"
-              class="hidden px-2.5 py-1 rounded-xl border text-[10px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-300 border-stone-700">
-              <span id="autoEvolutionLed" class="w-2 h-2 rounded-full bg-stone-500"></span>
-              <span id="autoEvolutionLabel">Мутации: ВЫКЛ</span>
-            </button>
           </div>
         </div>
       </div>
@@ -523,9 +518,8 @@
 
       <!-- Nav Tabs (6 Tabs) -->
       <div
-        class="grid grid-cols-6 bg-stone-950 border-b border-amber-900/80 text-[10px] sm:text-[11px] font-black shrink-0">
-        <button class="dash-tab py-1.5 text-center bg-amber-700 text-white" data-target="panelEvo">🧬 Формы</button>
-        <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelFactories">🏭
+        class="grid grid-cols-5 bg-stone-950 border-b border-amber-900/80 text-[10px] sm:text-[11px] font-black shrink-0">
+        <button class="dash-tab py-1.5 text-center bg-amber-700 text-white" data-target="panelFactories">🏭
           Заводы</button>
         <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelCases">🔪
           Кейсы</button>
@@ -563,33 +557,8 @@
       <!-- Panel Body (Single Natural Scroll Container) -->
       <div class="flex-1 min-h-0 overflow-y-auto p-2 sm:p-2.5 custom-scroll space-y-2 text-xs" id="dashPanels">
 
-        <!-- 1. EVOLUTIONS (20,000 FORMS) -->
-        <div id="panelEvo" class="space-y-2">
-          <div
-            class="bg-gradient-to-r from-amber-900/80 to-yellow-900/80 p-2.5 rounded-2xl border border-yellow-500/50 shadow">
-            <div class="flex justify-between items-center mb-1">
-              <span class="font-bold text-amber-200 uppercase text-[10px]">Текущая Ступень:</span>
-              <span class="font-black bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded" id="evoProgressBadge">Форма 1</span>
-            </div>
-            <div class="font-game text-sm sm:text-base text-yellow-300" id="evoStageName">Форма 1: Исходная Кварк-Капля
-            </div>
-            <div class="text-[11px] text-stone-300 mt-0.5" id="evoStageDesc">Микроскопическое начало органической
-              вселенной.</div>
-            <div class="mt-2 flex items-center justify-between pt-1.5 border-t border-amber-800/80">
-              <span class="font-bold text-stone-300" id="evoCostLabel">След: 100 💨</span>
-              <button id="btnEvolve"
-                class="bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game text-xs px-3.5 py-1 rounded-xl border border-yellow-300 shadow jelly-btn disabled:opacity-40 disabled:cursor-not-allowed">
-                Мутировать! 🧬
-              </button>
-            </div>
-          </div>
-
-          <div class="font-bold text-stone-400 uppercase text-[10px] px-1">Хроники мутаций:</div>
-          <div class="space-y-1.5 pr-1" id="evoListContainer"></div>
-        </div>
-
-        <!-- 2. FACTORIES PRODUCTION -->
-        <div id="panelFactories" class="hidden space-y-2">
+        <!-- FACTORIES PRODUCTION -->
+        <div id="panelFactories" class="space-y-2">
           <div class="text-stone-400 text-[10.5px] px-1">Автоматические био-заводы дают стабильный доход каждую секунду:
           </div>
           <!-- Factory Tier Sub-Sections -->
@@ -778,9 +747,9 @@
       <div
         class="p-2 bg-stone-950 border-t border-amber-900/60 text-[10px] text-stone-400 flex justify-between items-center h-[34px] min-h-[34px] overflow-hidden whitespace-nowrap shrink-0">
         <div class="truncate flex items-center gap-1.5 font-mono">
-          <span>Доход: <b class="text-emerald-400 tabular-nums" id="footPassiveRate">+0 /сек</b></span>
+          <button type="button" id="btnFootPassive" class="hover:text-emerald-200" title="Из чего складывается доход">Доход: <b class="text-emerald-400 tabular-nums" id="footPassiveRate">+0 /сек</b></button>
           <span class="text-stone-600">|</span>
-          <span>Клик: <b class="text-amber-300 tabular-nums min-w-[28px] inline-block" id="footClickPower">1</b></span>
+          <button type="button" id="btnFootClick" class="hover:text-amber-100" title="Из чего складывается клик">Клик: <b class="text-amber-300 tabular-nums min-w-[28px] inline-block" id="footClickPower">1</b></button>
           <span id="footCpsRate"
             class="text-yellow-400 font-bold tabular-nums min-w-[65px] inline-block opacity-0 transition-opacity duration-150"></span>
         </div>
@@ -789,6 +758,20 @@
       </div>
     </aside>
   </main>
+
+  <div id="evoXpDock" class="fixed bottom-0 inset-x-0 z-40">
+    <div class="w-full bg-stone-950/95 border-t-2 border-amber-700 px-2 sm:px-4 py-2">
+      <div class="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3">
+        <div id="evoStageName" class="shrink-0 font-game text-[11px] sm:text-xs text-yellow-300 truncate max-w-[26%] sm:max-w-[220px]">Форма #1</div>
+        <div class="relative flex-1 h-6 bg-stone-800 rounded-full overflow-hidden border border-amber-500/70">
+          <div id="evoXpFill" class="h-full bg-gradient-to-r from-amber-600 via-yellow-400 to-emerald-400 transition-all duration-300" style="width:0%"></div>
+          <div id="evoXpLabel" class="absolute inset-0 flex items-center justify-center font-currency text-[11px] sm:text-xs text-white font-bold tabular-nums drop-shadow">0 / 1.43k</div>
+        </div>
+        <div id="evoXpLeft" class="shrink-0 font-currency text-[11px] sm:text-xs text-amber-100 tabular-nums">ещё 1.43k</div>
+      </div>
+      <span id="evoStageDesc" class="hidden"></span>
+    </div>
+  </div>
 
   <div id="adminModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-stone-900 text-stone-100 rounded-3xl border-2 border-rose-500/70 max-w-xl w-full p-5 relative shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -863,7 +846,7 @@
         <div class="text-4xl mb-2 animate-bounce">👑</div>
         <h3 class="font-game text-xl text-yellow-300">Облачный Аккаунт D1</h3>
         <p class="text-[11px] text-stone-400 mt-1">
-          Создайте аккаунт, чтобы сохранять мутации, ножи и возвращаться к игре с любого устройства!
+          Создайте аккаунт, чтобы сохранять формы, ножи и возвращаться к игре с любого устройства!
         </p>
       </div>
 
@@ -1159,7 +1142,7 @@
       <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex flex-col gap-0.5">
           <span class="text-stone-300 text-[10px] uppercase font-bold">Условие доступа:</span>
-          <div id="transcendReqLabel" class="text-cyan-300 font-bold">3 Смыва пары эпох и закрытый мост</div>
+          <div id="transcendReqLabel" class="text-cyan-300 font-bold">2 смыва моста и третий заход на него</div>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Запас Втулок Судьбы:</span>
@@ -1628,11 +1611,29 @@
               <b class="text-yellow-400">🎯 Зачем нужна:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Покупка новых фабрик и расширение пассивного CPS</li>
-                <li>Мутация персонажа. Дальше подписанных вех карта не показывает, где конец</li>
+                <li>Форма растёт сама от биомассы забега. Дальше подписанных вех карта не показывает, где конец</li>
                 <li>Активация множителей покупки (x1, x10, x100, МАКС)</li>
               </ul>
             </div>
           </div>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/50 shadow">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-2xl">🏭</span>
+            <span class="font-game text-sm text-emerald-300">Вехи копий завода</span>
+          </div>
+          <p class="text-stone-300 leading-relaxed">
+            Полоска под заводом считает копии до следующей вехи. Надпись вроде <b class="text-emerald-300">12/25 (след. x2)</b> — это не текущий множитель. x2 включится, когда копий станет 25, и останется навсегда. Следующая надпись меньше не потому, что бонус сняли, а потому что следующая веха даёт меньшую добавку.
+          </p>
+          <ul class="list-disc list-inside text-stone-300 mt-2 space-y-0.5 text-[11px]">
+            <li>25 копий: весь доход этого завода x2.</li>
+            <li>50 копий: ещё x2. Вместе уже x4.</li>
+            <li>100, 200 и 500 копий: ещё по x1.5 каждая.</li>
+            <li>1000 копий: ещё x2. Каждая следующая тысяча: ещё x1.5.</li>
+            <li>Зелёное число на карточке — сырой доход без вех. Нажмите на него: там видна веха и вклад в нижний доход.</li>
+            <li>Каждая взятая веха рисует звезду на заводе, до пяти. Шестая веха заключает звёзды в серебряную рамку, седьмая — в золотую, дальше рамка сияет.</li>
+          </ul>
         </div>
 
         <div class="p-3.5 rounded-2xl bg-yellow-950/40 border border-yellow-500/50 shadow">
@@ -1694,15 +1695,15 @@
               I ранга</span>
           </div>
           <p class="text-stone-300 leading-relaxed">
-            Священные втулки от Великого Смыва Судьбы. Дают глобальный постоянный множитель ко <b
-              class="text-yellow-300">ВСЕМУ</b> доходу!
+            Священные втулки от Великого Смыва Судьбы. Их тратят на таланты и кейсы. Доход умножает не запас втулок, а эхо смытой эпохи.
           </p>
           <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
             <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
               <b class="text-emerald-400">⚡ Как зарабатывать:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
-                <li>Первый Смыв созревает примерно за 5–10 минут: форма 80 и биомасса забега. Первый отклик эха — x2</li>
-                <li>Дальше мост эпохи стоит примерно на 40% её форм. Эхо ползёт к x3. Втулки тратятся на таланты и кейсы</li>
+                <li>Первый Смыв созревает примерно за 5–10 минут: форма 80 и биомасса забега. Он даёт втулки и эхо x2</li>
+                <li>Эхо — множитель дохода этой эпохи. Первый смыв ставит x2, следующие подходят к x3. Эхо не тратится и для прорыва не копится</li>
+                <li>Дальше мост эпохи стоит примерно на 40% её форм. Втулки тратятся на таланты и кейсы</li>
                 <li>Пассивный Хроно-генератор втулок из Прорыва</li>
               </ul>
             </div>
@@ -1711,7 +1712,7 @@
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Древо Талантов: 18 вечных умений прокачки</li>
                 <li>Открытие оружейных контейнеров (Фазы 1-3)</li>
-                <li>Астральный Прорыв открывается тремя Смывами пары эпох и закрытым мостом</li>
+                <li>Астральный Прорыв — отдельная награда. Ему нужны 2 смыва моста чётной эпохи и третий заход на этот мост</li>
               </ul>
             </div>
           </div>
@@ -1734,14 +1735,14 @@
               <b class="text-emerald-400">⚡ Как зарабатывать:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Астральный Прорыв (кнопка 🪠 Прорыв)</li>
-                <li>Условие: 3 Смыва в текущей паре эпох и закрытый мост чётной эпохи. Награда — 1 вантуз, и ещё 1 если закрыт конец эпохи. Потолок 4. Плюс ключ следующей пары</li>
+                <li>Условие: 2 смыва, закрывших мост текущей чётной эпохи, и третий заход на этот же мост. Ранний смыв даёт втулки и эхо, в счётчик прорыва не входит. Награда — 1 вантуз, и ещё 1 если закрыт конец эпохи. Потолок 4. Плюс ключ следующей пары</li>
                 <li>Втулки после Прорыва остаются. Сбрасываются форма, заводы и счётчик смывов этой пары эпох</li>
               </ul>
             </div>
             <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
               <b class="text-yellow-400">🎯 Зачем нужна:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
-                <li>4 Тира Астральных Реликвий (Авто-Заводы, Авто-Мутация форм)</li>
+                <li>4 Тира Астральных Реликвий (авто-заводы, кузница, бури)</li>
                 <li>Открытие богоподобных кейсов (Небесный, Cobblestone, Демиург, Вечность)</li>
                 <li>Высшая Космическая Сингулярность</li>
               </ul>
@@ -2023,6 +2024,15 @@
           <!-- Rendered in JS -->
         </div>
       </div>
+    </div>
+  </div>
+
+  <div id="rateBreakdownModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-emerald-400/70 max-w-sm w-full p-5 relative shadow-2xl text-left space-y-3 max-h-[85vh] overflow-y-auto">
+      <button type="button" class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
+      <h3 class="font-game text-base text-emerald-300 pr-6" id="rateBreakdownTitle">Доход</h3>
+      <div id="rateBreakdownRows" class="space-y-1 text-[11px]"></div>
+      <div class="p-2.5 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-sm font-game text-emerald-200" id="rateBreakdownTotal"></div>
     </div>
   </div>
 

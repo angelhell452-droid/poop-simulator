@@ -94,17 +94,6 @@ export const TRANSCEND_UPGRADES = [
     reqTranscend: 1
   },
   {
-    id: 'art_auto_evolution',
-    key: 'autoEvolution',
-    name: '🌀 Авто-Эволюция Мутаций',
-    desc: 'Автоматически покупает доступные формы мутации.',
-    cost: 5,
-    max: 1,
-    tier: 2,
-    tierName: 'Тир 2: Продвинутый',
-    reqTranscend: 2
-  },
-  {
     id: 'art_factory_overdrive',
     key: 'factoryOverdrive',
     name: '⚡ Гипер-Ускоритель Заводов',
@@ -120,7 +109,7 @@ export const TRANSCEND_UPGRADES = [
     id: 'art_evo_blessing',
     key: 'evoBlessing',
     name: '🧬 Благословение Демиурга',
-    desc: '+8% к множителю форм мутации за уровень',
+    desc: '+8% к множителю форм за уровень',
     cost: 8,
     costStep: 3,
     max: 12,

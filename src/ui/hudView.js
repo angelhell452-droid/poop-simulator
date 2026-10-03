@@ -1,8 +1,9 @@
 import { GAME } from '../core/state.js';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { formatNumber } from '../utils/numberFormatter.js';
-import { getPassiveIncome, getClickPower, getActiveBuffsList, getTurboClickMult } from '../economy/production.js';
+import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js';
 import { getAffordableEvoInfo } from '../economy/costs.js';
+import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
 import { liveCps } from '../core/gameLoop.js';
 import { saveLocal } from '../save/saveManager.js';
@@ -17,12 +18,47 @@ import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js';
 import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
 import { getPrestigeRewardBreakdown, executePrestige } from '../prestige/prestigeService.js';
 import { getTranscendRewardBreakdown, executeTranscend } from '../prestige/transcendService.js';
-import { renderEvoChronicles } from './evoChroniclesView.js';
 import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal } from './modalManager.js';
 import { showKnifeToast } from './characterInventoryView.js';
 
 const FLUSH_COOLDOWN = 35000;
-let lastEvoRenderStage = -1;
+
+function escRate(text) {
+  return String(text).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+export function openRateBreakdown(sheet) {
+  const modal = document.getElementById('rateBreakdownModal');
+  if (!modal || !sheet) return;
+  const title = document.getElementById('rateBreakdownTitle');
+  const rows = document.getElementById('rateBreakdownRows');
+  const total = document.getElementById('rateBreakdownTotal');
+  if (title) title.textContent = sheet.title || '';
+  if (rows) {
+    rows.innerHTML = (sheet.rows || []).map((row) => {
+      if (row.kind === 'head') {
+        return `<div class="pt-2 text-[10px] uppercase tracking-wide text-stone-500">${escRate(row.name)}</div>`;
+      }
+      const tone = row.detail ? 'text-stone-500' : 'text-stone-200';
+      return `<div class="flex justify-between gap-3 ${tone}"><span>${escRate(row.name)}</span><b class="tabular-nums text-emerald-300 shrink-0">${escRate(row.text)}</b></div>`;
+    }).join('');
+  }
+  if (total) total.textContent = sheet.total || '';
+  modal.classList.remove('hidden');
+}
+
+function bindRateClicks() {
+  const passiveBtn = document.getElementById('btnFootPassive');
+  if (passiveBtn && !passiveBtn.dataset.bound) {
+    passiveBtn.dataset.bound = '1';
+    passiveBtn.addEventListener('click', () => openRateBreakdown(getPassiveBreakdown()));
+  }
+  const clickBtn = document.getElementById('btnFootClick');
+  if (clickBtn && !clickBtn.dataset.bound) {
+    clickBtn.dataset.bound = '1';
+    clickBtn.addEventListener('click', () => openRateBreakdown(getClickBreakdown()));
+  }
+}
 
 
 export function updateHUD() {
@@ -106,48 +142,46 @@ export function updateHUD() {
     topArchBadge.textContent = arch.badge;
     topArchBadge.title = `Специализация Смыва: ${arch.name} (${arch.desc}). Нажмите для настройки.`;
   }
-  const badgeEvo = document.getElementById('evoProgressBadge');
-  if (badgeEvo) badgeEvo.textContent = `Форма ${formatNumber(currEvo.id + 1)}`;
   const nameEvo = document.getElementById('evoStageName');
-  if (nameEvo) nameEvo.textContent = currEvo.name;
+  if (nameEvo) nameEvo.textContent = `Форма #${formatNumber(currEvo.id + 1)} · ${currEvo.name}`;
   const descEvo = document.getElementById('evoStageDesc');
   if (descEvo) descEvo.textContent = currEvo.desc;
 
   const evoInfo = getAffordableEvoInfo();
-  const btnEvolve = document.getElementById('btnEvolve');
-  const evoCostLabel = document.getElementById('evoCostLabel');
-  if (btnEvolve && evoCostLabel) {
+  const evoFill = document.getElementById('evoXpFill');
+  const evoLabel = document.getElementById('evoXpLabel');
+  const evoLeft = document.getElementById('evoXpLeft');
+  if (evoFill && evoLabel) {
+    const stage = GAME.evoStage || 0;
+    const earned = formBiomassCredit();
     if (evoInfo.maxReached) {
-      evoCostLabel.textContent = 'ВЫСШИЙ ВЛАДЫКА ОМНИВЕРСА';
-      btnEvolve.textContent = 'МАКС 🏆';
-      btnEvolve.disabled = true;
+      evoFill.style.width = '100%';
+      evoLabel.textContent = 'Максимум';
+      if (evoLeft) evoLeft.textContent = '';
     } else if (evoInfo.phaseLocked) {
-      evoCostLabel.textContent = 'Дальше откроет Прорыв';
-      btnEvolve.textContent = 'Эпоха закрыта';
-      btnEvolve.disabled = true;
+      evoFill.style.width = '100%';
+      evoLabel.textContent = 'Дальше откроет Прорыв';
+      if (evoLeft) evoLeft.textContent = '';
     } else {
-      const buyMultiplier = GAME.buyMultiplier || 1;
-      const countTxt = buyMultiplier === 'max'
-        ? `+${formatNumber(evoInfo.count)} (МАКС)`
-        : (buyMultiplier > 1 ? `+${formatNumber(evoInfo.count)}` : `След`);
-      evoCostLabel.textContent = `${countTxt}: ${formatNumber(evoInfo.totalCost)} 💨`;
-      btnEvolve.textContent = evoInfo.count > 1 ? `Мутировать x${formatNumber(evoInfo.count)}! 🧬` : `Мутировать! 🧬`;
-      btnEvolve.disabled = !evoInfo.canBuy;
+      const floorCost = stage <= 0 ? 0 : effectiveFormCost(stage);
+      const nextCost = effectiveFormCost(stage + 1);
+      const span = Math.max(1, nextCost - floorCost);
+      const into = Math.max(0, Math.min(span, earned - floorCost));
+      const left = Math.max(0, span - into);
+      const pct = Math.max(0, Math.min(100, (into / span) * 100));
+      evoFill.style.width = `${pct}%`;
+      evoLabel.textContent = `${formatNumber(into)} / ${formatNumber(span)}`;
+      if (evoLeft) evoLeft.textContent = `ещё ${formatNumber(left)}`;
     }
   }
+
+  bindRateClicks();
 
   // Rates in footer
   const footPassive = document.getElementById('footPassiveRate');
   if (footPassive) footPassive.textContent = `+${formatNumber(getPassiveIncome())} /сек`;
   const footClick = document.getElementById('footClickPower');
-  if (footClick) {
-    const pwr = getClickPower();
-    if (GAME.turboRushTime > 0) {
-      footClick.innerHTML = `${formatNumber(pwr)} <span class="text-[10px] text-yellow-300 font-normal animate-pulse">(🔥 ТУРБО x${formatNumber(getTurboClickMult())})</span>`;
-    } else {
-      footClick.textContent = formatNumber(pwr);
-    }
-  }
+  if (footClick) footClick.textContent = formatNumber(getClickPower());
   const footCps = document.getElementById('footCpsRate');
   if (footCps) {
     if (liveCps > 0) {
@@ -258,15 +292,6 @@ export function updateHUD() {
       }
     } else {
       btnQuickTrans.classList.add('hidden');
-    }
-  }
-
-  // Real-time update of Forms Panel (Task 6)
-  const panelEvo = document.getElementById('panelEvo');
-  if (panelEvo && !panelEvo.classList.contains('hidden')) {
-    if (lastEvoRenderStage !== GAME.evoStage) {
-      lastEvoRenderStage = GAME.evoStage;
-      renderEvoChronicles();
     }
   }
 
@@ -497,8 +522,7 @@ function paintProgressTabs() {
 
 export function updateAutomationTogglesUI() {
   const hasAutoBuyer = !!GAME.transcendUpgrades?.autoBuyer;
-  const hasAutoEvo = !!GAME.transcendUpgrades?.autoEvolution;
-  const hasAnyAuto = hasAutoBuyer || hasAutoEvo;
+  const hasAnyAuto = hasAutoBuyer;
 
   const lockedNotice = document.getElementById('transcendAutoLockedNotice');
   const controls = document.getElementById('transcendAutoControls');
@@ -532,32 +556,11 @@ export function updateAutomationTogglesUI() {
       : 'auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-stone-200 hover:bg-stone-800 border border-transparent';
   });
 
-  const evoBtn = document.getElementById('btnToggleAutoEvolution');
-  const evoLed = document.getElementById('autoEvolutionLed');
-  const evoLbl = document.getElementById('autoEvolutionLabel');
-  if (evoBtn && evoLed && evoLbl) {
-    evoBtn.classList.toggle('hidden', !hasAutoEvo);
-    const isOn = GAME.autoEvolutionEnabled !== false;
-    if (isOn) {
-      evoBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-indigo-950 border-indigo-400 text-cyan-200 shadow-[0_0_8px_rgba(99,102,241,0.35)]';
-      evoLed.className = 'w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee] animate-pulse';
-      evoLbl.textContent = 'Мутации: ВКЛ';
-    } else {
-      evoBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700';
-      evoLed.className = 'w-2 h-2 rounded-full bg-stone-500';
-      evoLbl.textContent = 'Мутации: ВЫКЛ';
-    }
-  }
 }
 
 export function initAutomationToggleListeners() {
   document.getElementById('btnToggleAutoBuyer')?.addEventListener('click', () => {
     GAME.autoBuyerEnabled = !(GAME.autoBuyerEnabled !== false);
-    updateAutomationTogglesUI();
-    saveLocal();
-  });
-  document.getElementById('btnToggleAutoEvolution')?.addEventListener('click', () => {
-    GAME.autoEvolutionEnabled = !(GAME.autoEvolutionEnabled !== false);
     updateAutomationTogglesUI();
     saveLocal();
   });
