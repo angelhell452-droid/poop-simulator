@@ -1,5 +1,5 @@
 // Cloudflare Worker with Static Assets & D1 Database
-import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator } from "./workerAdmin.js";
+import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset } from "./workerAdmin.js";
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -87,7 +87,7 @@ async function handleCloudSave(req, env) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
       }
       if (targetId && (targetId === actor.playerId || await isCreator(env, actor))) {
-        await env.DB.prepare(`DELETE FROM player_saves WHERE player_id = ?`).bind(targetId).run();
+        await wipePlayerProgress(env.DB, targetId);
         return new Response(JSON.stringify({ success: true, wiped: targetId }), { status: 200, headers });
       }
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers });
@@ -97,8 +97,8 @@ async function handleCloudSave(req, env) {
     if (action === "wipe_all") {
       const actor = await sessionUser(env.DB, req);
       if (actor && await isCreator(env, actor)) {
-        await env.DB.prepare(`DELETE FROM player_saves`).run();
-        return new Response(JSON.stringify({ success: true, message: "All player saves wiped" }), { status: 200, headers });
+        const season = await wipeWorldProgress(env.DB);
+        return new Response(JSON.stringify({ success: true, season }), { status: 200, headers });
       }
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers });
     }
@@ -236,6 +236,14 @@ async function handleCloudSave(req, env) {
         }
       }
 
+      const seasonName = typeof playerName === "string" && playerName.trim()
+        ? playerName.trim().substring(0, 50)
+        : "Игрок #" + playerId.substring(playerId.length - 4);
+      const seasonSave = await replacementIfSeasonReset(env.DB, playerId, seasonName, saveData);
+      if (seasonSave) {
+        return new Response(JSON.stringify({ success: false, error: "stale_save", saveData: seasonSave }), { status: 409, headers });
+      }
+
       const incomingSeq = Number(body.adminSeq ?? saveData?.adminSeq ?? saveData?.game?.cloudAdminSeq) || 0;
       const stale = await rejectStaleSave(env.DB, playerId, incomingSeq, headers);
       if (stale.response) return stale.response;
@@ -313,6 +321,10 @@ async function handleCloudSave(req, env) {
       `).bind(playerId).first();
 
       if (!record) {
+        const fresh = await replacementIfSeasonReset(env.DB, playerId, "Игрок", null);
+        if (fresh) {
+          return new Response(JSON.stringify({ exists: true, data: fresh, wiped: true }), { status: 200, headers });
+        }
         return new Response(
           JSON.stringify({ exists: false }),
           { status: 200, headers }
@@ -324,6 +336,11 @@ async function handleCloudSave(req, env) {
         parsedData = typeof record.save_data === "string" ? JSON.parse(record.save_data) : record.save_data;
       } catch (e) {
         parsedData = null;
+      }
+
+      const replaced = await replacementIfSeasonReset(env.DB, playerId, record.player_name, parsedData);
+      if (replaced) {
+        return new Response(JSON.stringify({ exists: true, data: replaced, wiped: true, playerName: record.player_name }), { status: 200, headers });
       }
 
       return new Response(

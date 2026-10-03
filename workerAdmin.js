@@ -2,7 +2,7 @@
 
 const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 const RELIC_LEVELS = ["cosmicSynergy", "passiveRolls", "omniMult", "afkCap", "knifeForge", "factoryOverdrive", "plungerIncubator", "meteorStorm", "evoBlessing"];
-const RELIC_FLAGS = ["autoBuyer", "autoEvolution", "singularityRift"];
+const RELIC_FLAGS = ["autoCare", "autoBuyer", "autoEvolution", "singularityRift"];
 
 export async function ensureAdminSchema(db) {
   await db.prepare(`
@@ -47,6 +47,12 @@ export async function ensureAdminSchema(db) {
   } catch (err) {
     // Column already exists.
   }
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS game_flags (
+      key TEXT PRIMARY KEY,
+      value INTEGER NOT NULL DEFAULT 0
+    );
+  `).run();
 }
 
 async function staffLevel(env, account) {
@@ -383,6 +389,116 @@ export async function handleAdmin(req, env, headers, url) {
   }
 
   return json(headers, { success: false, error: "Неизвестное действие." }, 404);
+}
+
+export function blankProgressSave(playerId, playerName, worldReset, seq) {
+  const name = playerName || "Игрок";
+  return {
+    saveVersion: 5,
+    worldReset,
+    adminSeq: seq,
+    resetProgress: true,
+    feedCount: 0,
+    washCount: 0,
+    polishCount: 0,
+    flushCount: 0,
+    factories: [],
+    talents: [],
+    achievements: [],
+    purchasedItems: [],
+    knifeStats: [],
+    knifeStars: {},
+    hatLevels: {},
+    game: {
+      playerId,
+      playerName: name,
+      biomass: 0,
+      cycleBiomass: 0,
+      allTimeBiomass: 0,
+      sparkles: 20,
+      prestigeRolls: 0,
+      allTimePrestigeRolls: 0,
+      transcendCycleRolls: 0,
+      totalPrestiges: 0,
+      transcendPlungers: 0,
+      totalTranscend: 0,
+      phaseEcho: {},
+      flushesThisCycle: 0,
+      evoStage: 0,
+      archetype: "balanced",
+      hunger: 100,
+      clean: 100,
+      happy: 100,
+      totalClicks: 0,
+      equippedHat: null,
+      equippedKnife: null,
+      unlockedKnives: [],
+      knifeStars: {},
+      hatLevels: {},
+      boutiqueLevels: {},
+      casesOpened: 0,
+      comboHeat: 0,
+      turboRushTime: 0,
+      turboStarMultTime: 0,
+      autoclickerActive: false,
+      cloudAdminSeq: seq,
+      worldReset,
+      transcendUpgrades: {
+        cosmicSynergy: 0,
+        autoBuyer: false,
+        passiveRolls: 0,
+        omniMult: 0,
+        afkCap: 0,
+        knifeForge: 0,
+        factoryOverdrive: 0,
+        plungerIncubator: 0,
+        meteorStorm: 0,
+        evoBlessing: 0,
+        autoEvolution: false,
+        singularityRift: false
+      }
+    }
+  };
+}
+
+export async function currentWorldReset(db) {
+  const row = await db.prepare(`SELECT value FROM game_flags WHERE key = 'world_reset' LIMIT 1`).first();
+  return Number(row?.value) || 0;
+}
+
+export async function wipePlayerProgress(db, playerId) {
+  const row = await db.prepare(`
+    SELECT player_name, admin_seq FROM player_saves WHERE player_id = ? LIMIT 1
+  `).bind(playerId).first();
+  const account = await db.prepare(`
+    SELECT username FROM user_accounts WHERE player_id = ? LIMIT 1
+  `).bind(playerId).first();
+  const name = row?.player_name || account?.username || "Игрок";
+  const seq = (Number(row?.admin_seq) || 0) + 1;
+  const reset = await currentWorldReset(db);
+  const save = blankProgressSave(playerId, name, reset, seq);
+  await writePlayerSave(db, playerId, name, save, seq);
+  return save;
+}
+
+export async function wipeWorldProgress(db) {
+  const next = (await currentWorldReset(db)) + 1;
+  await db.prepare(`
+    INSERT INTO game_flags (key, value) VALUES ('world_reset', ?)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+  `).bind(next).run();
+  await db.prepare(`DELETE FROM player_saves`).run();
+  return next;
+}
+
+export async function replacementIfSeasonReset(db, playerId, playerName, saveData) {
+  const reset = await currentWorldReset(db);
+  if (reset <= 0) return null;
+  const clientReset = Number(saveData?.worldReset ?? saveData?.game?.worldReset) || 0;
+  if (clientReset === reset) return null;
+  const save = blankProgressSave(playerId, playerName || "Игрок", reset, 1);
+  await writePlayerSave(db, playerId, playerName || "Игрок", save, 1);
+  return save;
 }
 
 export async function rejectStaleSave(db, playerId, incomingSeq, headers) {

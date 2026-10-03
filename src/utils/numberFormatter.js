@@ -28,3 +28,30 @@ export function formatNumber(num, decimals = 2) {
   // Beyond 10^66: Scientific exponential notation (e.g., 1.23e75, 4.56e200)
   return num.toExponential(decimals).replace('+', '');
 }
+
+const SHORTHAND = [
+  ['sp', 1e24], ['oc', 1e27], ['no', 1e30], ['dc', 1e33],
+  ['ud', 1e36], ['dd', 1e39], ['td', 1e42], ['qad', 1e45], ['qid', 1e48],
+  ['sxd', 1e51], ['spd', 1e54], ['ocd', 1e57], ['nod', 1e60], ['vg', 1e63],
+  ['qa', 1e15], ['qi', 1e18], ['sx', 1e21],
+  ['k', 1e3], ['m', 1e6], ['b', 1e9], ['t', 1e12]
+].sort((a, b) => b[0].length - a[0].length);
+
+export function parseShorthand(raw) {
+  const text = String(raw ?? '').trim().replace(/\s+/g, '').replace(',', '.');
+  if (!text) return null;
+  if (/^\d+(?:\.\d+)?e[+-]?\d+$/i.test(text)) {
+    const n = Number(text);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  }
+  const match = text.match(/^(\d+(?:\.\d+)?)([a-z]+)$/i);
+  if (match) {
+    const suffix = SHORTHAND.find(([name]) => name === match[2].toLowerCase());
+    if (!suffix) return null;
+    const n = Number(match[1]) * suffix[1];
+    return Number.isFinite(n) ? n : null;
+  }
+  if (!/^\d+(?:\.\d+)?$/.test(text)) return null;
+  const n = Number(text);
+  return Number.isFinite(n) ? n : null;
+}

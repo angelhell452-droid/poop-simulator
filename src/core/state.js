@@ -67,6 +67,7 @@ export function getDefaultGameState() {
     lastSaveTime: Date.now(),
     lastActiveTime: Date.now(),
     cloudAdminSeq: 0,
+    worldReset: 0,
 
     autoBuyerEnabled: true,
     autoBuyerMode: 'latest',

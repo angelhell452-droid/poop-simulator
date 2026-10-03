@@ -71,6 +71,7 @@ export async function syncToCloudDatabase() {
     sparkles: GAME.sparkles,
     prestige_currency: GAME.prestigeRolls,
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
+    worldReset: Number(GAME.worldReset) || 0,
     saveData: payload
   });
 
@@ -248,6 +249,20 @@ export async function adminRequest(action, options = {}) {
   });
   const data = await res.json().catch(() => ({ success: false, error: 'Пустой ответ сервера' }));
   if (!res.ok && !data.error) data.error = 'Запрос отклонён';
+  return data;
+}
+
+export async function wipeCloudPlayer(playerId) {
+  const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=wipe&playerId=${encodeURIComponent(playerId)}`, { method: 'POST' });
+  const data = await res.json().catch(() => ({ success: false, error: 'Пустой ответ сервера' }));
+  if (!res.ok && !data.error) data.error = 'Сброс отклонён';
+  return data;
+}
+
+export async function wipeAllCloudSaves() {
+  const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=wipe_all`, { method: 'POST' });
+  const data = await res.json().catch(() => ({ success: false, error: 'Пустой ответ сервера' }));
+  if (!res.ok && !data.error) data.error = 'Сброс отклонён';
   return data;
 }
 

@@ -18,6 +18,7 @@ export function buildSavePayload() {
     saveVersion: GAME.saveVersion || 5,
     saveTimestamp: Date.now(),
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
+    worldReset: Number(GAME.worldReset) || 0,
     game: { ...GAME, lastActiveTime: Date.now() },
     feedCount,
     washCount,
@@ -52,6 +53,20 @@ export function applySaveDataSafely(rawData) {
   if (!rawData) return;
   const data = migrateSaveData(rawData);
   if (!data) return;
+
+  if (data.resetProgress) {
+    FACTORIES.forEach((row) => { row.count = 0; });
+    TALENTS.forEach((row) => { row.level = 0; });
+    ACHIEVEMENTS.forEach((row) => { row.done = false; });
+    SHOP_ITEMS.forEach((row) => { row.owned = false; });
+    KNIVES.forEach((row) => { row.statTrak = 0; });
+    GAME.unlockedKnives = [];
+    GAME.knifeStars = {};
+    GAME.hatLevels = {};
+    GAME.boutiqueLevels = {};
+    GAME.equippedHat = null;
+    GAME.equippedKnife = null;
+  }
 
   if (data.game) {
     for (const k in data.game) {

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v4.9.26 PRO</title>
+  <title>Poop Simulator v4.9.27 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800;900&display=swap"
     rel="stylesheet">
@@ -23,7 +23,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v4.9.26 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v4.9.27 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -806,66 +806,57 @@
   </main>
 
   <div id="adminModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-stone-900 text-stone-100 rounded-3xl border-2 border-rose-500/70 max-w-lg w-full p-5 relative shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="bg-stone-900 text-stone-100 rounded-3xl border-2 border-rose-500/70 max-w-xl w-full p-5 relative shadow-2xl max-h-[90vh] overflow-y-auto">
       <button id="btnAdminClose" class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-2xl font-bold">&times;</button>
       <div class="font-game text-lg text-rose-200 mb-1">Админка · <span id="adminRoleLabel">Админ</span></div>
-      <p class="text-[11px] text-stone-400 mb-3">Выдача пишется в облачное сохранение. Чужой игрок получит её при следующей синхронизации, своё — сразу.</p>
-      <form id="adminGrantForm" class="space-y-2 text-[11px]">
-        <label class="block">Cloud ID игрока
-          <input id="adminTarget" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-sm font-mono" maxlength="64" autocomplete="off">
-          <div id="adminSuggest" class="mt-1"></div>
-        </label>
-        <div class="grid grid-cols-2 gap-2">
-          <label>Биомасса +<input id="adminBiomass" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
-          <label>Блестяшки +<input id="adminSparkles" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
-          <label>Втулки +<input id="adminRolls" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
-          <label>Вантузы +<input id="adminPlungers" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
-          <label>Форма #<input id="adminForm" type="number" min="1" max="20000" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
-          <label>Смывы +<input id="adminFlushes" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
-          <label>Прорывы +<input id="adminTranscends" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
-          <label>Завод id<input id="adminFactoryId" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5" placeholder="fly_squad"></label>
-          <label>Завод штук<input id="adminFactoryCount" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
-          <label>Талант id<input id="adminTalentId" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5" placeholder="soft_rolls"></label>
-          <label>Талант уровень<input id="adminTalentLevel" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
-          <label>Нож id<input id="adminKnifeId" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5" placeholder="knife_"></label>
-          <label>Предмет id<input id="adminItemId" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5" placeholder="hat_cap или upg_"></label>
-          <label>Реликвия бутика id<input id="adminBoutiqueId" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5" placeholder="crystal_factory"></label>
-          <label>Уровень бутика<input id="adminBoutiqueLevel" type="number" min="0" max="20" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+      <p class="text-[11px] text-stone-400 mb-3">Своя выдача приходит сразу. Чужому игроку — при следующем входе.</p>
+      <label class="block text-[11px] mb-3">Кому
+        <div class="mt-1 flex gap-2">
+          <input id="adminTarget" class="flex-1 bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-sm" maxlength="64" autocomplete="off" placeholder="ник или Cloud ID">
+          <button id="btnAdminSelf" type="button" class="px-3 rounded-xl bg-stone-800 border border-stone-600 text-xs font-bold">Себе</button>
         </div>
-        <label class="flex items-center gap-2"><input id="adminEquipKnife" type="checkbox"> Надеть выданный нож</label>
-        <label class="flex items-center gap-2"><input id="adminEquipHat" type="checkbox"> Надеть выданную шапку</label>
-        <div class="grid grid-cols-2 gap-2">
-          <label>Реликвия прорыва
-            <select id="adminRelicKey" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5">
-              <option value="">—</option>
-              <option value="cosmicSynergy">Космическая синергия</option>
-              <option value="passiveRolls">Пассивные втулки</option>
-              <option value="omniMult">Омни</option>
-              <option value="afkCap">AFK</option>
-              <option value="knifeForge">Кузница</option>
-              <option value="factoryOverdrive">Овердрайв заводов</option>
-              <option value="plungerIncubator">Инкубатор</option>
-              <option value="meteorStorm">Буря</option>
-              <option value="evoBlessing">Благословение</option>
-              <option value="autoBuyer">Автопокупка</option>
-              <option value="autoEvolution">Автоэволюция</option>
-              <option value="singularityRift">Врата</option>
-            </select>
-          </label>
-          <label>Уровень реликвии<input id="adminRelicLevel" type="number" min="0" class="mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5"></label>
+        <div id="adminSuggest" class="mt-1"></div>
+      </label>
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <button id="adminTabCurrency" type="button" class="py-2 rounded-xl bg-rose-600 text-white font-game text-sm">Валюта</button>
+        <button id="adminTabItem" type="button" class="py-2 rounded-xl bg-stone-800 border border-stone-600 text-stone-200 font-game text-sm">Предмет</button>
+      </div>
+      <div id="adminPaneCurrency" class="space-y-2 text-[11px]">
+        <p class="text-stone-500">Можно писать <span class="text-amber-200">10M</span>, <span class="text-amber-200">1.5B</span> или <span class="text-amber-200">1e12</span>. Пустые поля не выдаются.</p>
+        <div id="adminCurrencyFields" class="grid grid-cols-2 gap-2"></div>
+        <button id="btnAdminGiveCurrency" type="button" class="w-full py-2 rounded-xl bg-gradient-to-r from-rose-600 to-orange-500 text-white font-game text-sm">Выдать валюту</button>
+      </div>
+      <div id="adminPaneItem" class="hidden space-y-2 text-[11px]">
+        <select id="adminKind" class="w-full bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-sm"></select>
+        <input id="adminPickSearch" class="w-full bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-sm" placeholder="Найти по названию" autocomplete="off">
+        <select id="adminPick" size="7" class="w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1 text-sm"></select>
+        <div id="adminAmountRow">
+          <input id="adminAmount" class="w-full bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-sm" placeholder="сколько: 10 или 10M" autocomplete="off">
+          <div id="adminAmountPreview" class="mt-1 text-amber-200"></div>
         </div>
-        <label class="flex items-center gap-2"><input id="adminRelicOn" type="checkbox"> Включить флаговую реликвию</label>
-        <button type="submit" class="w-full py-2 rounded-xl bg-gradient-to-r from-rose-600 to-orange-500 text-white font-game text-sm">Выдать</button>
-      </form>
+        <label id="adminEquipRow" class="hidden flex items-center gap-2"><input id="adminEquip" type="checkbox"> Надеть сразу</label>
+        <button id="btnAdminGiveItem" type="button" class="w-full py-2 rounded-xl bg-gradient-to-r from-rose-600 to-orange-500 text-white font-game text-sm">Выдать предмет</button>
+      </div>
       <div id="adminStatus" class="mt-2 text-[11px] text-stone-400"></div>
-      <div id="adminCreatorBox" class="hidden mt-4 border-t border-stone-800 pt-3">
-        <div class="font-game text-xs text-amber-200 mb-1">Админы</div>
-        <p class="text-[10px] text-stone-500 mb-2">Уровень 1 — создатель, его строка лежит в базе. Уровень 2 добавляется здесь. Ваш Cloud ID: <span id="adminOwnId" class="font-mono text-amber-200">—</span>. Админ может выдавать, но не может назначить другого админа.</p>
-        <div class="flex gap-2">
-          <input id="adminNewName" class="flex-1 bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-sm font-mono" maxlength="64" placeholder="Cloud ID аккаунта">
-          <button id="btnAdminAdd" type="button" class="px-3 rounded-xl bg-amber-500 text-stone-950 font-bold text-xs">Добавить</button>
+      <div id="adminCreatorBox" class="hidden mt-4 border-t border-stone-800 pt-3 space-y-3">
+        <div>
+          <div class="font-game text-xs text-amber-200 mb-1">Админы</div>
+          <p class="text-[10px] text-stone-500 mb-2">Уровень 1 — создатель, его строка в базе. Здесь добавляется уровень 2. Ваш Cloud ID: <span id="adminOwnId" class="font-mono text-amber-200">—</span></p>
+          <div class="flex gap-2">
+            <input id="adminNewName" class="flex-1 bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-sm font-mono" maxlength="64" placeholder="Cloud ID аккаунта">
+            <button id="btnAdminAdd" type="button" class="px-3 rounded-xl bg-amber-500 text-stone-950 font-bold text-xs">Добавить</button>
+          </div>
+          <div id="adminList" class="mt-2 text-[11px]"></div>
         </div>
-        <div id="adminList" class="mt-2 text-[11px]"></div>
+        <div class="border-t border-stone-800 pt-3">
+          <div class="font-game text-xs text-red-300 mb-1">Сброс</div>
+          <p class="text-[10px] text-stone-500 mb-2">Прогресс обнуляется. Аккаунт и пароль остаются. Старое сохранение на устройстве не вернётся.</p>
+          <button id="btnWipePlayer" type="button" class="w-full py-2 rounded-xl bg-stone-800 border border-red-500/60 text-red-200 font-bold text-xs">Сбросить игрока сверху</button>
+          <div class="mt-2 flex gap-2">
+            <input id="adminWipeWord" class="flex-1 bg-stone-950 border border-red-900 rounded-xl px-3 py-2 text-sm" placeholder="напишите ВАЙП" autocomplete="off">
+            <button id="btnWipeAll" type="button" class="px-3 rounded-xl bg-red-700 text-white font-bold text-xs">Сбросить всех</button>
+          </div>
+        </div>
       </div>
       <div class="mt-3 text-[10px] text-stone-500">
         <div class="font-game text-stone-400 mb-1">Журнал</div>
