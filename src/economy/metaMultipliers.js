@@ -7,10 +7,11 @@ function echoCount(phaseId) {
   return Math.max(0, Number(raw) || 0);
 }
 
-/** Bonus from one epoch's echoes. Approaches +2, so the multiplier approaches x3. */
+/** Bonus from one epoch's echoes. The first echo is +1 (x2). Further echoes approach +2, so the multiplier approaches x3. */
 export function getEchoBonus(count) {
   const c = Math.max(0, count || 0);
-  return 2 * (c / (c + 8));
+  if (c <= 0) return 0;
+  return 1 + (c - 1) / (c - 1 + 8);
 }
 
 /**

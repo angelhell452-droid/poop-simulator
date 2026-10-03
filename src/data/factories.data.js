@@ -1,4 +1,7 @@
 import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js';
+import { calcEvolutionMult } from './evolutions.data.js';
+
+export const FACTORIES_PER_EPOCH = 3;
 
 export const FACTORIES = [
   // ⭐ ТИР 1: БЫТОВОЙ ДРЕНАЖ (ФОРМЫ 0 - 20)
@@ -58,7 +61,26 @@ export const FACTORIES = [
   { id: 'alpha_omega_apex', name: 'Вершина Альфа и Омега Бытия', cost: 1e305, baseCps: 1e299, count: 0, icon: '👑', tier: 'singularity', tierNumber: 4, tierTitle: '🌌 Тир 4: Омниверс и Сингулярность', reqStage: 19999 }
 ];
 
-FACTORIES.length = PHASE_COUNT;
+const FACTORY_COUNT = PHASE_COUNT * FACTORIES_PER_EPOCH;
+const PLANT_ICONS = ['🏭', '🌀', '⚙️', '🪐', '⚡', '🌟', '🕳️', '🔨', '☀️', '👑', '🎻', '⏳', '🚪', '💠', '🚀', '❄️', '👁️', '💫', '🔱', '🌌'];
+const SLOT_NAMES = ['Подход', 'Разгон', 'Венец'];
+
+while (FACTORIES.length < FACTORY_COUNT) {
+  const i = FACTORIES.length;
+  FACTORIES.push({
+    id: `plant_${i}`,
+    name: `Цех ${SLOT_NAMES[i % 3]} ${i + 1}`,
+    cost: 1,
+    baseCps: 1,
+    count: 0,
+    icon: PLANT_ICONS[i % PLANT_ICONS.length],
+    tier: 'endgame',
+    tierNumber: 4,
+    tierTitle: '🌌 Тир 4: Омниверс',
+    reqStage: 0
+  });
+}
+if (FACTORIES.length > FACTORY_COUNT) FACTORIES.length = FACTORY_COUNT;
 
 const TIER_TITLES = [
   '⭐ Тир 1: Бытовой Дренаж',
@@ -67,14 +89,50 @@ const TIER_TITLES = [
   '🌌 Тир 4: Омниверс'
 ];
 
+const SLOT_PLAN = [
+  { formOffset: 0, payback: 90, decade: 0 },
+  { formOffset: 40, payback: 180, decade: 1 },
+  { formOffset: 200, payback: 240, decade: 2 }
+];
+
 for (let i = 0; i < FACTORIES.length; i++) {
-  const phase = getPhaseByIndex(i + 1);
+  const epoch = Math.floor(i / FACTORIES_PER_EPOCH) + 1;
+  const slot = i % FACTORIES_PER_EPOCH;
+  const phase = getPhaseByIndex(epoch);
+  const pace = Math.pow(1.12, epoch - 1);
   const fac = FACTORIES[i];
-  const tierNumber = Math.floor(i / 10) + 1;
-  fac.reqStage = phase.formStart - 1;
-  fac.cost = i === 0 ? 20 : phase.ceiling * 0.4;
-  fac.baseCps = i === 0 ? 8 : phase.ceiling / 2400;
+  const tierNumber = Math.min(4, Math.floor((epoch - 1) / 10) + 1);
   fac.tierNumber = tierNumber;
   fac.tier = tierNumber === 1 ? 'early' : tierNumber === 2 ? 'mid' : tierNumber === 3 ? 'late' : 'endgame';
   fac.tierTitle = TIER_TITLES[tierNumber - 1];
+  fac.epoch = epoch;
+
+  if (epoch === 1 && slot === 0) {
+    fac.reqStage = 0;
+    fac.cost = 20;
+    fac.baseCps = 8;
+    continue;
+  }
+  if (epoch === 1 && slot === 1) {
+    fac.reqStage = 40;
+    fac.cost = 15000;
+    fac.baseCps = 1800;
+    continue;
+  }
+  if (epoch === 1 && slot === 2) {
+    fac.reqStage = 399;
+    fac.cost = 1500000;
+    fac.baseCps = 6000;
+    continue;
+  }
+
+  const spec = SLOT_PLAN[slot];
+  const decade = epoch === 1 ? slot - 1 : spec.decade;
+  fac.reqStage = phase.formStart - 1 + spec.formOffset;
+  const arrival = epoch === 1 ? 100 : 400000 * Math.pow(1000, epoch - 2);
+  const income = arrival * Math.pow(10, decade);
+  const formMult = Math.max(1, calcEvolutionMult(fac.reqStage));
+  const buffStack = 5.5;
+  fac.cost = Math.max(1, Math.round(income * spec.payback * pace));
+  fac.baseCps = (income * 9) / (formMult * buffStack);
 }

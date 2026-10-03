@@ -32,7 +32,8 @@ export function getPhaseByIndex(phaseId) {
     formEnd,
     ceiling,
     floor: ceiling / 1000,
-    flushForm: formStart + 349,
+    flushForm: id === 1 ? 80 : formStart + 199,
+    biomassGate: id === 1 ? 4000000 : ceiling * 0.08,
     pair: Math.ceil(id / 2),
     transcend: id % 2 === 0,
     band: id <= BANDS.length ? BANDS[id - 1] : formatNumber(ceiling)

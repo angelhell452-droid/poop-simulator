@@ -157,7 +157,13 @@ export function getPassiveIncome() {
     const highTier = fac.tier === 'late' || fac.tier === 'endgame' || fac.tier === 'singularity';
     const singularityCoreMult = (singularityCoreActive && highTier) ? 1.5 : 1;
 
-    base += (fac.count || 0) * fac.baseCps * facMilestoneMult * tierKnifeMult * tierQuantumMult * singularityCoreMult;
+    const rawCount = fac.count || 0;
+    const epochSlot = idx % 3;
+    const factoryEpoch = fac.epoch || (Math.floor(idx / 3) + 1);
+    const stackedCopies = (factoryEpoch === 1 && epochSlot === 0) || rawCount <= 1
+      ? rawCount
+      : 1 + (rawCount - 1) * 0.05;
+    base += stackedCopies * fac.baseCps * facMilestoneMult * tierKnifeMult * tierQuantumMult * singularityCoreMult;
   });
 
   base *= turboMult * goldRushMult * overclockMult * butterflyBladeBonus;

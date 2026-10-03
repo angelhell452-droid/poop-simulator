@@ -9,7 +9,7 @@ function gateStatus(phase) {
   const currentStage = GAME.evoStage || 0;
   const currentForm = currentStage + 1;
   const currentBiomass = GAME.cycleBiomass || 0;
-  const reqBiomass = phase.ceiling * 0.1;
+  const reqBiomass = phase.biomassGate ?? phase.ceiling * 0.1;
   return {
     meetsStage: currentForm >= phase.flushForm,
     meetsBiomass: currentBiomass >= reqBiomass,
@@ -40,7 +40,7 @@ export function getPrestigeRequirement() {
     flushes: GAME.totalPrestiges || 0,
     reqForm: isMet ? bestMet.flushForm : gate.reqForm,
     reqStage: (isMet ? bestMet.flushForm : gate.reqForm) - 1,
-    reqBiomass: isMet ? bestMet.ceiling * 0.1 : gate.reqBiomass,
+    reqBiomass: isMet ? (bestMet.biomassGate ?? bestMet.ceiling * 0.1) : gate.reqBiomass,
     currentForm: form,
     currentStage: GAME.evoStage || 0,
     currentBiomass: GAME.cycleBiomass || 0,

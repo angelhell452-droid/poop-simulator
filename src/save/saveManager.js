@@ -15,7 +15,7 @@ export const BACKUP_KEY = 'PoopSim_Pro_Backup';
 
 export function buildSavePayload() {
   return {
-    saveVersion: 3,
+    saveVersion: GAME.saveVersion || 5,
     saveTimestamp: Date.now(),
     game: { ...GAME, lastActiveTime: Date.now() },
     feedCount,

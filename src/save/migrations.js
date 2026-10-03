@@ -11,7 +11,7 @@ export function migrateSaveData(rawSave) {
   // Check if save is v1 or flat object
   if (!rawSave.saveVersion || rawSave.saveVersion < 2) {
     const legacy = rawSave.game || rawSave;
-    return applyEconomyV3({
+    return applyFactoryV5(applyPhaseV4(applyEconomyV3({
       saveVersion: 2,
       saveTimestamp: Date.now(),
       game: {
@@ -68,7 +68,7 @@ export function migrateSaveData(rawSave) {
       purchasedItems: rawSave.purchasedItems || [],
       knifeStats: rawSave.knifeStats || [],
       knifeStars: rawSave.knifeStars || {}
-    });
+    })));
   }
 
   if (rawSave && rawSave.game) {
@@ -79,7 +79,12 @@ export function migrateSaveData(rawSave) {
     }
   }
 
-  return applyPhaseV4(applyEconomyV3(rawSave));
+  return applyFactoryV5(applyPhaseV4(applyEconomyV3(rawSave)));
+}
+
+function saveVersionOf(save) {
+  if (!save) return 0;
+  return Math.max(save.saveVersion || 0, save.game?.saveVersion || 0);
 }
 
 const REMOVED_TALENTS = {
@@ -119,7 +124,7 @@ function sumLevelCosts(cost, costMult, from, toExclusive) {
 }
 
 function applyEconomyV3(save) {
-  if (!save || (save.saveVersion || 0) >= 3) return save;
+  if (!save || saveVersionOf(save) >= 3) return save;
   const game = save.game || {};
   let rollsRefund = 0;
   let plungerRefund = 0;
@@ -203,7 +208,7 @@ function applyEconomyV3(save) {
 }
 
 function applyPhaseV4(save) {
-  if (!save || (save.saveVersion || 0) >= 4) return save;
+  if (!save || saveVersionOf(save) >= 4) return save;
   const game = save.game || {};
   const formPhase = getPhaseForForm((game.evoStage || 0) + 1).id;
   const fromOldTranscend = Math.min(4, Math.max(0, game.totalTranscend || 0) * 2);
@@ -242,5 +247,22 @@ function applyPhaseV4(save) {
   game.saveVersion = 4;
   save.game = game;
   save.saveVersion = 4;
+  return save;
+}
+
+function applyFactoryV5(save) {
+  if (!save || saveVersionOf(save) >= 5) return save;
+  const game = save.game || {};
+  if (Array.isArray(save.factories)) {
+    save.factories.forEach(row => {
+      if (!row) return;
+      const known = FACTORIES.some(fac => fac.id === row.id);
+      if (!known) return;
+      row.count = Math.min(25, Math.max(0, row.count || 0));
+    });
+  }
+  game.saveVersion = 5;
+  save.game = game;
+  save.saveVersion = 5;
   return save;
 }

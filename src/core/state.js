@@ -11,7 +11,7 @@ export function getDefaultGameState() {
   let playerName = (typeof localStorage !== 'undefined' ? localStorage.getItem('PoopSim_PlayerName') : null) || ('Игрок #' + playerId.substring(playerId.length - 4));
 
   return {
-    saveVersion: 4,
+    saveVersion: 5,
     playerId: playerId,
     playerName: playerName,
 
