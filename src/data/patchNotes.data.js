@@ -1,5 +1,16 @@
 export const PATCH_NOTES = [
   {
+    version: 'v4.9.25 PRO',
+    title: '🪪 Админка по Cloud ID',
+    date: '3 Октября 2026',
+    badge: 'Сервер',
+    badgeClass: 'bg-rose-500/20 text-rose-200 border-rose-400/40',
+    changes: [
+      { type: 'feature', icon: '🪪', text: 'Создателя можно задать переменной CREATOR_PLAYER_ID: это Cloud ID из профиля, а не логин. Старая переменная CREATOR_USERNAME по-прежнему подходит.' },
+      { type: 'feature', icon: '🛡️', text: 'Выдача и назначение админов идут по Cloud ID. Пароль и сессия по-прежнему решают, кто вошёл в аккаунт.' }
+    ]
+  },
+  {
     version: 'v4.9.24 PRO',
     title: '🛡️ Админка создателя',
     date: '3 Октября 2026',

@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS auth_sessions (
 
 CREATE TABLE IF NOT EXISTS game_admins (
   username TEXT PRIMARY KEY COLLATE NOCASE,
+  player_id TEXT,
   added_by TEXT NOT NULL,
   created_at TEXT DEFAULT (datetime('now'))
 );

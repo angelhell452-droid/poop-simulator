@@ -7,6 +7,7 @@ import { renderShop } from './shopView.js';
 import { renderCharacterInventory } from './characterInventoryView.js';
 
 let adminRole = null;
+let adminPlayerId = '';
 
 function numOrEmpty(id) {
   const raw = document.getElementById(id)?.value;
@@ -42,6 +43,9 @@ function paintRole() {
 export async function refreshAdminAccess() {
   const session = await fetchAdminSession();
   adminRole = session?.role || null;
+  adminPlayerId = session?.playerId || '';
+  const ownId = document.getElementById('adminOwnId');
+  if (ownId) ownId.textContent = adminPlayerId || 'войдите заново';
   paintRole();
   if (adminRole === 'creator') loadAdminList();
   if (adminRole) loadAudit();
@@ -67,7 +71,7 @@ async function loadAdminList() {
   if (!admins.length) {
     const empty = document.createElement('div');
     empty.className = 'text-stone-500';
-    empty.textContent = 'Админов пока нет. Добавьте логин существующего аккаунта.';
+    empty.textContent = 'Админов пока нет. Вставьте Cloud ID существующего аккаунта.';
     box.appendChild(empty);
     return;
   }
@@ -76,13 +80,13 @@ async function loadAdminList() {
     line.className = 'flex items-center justify-between gap-2 py-1';
     const name = document.createElement('span');
     name.className = 'text-amber-100';
-    name.textContent = row.username;
+    name.textContent = row.playerId ? `${row.username} · ${row.playerId}` : row.username;
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'text-[10px] px-2 py-1 rounded-lg bg-stone-800 border border-stone-600 text-stone-300';
     btn.textContent = 'Снять';
     btn.addEventListener('click', async () => {
-      const result = await adminRequest('admin_remove', { method: 'POST', body: { username: row.username } });
+      const result = await adminRequest('admin_remove', { method: 'POST', body: { playerId: row.playerId || row.username } });
       setAdminStatus(result.success ? `${row.username} больше не админ.` : (result.error || 'Не снялось'), !!result.success);
       if (result.success) loadAdminList();
     });
@@ -112,7 +116,7 @@ async function loadAudit() {
 export function initAdminPanel() {
   document.getElementById('btnAdminPanel')?.addEventListener('click', () => {
     document.getElementById('adminModal')?.classList.remove('hidden');
-    const self = getStoredAccount()?.username || '';
+    const self = adminPlayerId || getStoredAccount()?.playerId || '';
     const target = document.getElementById('adminTarget');
     if (target && !target.value) target.value = self;
     if (adminRole === 'creator') loadAdminList();
@@ -148,7 +152,7 @@ export function initAdminPanel() {
     };
     const result = await adminRequest('admin_grant', {
       method: 'POST',
-      body: { targetUsername: textOrEmpty('adminTarget'), grant }
+      body: { targetPlayerId: textOrEmpty('adminTarget'), grant }
     });
     if (result.success) {
       applyLocalGrant(result.saveData);
@@ -161,8 +165,8 @@ export function initAdminPanel() {
   });
 
   document.getElementById('btnAdminAdd')?.addEventListener('click', async () => {
-    const username = textOrEmpty('adminNewName');
-    const result = await adminRequest('admin_add', { method: 'POST', body: { username } });
+    const playerId = textOrEmpty('adminNewName');
+    const result = await adminRequest('admin_add', { method: 'POST', body: { playerId } });
     setAdminStatus(result.success ? `${result.username} теперь админ.` : (result.error || 'Не добавилось'), !!result.success);
     if (result.success) {
       const input = document.getElementById('adminNewName');
@@ -182,13 +186,15 @@ export function initAdminPanel() {
     }
     const data = await adminRequest('admin_find', { query: `&q=${encodeURIComponent(q)}` });
     list.replaceChildren();
-    (data.users || []).forEach((name) => {
+    (data.users || []).forEach((entry) => {
+      const playerId = typeof entry === 'string' ? entry : entry.playerId;
+      const username = typeof entry === 'string' ? entry : entry.username;
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'block w-full text-left px-2 py-1 hover:bg-stone-800 rounded-lg';
-      btn.textContent = name;
+      btn.textContent = `${username} · ${playerId}`;
       btn.addEventListener('click', () => {
-        event.target.value = name;
+        event.target.value = playerId;
         list.replaceChildren();
       });
       list.appendChild(btn);

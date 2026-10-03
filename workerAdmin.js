@@ -1,4 +1,4 @@
-// Admin sessions and grants. The creator login lives only in env.CREATOR_USERNAME.
+// Admin sessions and grants. The creator is env.CREATOR_PLAYER_ID, with CREATOR_USERNAME still accepted.
 
 const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 const RELIC_LEVELS = ["cosmicSynergy", "passiveRolls", "omniMult", "afkCap", "knifeForge", "factoryOverdrive", "plungerIncubator", "meteorStorm", "evoBlessing"];
@@ -35,15 +35,28 @@ export async function ensureAdminSchema(db) {
   } catch (err) {
     // Column already exists.
   }
+  try {
+    await db.prepare(`ALTER TABLE game_admins ADD COLUMN player_id TEXT`).run();
+  } catch (err) {
+    // Column already exists.
+  }
 }
 
 function creatorName(env) {
   return String(env.CREATOR_USERNAME || "").trim();
 }
 
-export function isCreator(env, username) {
-  const creator = creatorName(env);
-  return creator.length > 0 && creator.toLowerCase() === String(username || "").trim().toLowerCase();
+function creatorPlayerId(env) {
+  return String(env.CREATOR_PLAYER_ID || "").trim();
+}
+
+export function isCreator(env, account) {
+  const username = typeof account === "string" ? account : account?.username;
+  const playerId = typeof account === "string" ? "" : account?.playerId;
+  const byId = creatorPlayerId(env);
+  if (byId && playerId && byId === String(playerId).trim()) return true;
+  const byName = creatorName(env);
+  return byName.length > 0 && byName.toLowerCase() === String(username || "").trim().toLowerCase();
 }
 
 async function sha256Hex(text) {
@@ -87,18 +100,20 @@ export async function sessionUser(db, req) {
   `).bind(tokenHash).first();
 }
 
-async function roleOf(env, username) {
-  if (isCreator(env, username)) return "creator";
+async function roleOf(env, account) {
+  if (isCreator(env, account)) return "creator";
   const row = await env.DB.prepare(`
-    SELECT username FROM game_admins WHERE username = ? COLLATE NOCASE LIMIT 1
-  `).bind(username).first();
+    SELECT username FROM game_admins
+    WHERE player_id = ? OR username = ? COLLATE NOCASE
+    LIMIT 1
+  `).bind(account.playerId || "", account.username || "").first();
   return row ? "admin" : null;
 }
 
 async function requireStaff(env, req) {
   const user = await sessionUser(env.DB, req);
   if (!user) return { error: "Нужно войти в аккаунт заново.", status: 401 };
-  const role = await roleOf(env, user.username);
+  const role = await roleOf(env, user);
   if (!role) return { error: "Недостаточно прав.", status: 403 };
   return { user, role };
 }
@@ -255,8 +270,14 @@ export async function handleAdmin(req, env, headers, url) {
   if (req.method === "GET" && action === "admin_session") {
     const user = await sessionUser(env.DB, req);
     if (!user) return json(headers, { success: true, role: null }, 200);
-    const role = await roleOf(env, user.username);
-    return json(headers, { success: true, role, username: user.username, creatorReady: creatorName(env).length > 0 }, 200);
+    const role = await roleOf(env, user);
+    return json(headers, {
+      success: true,
+      role,
+      username: user.username,
+      playerId: user.playerId,
+      creatorReady: creatorName(env).length > 0 || creatorPlayerId(env).length > 0
+    }, 200);
   }
 
   const staff = await requireStaff(env, req);
@@ -269,17 +290,18 @@ export async function handleAdmin(req, env, headers, url) {
     const q = String(url.searchParams.get("q") || "").trim().replace(/[%_]/g, "");
     if (q.length < 2) return json(headers, { success: true, users: [] }, 200);
     const { results } = await env.DB.prepare(`
-      SELECT username FROM user_accounts
-      WHERE username LIKE ? COLLATE NOCASE
+      SELECT username, player_id as playerId FROM user_accounts
+      WHERE username LIKE ? COLLATE NOCASE OR player_id LIKE ?
       ORDER BY username LIMIT 8
-    `).bind(`${q}%`).all();
-    return json(headers, { success: true, users: (results || []).map((row) => row.username) }, 200);
+    `).bind(`${q}%`, `${q}%`).all();
+    return json(headers, { success: true, users: results || [] }, 200);
   }
 
   if (req.method === "GET" && action === "admin_list") {
     if (staff.role !== "creator") return json(headers, { success: false, error: "Список админов видит только создатель." }, 403);
     const { results } = await env.DB.prepare(`
-      SELECT username, added_by as addedBy, created_at as createdAt FROM game_admins ORDER BY username
+      SELECT username, player_id as playerId, added_by as addedBy, created_at as createdAt
+      FROM game_admins ORDER BY username
     `).all();
     return json(headers, { success: true, admins: results || [] }, 200);
   }
@@ -297,34 +319,38 @@ export async function handleAdmin(req, env, headers, url) {
 
   if (action === "admin_add" || action === "admin_remove") {
     if (staff.role !== "creator") return json(headers, { success: false, error: "Добавлять админов может только создатель." }, 403);
-    const username = String(body.username || "").trim();
-    if (username.length < 3) return json(headers, { success: false, error: "Укажите логин существующего аккаунта." }, 400);
-    if (isCreator(env, username)) return json(headers, { success: false, error: "Создатель уже имеет полные права." }, 400);
+    const key = String(body.playerId || body.username || "").trim();
+    if (key.length < 3) return json(headers, { success: false, error: "Укажите Cloud ID существующего аккаунта." }, 400);
     const account = await env.DB.prepare(`
-      SELECT username FROM user_accounts WHERE username = ? COLLATE NOCASE LIMIT 1
-    `).bind(username).first();
+      SELECT username, player_id as playerId FROM user_accounts
+      WHERE player_id = ? OR username = ? COLLATE NOCASE
+      LIMIT 1
+    `).bind(key, key).first();
     if (!account) return json(headers, { success: false, error: "Такого аккаунта нет." }, 404);
+    if (isCreator(env, account)) return json(headers, { success: false, error: "Создатель уже имеет полные права." }, 400);
     if (action === "admin_add") {
       const count = await env.DB.prepare(`SELECT COUNT(*) as n FROM game_admins`).first();
       if (Number(count?.n || 0) >= 20) return json(headers, { success: false, error: "Уже 20 админов." }, 400);
       await env.DB.prepare(`
-        INSERT INTO game_admins (username, added_by) VALUES (?, ?)
-        ON CONFLICT(username) DO NOTHING
-      `).bind(account.username, staff.user.username).run();
-      await audit(env.DB, staff.user.username, "add_admin", account.username, {});
-      return json(headers, { success: true, username: account.username }, 200);
+        INSERT INTO game_admins (username, added_by, player_id) VALUES (?, ?, ?)
+        ON CONFLICT(username) DO UPDATE SET player_id = excluded.player_id
+      `).bind(account.username, staff.user.username, account.playerId).run();
+      await audit(env.DB, staff.user.username, "add_admin", account.playerId, { username: account.username });
+      return json(headers, { success: true, username: account.username, playerId: account.playerId }, 200);
     }
-    await env.DB.prepare(`DELETE FROM game_admins WHERE username = ? COLLATE NOCASE`).bind(account.username).run();
-    await audit(env.DB, staff.user.username, "remove_admin", account.username, {});
-    return json(headers, { success: true, username: account.username }, 200);
+    await env.DB.prepare(`DELETE FROM game_admins WHERE player_id = ? OR username = ? COLLATE NOCASE`).bind(account.playerId, account.username).run();
+    await audit(env.DB, staff.user.username, "remove_admin", account.playerId, { username: account.username });
+    return json(headers, { success: true, username: account.username, playerId: account.playerId }, 200);
   }
 
   if (action === "admin_grant") {
-    const targetName = String(body.targetUsername || staff.user.username).trim();
+    const targetKey = String(body.targetPlayerId || body.targetUsername || staff.user.playerId).trim();
     const account = await env.DB.prepare(`
-      SELECT username, player_id as playerId FROM user_accounts WHERE username = ? COLLATE NOCASE LIMIT 1
-    `).bind(targetName).first();
-    if (!account) return json(headers, { success: false, error: "Игрок с таким логином не найден." }, 404);
+      SELECT username, player_id as playerId FROM user_accounts
+      WHERE player_id = ? OR username = ? COLLATE NOCASE
+      LIMIT 1
+    `).bind(targetKey, targetKey).first();
+    if (!account) return json(headers, { success: false, error: "Игрок с таким Cloud ID не найден." }, 404);
 
     const row = await env.DB.prepare(`
       SELECT save_data, admin_seq, player_name FROM player_saves WHERE player_id = ? LIMIT 1
