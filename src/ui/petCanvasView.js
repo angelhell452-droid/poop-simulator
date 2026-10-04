@@ -1,6 +1,5 @@
 import { GAME } from '../core/state.js';
 import { getEquippedKnife } from '../economy/production.js';
-import { drawKnifeVectorOnCanvas } from '../utils/knifeVectorRenderer.js';
 
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
@@ -100,7 +99,22 @@ const clayHats = {
 };
 const epochBackgrounds = [null];
 
+function fitForCut(img, maxEdge) {
+  const edge = Math.max(img.width, img.height);
+  if (edge <= maxEdge) return img;
+  const scale = maxEdge / edge;
+  const fitted = document.createElement('canvas');
+  fitted.width = Math.max(1, Math.round(img.width * scale));
+  fitted.height = Math.max(1, Math.round(img.height * scale));
+  const g = fitted.getContext('2d');
+  g.imageSmoothingEnabled = true;
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(img, 0, 0, fitted.width, fitted.height);
+  return fitted;
+}
+
 function cutSpriteBackdrop(img, options = {}) {
+  img = fitForCut(img, options.maxEdge ?? 720);
   const maxSpread = options.maxSpread ?? 14;
   const keepWarm = options.keepWarm !== false;
   const neutral = options.neutral === true;
@@ -220,18 +234,23 @@ function cutSpriteBackdrop(img, options = {}) {
   }
   const sw = maxX - minX + 1;
   const sh = maxY - minY + 1;
+  const tight = document.createElement('canvas');
+  tight.width = sw;
+  tight.height = sh;
+  tight.getContext('2d').drawImage(surface, minX, minY, sw, sh, 0, 0, sw, sh);
   const glow = document.createElement('canvas');
   glow.width = sw;
   glow.height = sh;
   const glowCtx = glow.getContext('2d');
-  glowCtx.drawImage(surface, minX, minY, sw, sh, 0, 0, sw, sh);
+  glowCtx.drawImage(tight, 0, 0);
   glowCtx.globalCompositeOperation = 'source-in';
   glowCtx.fillStyle = '#fde047';
   glowCtx.fillRect(0, 0, sw, sh);
-  return { canvas: surface, sx: minX, sy: minY, sw, sh, glow };
+  return { canvas: tight, sx: 0, sy: 0, sw, sh, glow };
 }
 
 function cutMagentaBackdrop(img, options = {}) {
+  img = fitForCut(img, options.maxEdge ?? 512);
   const w = img.width;
   const h = img.height;
   const surface = document.createElement('canvas');
@@ -537,12 +556,18 @@ function cutMagentaBackdrop(img, options = {}) {
   if (maxX < minX || maxY < minY) {
     return { canvas: surface, sx: 0, sy: 0, sw: w, sh: h, fist: null };
   }
+  const sw = maxX - minX + 1;
+  const sh = maxY - minY + 1;
+  const tight = document.createElement('canvas');
+  tight.width = sw;
+  tight.height = sh;
+  tight.getContext('2d').drawImage(surface, minX, minY, sw, sh, 0, 0, sw, sh);
   return {
-    canvas: surface,
-    sx: minX,
-    sy: minY,
-    sw: maxX - minX + 1,
-    sh: maxY - minY + 1,
+    canvas: tight,
+    sx: 0,
+    sy: 0,
+    sw,
+    sh,
     fist: options.glove ? measureGlove(d, w, h, minX, minY) : null
   };
 }
@@ -593,7 +618,8 @@ function measureGlove(d, w, h, cropX, cropY) {
       box = { x: x0 - cropX, y: y0 - cropY, w: x1 - x0 + 1, h: y1 - y0 + 1 };
     }
   }
-  return best > 8000 ? box : null;
+  const areaScale = (w * h) / (1024 * 1024);
+  return best > 8000 * areaScale ? box : null;
 }
 
 function fistCenter(placed) {
@@ -624,10 +650,163 @@ function knifeStrike() {
   return { angle: 0.55 * ease, lunge: 0, slash: 0 };
 }
 
-function loadProp(key, src, options) {
-  const img = new Image();
-  img.onload = () => { propLooks[key] = cutMagentaBackdrop(img, options); };
-  img.src = src;
+const artJobs = [];
+const artCuts = [];
+const artSeen = new Set();
+let artInflight = 0;
+let artCutting = false;
+let sceneKnown = false;
+let bootArmed = false;
+let bootFinished = false;
+const bootNeed = new Set();
+let finishBoot = null;
+
+function queueArt(id, src, apply, priority) {
+  const waiting = artJobs.find(job => job.id === id);
+  if (waiting && priority < waiting.priority) waiting.priority = priority;
+  const cutting = artCuts.find(job => job.id === id);
+  if (cutting && priority < cutting.priority) cutting.priority = priority;
+  if (artSeen.has(id)) return;
+  artSeen.add(id);
+  artJobs.push({ id, src, apply, priority });
+  pumpArt();
+}
+
+function pumpArt() {
+  while (artInflight < 2 && artJobs.length) {
+    artJobs.sort((a, b) => a.priority - b.priority);
+    const job = artJobs.shift();
+    artInflight++;
+    const img = new Image();
+    img.onload = () => {
+      artInflight--;
+      artCuts.push({ ...job, img });
+      pumpArt();
+      pumpCuts();
+    };
+    img.onerror = () => {
+      artInflight--;
+      bootArrive(job.id);
+      pumpArt();
+    };
+    img.src = job.src;
+  }
+}
+
+function pumpCuts() {
+  if (artCutting || !artCuts.length) return;
+  artCutting = true;
+  artCuts.sort((a, b) => a.priority - b.priority);
+  const job = artCuts.shift();
+  try {
+    job.apply(job.img);
+  } catch (err) {
+    console.warn(err);
+  }
+  bootArrive(job.id);
+  setTimeout(() => {
+    artCutting = false;
+    pumpCuts();
+  }, 0);
+}
+
+function bootArrive(id) {
+  bootNeed.delete(id);
+  if (bootArmed && bootNeed.size === 0) finishBoot?.();
+}
+
+function knifeCutOptions(id) {
+  const cut = { glove: true, maxEdge: 512 };
+  if (id.startsWith('knife_celestial_')) cut.celestial = true;
+  if (id === 'knife_godly_katana' || id === 'knife_godly_omega' || id === 'knife_celestial_karambit') cut.goldHalo = true;
+  if (id === 'knife_godly_scythe') cut.voidHalo = true;
+  if (id.startsWith('knife_titanium_')) cut.neonHalo = true;
+  return cut;
+}
+
+function queueProp(key, src, options, priority) {
+  queueArt(key, src, (img) => {
+    propLooks[key] = cutMagentaBackdrop(img, options);
+  }, priority);
+}
+
+function queueKnife(id, priority) {
+  const file = id.replace('knife_', 'knife-').replaceAll('_', '-');
+  queueProp(id, `assets/poop/props/${file}.png?v=cut5`, knifeCutOptions(id), priority);
+}
+
+function queueEpoch(index, priority) {
+  const file = String(index + 1).padStart(2, '0');
+  queueArt(`epoch-${index}`, `assets/backgrounds/epoch-${file}.png`, (img) => {
+    epochBackgrounds[index] = img;
+  }, priority);
+}
+
+function queueLook(prefix, look, openSrc, blinkSrc, options, priority) {
+  queueArt(`${prefix}-open`, openSrc, (img) => {
+    look.open = cutSpriteBackdrop(img, options);
+  }, priority);
+  queueArt(`${prefix}-blink`, blinkSrc, (img) => {
+    look.blink = cutSpriteBackdrop(img, options);
+  }, priority + 1);
+}
+
+const hatFiles = {
+  chef: 'assets/poop/props/hat-chef.png',
+  cap: 'assets/poop/props/hat-cap.png',
+  party: 'assets/poop/props/hat-party.png',
+  shades: 'assets/poop/props/hat-shades.png',
+  cowboy: 'assets/poop/props/hat-cowboy.png',
+  viking: 'assets/poop/props/hat-viking.png',
+  crown: 'assets/poop/props/hat-crown.png?v=cut5'
+};
+
+function visibleArtIds() {
+  const isGirly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
+  const prefix = isGirly ? 'girl' : 'boy';
+  const look = isGirly ? girlLook : boyLook;
+  const epoch = Math.min(39, Math.max(0, Math.floor((GAME.evoStage || 0) / 500)));
+  const hat = clayHats[GAME.equippedHat];
+  const knife = getEquippedKnife();
+  return {
+    lookId: look.open ? null : `${prefix}-open`,
+    epochId: epochBackgrounds[epoch] ? null : `epoch-${epoch}`,
+    epoch,
+    hatId: hat && !propLooks[hat.key] ? hat.key : null,
+    knifeId: knife && !propLooks[knife.id] ? knife.id : null
+  };
+}
+
+function ensureVisibleArt() {
+  if (!sceneKnown) return;
+  const need = visibleArtIds();
+  if (need.epochId) queueEpoch(need.epoch, 0);
+  if (need.hatId) queueProp(need.hatId, hatFiles[need.hatId], { maxEdge: 512 }, 0);
+  if (need.knifeId) queueKnife(need.knifeId, 0);
+}
+
+export function warmSceneArt() {
+  sceneKnown = true;
+  const isGirly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
+  const active = artJobs.find(job => job.id === `${isGirly ? 'girl' : 'boy'}-open`);
+  if (active) active.priority = 0;
+  const need = visibleArtIds();
+  for (const id of [need.lookId, need.epochId, need.hatId, need.knifeId]) {
+    if (id) bootNeed.add(id);
+  }
+  ensureVisibleArt();
+  for (const [key, src] of Object.entries(hatFiles)) queueProp(key, src, { maxEdge: 512 }, 2);
+  bootArmed = true;
+  return new Promise((resolve) => {
+    finishBoot = () => {
+      if (bootFinished) return;
+      bootFinished = true;
+      document.getElementById('bootVeil')?.setAttribute('hidden', '');
+      resolve();
+    };
+    if (bootNeed.size === 0) finishBoot();
+    setTimeout(finishBoot, 8000);
+  });
 }
 
 function drawProp(ctx, frame, x, y, destH) {
@@ -654,26 +833,11 @@ function drawClayKnife(ctx, frame, fistCenterX, fistCenterY, fistH) {
   );
 }
 
-function loadEpochBackground(index, src) {
-  const img = new Image();
-  img.onload = () => { epochBackgrounds[index] = img; };
-  img.src = src;
-}
-
 function drawCoverImage(ctx, img, w, h) {
   const scale = Math.max(w / img.width, h / img.height);
   const dw = img.width * scale;
   const dh = img.height * scale;
   ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
-}
-
-function loadLook(look, openSrc, blinkSrc, options) {
-  const open = new Image();
-  const blink = new Image();
-  open.onload = () => { look.open = cutSpriteBackdrop(open, options); };
-  blink.onload = () => { look.blink = cutSpriteBackdrop(blink, options); };
-  open.src = openSrc;
-  blink.src = blinkSrc;
 }
 
 function characterDest(frame) {
@@ -706,28 +870,8 @@ export function initPetCanvas() {
   canvas = document.getElementById('petCanvas');
   if (!canvas) return;
   ctx = canvas.getContext('2d');
-  loadLook(boyLook, 'assets/poop/boy.png', 'assets/poop/boy-blink.png');
-  loadLook(girlLook, 'assets/poop/girl.png?v=5.0', 'assets/poop/girl-blink.png', { neutral: true });
-  loadProp('chef', 'assets/poop/props/hat-chef.png');
-  loadProp('cap', 'assets/poop/props/hat-cap.png');
-  loadProp('party', 'assets/poop/props/hat-party.png');
-  loadProp('shades', 'assets/poop/props/hat-shades.png');
-  loadProp('cowboy', 'assets/poop/props/hat-cowboy.png');
-  loadProp('viking', 'assets/poop/props/hat-viking.png');
-  loadProp('crown', 'assets/poop/props/hat-crown.png?v=cut5');
-  for (const knife of clayKnifeOrder) {
-    const file = knife.id.replace('knife_', 'knife-').replaceAll('_', '-');
-    const cut = { glove: true };
-    if (knife.id.startsWith('knife_celestial_')) cut.celestial = true;
-    if (knife.id === 'knife_godly_katana' || knife.id === 'knife_godly_omega' || knife.id === 'knife_celestial_karambit') cut.goldHalo = true;
-    if (knife.id === 'knife_godly_scythe') cut.voidHalo = true;
-    if (knife.id.startsWith('knife_titanium_')) cut.neonHalo = true;
-    loadProp(knife.id, `assets/poop/props/${file}.png?v=cut5`, cut);
-  }
-  for (let epoch = 0; epoch < 40; epoch++) {
-    const file = String(epoch + 1).padStart(2, '0');
-    loadEpochBackground(epoch, `assets/backgrounds/epoch-${file}.png`);
-  }
+  queueLook('boy', boyLook, 'assets/poop/boy.png', 'assets/poop/boy-blink.png', { maxEdge: 720 }, 1);
+  queueLook('girl', girlLook, 'assets/poop/girl.png?v=5.0', 'assets/poop/girl-blink.png', { neutral: true, maxEdge: 720 }, 1);
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
@@ -961,11 +1105,11 @@ function renderPetLoop(time) {
   const characterFrame = look.open
     ? ((isBlinking && look.blink) ? look.blink : look.open)
     : null;
+  ensureVisibleArt();
 
   // Aura effects. On the painted character the shine follows the silhouette.
   const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
   const turboOn = (GAME.turboStarMultTime || 0) > 0 || GAME.turboRushTime > 0;
-  let bodyFill = '#7a4630';
   if (characterFrame) {
     const glowAlpha = turboOn ? 0.95 : (isIdealPet ? 0.7 : 0.42);
     drawCharacterGlow(ctx, characterFrame, glowAlpha);
@@ -979,7 +1123,7 @@ function renderPetLoop(time) {
       ? placed.y + placed.destH * clayHat.face
       : placed.y - clayHat.h + clayHat.overlap;
     drawProp(ctx, propLooks[clayHat.key], clayHat.x, hatTop, clayHat.h);
-  } else if (characterFrame && GAME.equippedHat) {
+  } else if (characterFrame && GAME.equippedHat && !clayHats[GAME.equippedHat]) {
     drawEquippedHat(ctx, GAME.equippedHat, time, isGirly);
   }
 
@@ -1005,31 +1149,6 @@ function renderPetLoop(time) {
     if (knifeSlashTimer > 0 && performance.now() - knifeStrikeStart >= KNIFE_STRIKE_MS) {
       knifeSlashTimer = 0;
     }
-  } else if (characterFrame && knife) {
-    ctx.save();
-    ctx.translate(characterFrame ? 58 : 42, characterFrame ? 28 : 10);
-
-    // Slashing rotation arc on click / autoclicker
-    let slashAngle = 0.2;
-    if (knifeSlashTimer > 0) {
-      slashAngle = 0.2 + Math.sin(knifeSlashTimer * Math.PI) * 0.75;
-      knifeSlashTimer = Math.max(0, knifeSlashTimer - 0.12);
-    }
-    ctx.rotate(slashAngle);
-
-    // 1. Сначала рисуем нож (рукоять ложится точно под лапку)
-    drawKnifeInHand(ctx, knife, time);
-
-    // 2. Лапка питомца естественно сжимает рукоять поверх ножа
-    ctx.fillStyle = isGirly ? '#fbcfe8' : bodyFill;
-    ctx.strokeStyle = '#1c1917';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(0, 0, 9, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.restore();
   }
 
   ctx.restore();
@@ -1630,8 +1749,3 @@ function drawEquippedHat(ctx, hatId, time, isGirly) {
   ctx.restore();
 }
 
-// DRAW KNIFE IN PET HAND WITH DYNAMIC SHADERS & VECTOR MODELS
-function drawKnifeInHand(ctx, knife, time) {
-  if (!knife) return;
-  drawKnifeVectorOnCanvas(ctx, knife, time);
-}

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.0 PRO</title>
+  <title>Poop Simulator v5.0.1 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,10 +20,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=knife-all">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.1">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
+  <div id="bootVeil" class="boot-veil" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:#121816;"><span>Загрузка</span></div>
 
   <!-- TOP APP HEADER -->
   <header
@@ -35,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.0 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.1 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -2137,9 +2138,11 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.0"></script>
+  <script type="module" src="src/main.js?v=5.0.1"></script>
 </body>
 
 </html>
 </html>
+
+
 

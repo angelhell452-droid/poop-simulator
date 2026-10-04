@@ -9,7 +9,7 @@ import { renderShop } from './ui/shopView.js';
 import { renderAchievements } from './ui/achievementsView.js';
 import { renderCasesSystem, initCasesListeners } from './ui/casesView.js';
 import { initKnivesIndexListeners } from './ui/knivesIndexView.js';
-import { initPetCanvas, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js';
+import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js';
 import { initModals } from './ui/modalManager.js';
 import { initAuthModal } from './ui/authModalView.js';
 import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js';
@@ -334,6 +334,7 @@ export async function bootstrap() {
     if (document.visibilityState === 'hidden') saveLocal();
   });
 
+  await warmSceneArt();
   showWelcomeGreeting();
   setTimeout(() => {
     openPatchNotesModal();
