@@ -77,10 +77,194 @@ function scheduleNextMeteor(extraMs = 0) {
 }
 let listenersInitialized = false;
 
+const boyLook = { open: null, blink: null };
+const girlLook = { open: null, blink: null };
+const epochBackgrounds = [null];
+
+function cutSpriteBackdrop(img, options = {}) {
+  const maxSpread = options.maxSpread ?? 14;
+  const keepWarm = options.keepWarm !== false;
+  const w = img.width;
+  const h = img.height;
+  const surface = document.createElement('canvas');
+  surface.width = w;
+  surface.height = h;
+  const g = surface.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0);
+  const image = g.getImageData(0, 0, w, h);
+  const d = image.data;
+  const seen = new Uint8Array(w * h);
+  const stack = new Int32Array(w * h);
+  let sp = 0;
+  const isBackdrop = (i) => {
+    const o = i * 4;
+    if (d[o + 3] < 16) return true;
+    const r = d[o];
+    const gc = d[o + 1];
+    const b = d[o + 2];
+    const spread = Math.max(r, gc, b) - Math.min(r, gc, b);
+    if (spread > maxSpread) return false;
+    // The boy bow is warm white, so slightly warm grays stay. The girl bow is burgundy and does not need that guard.
+    if (keepWarm && gc + 1 < r) return false;
+    return true;
+  };
+  const push = (i) => {
+    if (i < 0 || i >= seen.length || seen[i] || !isBackdrop(i)) return;
+    seen[i] = 1;
+    stack[sp++] = i;
+  };
+  for (let x = 0; x < w; x++) {
+    push(x);
+    push((h - 1) * w + x);
+  }
+  for (let y = 0; y < h; y++) {
+    push(y * w);
+    push(y * w + w - 1);
+  }
+  while (sp > 0) {
+    const i = stack[--sp];
+    d[i * 4 + 3] = 0;
+    const x = i % w;
+    const y = (i / w) | 0;
+    if (x > 0) push(i - 1);
+    if (x + 1 < w) push(i + 1);
+    if (y > 0) push(i - w);
+    if (y + 1 < h) push(i + w);
+  }
+  const seenBlob = new Uint8Array(w * h);
+  const blobStack = new Int32Array(w * h);
+  const labels = new Int32Array(w * h);
+  let bestCount = 0;
+  let bestId = 0;
+  let blobId = 0;
+  for (let start = 0; start < w * h; start++) {
+    if (seenBlob[start] || d[start * 4 + 3] < 16) continue;
+    blobId++;
+    let spBlob = 0;
+    let count = 0;
+    seenBlob[start] = 1;
+    blobStack[spBlob++] = start;
+    while (spBlob > 0) {
+      const i = blobStack[--spBlob];
+      labels[i] = blobId;
+      count++;
+      const x = i % w;
+      const y = (i / w) | 0;
+      if (x > 0 && !seenBlob[i - 1] && d[(i - 1) * 4 + 3] >= 16) {
+        seenBlob[i - 1] = 1;
+        blobStack[spBlob++] = i - 1;
+      }
+      if (x + 1 < w && !seenBlob[i + 1] && d[(i + 1) * 4 + 3] >= 16) {
+        seenBlob[i + 1] = 1;
+        blobStack[spBlob++] = i + 1;
+      }
+      if (y > 0 && !seenBlob[i - w] && d[(i - w) * 4 + 3] >= 16) {
+        seenBlob[i - w] = 1;
+        blobStack[spBlob++] = i - w;
+      }
+      if (y + 1 < h && !seenBlob[i + w] && d[(i + w) * 4 + 3] >= 16) {
+        seenBlob[i + w] = 1;
+        blobStack[spBlob++] = i + w;
+      }
+    }
+    if (count > bestCount) {
+      bestCount = count;
+      bestId = blobId;
+    }
+  }
+  if (bestId) {
+    for (let i = 0; i < w * h; i++) {
+      if (labels[i] !== bestId) d[i * 4 + 3] = 0;
+    }
+  }
+  g.putImageData(image, 0, 0);
+  let minX = w;
+  let minY = h;
+  let maxX = 0;
+  let maxY = 0;
+  for (let i = 0; i < w * h; i++) {
+    if (d[i * 4 + 3] < 16) continue;
+    const x = i % w;
+    const y = (i / w) | 0;
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  }
+  if (maxX < minX || maxY < minY) {
+    return { canvas: surface, sx: 0, sy: 0, sw: w, sh: h, glow: null };
+  }
+  const sw = maxX - minX + 1;
+  const sh = maxY - minY + 1;
+  const glow = document.createElement('canvas');
+  glow.width = sw;
+  glow.height = sh;
+  const glowCtx = glow.getContext('2d');
+  glowCtx.drawImage(surface, minX, minY, sw, sh, 0, 0, sw, sh);
+  glowCtx.globalCompositeOperation = 'source-in';
+  glowCtx.fillStyle = '#fde047';
+  glowCtx.fillRect(0, 0, sw, sh);
+  return { canvas: surface, sx: minX, sy: minY, sw, sh, glow };
+}
+
+function loadEpochBackground(index, src) {
+  const img = new Image();
+  img.onload = () => { epochBackgrounds[index] = img; };
+  img.src = src;
+}
+
+function drawCoverImage(ctx, img, w, h) {
+  const scale = Math.max(w / img.width, h / img.height);
+  const dw = img.width * scale;
+  const dh = img.height * scale;
+  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+}
+
+function loadLook(look, openSrc, blinkSrc, options) {
+  const open = new Image();
+  const blink = new Image();
+  open.onload = () => { look.open = cutSpriteBackdrop(open, options); };
+  blink.onload = () => { look.blink = cutSpriteBackdrop(blink, options); };
+  open.src = openSrc;
+  blink.src = blinkSrc;
+}
+
+function characterDest(frame) {
+  const destH = 168;
+  const destW = destH * (frame.sw / frame.sh);
+  return { destW, destH, x: -destW / 2, y: 62 - destH };
+}
+
+function drawCharacterFrame(ctx, frame) {
+  const box = characterDest(frame);
+  ctx.drawImage(
+    frame.canvas,
+    frame.sx, frame.sy, frame.sw, frame.sh,
+    box.x, box.y, box.destW, box.destH
+  );
+}
+
+function drawCharacterGlow(ctx, frame, alpha) {
+  if (!frame.glow) return;
+  const box = characterDest(frame);
+  const pulse = 0.82 + Math.sin(performance.now() * 0.003) * 0.18;
+  ctx.save();
+  ctx.filter = 'blur(16px)';
+  ctx.globalAlpha = alpha * pulse;
+  ctx.drawImage(frame.glow, box.x - 8, box.y - 8, box.destW + 16, box.destH + 16);
+  ctx.restore();
+}
+
 export function initPetCanvas() {
   canvas = document.getElementById('petCanvas');
   if (!canvas) return;
   ctx = canvas.getContext('2d');
+  loadLook(boyLook, 'assets/poop/boy.png', 'assets/poop/boy-blink.png');
+  loadLook(girlLook, 'assets/poop/girl.png', 'assets/poop/girl-blink.png', { maxSpread: 36, keepWarm: false });
+  for (let epoch = 0; epoch < 40; epoch++) {
+    const file = String(epoch + 1).padStart(2, '0');
+    loadEpochBackground(epoch, `assets/backgrounds/epoch-${file}.png`);
+  }
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
@@ -267,8 +451,13 @@ function renderPetLoop(time) {
 
   const isGirly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
 
+  const epochIndex = Math.floor((GAME.evoStage || 0) / 500);
+  const epochBg = epochBackgrounds[epochIndex];
+
   // Background
-  if (isGirly) {
+  if (epochBg) {
+    drawCoverImage(ctx, epochBg, w, h);
+  } else if (isGirly) {
     const pinkGrad = ctx.createLinearGradient(0, 0, 0, h);
     pinkGrad.addColorStop(0, '#fdf2f8');
     pinkGrad.addColorStop(0.5, '#fce7f3');
@@ -295,20 +484,34 @@ function renderPetLoop(time) {
   const toiletWaterH = 44 * baseScale;
   const toiletCenterY = h * 0.77;
 
-  // Porcelain Toilet Base
-  ctx.fillStyle = isGirly ? '#fff1f2' : '#f8fafc';
-  ctx.beginPath();
-  ctx.ellipse(w / 2, toiletCenterY, toiletBaseW, toiletBaseH, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = isGirly ? '#f472b6' : '#cbd5e1';
-  ctx.lineWidth = Math.max(2.5, 4 * baseScale);
-  ctx.stroke();
+  if (epochBg) {
+    ctx.save();
+    ctx.translate(w / 2, toiletCenterY + 10 * baseScale);
+    const shadow = ctx.createRadialGradient(0, 0, 10 * baseScale, 0, 0, toiletBaseW * 0.7);
+    shadow.addColorStop(0, 'rgba(12, 62, 74, 0.22)');
+    shadow.addColorStop(1, 'rgba(12, 62, 74, 0)');
+    ctx.scale(1, 0.38);
+    ctx.fillStyle = shadow;
+    ctx.beginPath();
+    ctx.arc(0, 0, toiletBaseW * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  } else {
+    // Porcelain Toilet Base
+    ctx.fillStyle = isGirly ? '#fff1f2' : '#f8fafc';
+    ctx.beginPath();
+    ctx.ellipse(w / 2, toiletCenterY, toiletBaseW, toiletBaseH, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = isGirly ? '#f472b6' : '#cbd5e1';
+    ctx.lineWidth = Math.max(2.5, 4 * baseScale);
+    ctx.stroke();
 
-  // Toilet Water
-  ctx.fillStyle = isGirly ? '#f9a8d4' : '#38bdf8';
-  ctx.beginPath();
-  ctx.ellipse(w / 2, toiletCenterY + 1 * baseScale, toiletWaterW, toiletWaterH, 0, 0, Math.PI * 2);
-  ctx.fill();
+    // Toilet Water
+    ctx.fillStyle = isGirly ? '#f9a8d4' : '#38bdf8';
+    ctx.beginPath();
+    ctx.ellipse(w / 2, toiletCenterY + 1 * baseScale, toiletWaterW, toiletWaterH, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   // Smooth Jelly Spring
   squashX += (1 - squashX) * 0.12;
@@ -318,16 +521,25 @@ function renderPetLoop(time) {
   ctx.translate(w / 2, toiletCenterY - 45 * baseScale);
   ctx.scale(squashX * baseScale, squashY * baseScale);
 
-  // Aura effects
+  blinkTimer += 0.016;
+  const isBlinking = (blinkTimer % 4.0) < 0.15;
+  const look = isGirly ? girlLook : boyLook;
+  const characterFrame = look.open
+    ? ((isBlinking && look.blink) ? look.blink : look.open)
+    : null;
+
+  // Aura effects. On the painted character the shine follows the silhouette.
   const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
-  if (isIdealPet) {
+  const turboOn = (GAME.turboStarMultTime || 0) > 0 || GAME.turboRushTime > 0;
+  if (characterFrame) {
+    const glowAlpha = turboOn ? 0.95 : (isIdealPet ? 0.7 : 0.42);
+    drawCharacterGlow(ctx, characterFrame, glowAlpha);
+  } else if (isIdealPet) {
     ctx.fillStyle = 'rgba(250, 204, 21, 0.28)';
     ctx.beginPath();
     ctx.arc(0, -10, 92 + Math.sin(time * 0.008) * 8, 0, Math.PI * 2);
     ctx.fill();
-  }
-
-  if ((GAME.turboStarMultTime || 0) > 0) {
+  } else if ((GAME.turboStarMultTime || 0) > 0) {
     ctx.fillStyle = 'rgba(250, 204, 21, 0.5)';
     ctx.beginPath();
     ctx.arc(0, -10, 96 + Math.sin(time * 0.03) * 10, 0, Math.PI * 2);
@@ -341,7 +553,10 @@ function renderPetLoop(time) {
 
   // Poop Body Swirls (Girly Mode Kawaii pastel gradient vs Boy/Default evolution color)
   let bodyFill = currentEvo.bodyColor || '#78350f';
-  if (isGirly) {
+  if (characterFrame) {
+    drawCharacterFrame(ctx, characterFrame);
+    if (!isGirly) bodyFill = '#7a4630';
+  } else if (isGirly) {
     const bodyGrad = ctx.createLinearGradient(0, -50, 0, 50);
     bodyGrad.addColorStop(0, '#f472b6');
     bodyGrad.addColorStop(0.5, '#fb7185');
@@ -349,6 +564,7 @@ function renderPetLoop(time) {
     bodyFill = bodyGrad;
   }
 
+  if (!characterFrame) {
   ctx.fillStyle = bodyFill;
   ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
@@ -364,8 +580,6 @@ function renderPetLoop(time) {
   }
 
   // Eyes & Blink
-  blinkTimer += 0.016;
-  const isBlinking = (blinkTimer % 4.0) < 0.15;
   if (!isBlinking) {
     // Sclera
     ctx.fillStyle = '#ffffff';
@@ -414,6 +628,7 @@ function renderPetLoop(time) {
   ctx.beginPath();
   ctx.arc(0, 8, 10, 0.1 * Math.PI, 0.9 * Math.PI);
   ctx.stroke();
+  }
 
   // Draw Equipped Wardrobe Hat
   if (GAME.equippedHat) {
@@ -424,7 +639,7 @@ function renderPetLoop(time) {
   const knife = getEquippedKnife();
   if (knife) {
     ctx.save();
-    ctx.translate(42, 10);
+    ctx.translate(characterFrame ? 58 : 42, characterFrame ? 28 : 10);
 
     // Slashing rotation arc on click / autoclicker
     let slashAngle = 0.2;
@@ -438,7 +653,7 @@ function renderPetLoop(time) {
     drawKnifeInHand(ctx, knife, time);
 
     // 2. Лапка питомца естественно сжимает рукоять поверх ножа
-    ctx.fillStyle = isGirly ? '#fbcfe8' : (currentEvo.bodyColor || '#78350f');
+    ctx.fillStyle = isGirly ? '#fbcfe8' : bodyFill;
     ctx.strokeStyle = '#1c1917';
     ctx.lineWidth = 2;
     ctx.beginPath();
