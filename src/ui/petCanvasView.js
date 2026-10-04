@@ -1,5 +1,4 @@
 import { GAME } from '../core/state.js';
-import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { getEquippedKnife } from '../economy/production.js';
 import { drawKnifeVectorOnCanvas } from '../utils/knifeVectorRenderer.js';
 
@@ -13,12 +12,15 @@ import { saveLocal } from '../save/saveManager.js';
 import { requestCloudSync } from '../save/cloudSync.js';
 import { events } from '../core/events.js';
 import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js';
+import { KNIVES } from '../data/knives.data.js';
 
 let canvas = null;
 let ctx = null;
 let squashX = 1, squashY = 1;
 let blinkTimer = 0;
 let knifeSlashTimer = 0;
+let knifeStrikeStart = 0;
+const KNIFE_STRIKE_MS = 170;
 export const visualParticles = [];
 export const sparkParticles = [];
 let pendingAutoEarned = 0;
@@ -79,11 +81,29 @@ let listenersInitialized = false;
 
 const boyLook = { open: null, blink: null };
 const girlLook = { open: null, blink: null };
+const propLooks = {
+  chef: null, cap: null, party: null, shades: null, cowboy: null, viking: null, crown: null
+};
+const clayKnifeOrder = KNIVES.map(knife => ({
+  id: knife.id,
+  key: knife.id
+}));
+const clayKnives = Object.fromEntries(clayKnifeOrder.map(knife => [knife.id, knife.key]));
+const clayHats = {
+  hat_chef: { key: 'chef', x: 4, h: 64, overlap: 28 },
+  hat_cap: { key: 'cap', x: 0, h: 62, overlap: 50 },
+  hat_party: { key: 'party', x: 4, h: 74, overlap: 32 },
+  hat_shades: { key: 'shades', x: 0, h: 32, face: 0.52 },
+  hat_cowboy: { key: 'cowboy', x: 0, h: 78, overlap: 74 },
+  hat_viking: { key: 'viking', x: 0, h: 92, overlap: 60 },
+  hat_crown: { key: 'crown', x: 0, h: 92, overlap: 55 }
+};
 const epochBackgrounds = [null];
 
 function cutSpriteBackdrop(img, options = {}) {
   const maxSpread = options.maxSpread ?? 14;
   const keepWarm = options.keepWarm !== false;
+  const neutral = options.neutral === true;
   const w = img.width;
   const h = img.height;
   const surface = document.createElement('canvas');
@@ -103,8 +123,12 @@ function cutSpriteBackdrop(img, options = {}) {
     const gc = d[o + 1];
     const b = d[o + 2];
     const spread = Math.max(r, gc, b) - Math.min(r, gc, b);
+    // The girl file sits on a noisy checker. Gray noise goes, pink skin stays, so the soft edge is not shaved off.
+    if (neutral) {
+      return Math.abs(r - gc) <= 16 && Math.abs(gc - b) <= 20 && Math.abs(r - b) <= 24;
+    }
     if (spread > maxSpread) return false;
-    // The boy bow is warm white, so slightly warm grays stay. The girl bow is burgundy and does not need that guard.
+    // The boy bow is warm white, so slightly warm grays stay.
     if (keepWarm && gc + 1 < r) return false;
     return true;
   };
@@ -207,6 +231,429 @@ function cutSpriteBackdrop(img, options = {}) {
   return { canvas: surface, sx: minX, sy: minY, sw, sh, glow };
 }
 
+function cutMagentaBackdrop(img, options = {}) {
+  const w = img.width;
+  const h = img.height;
+  const surface = document.createElement('canvas');
+  surface.width = w;
+  surface.height = h;
+  const g = surface.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0);
+  const image = g.getImageData(0, 0, w, h);
+  const d = image.data;
+  let backdropR = 0;
+  let backdropG = 0;
+  let backdropB = 0;
+  let backdropSamples = 0;
+  const backdropPoints = [
+    [2, 2], [w >> 1, 2], [w - 3, 2],
+    [2, h >> 1], [w - 3, h >> 1],
+    [2, h - 3], [w >> 1, h - 3], [w - 3, h - 3]
+  ];
+  for (let s = 0; s < backdropPoints.length; s++) {
+    const x = Math.max(0, Math.min(w - 1, backdropPoints[s][0]));
+    const y = Math.max(0, Math.min(h - 1, backdropPoints[s][1]));
+    const o = (y * w + x) * 4;
+    const r = d[o];
+    const gc = d[o + 1];
+    const b = d[o + 2];
+    if (r > 120 && r > gc + 40 && b > gc + 15) {
+      backdropR += r;
+      backdropG += gc;
+      backdropB += b;
+      backdropSamples++;
+    }
+  }
+  if (backdropSamples) {
+    backdropR /= backdropSamples;
+    backdropG /= backdropSamples;
+    backdropB /= backdropSamples;
+  }
+  const colorDist = (r, gc, b) => Math.max(
+    Math.abs(r - backdropR),
+    Math.abs(gc - backdropG),
+    Math.abs(b - backdropB)
+  );
+  const edgeJump = (x, y) => {
+    const o = (y * w + x) * 4;
+    const r = d[o];
+    const gc = d[o + 1];
+    const b = d[o + 2];
+    let best = 0;
+    const look = (nx, ny) => {
+      const n = (ny * w + nx) * 4;
+      const jump = Math.max(Math.abs(r - d[n]), Math.abs(gc - d[n + 1]), Math.abs(b - d[n + 2]));
+      if (jump > best) best = jump;
+    };
+    if (x > 0) look(x - 1, y);
+    if (x + 1 < w) look(x + 1, y);
+    if (y > 0) look(x, y - 1);
+    if (y + 1 < h) look(x, y + 1);
+    return best;
+  };
+  const isField = (r, gc, b) => {
+    if (!backdropSamples) return gc < 80 && r > 140 && b > 70 && r > gc + 80 && b > gc + 40;
+    const dist = colorDist(r, gc, b);
+    if (dist <= 16) return true;
+    return r >= backdropR - 6 && gc >= backdropG - 4 && b >= backdropB - 6
+      && dist <= 50 && gc < 105 && b < backdropB + 36 && r < backdropR + 28;
+  };
+  const isGlow = (x, y, r, gc, b) => {
+    if (!backdropSamples || x <= 0 || y <= 0 || x >= w - 1 || y >= h - 1) return false;
+    const dist = colorDist(r, gc, b);
+    if (!(r >= backdropR - 4 && gc >= backdropG + 8 && b >= backdropB - 10 && b <= backdropB + 18 && gc < 190 && dist <= 140)) return false;
+    return edgeJump(x, y) <= 24;
+  };
+  const isBlueFringe = (r, gc, b) => backdropSamples
+    && gc < 48 && b > backdropB + 16 && b < backdropB + 110
+    && r > backdropR - 45 && r < backdropR + 50;
+  const seen = new Uint8Array(w * h);
+  const stack = new Int32Array(w * h);
+  let sp = 0;
+  const pushField = (i) => {
+    if (i < 0 || i >= seen.length || seen[i]) return;
+    const x = i % w;
+    const y = (i / w) | 0;
+    const o = i * 4;
+    if (!isField(d[o], d[o + 1], d[o + 2]) && !isGlow(x, y, d[o], d[o + 1], d[o + 2])) return;
+    seen[i] = 1;
+    stack[sp++] = i;
+  };
+  for (let x = 0; x < w; x++) {
+    pushField(x);
+    pushField((h - 1) * w + x);
+  }
+  for (let y = 0; y < h; y++) {
+    pushField(y * w);
+    pushField(y * w + w - 1);
+  }
+  while (sp > 0) {
+    const i = stack[--sp];
+    d[i * 4 + 3] = 0;
+    const x = i % w;
+    const y = (i / w) | 0;
+    if (x > 0) pushField(i - 1);
+    if (x + 1 < w) pushField(i + 1);
+    if (y > 0) pushField(i - w);
+    if (y + 1 < h) pushField(i + w);
+  }
+  const pushBlue = (i) => {
+    if (i < 0 || i >= seen.length || seen[i]) return;
+    const o = i * 4;
+    if (!isBlueFringe(d[o], d[o + 1], d[o + 2])) return;
+    seen[i] = 1;
+    stack[sp++] = i;
+  };
+  sp = 0;
+  for (let i = 0; i < w * h; i++) {
+    if (d[i * 4 + 3] >= 16) continue;
+    const x = i % w;
+    const y = (i / w) | 0;
+    if (x > 0) pushBlue(i - 1);
+    if (x + 1 < w) pushBlue(i + 1);
+    if (y > 0) pushBlue(i - w);
+    if (y + 1 < h) pushBlue(i + w);
+  }
+  while (sp > 0) {
+    const i = stack[--sp];
+    d[i * 4 + 3] = 0;
+    const x = i % w;
+    const y = (i / w) | 0;
+    if (x > 0) pushBlue(i - 1);
+    if (x + 1 < w) pushBlue(i + 1);
+    if (y > 0) pushBlue(i - w);
+    if (y + 1 < h) pushBlue(i + w);
+  }
+  if (backdropSamples) {
+    const isMagentaSpeck = (r, gc, b) => gc < 30 && r > 150 && b > 40 && r > gc + 100;
+    const pushSpeck = (i) => {
+      if (i < 0 || i >= seen.length || seen[i]) return;
+      const o = i * 4;
+      if (!isMagentaSpeck(d[o], d[o + 1], d[o + 2])) return;
+      seen[i] = 1;
+      stack[sp++] = i;
+    };
+    sp = 0;
+    for (let i = 0; i < w * h; i++) {
+      if (d[i * 4 + 3] >= 16) continue;
+      const x = i % w;
+      const y = (i / w) | 0;
+      if (x > 0) pushSpeck(i - 1);
+      if (x + 1 < w) pushSpeck(i + 1);
+      if (y > 0) pushSpeck(i - w);
+      if (y + 1 < h) pushSpeck(i + w);
+    }
+    while (sp > 0) {
+      const i = stack[--sp];
+      d[i * 4 + 3] = 0;
+      const x = i % w;
+      const y = (i / w) | 0;
+      if (x > 0) pushSpeck(i - 1);
+      if (x + 1 < w) pushSpeck(i + 1);
+      if (y > 0) pushSpeck(i - w);
+      if (y + 1 < h) pushSpeck(i + w);
+    }
+  }
+  if (options.celestial && backdropSamples) {
+    const isCelestialHalo = (r, gc, b) => {
+      if (r <= 120 || gc >= 188) return false;
+      if (b <= gc + 18) return false;
+      if (b > 148) return true;
+      return gc < 110 && b > backdropB + 10 && r > b - 50;
+    };
+    const pushHalo = (i) => {
+      if (i < 0 || i >= seen.length || seen[i]) return;
+      const o = i * 4;
+      if (!isCelestialHalo(d[o], d[o + 1], d[o + 2])) return;
+      seen[i] = 1;
+      stack[sp++] = i;
+    };
+    sp = 0;
+    for (let i = 0; i < w * h; i++) {
+      if (d[i * 4 + 3] >= 16) continue;
+      const x = i % w;
+      const y = (i / w) | 0;
+      if (x > 0) pushHalo(i - 1);
+      if (x + 1 < w) pushHalo(i + 1);
+      if (y > 0) pushHalo(i - w);
+      if (y + 1 < h) pushHalo(i + w);
+    }
+    while (sp > 0) {
+      const i = stack[--sp];
+      d[i * 4 + 3] = 0;
+      const x = i % w;
+      const y = (i / w) | 0;
+      if (x > 0) pushHalo(i - 1);
+      if (x + 1 < w) pushHalo(i + 1);
+      if (y > 0) pushHalo(i - w);
+      if (y + 1 < h) pushHalo(i + w);
+    }
+  }
+  if (backdropSamples && (options.goldHalo || options.voidHalo || options.neonHalo)) {
+    const isSeriesHalo = (r, gc, b) => {
+      if (options.goldHalo) return r > 145 && gc < 125 && b < 145 && r > gc + 45;
+      if (options.voidHalo) return gc < 45 && r > 140 && b < backdropB + 50 && r > gc + 60;
+      return r > 130 && gc < 110 && b < 170 && r > b && r > gc + 28;
+    };
+    const pushSeries = (i) => {
+      if (i < 0 || i >= seen.length || seen[i]) return;
+      const o = i * 4;
+      if (!isSeriesHalo(d[o], d[o + 1], d[o + 2])) return;
+      seen[i] = 1;
+      stack[sp++] = i;
+    };
+    sp = 0;
+    for (let i = 0; i < w * h; i++) {
+      if (d[i * 4 + 3] >= 16) continue;
+      const x = i % w;
+      const y = (i / w) | 0;
+      if (x > 0) pushSeries(i - 1);
+      if (x + 1 < w) pushSeries(i + 1);
+      if (y > 0) pushSeries(i - w);
+      if (y + 1 < h) pushSeries(i + w);
+    }
+    while (sp > 0) {
+      const i = stack[--sp];
+      d[i * 4 + 3] = 0;
+      const x = i % w;
+      const y = (i / w) | 0;
+      if (x > 0) pushSeries(i - 1);
+      if (x + 1 < w) pushSeries(i + 1);
+      if (y > 0) pushSeries(i - w);
+      if (y + 1 < h) pushSeries(i + w);
+    }
+  }
+  const clearEnclosed = (match, protect) => {
+    const mark = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+      if (mark[i] || d[i * 4 + 3] < 16 || !match(i)) continue;
+      let sp2 = 0;
+      const comp = [];
+      let open = false;
+      let warm = false;
+      mark[i] = 1;
+      stack[sp2++] = i;
+      while (sp2 > 0) {
+        const c = stack[--sp2];
+        comp.push(c);
+        if (comp.length > 18000) {
+          warm = true;
+          break;
+        }
+        const x = c % w;
+        const y = (c / w) | 0;
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1) open = true;
+        const next = [];
+        if (x > 0) next.push(c - 1);
+        if (x + 1 < w) next.push(c + 1);
+        if (y > 0) next.push(c - w);
+        if (y + 1 < h) next.push(c + w);
+        for (let k = 0; k < next.length; k++) {
+          const j = next[k];
+          if (mark[j] || d[j * 4 + 3] < 16) continue;
+          if (!match(j)) {
+            if (protect && protect(j)) warm = true;
+            continue;
+          }
+          mark[j] = 1;
+          stack[sp2++] = j;
+        }
+      }
+      if (!open && !warm) {
+        for (let k = 0; k < comp.length; k++) d[comp[k] * 4 + 3] = 0;
+      }
+    }
+  };
+  if (backdropSamples) {
+    clearEnclosed((i) => {
+      const o = i * 4;
+      return colorDist(d[o], d[o + 1], d[o + 2]) <= 8;
+    });
+    clearEnclosed(
+      (i) => {
+        const o = i * 4;
+        return isBlueFringe(d[o], d[o + 1], d[o + 2]);
+      },
+      (i) => {
+        const o = i * 4;
+        return d[o + 1] > 110 && d[o] > 140;
+      }
+    );
+  }
+  g.putImageData(image, 0, 0);
+  let minX = w;
+  let minY = h;
+  let maxX = 0;
+  let maxY = 0;
+  for (let i = 0; i < w * h; i++) {
+    if (d[i * 4 + 3] < 16) continue;
+    const x = i % w;
+    const y = (i / w) | 0;
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  }
+  if (maxX < minX || maxY < minY) {
+    return { canvas: surface, sx: 0, sy: 0, sw: w, sh: h, fist: null };
+  }
+  return {
+    canvas: surface,
+    sx: minX,
+    sy: minY,
+    sw: maxX - minX + 1,
+    sh: maxY - minY + 1,
+    fist: options.glove ? measureGlove(d, w, h, minX, minY) : null
+  };
+}
+
+function measureGlove(d, w, h, cropX, cropY) {
+  const count = w * h;
+  const cream = new Uint8Array(count);
+  for (let i = 0; i < count; i++) {
+    const o = i * 4;
+    if (d[o + 3] < 16) continue;
+    const r = d[o];
+    const gc = d[o + 1];
+    const b = d[o + 2];
+    if (r >= 168 && gc >= 140 && b >= 110 && r >= gc && gc + 8 >= b && (r - b) <= 75 && (r - gc) <= 48) {
+      cream[i] = 1;
+    }
+  }
+  const seen = new Uint8Array(count);
+  const stack = new Int32Array(count);
+  let best = 0;
+  let box = null;
+  for (let i = 0; i < count; i++) {
+    if (!cream[i] || seen[i]) continue;
+    let sp = 0;
+    stack[sp++] = i;
+    seen[i] = 1;
+    let area = 0;
+    let x0 = w;
+    let y0 = h;
+    let x1 = 0;
+    let y1 = 0;
+    while (sp > 0) {
+      const p = stack[--sp];
+      const x = p % w;
+      const y = (p / w) | 0;
+      area++;
+      if (x < x0) x0 = x;
+      if (y < y0) y0 = y;
+      if (x > x1) x1 = x;
+      if (y > y1) y1 = y;
+      if (x > 0 && cream[p - 1] && !seen[p - 1]) { seen[p - 1] = 1; stack[sp++] = p - 1; }
+      if (x + 1 < w && cream[p + 1] && !seen[p + 1]) { seen[p + 1] = 1; stack[sp++] = p + 1; }
+      if (y > 0 && cream[p - w] && !seen[p - w]) { seen[p - w] = 1; stack[sp++] = p - w; }
+      if (y + 1 < h && cream[p + w] && !seen[p + w]) { seen[p + w] = 1; stack[sp++] = p + w; }
+    }
+    if (area > best) {
+      best = area;
+      box = { x: x0 - cropX, y: y0 - cropY, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+    }
+  }
+  return best > 8000 ? box : null;
+}
+
+function fistCenter(placed) {
+  return {
+    x: placed.x + placed.destW * 0.87,
+    y: placed.y + placed.destH * 0.71,
+    h: placed.destH * 0.15
+  };
+}
+
+function knifeStrike() {
+  if (knifeSlashTimer <= 0) return { angle: 0, lunge: 0, slash: 0 };
+  const p = Math.min(1, (performance.now() - knifeStrikeStart) / KNIFE_STRIKE_MS);
+  if (p < 0.28) {
+    const windup = p / 0.28;
+    return { angle: -0.4 * Math.sin(windup * Math.PI / 2), lunge: 0, slash: 0 };
+  }
+  if (p < 0.55) {
+    const swing = (p - 0.28) / 0.27;
+    return {
+      angle: -0.4 + swing * 0.95,
+      lunge: Math.sin(swing * Math.PI),
+      slash: swing
+    };
+  }
+  const settle = (p - 0.55) / 0.45;
+  const ease = (1 - settle) * (1 - settle);
+  return { angle: 0.55 * ease, lunge: 0, slash: 0 };
+}
+
+function loadProp(key, src, options) {
+  const img = new Image();
+  img.onload = () => { propLooks[key] = cutMagentaBackdrop(img, options); };
+  img.src = src;
+}
+
+function drawProp(ctx, frame, x, y, destH) {
+  const destW = destH * (frame.sw / frame.sh);
+  ctx.drawImage(frame.canvas, frame.sx, frame.sy, frame.sw, frame.sh, x - destW / 2, y, destW, destH);
+}
+
+function drawClayKnife(ctx, frame, fistCenterX, fistCenterY, fistH) {
+  const fist = frame.fist;
+  if (!fist || fist.h < 8) {
+    drawProp(ctx, frame, fistCenterX, fistCenterY - fistH / 2, fistH);
+    return;
+  }
+  const scale = fistH / fist.h;
+  const fx = fist.x + fist.w / 2;
+  const fy = fist.y + fist.h / 2;
+  ctx.drawImage(
+    frame.canvas,
+    frame.sx, frame.sy, frame.sw, frame.sh,
+    fistCenterX - fx * scale,
+    fistCenterY - fy * scale,
+    frame.sw * scale,
+    frame.sh * scale
+  );
+}
+
 function loadEpochBackground(index, src) {
   const img = new Image();
   img.onload = () => { epochBackgrounds[index] = img; };
@@ -260,7 +707,23 @@ export function initPetCanvas() {
   if (!canvas) return;
   ctx = canvas.getContext('2d');
   loadLook(boyLook, 'assets/poop/boy.png', 'assets/poop/boy-blink.png');
-  loadLook(girlLook, 'assets/poop/girl.png', 'assets/poop/girl-blink.png', { maxSpread: 36, keepWarm: false });
+  loadLook(girlLook, 'assets/poop/girl.png?v=5.0', 'assets/poop/girl-blink.png', { neutral: true });
+  loadProp('chef', 'assets/poop/props/hat-chef.png');
+  loadProp('cap', 'assets/poop/props/hat-cap.png');
+  loadProp('party', 'assets/poop/props/hat-party.png');
+  loadProp('shades', 'assets/poop/props/hat-shades.png');
+  loadProp('cowboy', 'assets/poop/props/hat-cowboy.png');
+  loadProp('viking', 'assets/poop/props/hat-viking.png');
+  loadProp('crown', 'assets/poop/props/hat-crown.png?v=cut5');
+  for (const knife of clayKnifeOrder) {
+    const file = knife.id.replace('knife_', 'knife-').replaceAll('_', '-');
+    const cut = { glove: true };
+    if (knife.id.startsWith('knife_celestial_')) cut.celestial = true;
+    if (knife.id === 'knife_godly_katana' || knife.id === 'knife_godly_omega' || knife.id === 'knife_celestial_karambit') cut.goldHalo = true;
+    if (knife.id === 'knife_godly_scythe') cut.voidHalo = true;
+    if (knife.id.startsWith('knife_titanium_')) cut.neonHalo = true;
+    loadProp(knife.id, `assets/poop/props/${file}.png?v=cut5`, cut);
+  }
   for (let epoch = 0; epoch < 40; epoch++) {
     const file = String(epoch + 1).padStart(2, '0');
     loadEpochBackground(epoch, `assets/backgrounds/epoch-${file}.png`);
@@ -415,7 +878,10 @@ export function resizeCanvas() {
 export function triggerPetSquash(sx = 1.25, sy = 0.8) {
   squashX = sx;
   squashY = sy;
-  knifeSlashTimer = 1.0;
+  if (knifeSlashTimer <= 0) {
+    knifeSlashTimer = 1;
+    knifeStrikeStart = performance.now();
+  }
 }
 
 export function addManagedTextParticle(p) {
@@ -447,41 +913,24 @@ function renderPetLoop(time) {
   try {
     const w = canvas.width;
     const h = canvas.height;
-  const currentEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
-
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
   const isGirly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
 
   const epochIndex = Math.floor((GAME.evoStage || 0) / 500);
   const epochBg = epochBackgrounds[epochIndex];
 
-  // Background
+  // Painted epoch scene. Until the picture arrives, the canvas stays the garden color.
   if (epochBg) {
     drawCoverImage(ctx, epochBg, w, h);
-  } else if (isGirly) {
-    const pinkGrad = ctx.createLinearGradient(0, 0, 0, h);
-    pinkGrad.addColorStop(0, '#fdf2f8');
-    pinkGrad.addColorStop(0.5, '#fce7f3');
-    pinkGrad.addColorStop(1, '#fbcfe8');
-    ctx.fillStyle = pinkGrad;
-    ctx.fillRect(0, 0, w, h);
   } else {
-    ctx.fillStyle = currentEvo.bgColor || '#0284c7';
+    ctx.fillStyle = '#121816';
     ctx.fillRect(0, 0, w, h);
-
-    // Tiles
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.lineWidth = 2;
-    for (let x = 0; x < w; x += 45) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-    }
   }
 
   // Adaptive base scale for smaller screens (mobile / tablet)
   const baseScale = Math.min(1.0, Math.max(0.68, Math.min(w / 380, h / 360)));
   const toiletBaseW = 170 * baseScale;
-  const toiletBaseH = 70 * baseScale;
-  const toiletWaterW = 120 * baseScale;
-  const toiletWaterH = 44 * baseScale;
   const toiletCenterY = h * 0.77;
 
   if (epochBg) {
@@ -496,21 +945,6 @@ function renderPetLoop(time) {
     ctx.arc(0, 0, toiletBaseW * 0.7, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
-  } else {
-    // Porcelain Toilet Base
-    ctx.fillStyle = isGirly ? '#fff1f2' : '#f8fafc';
-    ctx.beginPath();
-    ctx.ellipse(w / 2, toiletCenterY, toiletBaseW, toiletBaseH, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = isGirly ? '#f472b6' : '#cbd5e1';
-    ctx.lineWidth = Math.max(2.5, 4 * baseScale);
-    ctx.stroke();
-
-    // Toilet Water
-    ctx.fillStyle = isGirly ? '#f9a8d4' : '#38bdf8';
-    ctx.beginPath();
-    ctx.ellipse(w / 2, toiletCenterY + 1 * baseScale, toiletWaterW, toiletWaterH, 0, 0, Math.PI * 2);
-    ctx.fill();
   }
 
   // Smooth Jelly Spring
@@ -531,113 +965,47 @@ function renderPetLoop(time) {
   // Aura effects. On the painted character the shine follows the silhouette.
   const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
   const turboOn = (GAME.turboStarMultTime || 0) > 0 || GAME.turboRushTime > 0;
+  let bodyFill = '#7a4630';
   if (characterFrame) {
     const glowAlpha = turboOn ? 0.95 : (isIdealPet ? 0.7 : 0.42);
     drawCharacterGlow(ctx, characterFrame, glowAlpha);
-  } else if (isIdealPet) {
-    ctx.fillStyle = 'rgba(250, 204, 21, 0.28)';
-    ctx.beginPath();
-    ctx.arc(0, -10, 92 + Math.sin(time * 0.008) * 8, 0, Math.PI * 2);
-    ctx.fill();
-  } else if ((GAME.turboStarMultTime || 0) > 0) {
-    ctx.fillStyle = 'rgba(250, 204, 21, 0.5)';
-    ctx.beginPath();
-    ctx.arc(0, -10, 96 + Math.sin(time * 0.03) * 10, 0, Math.PI * 2);
-    ctx.fill();
-  } else if (GAME.turboRushTime > 0) {
-    ctx.fillStyle = 'rgba(245, 158, 11, 0.4)';
-    ctx.beginPath();
-    ctx.arc(0, -10, 85 + Math.sin(time * 0.02) * 12, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Poop Body Swirls (Girly Mode Kawaii pastel gradient vs Boy/Default evolution color)
-  let bodyFill = currentEvo.bodyColor || '#78350f';
-  if (characterFrame) {
     drawCharacterFrame(ctx, characterFrame);
-    if (!isGirly) bodyFill = '#7a4630';
-  } else if (isGirly) {
-    const bodyGrad = ctx.createLinearGradient(0, -50, 0, 50);
-    bodyGrad.addColorStop(0, '#f472b6');
-    bodyGrad.addColorStop(0.5, '#fb7185');
-    bodyGrad.addColorStop(1, '#f43f5e');
-    bodyFill = bodyGrad;
   }
 
-  if (!characterFrame) {
-  ctx.fillStyle = bodyFill;
-  ctx.beginPath(); ctx.ellipse(0, 32, 65, 28, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(0, 2, 50, 24, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(0, -25, 36, 18, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(-10, -32); ctx.quadraticCurveTo(0, -62, 14, -48); ctx.fill();
-
-  // Girly Mode Ribbon Bow on Head Curl
-  if (isGirly) {
-    ctx.fillStyle = '#fb7185';
-    ctx.beginPath(); ctx.ellipse(-12, -48, 9, 5, -0.4, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(12, -48, 9, 5, 0.4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, -48, 3.5, 0, Math.PI * 2); ctx.fill();
-  }
-
-  // Eyes & Blink
-  if (!isBlinking) {
-    // Sclera
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.ellipse(-14, -6, 10, 13, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(14, -6, 10, 13, 0, 0, Math.PI * 2); ctx.fill();
-
-    // Pupils
-    ctx.fillStyle = isGirly ? '#3b0764' : '#18181b';
-    ctx.beginPath(); ctx.arc(-13, -5, 5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(15, -5, 5, 0, Math.PI * 2); ctx.fill();
-
-    // Shine highlights (Kawaii double star sparkle in Girly Mode)
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.arc(-15, -8, 2.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(13, -8, 2.5, 0, Math.PI * 2); ctx.fill();
-
-    if (isGirly) {
-      // Extra bottom sparkle
-      ctx.beginPath(); ctx.arc(-11, -3, 1.5, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(17, -3, 1.5, 0, Math.PI * 2); ctx.fill();
-
-      // Cute eyelashes
-      ctx.strokeStyle = '#18181b';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath(); ctx.moveTo(-22, -10); ctx.lineTo(-27, -15); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(22, -10); ctx.lineTo(27, -15); ctx.stroke();
-    }
-  } else {
-    // Closed happy eye curves
-    ctx.strokeStyle = '#18181b';
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(-14, -6, 8, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
-    ctx.beginPath(); ctx.arc(14, -6, 8, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
-  }
-
-  // Cute blushing cheeks in Girly Mode
-  if (isGirly) {
-    ctx.fillStyle = 'rgba(251, 113, 133, 0.65)';
-    ctx.beginPath(); ctx.ellipse(-25, 3, 7, 4.5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(25, 3, 7, 4.5, 0, 0, Math.PI * 2); ctx.fill();
-  }
-
-  // Smile
-  ctx.strokeStyle = '#18181b';
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.arc(0, 8, 10, 0.1 * Math.PI, 0.9 * Math.PI);
-  ctx.stroke();
-  }
-
-  // Draw Equipped Wardrobe Hat
-  if (GAME.equippedHat) {
+  const placed = characterFrame ? characterDest(characterFrame) : null;
+  const clayHat = characterFrame ? clayHats[GAME.equippedHat] : null;
+  if (clayHat && propLooks[clayHat.key]) {
+    const hatTop = clayHat.face != null
+      ? placed.y + placed.destH * clayHat.face
+      : placed.y - clayHat.h + clayHat.overlap;
+    drawProp(ctx, propLooks[clayHat.key], clayHat.x, hatTop, clayHat.h);
+  } else if (characterFrame && GAME.equippedHat) {
     drawEquippedHat(ctx, GAME.equippedHat, time, isGirly);
   }
 
-  // Equipped CS:GO Knife in pet hand
   const knife = getEquippedKnife();
-  if (knife) {
+  const clayKnifeKey = knife && clayKnives[knife.id];
+  if (characterFrame && clayKnifeKey && propLooks[clayKnifeKey]) {
+    const fist = fistCenter(placed);
+    const strike = knifeStrike();
+    ctx.save();
+    ctx.translate(fist.x, fist.y);
+    ctx.rotate(strike.angle);
+    if (strike.slash > 0.25) {
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(142, 224, 192, 0.8)';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.arc(0, 0, fist.h * 0.95, -0.15, 0.55, false);
+      ctx.stroke();
+    }
+    ctx.translate(strike.lunge * fist.h * 0.35, 0);
+    drawClayKnife(ctx, propLooks[clayKnifeKey], 0, 0, fist.h);
+    ctx.restore();
+    if (knifeSlashTimer > 0 && performance.now() - knifeStrikeStart >= KNIFE_STRIKE_MS) {
+      knifeSlashTimer = 0;
+    }
+  } else if (characterFrame && knife) {
     ctx.save();
     ctx.translate(characterFrame ? 58 : 42, characterFrame ? 28 : 10);
 
