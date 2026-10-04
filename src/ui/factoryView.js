@@ -8,6 +8,7 @@ import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production
 import { saveLocal } from '../save/saveManager.js';
 
 let activeFactoryTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
+let paintedFactoryStage = -1;
 
 export function initFactoryListeners() {
   document.querySelectorAll('.fac-tier-btn').forEach(btn => {
@@ -28,6 +29,7 @@ export function initFactoryListeners() {
 export function renderFactories() {
   const container = document.getElementById('factoriesContainer');
   if (!container) return;
+  paintedFactoryStage = GAME.evoStage || 0;
   container.innerHTML = '';
 
   // Update tier filter button styles
@@ -158,6 +160,10 @@ export function renderFactories() {
 export function updateFactoryButtons() {
   const container = document.getElementById('factoriesContainer');
   if (!container || !container.offsetParent) return;
+  if ((GAME.evoStage || 0) !== paintedFactoryStage) {
+    renderFactories();
+    return;
+  }
 
   const buyMultiplier = GAME.buyMultiplier || 1;
   const buttons = container.querySelectorAll('.buy-factory-btn');

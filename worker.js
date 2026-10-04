@@ -1,5 +1,5 @@
 // Cloudflare Worker with Static Assets & D1 Database
-import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, displayName } from "./workerAdmin.js";
+import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, displayName, vipLevelOf } from "./workerAdmin.js";
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -222,12 +222,14 @@ async function handleCloudSave(req, env) {
         }
 
         const sessionToken = await issueSession(env.DB, account.username);
+        const vipLevel = await vipLevelOf(env.DB, account.player_id);
         return new Response(JSON.stringify({
           success: true,
           username: account.username,
           playerId: account.player_id,
           saveData: parsedSave,
           sessionToken,
+          vipLevel,
           message: "Вход выполнен успешно!"
         }), { status: 200, headers });
       }
@@ -309,7 +311,8 @@ async function handleCloudSave(req, env) {
         return new Response(JSON.stringify({
           online: true,
           username: user.username,
-          playerId: user.playerId
+          playerId: user.playerId,
+          vipLevel: await vipLevelOf(env.DB, user.playerId)
         }), { status: 200, headers });
       }
 
@@ -384,6 +387,7 @@ async function handleCloudSave(req, env) {
           updatedAt: record.updated_at,
           playerName: loginName,
           stage: record.stage,
+          vipLevel: await vipLevelOf(env.DB, playerId)
         }),
         { status: 200, headers }
       );
@@ -431,6 +435,7 @@ async function handleLeaderboard(url, env, headers) {
       CAST(IFNULL(json_extract(save_data, '$.game.transcendPlungers'), 0) AS INTEGER) as plungers,
       CAST(IFNULL(json_extract(save_data, '$.game.totalPrestiges'), 0) AS INTEGER) as prestiges,
       CAST(IFNULL(json_extract(save_data, '$.game.allTimePrestigeRolls'), 0) AS INTEGER) as rolls,
+      CAST(IFNULL((SELECT vip_level FROM user_accounts WHERE user_accounts.player_id = player_saves.player_id), 0) AS INTEGER) as vipLevel,
       updated_at as updatedAt
     FROM player_saves
   `).all();
@@ -445,6 +450,7 @@ async function handleLeaderboard(url, env, headers) {
       plungers: Number(row.plungers) || 0,
       prestiges: Number(row.prestiges) || 0,
       rolls: Number(row.rolls) || 0,
+      vipLevel: Math.max(0, Math.min(5, Math.floor(Number(row.vipLevel) || 0))),
       updatedAt: row.updatedAt
     };
     entry.score = gloryScore(entry);

@@ -94,6 +94,7 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
           <div class="truncate">
             <div class="flex items-center gap-1.5 truncate">
               <span class="font-bold text-xs ${isCurrent ? 'text-yellow-300' : 'text-stone-200'} truncate">${safeName}</span>
+              ${player.vipLevel > 0 ? `<span class="vip-badge shrink-0">VIP ${formatNumber(player.vipLevel)}</span>` : ''}
               ${isCurrent ? '<span class="text-[9px] bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 px-1.5 py-0.2 rounded font-black uppercase tracking-wider shrink-0 shadow">ВЫ</span>' : ''}
             </div>
             <div class="text-[10px] text-stone-400 flex items-center gap-2 mt-0.5">

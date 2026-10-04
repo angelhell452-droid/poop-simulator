@@ -1,6 +1,6 @@
 import { GAME } from './core/state.js';
 import { startGameLoop } from './core/gameLoop.js';
-import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js';
+import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js';
 import { saveLocal } from './save/saveManager.js';
 import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting } from './ui/hudView.js';
 import { renderFactories, initFactoryListeners } from './ui/factoryView.js';
@@ -15,6 +15,7 @@ import { initAuthModal } from './ui/authModalView.js';
 import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js';
 import { initLeaderboardView } from './ui/leaderboardView.js';
 import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js';
+import { initVipShop } from './ui/vipShopView.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js';
 import { initBugReportListeners } from './ui/bugReportView.js';
 import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js';
@@ -130,6 +131,7 @@ export async function bootstrap() {
   initAdminPanel();
   initLeaderboardView();
   initPatchNotesListeners();
+  initVipShop();
   initSmartAssistantListeners();
   initBugReportListeners();
   initCharacterInventoryListeners();
@@ -328,10 +330,10 @@ export async function bootstrap() {
   }, 10000);
 
   // 12. Page leave listener
-  window.addEventListener('beforeunload', () => saveLocal());
-  window.addEventListener('pagehide', () => saveLocal());
+  window.addEventListener('beforeunload', () => flushCloudSave());
+  window.addEventListener('pagehide', () => flushCloudSave());
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') saveLocal();
+    if (document.visibilityState === 'hidden') flushCloudSave();
   });
 
   await warmSceneArt();

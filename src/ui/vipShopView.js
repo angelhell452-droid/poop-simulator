@@ -1,0 +1,36 @@
+import { getConfirmedVip } from '../economy/pace.js';
+import { formatNumber } from '../utils/numberFormatter.js';
+
+const VIP_OFFERS = [
+  { level: 1, mult: 2 },
+  { level: 2, mult: 2.5 },
+  { level: 3, mult: 3 },
+  { level: 4, mult: 4 },
+  { level: 5, mult: 5 }
+];
+
+function renderVipShop() {
+  const list = document.getElementById('vipShopList');
+  if (!list) return;
+  const current = getConfirmedVip();
+  list.innerHTML = VIP_OFFERS.map((offer) => {
+    const owned = current === offer.level;
+    return `
+      <div class="vip-offer${owned ? ' is-current' : ''}">
+        <div>
+          <div class="vip-offer-name">VIP ${formatNumber(offer.level)}</div>
+          <div class="vip-offer-mult">Доход x${formatNumber(offer.mult)}</div>
+        </div>
+        <button type="button" class="vip-offer-buy" disabled>${owned ? 'Ваш' : 'Скоро'}</button>
+      </div>
+    `;
+  }).join('');
+}
+
+export function initVipShop() {
+  const modal = document.getElementById('vipShopModal');
+  document.getElementById('btnVipShop')?.addEventListener('click', () => {
+    renderVipShop();
+    modal?.classList.remove('hidden');
+  });
+}

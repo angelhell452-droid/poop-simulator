@@ -20,6 +20,7 @@ import { getPrestigeRewardBreakdown, executePrestige } from '../prestige/prestig
 import { getTranscendRewardBreakdown, executeTranscend } from '../prestige/transcendService.js';
 import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal } from './modalManager.js';
 import { showKnifeToast } from './characterInventoryView.js';
+import { getConfirmedVip } from '../economy/pace.js';
 
 const FLUSH_COOLDOWN = 35000;
 
@@ -62,6 +63,13 @@ function bindRateClicks() {
 
 
 export function updateHUD() {
+  const vipBadge = document.getElementById('headerVipBadge');
+  if (vipBadge) {
+    const vip = getConfirmedVip();
+    vipBadge.textContent = vip > 0 ? `VIP ${formatNumber(vip)}` : '';
+    vipBadge.classList.toggle('hidden', vip <= 0);
+  }
+
   const topBio = document.getElementById('topBiomass');
   if (topBio) topBio.textContent = formatNumber(GAME.biomass);
 
@@ -310,35 +318,32 @@ export function updateHUD() {
 export function updateAutocareUI() {
   const hasAutoCare = !!GAME.transcendUpgrades?.autoCare;
 
-  const updatePill = (btnId, ledId, txtId, isOn, colorClass, ledColor) => {
+  const updatePill = (btnId, ledId, txtId, isOn) => {
     const btn = document.getElementById(btnId);
     const led = document.getElementById(ledId);
     const txt = document.getElementById(txtId);
     if (!btn || !led || !txt) return;
 
+    btn.className = 'jelly-btn need-auto';
+    led.className = 'need-led';
     if (!hasAutoCare) {
-      btn.className = 'px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-900/90 text-stone-500 border-stone-800 hover:border-cyan-500/50 hover:text-cyan-400 cursor-pointer';
-      led.className = 'w-1.5 h-1.5 rounded-full bg-stone-600';
+      btn.classList.add('is-locked');
       txt.textContent = '🔒 Авто';
       btn.title = 'Астральный Авто-Уход (Тир I Прорыва: 25 Вантузов). Нажмите, чтобы открыть Прорыв!';
+    } else if (isOn) {
+      btn.classList.add('is-on');
+      led.classList.add('is-on');
+      txt.textContent = 'Авто: ВКЛ';
+      btn.title = 'Авто-действие ВКЛЮЧЕНО (нажмите для выключения)';
     } else {
-      if (isOn) {
-        btn.className = `px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn ${colorClass} cursor-pointer`;
-        led.className = `w-2 h-2 rounded-full ${ledColor} animate-pulse`;
-        txt.textContent = 'Авто: ВКЛ';
-        btn.title = 'Авто-действие ВКЛЮЧЕНО (нажмите для выключения)';
-      } else {
-        btn.className = 'px-2 py-1 rounded-xl border text-[10px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 hover:text-stone-200 cursor-pointer';
-        led.className = 'w-2 h-2 rounded-full bg-stone-500';
-        txt.textContent = 'Авто: ВЫКЛ';
-        btn.title = 'Авто-действие ВЫКЛЮЧЕНО (нажмите для включения)';
-      }
+      txt.textContent = 'Авто: ВЫКЛ';
+      btn.title = 'Авто-действие ВЫКЛЮЧЕНО (нажмите для включения)';
     }
   };
 
-  updatePill('btnAutoFeed', 'autoFeedLed', 'autoFeedText', !!GAME.autoFeed, 'bg-emerald-950 border-emerald-500 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.35)]', 'bg-emerald-400 shadow-[0_0_6px_#34d399]');
-  updatePill('btnAutoWash', 'autoWashLed', 'autoWashText', !!GAME.autoWash, 'bg-cyan-950 border-cyan-500 text-cyan-200 shadow-[0_0_8px_rgba(6,182,212,0.35)]', 'bg-cyan-400 shadow-[0_0_6px_#22d3ee]');
-  updatePill('btnAutoTickle', 'autoTickleLed', 'autoTickleText', !!GAME.autoTickle, 'bg-pink-950 border-pink-500 text-pink-200 shadow-[0_0_8px_rgba(236,72,153,0.35)]', 'bg-pink-400 shadow-[0_0_6px_#f472b6]');
+  updatePill('btnAutoFeed', 'autoFeedLed', 'autoFeedText', !!GAME.autoFeed);
+  updatePill('btnAutoWash', 'autoWashLed', 'autoWashText', !!GAME.autoWash);
+  updatePill('btnAutoTickle', 'autoTickleLed', 'autoTickleText', !!GAME.autoTickle);
 }
 
 export function initAutocareListeners() {
@@ -536,7 +541,7 @@ export function updateAutomationTogglesUI() {
   if (buyerBtn && buyerLed && buyerLbl) {
     buyerBtn.classList.toggle('hidden', !hasAutoBuyer);
     const isOn = GAME.autoBuyerEnabled !== false;
-    const modeLabel = GAME.autoBuyerMode === 'all' ? 'все' : 'последний';
+    const modeLabel = GAME.autoBuyerMode === 'smart' ? 'умные' : 'последний';
     if (isOn) {
       buyerBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-emerald-950 border-emerald-500 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
       buyerLed.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse';
@@ -551,7 +556,7 @@ export function updateAutomationTogglesUI() {
   const gearBtn = document.getElementById('btnAutoBuyerGear');
   if (gearBtn) gearBtn.classList.toggle('hidden', !hasAutoBuyer);
   document.querySelectorAll('.auto-buyer-mode-btn').forEach(btn => {
-    const selected = btn.dataset.buyerMode === (GAME.autoBuyerMode === 'all' ? 'all' : 'latest');
+    const selected = btn.dataset.buyerMode === (GAME.autoBuyerMode === 'smart' ? 'smart' : 'latest');
     btn.className = selected
       ? 'auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-cyan-900/70 text-cyan-100 border border-cyan-400/50'
       : 'auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-stone-200 hover:bg-stone-800 border border-transparent';
@@ -572,7 +577,7 @@ export function initAutomationToggleListeners() {
   document.querySelectorAll('.auto-buyer-mode-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      GAME.autoBuyerMode = btn.dataset.buyerMode === 'all' ? 'all' : 'latest';
+      GAME.autoBuyerMode = btn.dataset.buyerMode === 'smart' ? 'smart' : 'latest';
       document.getElementById('autoBuyerModeMenu')?.classList.add('hidden');
       updateAutomationTogglesUI();
       saveLocal();

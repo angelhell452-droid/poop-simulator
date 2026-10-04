@@ -1,6 +1,7 @@
 import { GAME } from '../core/state.js';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal } from './saveManager.js';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js';
+import { setConfirmedVip } from '../economy/pace.js';
 
 export const CLOUD_SAVE_ENDPOINT = '/api/cloud-save';
 export const LEGACY_SAVE_ENDPOINT = '/.netlify/functions/cloud-save';
@@ -62,6 +63,7 @@ export async function confirmLiveSession() {
       askRelogin();
       return false;
     }
+    if (data.vipLevel != null) setConfirmedVip(data.vipLevel);
     return true;
   } catch (err) {
     return true;
@@ -110,6 +112,65 @@ export function saveStoredAccount(acc) {
   } catch (e) { }
 }
 
+function cloudBody() {
+  const payload = buildSavePayload();
+  return JSON.stringify({
+    playerId: GAME.playerId,
+    playerName: GAME.playerName,
+    stage: GAME.evoStage + 1,
+    biomass: GAME.biomass,
+    sparkles: GAME.sparkles,
+    prestige_currency: GAME.prestigeRolls,
+    adminSeq: Number(GAME.cloudAdminSeq) || 0,
+    worldReset: Number(GAME.worldReset) || 0,
+    saveData: payload
+  });
+}
+
+function saveStamp(parsed) {
+  return Number(parsed?.saveTimestamp) || 0;
+}
+
+function saveSeq(parsed) {
+  return Number(parsed?.adminSeq ?? parsed?.game?.cloudAdminSeq) || 0;
+}
+
+function factoryCopies(parsed) {
+  if (!Array.isArray(parsed?.factories)) return 0;
+  return parsed.factories.reduce((sum, row) => sum + (Number(row?.count) || 0), 0);
+}
+
+function localIsAhead(localParsed, cloudParsed) {
+  const localStamp = saveStamp(localParsed);
+  const cloudStamp = saveStamp(cloudParsed);
+  if (localStamp && cloudStamp && localStamp !== cloudStamp) return localStamp > cloudStamp;
+  const localGame = localParsed?.game || {};
+  const cloudGame = cloudParsed?.game || {};
+  const localStage = Number(localGame.evoStage) || 0;
+  const cloudStage = Number(cloudGame.evoStage) || 0;
+  if (localStage !== cloudStage) return localStage > cloudStage;
+  const localCopies = factoryCopies(localParsed);
+  const cloudCopies = factoryCopies(cloudParsed);
+  if (localCopies !== cloudCopies) return localCopies > cloudCopies;
+  const localBio = Number(localGame.allTimeBiomass) || 0;
+  const cloudBio = Number(cloudGame.allTimeBiomass) || 0;
+  return localBio > cloudBio;
+}
+
+export function flushCloudSave() {
+  saveLocal();
+  const stored = getStoredAccount();
+  if (!stored?.sessionToken || !GAME.playerId) return;
+  try {
+    fetch(CLOUD_SAVE_ENDPOINT, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: cloudBody(),
+      keepalive: true
+    });
+  } catch (err) { }
+}
+
 export function requestCloudSync(delayMs = 2500) {
   if (cloudSyncDebounceTimer) clearTimeout(cloudSyncDebounceTimer);
   cloudSyncDebounceTimer = setTimeout(() => {
@@ -129,18 +190,7 @@ export async function syncToCloudDatabase() {
   }
   if (statusIndicator) statusIndicator.textContent = "D1: Сохр...";
 
-  const payload = buildSavePayload();
-  const bodyStr = JSON.stringify({
-    playerId: GAME.playerId,
-    playerName: GAME.playerName,
-    stage: GAME.evoStage + 1,
-    biomass: GAME.biomass,
-    sparkles: GAME.sparkles,
-    prestige_currency: GAME.prestigeRolls,
-    adminSeq: Number(GAME.cloudAdminSeq) || 0,
-    worldReset: Number(GAME.worldReset) || 0,
-    saveData: payload
-  });
+  const bodyStr = cloudBody();
 
   try {
     const res = await cloudFetch(CLOUD_SAVE_ENDPOINT, { method: 'POST', body: bodyStr });
@@ -256,6 +306,7 @@ export async function loginAccount(username, password) {
       if (data.saveData && !sameSeasonBlank(data.saveData)) {
         applySaveDataSafely(data.saveData);
       }
+      if (data.vipLevel != null) setConfirmedVip(data.vipLevel);
       saveLocal();
 
       return { success: true, username: data.username, playerId: data.playerId };
@@ -297,13 +348,19 @@ export async function loadFromCloudDatabaseOrLocal() {
         if (statusIndicator) statusIndicator.textContent = "D1: Локально";
       } else if (data && cloudPayload) {
         const parsed = typeof cloudPayload === 'string' ? JSON.parse(cloudPayload) : cloudPayload;
+        const localParsed = readLocalSave();
+        const cloudSeq = saveSeq(parsed);
+        const localSeq = saveSeq(localParsed);
         if (sameSeasonBlank(parsed)) {
           requestCloudSync(800);
-        } else {
+        } else if (cloudSeq > localSeq || !localIsAhead(localParsed, parsed)) {
           applySaveDataSafely(parsed);
           saveLocal();
+        } else {
+          requestCloudSync(300);
         }
       }
+      if (data?.vipLevel != null) setConfirmedVip(data.vipLevel);
     }
   } catch (e) {
     console.warn('Cloud load error:', e);

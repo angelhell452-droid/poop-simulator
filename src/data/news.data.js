@@ -1,5 +1,13 @@
 export const NEWS = [
   {
+    id: 'vip-status',
+    date: '4 Октября 2026',
+    title: 'VIP-статус',
+    tag: 'Вышло',
+    image: 'assets/news/vip-status.jpg',
+    text: 'В игре появились VIP-уровни 1–5. Они умножают доход поверх общего темпа. Кнопка VIP уже в шапке, покупка откроется позже.'
+  },
+  {
     id: 'patch-5-graphics',
     date: '4 Октября 2026',
     title: 'Патч 5.0: новая графика',

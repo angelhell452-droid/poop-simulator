@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.1 PRO</title>
+  <title>Poop Simulator v5.0.4 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.1">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.4">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.1 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.4 PRO</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -111,11 +111,17 @@
         title="Админка создателя">
         <span>🛡️</span> <span class="hidden sm:inline">Админ</span>
       </button>
+      <button id="btnVipShop" type="button"
+        class="jelly-btn font-game px-2.5 sm:px-3 py-1 text-xs flex items-center gap-1.5 font-bold"
+        title="VIP-статус. Покупка пока недоступна">
+        <span>👑</span> <span>VIP</span>
+      </button>
       <button id="btnAccountModal"
         class="bg-stone-900 hover:bg-stone-800 text-amber-200 px-2 sm:px-2.5 py-1 rounded-xl border border-amber-600/70 text-xs font-bold flex items-center gap-1.5 shadow jelly-btn"
         title="Облачный аккаунт и база данных Cloudflare D1">
         <span class="text-sm">👤</span>
         <span id="headerAccountName" class="max-w-[70px] sm:max-w-[110px] truncate text-[11px]">Гость</span>
+        <span id="headerVipBadge" class="vip-badge hidden">VIP 1</span>
       </button>
     </div>
   </header>
@@ -296,7 +302,7 @@
 
       <!-- ASTRAL TRANSCENDENCE AUTOMATION DECK -->
       <div id="transcendAutomationsDeck"
-        class="px-2.5 py-1 bg-indigo-950/90 border-b border-indigo-500/50 flex flex-wrap items-center justify-between gap-1.5 z-10 text-xs shrink-0">
+        class="relative z-40 overflow-visible px-2.5 py-1 bg-indigo-950/90 border-b border-indigo-500/50 flex flex-wrap items-center justify-between gap-1.5 text-xs shrink-0">
 
         <!-- Locked State Notice (Before midgame Astral Transcendence) -->
         <button id="transcendAutoLockedNotice" type="button"
@@ -322,11 +328,11 @@
               <button id="btnAutoBuyerGear" type="button" title="Режим автопокупки заводов"
                 class="hidden w-7 h-7 rounded-xl border border-cyan-500/50 bg-stone-900 text-cyan-200 text-sm leading-none jelly-btn">⚙</button>
               <div id="autoBuyerModeMenu"
-                class="hidden absolute right-0 top-full mt-1 z-40 w-56 rounded-2xl border border-cyan-500/50 bg-stone-950 p-1.5 shadow-2xl text-left">
+                class="hidden absolute right-0 bottom-full mb-1 z-50 w-72 rounded-2xl border border-cyan-500/50 bg-stone-950 p-1.5 shadow-2xl text-left">
                 <button type="button" data-buyer-mode="latest"
-                  class="auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-stone-200 hover:bg-stone-800">Только последний завод</button>
-                <button type="button" data-buyer-mode="all"
-                  class="auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-stone-200 hover:bg-stone-800">Все заводы по порядку</button>
+                  class="auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-stone-200 hover:bg-stone-800">Покупка последнего доступного завода</button>
+                <button type="button" data-buyer-mode="smart"
+                  class="auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-stone-200 hover:bg-stone-800">Умная эффективная покупка доступных заводов</button>
               </div>
             </div>
           </div>
@@ -400,121 +406,74 @@
         </div>
       </div>
 
-      <!-- UNIFIED PET CARE & NEEDS STATION (Bottom Console) -->
-      <div id="petNeedsStation" class="bg-stone-900/95 border-t-2 border-amber-900/80 z-10 select-none shrink-0">
-
-        <!-- Status Ribbon: Ideal Care (Shown when all 3 >= 90%) -->
-        <div id="buffIdealPill"
-          class="hidden py-0.5 px-3 bg-gradient-to-r from-yellow-500/20 via-amber-400/30 to-yellow-500/20 border-b border-yellow-400/50 text-center text-[10px] font-bold text-yellow-300 animate-pulse flex items-center justify-center gap-2">
-          <span>👑</span> <span>СТАТУС «ИДЕАЛ x2»: Все потребности удовлетворены! Доход и криты удвоены!</span>
-          <span>👑</span>
+      <div id="petNeedsStation" class="needs-station z-10 select-none shrink-0">
+        <div id="buffIdealPill" class="needs-ideal hidden">
+          <span>👑</span> <span>Идеал: сытость, чистота и настроение выше 90%</span>
         </div>
-
-        <!-- 3 Unified Need Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 p-1 sm:p-1.5">
-
-          <!-- Need 1: Сытость / Hunger -->
-          <div
-            class="bg-stone-950/80 rounded-xl p-1.5 border border-orange-600/30 flex flex-col justify-between gap-1 shadow-sm">
-            <div class="flex items-center justify-between text-xs font-bold">
-              <div class="flex items-center gap-1 text-stone-200">
-                <span>🍗</span>
-                <span class="text-[10px]">Сытость:</span>
-                <span id="txtHunger" class="font-mono text-orange-400 font-black">100%</span>
-              </div>
-              <span id="buffHungerText"
-                class="text-[8px] px-1 py-0.2 rounded bg-orange-950/90 text-orange-300 border border-orange-600/40 font-bold">+50%
-                Клик</span>
+        <div class="needs-grid">
+          <div class="need-card need-hunger">
+            <div class="need-head">
+              <span class="need-icon" aria-hidden="true">🍗</span>
+              <span class="need-name">Сытость</span>
+              <span id="txtHunger" class="need-value">100%</span>
+              <span id="buffHungerText" class="need-bonus">+50% Клик</span>
             </div>
-            <div class="w-full bg-stone-800 h-1.5 rounded-full overflow-hidden border border-stone-700/60">
-              <div id="barHunger"
-                class="bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all duration-300"
-                style="width: 100%"></div>
+            <div class="need-track">
+              <div id="barHunger" class="need-fill" style="width: 100%"></div>
             </div>
-            <div class="flex items-center gap-1 pt-0.5">
-              <button id="btnFeed"
-                class="flex-1 jelly-btn bg-gradient-to-r from-orange-600 to-amber-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[10px] py-0.5 px-1.5 rounded-lg shadow border border-orange-400/50 flex items-center justify-center gap-1 cursor-pointer"
-                title="Покормить (+30% сытости, +50% к клику)">
+            <div class="need-actions">
+              <button id="btnFeed" class="jelly-btn need-action" title="Покормить (+30% сытости, +50% к клику)">
                 <span>🍔</span> <span>Покормить</span>
               </button>
-              <button id="btnAutoFeed"
-                class="px-1.5 py-0.5 rounded-lg border text-[9px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
-                title="Авто-Кормление (открывается в Астральном Прорыве, Тир I)">
-                <span id="autoFeedLed" class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
+              <button id="btnAutoFeed" class="jelly-btn need-auto" title="Авто-Кормление (открывается в Астральном Прорыве, Тир I)">
+                <span id="autoFeedLed" class="need-led"></span>
                 <span id="autoFeedText">Авто</span>
               </button>
             </div>
           </div>
-
-          <!-- Need 2: Чистота / Clean -->
-          <div
-            class="bg-stone-950/80 rounded-xl p-1.5 border border-cyan-600/30 flex flex-col justify-between gap-1 shadow-sm">
-            <div class="flex items-center justify-between text-xs font-bold">
-              <div class="flex items-center gap-1 text-stone-200">
-                <span>🫧</span>
-                <span class="text-[10px]">Чистота:</span>
-                <span id="txtClean" class="font-mono text-cyan-400 font-black">100%</span>
-              </div>
-              <span id="buffCleanText"
-                class="text-[8px] px-1 py-0.2 rounded bg-cyan-950/90 text-cyan-300 border border-cyan-600/40 font-bold">+40%
-                Заводы</span>
+          <div class="need-card need-clean">
+            <div class="need-head">
+              <span class="need-icon" aria-hidden="true">🫧</span>
+              <span class="need-name">Чистота</span>
+              <span id="txtClean" class="need-value">100%</span>
+              <span id="buffCleanText" class="need-bonus">+40% Заводы</span>
             </div>
-            <div class="w-full bg-stone-800 h-1.5 rounded-full overflow-hidden border border-stone-700/60">
-              <div id="barClean" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full transition-all duration-300"
-                style="width: 100%"></div>
+            <div class="need-track">
+              <div id="barClean" class="need-fill" style="width: 100%"></div>
             </div>
-            <div class="flex items-center gap-1 pt-0.5">
-              <button id="btnWash"
-                class="flex-1 jelly-btn bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[10px] py-0.5 px-1.5 rounded-lg shadow border border-cyan-400/50 flex items-center justify-center gap-1 cursor-pointer"
-                title="Вымыть какашечку (+35% чистоты, +40% к заводам)">
+            <div class="need-actions">
+              <button id="btnWash" class="jelly-btn need-action" title="Вымыть какашечку (+35% чистоты, +40% к заводам)">
                 <span>🧼</span> <span>Вымыть</span>
               </button>
-              <button id="btnPolish"
-                class="jelly-btn bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-stone-950 font-black text-[9px] py-0.5 px-1.5 rounded-lg shadow border border-yellow-300 flex items-center justify-center gap-1 shrink-0 cursor-pointer"
-                title="Полировать до блеска (+4 блестяшки, заполняет чистоту при 70%+)">
+              <button id="btnPolish" class="jelly-btn need-action need-polish" title="Полировать до блеска (+4 блестяшки, заполняет чистоту при 70%+)">
                 <span>✨</span> <span>Глянец</span>
               </button>
-              <button id="btnAutoWash"
-                class="px-1.5 py-0.5 rounded-lg border text-[9px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
-                title="Авто-Мытье и Полировка (открывается в Астральном Прорыве, Тир I)">
-                <span id="autoWashLed" class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
+              <button id="btnAutoWash" class="jelly-btn need-auto" title="Авто-Мытье и Полировка (открывается в Астральном Прорыве, Тир I)">
+                <span id="autoWashLed" class="need-led"></span>
                 <span id="autoWashText">Авто</span>
               </button>
             </div>
           </div>
-
-          <!-- Need 3: Настроение / Happy -->
-          <div
-            class="bg-stone-950/80 rounded-xl p-1.5 border border-pink-600/30 flex flex-col justify-between gap-1 shadow-sm">
-            <div class="flex items-center justify-between text-xs font-bold">
-              <div class="flex items-center gap-1 text-stone-200">
-                <span>💖</span>
-                <span class="text-[10px]">Настроение:</span>
-                <span id="txtHappy" class="font-mono text-pink-400 font-black">100%</span>
-              </div>
-              <span id="buffHappyText"
-                class="text-[8px] px-1 py-0.2 rounded bg-pink-950/90 text-pink-300 border border-pink-600/40 font-bold">x2
-                Криты</span>
+          <div class="need-card need-happy">
+            <div class="need-head">
+              <span class="need-icon" aria-hidden="true">💖</span>
+              <span class="need-name">Настроение</span>
+              <span id="txtHappy" class="need-value">100%</span>
+              <span id="buffHappyText" class="need-bonus">x2 Криты</span>
             </div>
-            <div class="w-full bg-stone-800 h-1.5 rounded-full overflow-hidden border border-stone-700/60">
-              <div id="barHappy" class="bg-gradient-to-r from-pink-500 to-rose-400 h-full transition-all duration-300"
-                style="width: 100%"></div>
+            <div class="need-track">
+              <div id="barHappy" class="need-fill" style="width: 100%"></div>
             </div>
-            <div class="flex items-center gap-1 pt-0.5">
-              <button id="btnTickle"
-                class="flex-1 jelly-btn bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[10px] py-0.5 px-1.5 rounded-lg shadow border border-pink-400/50 flex items-center justify-center gap-1 cursor-pointer"
-                title="Щекотать какашечку (+15% радости, +8 комбо-ярости, x2 шанс крита)">
+            <div class="need-actions">
+              <button id="btnTickle" class="jelly-btn need-action" title="Щекотать какашечку (+15% радости, +8 комбо-ярости, x2 шанс крита)">
                 <span>🪶</span> <span>Щекотать</span>
               </button>
-              <button id="btnAutoTickle"
-                class="px-1.5 py-0.5 rounded-lg border text-[9px] font-game flex items-center justify-center gap-1 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700 shrink-0"
-                title="Авто-Щекотка (открывается в Астральном Прорыве, Тир I)">
-                <span id="autoTickleLed" class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
+              <button id="btnAutoTickle" class="jelly-btn need-auto" title="Авто-Щекотка (открывается в Астральном Прорыве, Тир I)">
+                <span id="autoTickleLed" class="need-led"></span>
                 <span id="autoTickleText">Авто</span>
               </button>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -752,7 +711,7 @@
       </div>
 
       <!-- Performance Rate Footer (Locked height zero-jitter) -->
-      <div
+      <div id="dashRateBar"
         class="p-2 bg-stone-950 border-t border-amber-900/60 text-[10px] text-stone-400 flex justify-between items-center h-[34px] min-h-[34px] overflow-hidden whitespace-nowrap shrink-0">
         <div class="truncate flex items-center gap-1.5 font-mono">
           <button type="button" id="btnFootPassive" class="hover:text-emerald-200" title="Из чего складывается доход">Доход: <b class="text-emerald-400 tabular-nums" id="footPassiveRate">+0 /сек</b></button>
@@ -821,6 +780,21 @@
             <button id="btnAdminAdd" type="button" class="px-3 rounded-xl bg-amber-500 text-stone-950 font-bold text-xs">Добавить</button>
           </div>
           <div id="adminList" class="mt-2 text-[11px]"></div>
+        </div>
+        <div class="border-t border-stone-800 pt-3">
+          <div class="font-game text-xs text-amber-200 mb-1">VIP</div>
+          <p class="text-[10px] text-stone-500 mb-2">Уровень 0 снимает VIP. Доход: 1 ×2, 2 ×2.5, 3 ×3, 4 ×4, 5 ×5. Игрок берётся из поля сверху.</p>
+          <div class="flex gap-2">
+            <select id="adminVipLevel" class="flex-1 bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-sm">
+              <option value="0">0 — снять</option>
+              <option value="1">VIP 1 · ×2</option>
+              <option value="2">VIP 2 · ×2.5</option>
+              <option value="3">VIP 3 · ×3</option>
+              <option value="4">VIP 4 · ×4</option>
+              <option value="5">VIP 5 · ×5</option>
+            </select>
+            <button id="btnAdminSetVip" type="button" class="px-3 rounded-xl bg-amber-500 text-stone-950 font-bold text-xs">Выдать</button>
+          </div>
         </div>
         <div class="border-t border-stone-800 pt-3">
           <div class="font-game text-xs text-red-300 mb-1">Сброс</div>
@@ -2033,6 +2007,15 @@
     </div>
   </div>
 
+  <div id="vipShopModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-yellow-400/70 max-w-sm w-full p-5 relative shadow-2xl text-left space-y-3 max-h-[85vh] overflow-y-auto custom-scroll">
+      <button type="button" class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
+      <h3 class="font-game text-base text-yellow-300 pr-6">VIP</h3>
+      <p class="text-[11px] text-stone-300 leading-snug">Пять уровней множителя дохода поверх общего темпа. Покупка пока недоступна.</p>
+      <div id="vipShopList" class="space-y-2"></div>
+    </div>
+  </div>
+
   <div id="rateBreakdownModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-emerald-400/70 max-w-sm w-full p-5 relative shadow-2xl text-left space-y-3 max-h-[85vh] overflow-y-auto">
       <button type="button" class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
@@ -2138,11 +2121,13 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.1"></script>
+  <script type="module" src="src/main.js?v=5.0.4"></script>
 </body>
 
 </html>
 </html>
+
+
 
 
 

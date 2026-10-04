@@ -47,6 +47,11 @@ export async function ensureAdminSchema(db) {
   } catch (err) {
     // Column already exists.
   }
+  try {
+    await db.prepare(`ALTER TABLE user_accounts ADD COLUMN vip_level INTEGER NOT NULL DEFAULT 0`).run();
+  } catch (err) {
+    // Column already exists.
+  }
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS game_flags (
       key TEXT PRIMARY KEY,
@@ -388,6 +393,27 @@ export async function handleAdmin(req, env, headers, url) {
     }, 200);
   }
 
+  if (action === "admin_set_vip") {
+    if (staff.role !== "creator") return json(headers, { success: false, error: "VIP выдаёт только создатель." }, 403);
+    const targetKey = String(body.targetPlayerId || body.targetUsername || "").trim();
+    const level = Math.max(0, Math.min(5, Math.floor(Number(body.level) || 0)));
+    if (targetKey.length < 3) return json(headers, { success: false, error: "Укажите игрока." }, 400);
+    const account = await env.DB.prepare(`
+      SELECT username, player_id as playerId FROM user_accounts
+      WHERE player_id = ? OR username = ? COLLATE NOCASE
+      LIMIT 1
+    `).bind(targetKey, targetKey).first();
+    if (!account) return json(headers, { success: false, error: "Игрок с таким Cloud ID не найден." }, 404);
+    await env.DB.prepare(`UPDATE user_accounts SET vip_level = ? WHERE player_id = ?`).bind(level, account.playerId).run();
+    await audit(env.DB, staff.user.username, "set_vip", account.username, { level });
+    return json(headers, {
+      success: true,
+      username: account.username,
+      playerId: account.playerId,
+      vipLevel: level
+    }, 200);
+  }
+
   return json(headers, { success: false, error: "Неизвестное действие." }, 404);
 }
 
@@ -498,6 +524,19 @@ function usableName(name) {
   const clean = typeof name === "string" ? name.trim() : "";
   if (!clean || clean === "Игрок" || clean.startsWith("Игрок #") || clean.startsWith("Гость")) return "";
   return clean.substring(0, 32);
+}
+
+export async function vipLevelOf(db, playerId) {
+  if (!playerId) return 0;
+  try {
+    const row = await db.prepare(`
+      SELECT vip_level as vipLevel FROM user_accounts WHERE player_id = ? LIMIT 1
+    `).bind(playerId).first();
+    const level = Math.floor(Number(row?.vipLevel) || 0);
+    return Math.max(0, Math.min(5, level));
+  } catch (err) {
+    return 0;
+  }
 }
 
 export async function displayName(db, playerId, fallback) {

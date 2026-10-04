@@ -12,6 +12,7 @@ import { TALENTS } from '../data/talents.data.js';
 import { FACTORIES } from '../data/factories.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
+import { setConfirmedVip } from '../economy/pace.js';
 
 let adminRole = null;
 let adminPlayerId = '';
@@ -369,6 +370,27 @@ export function initAdminPanel() {
       loadAdminList();
       loadAudit();
     }
+  });
+
+  document.getElementById('btnAdminSetVip')?.addEventListener('click', async () => {
+    const target = textOrEmpty('adminTarget');
+    if (!target) {
+      setAdminStatus('Сначала выберите игрока сверху.', false);
+      return;
+    }
+    const level = Math.max(0, Math.min(5, Math.floor(Number(document.getElementById('adminVipLevel')?.value) || 0)));
+    const result = await adminRequest('admin_set_vip', { method: 'POST', body: { targetPlayerId: target, level } });
+    if (!result.success) {
+      setAdminStatus(result.error || 'VIP не выдался', false);
+      return;
+    }
+    if (result.playerId && result.playerId === (adminPlayerId || getStoredAccount()?.playerId)) {
+      setConfirmedVip(result.vipLevel);
+      updateHUD();
+    }
+    const label = level > 0 ? `VIP ${level}` : 'без VIP';
+    setAdminStatus(`${result.username}: ${label}.`, true);
+    loadAudit();
   });
 
   document.getElementById('btnWipePlayer')?.addEventListener('click', async () => {

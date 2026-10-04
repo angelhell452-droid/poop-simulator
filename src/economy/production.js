@@ -8,6 +8,7 @@ import { formatNumber } from '../utils/numberFormatter.js';
 import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { getPhaseForStage } from '../progression/phases.data.js';
+import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
 
 export function getEquippedKnife() {
   if (!GAME.equippedKnife) return null;
@@ -226,11 +227,14 @@ function passiveGlobalLines() {
   pushAboveOne(lines, 'Врата вечности', riftMult);
   pushAboveOne(lines, 'Идеал', idealMult);
   pushAboveOne(lines, 'Собранный билд', late);
+  pushAboveOne(lines, 'Темп игры', INCOME_PACE);
+  pushAboveOne(lines, 'VIP', getVipIncomeMult());
 
   const product = turboMult * goldRushMult * overclockMult * styles.butterfly
     * crystalMult * evo.mult * gearMult * softRollsMult * cosmicMult * omniRelicMult
     * facOverdriveMult * cleanBuff * archMult * evoBlessingMult * omniWealthMult
-    * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult * idealMult * late;
+    * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult * idealMult * late
+    * getIncomePace();
   return { lines, gearBits, product, gearRaw, gearMult };
 }
 
@@ -275,7 +279,7 @@ function clickParts() {
   const gearRaw = rollsMult * plungersMult * knifeClickMult * hatClickBoost;
   const gearMult = dampenGearMult(gearRaw, getPhaseForStage(GAME.evoStage).id);
   const late = getLateComboMult();
-  const product = evo.mult * gearMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late;
+  const product = evo.mult * gearMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late * getIncomePace();
   const syncRate = talentLevel('quantum_mastery') * 0.004 + (SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned ? 0.02 : 0);
 
   const gearBits = [];
@@ -303,6 +307,8 @@ function clickParts() {
   pushAboveOne(lines, 'Врата вечности', riftMult);
   pushAboveOne(lines, 'Идеал', idealMult);
   pushAboveOne(lines, 'Собранный билд', late);
+  pushAboveOne(lines, 'Темп игры', INCOME_PACE);
+  pushAboveOne(lines, 'VIP', getVipIncomeMult());
   return { lines, gearBits, product, syncRate, gearRaw, gearMult };
 }
 

@@ -9,6 +9,7 @@ import { saveLocal } from '../save/saveManager.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { FACTORIES } from '../data/factories.data.js';
 import { buyFactory } from '../systems/factoryService.js';
+import { getAffordableFactoryInfo } from '../economy/costs.js';
 import { triggerPetSquash } from '../ui/petCanvasView.js';
 import { getAutoclickCps } from '../systems/autoclickService.js';
 import { events } from './events.js';
@@ -75,8 +76,19 @@ export function gameEngineTick() {
     autoBuyerTimer = 0;
     if (GAME.transcendUpgrades?.autoBuyer && GAME.autoBuyerEnabled !== false) {
       const unlocked = FACTORIES.filter(fac => fac.reqStage === undefined || GAME.evoStage >= fac.reqStage);
-      if (GAME.autoBuyerMode === 'all') {
-        unlocked.forEach(fac => buyFactory(fac.id));
+      if (GAME.autoBuyerMode === 'smart') {
+        let best = null;
+        let bestScore = -1;
+        for (const fac of unlocked) {
+          const info = getAffordableFactoryInfo(fac);
+          if (!info.canBuy || info.singleCost <= 0) continue;
+          const score = fac.baseCps / info.singleCost;
+          if (score > bestScore) {
+            bestScore = score;
+            best = fac;
+          }
+        }
+        if (best) buyFactory(best.id);
       } else {
         for (let i = unlocked.length - 1; i >= 0; i--) {
           if (buyFactory(unlocked[i].id)) break;

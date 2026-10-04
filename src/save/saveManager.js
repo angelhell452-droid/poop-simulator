@@ -233,11 +233,22 @@ export function applySaveDataSafely(rawData) {
     const acc = readStoredAccount();
     if (acc?.playerId) GAME.playerId = acc.playerId;
   }
+  if (GAME.autoBuyerMode === 'all') GAME.autoBuyerMode = 'smart';
+  delete GAME.vipLevel;
 
   clampAutoclickerState();
   notePeakForm();
 
   events.emit('save:loaded');
+}
+
+export function readLocalSave() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 export function loadLocal() {
