@@ -1,5 +1,15 @@
 export const PATCH_NOTES = [
   {
+    version: 'v5.0.7 PRO',
+    title: '🏆 Гости в зале',
+    date: '4 Октября 2026',
+    badge: 'Патч 5.0',
+    badgeClass: 'bg-sky-500/20 text-sky-200 border-sky-400/40',
+    changes: [
+      { type: 'fix', icon: '🏆', text: 'В топе гости больше не стоят пачкой. Аккаунты идут каждый своей строкой, а из гостей остаётся один — самый сильный.' }
+    ]
+  },
+  {
     version: 'v5.0.6 PRO',
     title: '📰 Новости о том, что уже в игре',
     date: '4 Октября 2026',

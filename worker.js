@@ -424,6 +424,30 @@ function gloryScore(player) {
   );
 }
 
+function byGlory(a, b) {
+  if (b.score !== a.score) return b.score - a.score;
+  if (b.stage !== a.stage) return b.stage - a.stage;
+  return String(a.playerId).localeCompare(String(b.playerId));
+}
+
+function publicLadderEntry(entry) {
+  const { accountName, ...rest } = entry;
+  return rest;
+}
+
+// Guests have no account. The hall keeps the strongest one so the rest do not stack as copies.
+export function collapseGuestLadder(ranked) {
+  const accounts = [];
+  let bestGuest = null;
+  for (const entry of ranked) {
+    if (entry.accountName) accounts.push(entry);
+    else if (!bestGuest || byGlory(entry, bestGuest) < 0) bestGuest = entry;
+  }
+  const board = bestGuest ? accounts.concat(bestGuest) : accounts.slice();
+  board.sort(byGlory);
+  return board;
+}
+
 async function handleLeaderboard(url, env, headers) {
   const { results } = await env.DB.prepare(`
     SELECT
@@ -436,6 +460,7 @@ async function handleLeaderboard(url, env, headers) {
       CAST(IFNULL(json_extract(save_data, '$.game.totalPrestiges'), 0) AS INTEGER) as prestiges,
       CAST(IFNULL(json_extract(save_data, '$.game.allTimePrestigeRolls'), 0) AS INTEGER) as rolls,
       CAST(IFNULL((SELECT vip_level FROM user_accounts WHERE user_accounts.player_id = player_saves.player_id), 0) AS INTEGER) as vipLevel,
+      (SELECT username FROM user_accounts WHERE user_accounts.player_id = player_saves.player_id LIMIT 1) as accountName,
       updated_at as updatedAt
     FROM player_saves
   `).all();
@@ -451,23 +476,24 @@ async function handleLeaderboard(url, env, headers) {
       prestiges: Number(row.prestiges) || 0,
       rolls: Number(row.rolls) || 0,
       vipLevel: Math.max(0, Math.min(5, Math.floor(Number(row.vipLevel) || 0))),
+      accountName: row.accountName ? String(row.accountName) : "",
       updatedAt: row.updatedAt
     };
     entry.score = gloryScore(entry);
     return entry;
-  }).sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    if (b.stage !== a.stage) return b.stage - a.stage;
-    return String(a.playerId).localeCompare(String(b.playerId));
-  });
+  }).sort(byGlory);
 
-  const top = ranked.slice(0, 50).map((entry, index) => ({ ...entry, rank: index + 1 }));
+  const board = collapseGuestLadder(ranked);
+  const top = board.slice(0, 50).map((entry, index) => ({ ...publicLadderEntry(entry), rank: index + 1 }));
   const viewerId = url.searchParams.get("playerId");
-  const youIndex = viewerId ? ranked.findIndex((entry) => entry.playerId === viewerId) : -1;
-  const you = youIndex >= 0 ? { ...ranked[youIndex], rank: youIndex + 1 } : null;
+  const youIndex = viewerId ? board.findIndex((entry) => entry.playerId === viewerId) : -1;
+  const viewer = viewerId ? ranked.find((entry) => entry.playerId === viewerId) : null;
+  let you = null;
+  if (youIndex >= 0) you = { ...publicLadderEntry(board[youIndex]), rank: youIndex + 1 };
+  else if (viewer && !viewer.accountName) you = { guest: true, playerId: viewer.playerId, playerName: viewer.playerName };
 
   return new Response(
-    JSON.stringify({ success: true, leaderboard: top, you, total: ranked.length }),
+    JSON.stringify({ success: true, leaderboard: top, you, total: board.length }),
     { status: 200, headers }
   );
 }

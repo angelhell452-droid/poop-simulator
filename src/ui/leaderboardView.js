@@ -128,8 +128,10 @@ function updateDailyRewardCard(leaderboard) {
   const badgeEl = document.getElementById('playerRankBadge');
 
   const playerRank = boardOffline ? 0 : Number(cachedYou?.rank || 0);
+  const viewerIsUnlistedGuest = !boardOffline && cachedYou?.guest && !playerRank;
   if (badgeEl) {
     if (boardOffline) badgeEl.textContent = 'НЕТ СВЯЗИ';
+    else if (viewerIsUnlistedGuest) badgeEl.textContent = 'ГОСТЬ';
     else if (playerRank > 0) badgeEl.textContent = `#${formatNumber(playerRank)} В РЕЙТИНГЕ`;
     else badgeEl.textContent = 'ЕЩЁ НЕ В БАЗЕ';
     badgeEl.className = playerRank > 0 && playerRank <= 10
@@ -184,9 +186,11 @@ function updateDailyRewardCard(leaderboard) {
     if (infoEl) {
       infoEl.textContent = boardOffline
         ? 'Награда считается только по месту с сервера. Сейчас базы нет, забрать нельзя.'
-        : (playerRank > 0
+        : (viewerIsUnlistedGuest
+          ? 'Гости занимают в зале одно место. В топе виден самый сильный гость.'
+          : (playerRank > 0
           ? `Вы на #${formatNumber(playerRank)} месте. Поднимитесь в Топ-10 по Очкам Славы, чтобы получать до ${formatNumber(50000)} ✨ в день!`
-          : `Сначала появись в облачном сохранении. Топ-10 получает до ${formatNumber(50000)} ✨ в день.`);
+          : `Сначала появись в облачном сохранении. Топ-10 получает до ${formatNumber(50000)} ✨ в день.`));
     }
     if (btnClaim) {
       btnClaim.disabled = true;
