@@ -10,6 +10,7 @@ import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
+import { hatArtHtml } from './artIcon.js';
 import { getKnifeShownBonuses } from '../economy/production.js';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js';
 
@@ -279,7 +280,7 @@ export function renderHatsIndex() {
       <div class="p-2.5 rounded-2xl border ${isEquipped ? 'border-pink-500 bg-pink-950/30 ring-2 ring-pink-500/50' : (isOwned ? 'border-stone-700 bg-stone-900/80' : 'border-stone-800 bg-stone-950/60 opacity-70')} flex flex-col justify-between text-left">
         <div>
           <div class="flex items-center justify-between">
-            <span class="text-3xl">${hat.icon}</span>
+            <span>${hatArtHtml(hat, 40)}</span>
             <span class="text-[9px] font-black px-1.5 py-0.5 rounded ${isEquipped ? 'bg-pink-500 text-white' : (isOwned ? 'bg-stone-800 text-pink-300' : 'bg-stone-900 text-stone-500')}">
               ${isEquipped ? 'НАДЕТО' : (isOwned ? `💎 Lv.${hatLvl}` : 'В БУТИКЕ')}
             </span>
@@ -289,7 +290,7 @@ export function renderHatsIndex() {
         </div>
         <div class="mt-2 pt-1 border-t border-stone-800/80 text-[10px] flex justify-between items-center">
           <span class="text-yellow-400 font-mono font-bold">${formatNumber(hat.cost)} ✨</span>
-          <span class="text-emerald-400 font-bold">x${formatNumber(totalBoost)} Клик</span>
+          <span class="text-emerald-400 font-bold">x${formatNumber(liveBoost)} Клик</span>
         </div>
       </div>
     `;

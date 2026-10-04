@@ -139,7 +139,7 @@ function cutSpriteBackdrop(img, options = {}) {
     const spread = Math.max(r, gc, b) - Math.min(r, gc, b);
     // The girl file sits on a noisy checker. Gray noise goes, pink skin stays, so the soft edge is not shaved off.
     if (neutral) {
-      return Math.abs(r - gc) <= 16 && Math.abs(gc - b) <= 20 && Math.abs(r - b) <= 24;
+      return Math.abs(r - gc) <= 22 && Math.abs(gc - b) <= 26 && Math.abs(r - b) <= 30 && r < gc + 26;
     }
     if (spread > maxSpread) return false;
     // The boy bow is warm white, so slightly warm grays stay.
@@ -168,6 +168,26 @@ function cutSpriteBackdrop(img, options = {}) {
     if (x + 1 < w) push(i + 1);
     if (y > 0) push(i - w);
     if (y + 1 < h) push(i + w);
+  }
+  if (neutral) {
+    const keepSkin = (r, gc) => r > gc + 28 && r > 110;
+    for (let pass = 0; pass < 16; pass++) {
+      const kill = [];
+      for (let i = 0; i < w * h; i++) {
+        if (d[i * 4 + 3] < 16) continue;
+        if (keepSkin(d[i * 4], d[i * 4 + 1])) continue;
+        const x = i % w;
+        const y = (i / w) | 0;
+        let touch = x === 0 || y === 0 || x === w - 1 || y === h - 1;
+        if (!touch && x > 0 && d[(i - 1) * 4 + 3] < 16) touch = true;
+        if (!touch && x + 1 < w && d[(i + 1) * 4 + 3] < 16) touch = true;
+        if (!touch && y > 0 && d[(i - w) * 4 + 3] < 16) touch = true;
+        if (!touch && y + 1 < h && d[(i + w) * 4 + 3] < 16) touch = true;
+        if (touch) kill.push(i);
+      }
+      if (!kill.length) break;
+      for (let k = 0; k < kill.length; k++) d[kill[k] * 4 + 3] = 0;
+    }
   }
   const seenBlob = new Uint8Array(w * h);
   const blobStack = new Int32Array(w * h);

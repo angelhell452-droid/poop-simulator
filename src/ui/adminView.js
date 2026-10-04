@@ -70,6 +70,8 @@ function paintRole() {
   if (button) button.classList.toggle('hidden', !adminRole);
   const creatorBox = document.getElementById('adminCreatorBox');
   if (creatorBox) creatorBox.classList.toggle('hidden', adminRole !== 'creator');
+  const vipBox = document.getElementById('adminVipBox');
+  if (vipBox) vipBox.classList.toggle('hidden', adminRole !== 'creator' && adminRole !== 'admin');
   const roleLabel = document.getElementById('adminRoleLabel');
   if (roleLabel) roleLabel.textContent = adminRole === 'creator' ? 'Создатель' : 'Админ';
 }

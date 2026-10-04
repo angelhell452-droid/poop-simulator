@@ -6,6 +6,7 @@ import { updateHUD } from './hudView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { requestCloudSync } from '../save/cloudSync.js';
 import { openCharacterInventoryModal } from './characterInventoryView.js';
+import { hatArtHtml } from './artIcon.js';
 import { isBoutiqueUnlocked, isShopOfferUnlocked, peakForm } from '../progression/unlocks.js';
 
 export function getBoutiqueRepeatableCost(item) {
@@ -49,7 +50,7 @@ export function renderShop() {
   wardrobeBanner.className = 'p-3 rounded-2xl bg-gradient-to-r from-purple-950/70 via-pink-950/60 to-stone-900 border border-pink-500/50 flex items-center justify-between gap-3 shadow-md mb-2';
   wardrobeBanner.innerHTML = `
     <div class="flex items-center gap-2.5">
-      <span class="text-3xl">🎩</span>
+      <span>${hatArtHtml({ id: 'hat_crown', icon: '👑' }, 40)}</span>
       <div class="text-left">
         <div class="font-game text-xs text-pink-300">Гардероб и Головные Уборы</div>
         <div class="text-[10px] text-pink-200/80">Покупка, примерка и управление шапками находятся в Инвентаре</div>

@@ -17,6 +17,7 @@ function renderVipShop() {
     const owned = current === offer.level;
     return `
       <div class="vip-offer${owned ? ' is-current' : ''}">
+        <div class="vip-offer-crown" aria-hidden="true">👑</div>
         <div>
           <div class="vip-offer-name">VIP ${formatNumber(offer.level)}</div>
           <div class="vip-offer-mult">Доход x${formatNumber(offer.mult)}</div>

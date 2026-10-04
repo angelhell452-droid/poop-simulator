@@ -16,6 +16,7 @@ import { formatNumber } from '../utils/numberFormatter.js';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
+import { hatArtHtml } from './artIcon.js';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats'
@@ -86,7 +87,7 @@ export function renderCharacterInventory() {
   const btnUnequipHat = document.getElementById('btnUnequipHat');
   const btnInlayHat = document.getElementById('btnInlayEquippedHat');
 
-  if (hIcon) hIcon.textContent = equippedHat ? equippedHat.icon : '🧢';
+  if (hIcon) hIcon.innerHTML = equippedHat ? hatArtHtml(equippedHat, 40) : '🧢';
   if (hName) {
     if (equippedHat) {
       const hatLvl = getHatLevel(equippedHat.id);
@@ -516,7 +517,7 @@ function renderHatsGrid() {
         <!-- Row 1: Hat Icon, Name, Mini "!" button -->
         <div class="flex items-start justify-between gap-1.5">
           <div class="flex items-center gap-2 overflow-hidden flex-1">
-            <span class="text-3xl shrink-0">${hat.icon}</span>
+            <span class="shrink-0">${hatArtHtml(hat, 40)}</span>
             <div class="truncate">
               <div class="font-game text-xs text-yellow-300 truncate font-bold flex items-center gap-1.5">
                 <span>${hat.name}</span>

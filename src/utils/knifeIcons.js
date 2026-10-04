@@ -6,6 +6,7 @@
  */
 
 import { getKnifeVectorSvg } from './knifeVectorRenderer.js';
+import { knifeArtHtml } from '../ui/artIcon.js';
 
 // Базовые иконки по типу ножа (style)
 export const KNIFE_STYLE_ICONS = {
@@ -58,7 +59,7 @@ export const KNIFE_RARITY_GLOW_CLASS = {
  */
 export function getKnifeImageHtml(knife, size = 48, extraClass = '') {
   if (!knife) return `<span class="text-2xl">🗡️</span>`;
-  return getKnifeVectorSvg(knife, size, extraClass);
+  return knifeArtHtml(knife, size, getKnifeVectorSvg(knife, size, extraClass));
 }
 
 /**

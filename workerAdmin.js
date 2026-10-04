@@ -394,7 +394,7 @@ export async function handleAdmin(req, env, headers, url) {
   }
 
   if (action === "admin_set_vip") {
-    if (staff.role !== "creator") return json(headers, { success: false, error: "VIP выдаёт только создатель." }, 403);
+    if (staff.role !== "creator" && staff.role !== "admin") return json(headers, { success: false, error: "VIP выдают создатель и админы." }, 403);
     const targetKey = String(body.targetPlayerId || body.targetUsername || "").trim();
     const level = Math.max(0, Math.min(5, Math.floor(Number(body.level) || 0)));
     if (targetKey.length < 3) return json(headers, { success: false, error: "Укажите игрока." }, 400);
