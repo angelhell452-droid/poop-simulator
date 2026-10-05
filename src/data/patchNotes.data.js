@@ -1,5 +1,15 @@
 export const PATCH_NOTES = [
   {
+    version: 'v5.0.21 PRO',
+    date: '5 Октября 2026',
+    title: 'Новость про наряды',
+    badge: 'Патч 5.0',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      { type: 'ui', icon: '📰', text: 'В новостях карточка «Наряды какашечки»: халат, худи стримера, туника и золотой смокинг, с ценами и нужной формой.' }
+    ]
+  },
+  {
     version: 'v5.0.20 PRO',
     date: '5 Октября 2026',
     title: 'Скины за блестяшки',
