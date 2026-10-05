@@ -1,5 +1,5 @@
-import { GAME } from '../core/state.js?v=5.0.22';
-import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.22';
+import { GAME } from '../core/state.js?v=5.0.23';
+import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.23';
 
 function echoCount(phaseId) {
   const bag = GAME.phaseEcho || {};
@@ -117,7 +117,7 @@ export function getOmniRelicMult() {
 }
 
 export function getRiftMult() {
-  return GAME.transcendUpgrades?.singularityRift ? 1.35 : 1;
+  return GAME.transcendUpgrades?.singularityRift ? 1.5 : 1;
 }
 
 export function isIdealPet() {

@@ -133,7 +133,7 @@ export const TRANSCEND_UPGRADES = [
     id: 'art_singularity_rift',
     key: 'singularityRift',
     name: '♾️ Врата Вечности',
-    desc: 'x1.35 ко всему доходу и доступ к Кейсу Абсолютной Вечности.',
+    desc: 'x1.5 ко всему доходу и доступ к Кейсу Абсолютной Вечности.',
     cost: 20,
     max: 1,
     tier: 4,

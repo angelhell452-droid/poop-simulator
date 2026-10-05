@@ -1,17 +1,17 @@
-import { GAME } from '../core/state.js?v=5.0.22';
+import { GAME } from '../core/state.js?v=5.0.23';
 import { KNIVES } from '../data/knives.data.js';
 import { WEAPON_CASES } from '../data/cases.data.js';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.23';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.23';
 import { TALENTS } from '../data/talents.data.js';
 import { getKnifeStar, getKnifeSharpenCost, sharpenKnife, getHatLevel } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.22';
-import { updateHUD } from './hudView.js?v=5.0.22';
-import { renderCasesSystem } from './casesView.js?v=5.0.22';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { saveLocal } from '../save/saveManager.js?v=5.0.23';
+import { updateHUD } from './hudView.js?v=5.0.23';
+import { renderCasesSystem } from './casesView.js?v=5.0.23';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.23';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.22';
+import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.23';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js';
 
 // Быстрый поиск кейса для ножа
@@ -273,8 +273,7 @@ export function renderHatsIndex() {
     const isOwned = !!hat.owned;
     const isEquipped = GAME.equippedHat === hat.id;
     const hatLvl = getHatLevel(hat.id);
-    const liveBoost = (hat.clickBoost || 1) * (1 + (Math.max(1, isOwned ? hatLvl : 1) - 1) * 0.35);
-    const livePct = Math.max(0, Math.round((liveBoost - 1) * 100));
+    const liveBoost = getHatClickMult(hat, isOwned ? hatLvl : 1);
 
     return `
       <div class="p-2.5 rounded-2xl border ${isEquipped ? 'border-pink-500 bg-pink-950/30 ring-2 ring-pink-500/50' : (isOwned ? 'border-stone-700 bg-stone-900/80' : 'border-stone-800 bg-stone-950/60 opacity-70')} flex flex-col justify-between text-left">
@@ -286,7 +285,7 @@ export function renderHatsIndex() {
             </span>
           </div>
           <div class="font-game text-xs font-bold text-yellow-200 mt-1 truncate">${hat.name}</div>
-          <div class="text-[9px] text-pink-300 font-currency mt-0.5">+${formatNumber(livePct)}% к силе клика</div>
+          <div class="text-[9px] text-pink-300 font-currency mt-0.5">x${formatNumber(liveBoost)} к силе клика</div>
         </div>
         <div class="mt-2 pt-1 border-t border-stone-800/80 text-[10px] flex justify-between items-center">
           <span class="text-yellow-400 font-mono font-bold">${formatNumber(hat.cost)} ✨</span>

@@ -1,17 +1,17 @@
-import { GAME } from '../core/state.js?v=5.0.22';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.22';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
+import { GAME } from '../core/state.js?v=5.0.23';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.23';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.23';
 import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
-import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.22';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.23';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.23';
+import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.23';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.22';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.23';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
-import { findBodySkin } from '../data/skins.data.js';
-import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.22';
-import { horizonIncomeMult } from './horizon.js?v=5.0.22';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.23';
+import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.23';
+import { horizonIncomeMult } from './horizon.js?v=5.0.23';
 
 export function getEquippedBodySkin() {
   const skin = findBodySkin(GAME.equippedSkin);
@@ -39,6 +39,31 @@ export function getKnifeStar(knifeId) {
 export function getHatLevel(hatId) {
   if (!GAME.hatLevels || !hatId) return 1;
   return GAME.hatLevels[hatId] || 1;
+}
+
+const HAT_LEVEL_STEP = 0.15;
+const HAT_SOFT_KNEE = 250;
+
+export function getHatClickMult(hat, level) {
+  if (!hat) return 1;
+  const lvl = Math.min(15, Math.max(1, Number(level) || 1));
+  const raw = (hat.clickBoost || 1) * (1 + (lvl - 1) * HAT_LEVEL_STEP);
+  return softCap(raw, HAT_SOFT_KNEE, 0.55);
+}
+
+const LEGACY_HAT_BOOST = {
+  hat_cap: 1.25,
+  hat_party: 1.6,
+  hat_shades: 2.2,
+  hat_cowboy: 3.5,
+  hat_viking: 6,
+  hat_chef: 7
+};
+
+function legacyHatFill(hat, hatLvl) {
+  const base = LEGACY_HAT_BOOST[hat.id] ?? 8;
+  const raw = base * (1 + (Math.max(1, hatLvl) - 1) * 0.08);
+  return Math.min(1, Math.max(0, softCap(raw, 8, 0.55) - 1) / 4);
 }
 
 function talentLevel(id) {
@@ -93,8 +118,7 @@ function lateComboReadiness() {
 
   const hatItem = GAME.equippedHat ? SHOP_ITEMS.find(i => i.id === GAME.equippedHat) : null;
   const hatLvl = hatItem ? Math.min(15, getHatLevel(hatItem.id)) : 1;
-  const rawHat = hatItem ? ((hatItem.clickBoost || 1) * (1 + (hatLvl - 1) * 0.08)) : 1;
-  const hatFill = Math.min(1, Math.max(0, softCap(rawHat, 8, 0.55) - 1) / 4);
+  const hatFill = hatItem ? legacyHatFill(hatItem, hatLvl) : 0;
 
   const plungeFill = Math.min(1, Math.max(0, GAME.transcendPlungers || 0) / 6);
   const incomeTalents = talentLevel('soft_rolls') + talentLevel('turbo_pipe') + talentLevel('cosmic_resonance') + talentLevel('quantum_replication');
@@ -285,18 +309,18 @@ function clickParts() {
   const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.08;
   const equippedHatItem = GAME.equippedHat ? SHOP_ITEMS.find(i => i.id === GAME.equippedHat) : null;
   const hatLvl = equippedHatItem ? Math.min(15, getHatLevel(equippedHatItem.id)) : 1;
-  const rawHat = equippedHatItem ? ((equippedHatItem.clickBoost || 1) * (1 + (hatLvl - 1) * 0.08)) : 1;
-  const hatClickBoost = softCap(rawHat, 8, 0.55);
+  const hatClickBoost = equippedHatItem ? getHatClickMult(equippedHatItem, hatLvl) : 1;
+  const skinClickMult = getSkinClickMult();
   const omniWealthMult = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned ? 1.2 : 1;
   const sparkLvl = Math.min(12, GAME.boutiqueLevels?.singularity_spark || 0);
   const sparkMult = 1 + sparkLvl * 0.04;
   const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.06;
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
-  const gearRaw = rollsMult * plungersMult * knifeClickMult * hatClickBoost * getSkinClickMult();
+  const gearRaw = rollsMult * plungersMult * knifeClickMult;
   const gearMult = dampenGearMult(gearRaw, getPhaseForStage(GAME.evoStage).id);
   const late = getLateComboMult();
-  const product = evo.mult * gearMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late * getIncomePace() * horizonIncomeMult();
+  const product = evo.mult * gearMult * hatClickBoost * skinClickMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late * getIncomePace() * horizonIncomeMult();
   const syncRate = talentLevel('quantum_mastery') * 0.004 + (SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned ? 0.02 : 0);
 
   const gearBits = [];
@@ -304,7 +328,7 @@ function clickParts() {
   pushAboveOne(gearBits, 'Вантузы', plungersMult);
   pushAboveOne(gearBits, 'Нож', knifeClickMult);
   pushAboveOne(gearBits, 'Шапка', hatClickBoost);
-  pushAboveOne(gearBits, 'Скин', getSkinClickMult());
+  pushAboveOne(gearBits, 'Скин', skinClickMult);
 
   const lines = [];
   pushAboveOne(lines, 'Форма', evo.mult);

@@ -1,31 +1,30 @@
-import { GAME } from '../core/state.js?v=5.0.22';
+import { GAME } from '../core/state.js?v=5.0.23';
 import { KNIVES } from '../data/knives.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.23';
 import {
   getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.22';
-import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.22';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.23';
+import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.23';
 import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.22';
-import { updateHUD } from './hudView.js?v=5.0.22';
+import { saveLocal } from '../save/saveManager.js?v=5.0.23';
+import { updateHUD } from './hudView.js?v=5.0.23';
 import { renderShop } from './shopView.js';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.22';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.23';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.23';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.20';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.23';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'
 
 function hatClickLabel(hat, level) {
-  const total = (hat.clickBoost || 1) * (1 + (Math.max(1, level) - 1) * 0.35);
-  const pct = Math.max(0, Math.round((total - 1) * 100));
-  return `+${formatNumber(pct)}% к силе клика`;
+  const total = getHatClickMult(hat, level);
+  return `x${formatNumber(total)} к силе клика`;
 }
 
 function skinOwned(id) {
@@ -48,8 +47,7 @@ function skinArtHtml(skin, size) {
 }
 
 function skinClickLabel(skin) {
-  const pct = Math.max(0, Math.round((skin.clickMult - 1) * 100));
-  return `+${formatNumber(pct)}% к клику`;
+  return `x${formatNumber(skin.clickMult)} к клику`;
 }
 
 function renderBodySlot() {
@@ -264,7 +262,7 @@ export function renderCharacterInventory() {
           updateHUD();
           renderCharacterInventory();
           saveLocal();
-          showKnifeToast(`💎 Шапка "${equippedHat.name}" инкрустирована до Lv.${res.newLevel}! (+35% силы клика)`);
+          showKnifeToast(`💎 Шапка "${equippedHat.name}" инкрустирована до Lv.${formatNumber(res.newLevel)}! (+15% к силе шапки)`);
         } else {
           alert(res.msg);
         }
@@ -745,7 +743,7 @@ function renderHatsGrid() {
         renderShop();
         saveLocal();
         const hatObj = SHOP_ITEMS.find(i => i.id === hid);
-        showKnifeToast(`💎 Шапка "${hatObj ? hatObj.name : hid}" инкрустирована до Lv.${res.newLevel}! (+35% силы)`);
+        showKnifeToast(`💎 Шапка "${hatObj ? hatObj.name : hid}" инкрустирована до Lv.${formatNumber(res.newLevel)}! (+15% к силе шапки)`);
       } else {
         alert(res.msg);
       }

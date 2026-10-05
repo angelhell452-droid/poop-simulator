@@ -2,7 +2,7 @@ export const BODY_SKINS = [
   {
     id: 'skin_robe',
     name: 'Халат',
-    clickMult: 1.15,
+    clickMult: 2.5,
     price: 25000,
     form: 1,
     boy: 'assets/poop/skins/robe-boy.png',
@@ -11,7 +11,7 @@ export const BODY_SKINS = [
   {
     id: 'skin_hoodie',
     name: 'Худи стримера',
-    clickMult: 1.35,
+    clickMult: 4,
     price: 180000,
     form: 100,
     boy: 'assets/poop/skins/hoodie-boy.png',
@@ -20,7 +20,7 @@ export const BODY_SKINS = [
   {
     id: 'skin_tunic',
     name: 'Туника',
-    clickMult: 1.6,
+    clickMult: 7,
     price: 1500000,
     form: 500,
     boy: 'assets/poop/skins/tunic-boy.png',
@@ -29,7 +29,7 @@ export const BODY_SKINS = [
   {
     id: 'skin_tuxedo',
     name: 'Золотой смокинг',
-    clickMult: 2,
+    clickMult: 12,
     price: 12000000,
     form: 2000,
     boy: 'assets/poop/skins/tuxedo-boy.png',

@@ -1,6 +1,6 @@
-import { getPhaseForStage, PHASE_FORMS, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.22';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
-import { isBig, mul } from '../utils/big.js?v=5.0.22';
+import { getPhaseForStage, PHASE_FORMS, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.23';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.23';
+import { isBig, mul } from '../utils/big.js?v=5.0.23';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
