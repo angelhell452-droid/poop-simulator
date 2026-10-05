@@ -1,9 +1,9 @@
-import { GAME } from '../core/state.js?v=5.0.26';
+import { GAME } from '../core/state.js?v=5.0.29';
 import { KNIVES } from '../data/knives.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.26';
-import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.26';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.29';
+import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.29';
 import { events } from '../core/events.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.26';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.29';
 
 const BASE_RARITY_SPARKLES = {
   common: 500,

@@ -1,19 +1,21 @@
-import { GAME } from '../core/state.js?v=5.0.26';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.26';
-import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.26';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.26';
-import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.26';
+import { GAME } from '../core/state.js?v=5.0.29';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.29';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.29';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.29';
+import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.29';
 
-import { updateHUD } from './hudView.js?v=5.0.27';
-import { renderCasesSystem } from './casesView.js?v=5.0.26';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.26';
-import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.26';
-import { renderFactories } from './factoryView.js?v=5.0.26';
+import { updateHUD } from './hudView.js?v=5.0.29';
+import { renderCasesSystem } from './casesView.js?v=5.0.29';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.29';
+import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.29';
+import { renderFactories } from './factoryView.js?v=5.0.29';
 import { renderShop } from './shopView.js';
 import { events } from '../core/events.js';
 import { isRelicSectionUnlocked } from '../progression/unlocks.js';
 
 let pendingPrestigeArchetype = 'balanced';
+let flushNotesOpen = false;
+let transcendNotesOpen = false;
 
 export function updatePrestigeModalRealtime() {
   const modal = document.getElementById('prestigeModal');
@@ -23,29 +25,28 @@ export function updatePrestigeModalRealtime() {
   const gain = b.totalGain;
   const bridgePhase = currentBridgePhase();
   const bridgeForm = bridgePhase.flushForm;
-  const bridgeFormReady = b.currentForm >= bridgeForm;
+  const countsNow = !!(b.isMet && b.countsForBridge && !b.pairSealed);
+  const verdict = countsNow ? 'Этот смыв считается в прорыв' : 'Этот смыв не считается в прорыв';
+  const verdictClass = countsNow
+    ? 'bg-emerald-400 text-stone-950 border-emerald-200'
+    : 'bg-amber-400 text-stone-950 border-amber-200';
 
   const reqLabel = document.getElementById('prestigeReqLabel');
   if (reqLabel) {
     reqLabel.innerHTML = `
       <div class="space-y-1.5">
+        <div class="rounded-full border-2 px-3 py-2 text-center font-game text-sm font-bold ${verdictClass}">${verdict}</div>
+        <div class="rounded-full border-2 border-yellow-300 bg-stone-950 px-3 py-2 text-center font-game text-sm text-yellow-200">
+          Сейчас форма #${formatNumber(b.currentForm)} · для прорыва нужна #${formatNumber(bridgeForm)}
+        </div>
         <div class="flex items-center justify-between text-xs">
           <span class="${b.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-            🧬 Форма: #${formatNumber(b.currentForm)} / #${formatNumber(b.reqForm)}
+            🧬 Смыв откроется: #${formatNumber(b.currentForm)} / #${formatNumber(b.reqForm)}
           </span>
           <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${b.meetsStage ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
             ${b.meetsStage ? '✓ Достигнуто' : `Нужно еще +${formatNumber(Math.max(0, b.reqForm - b.currentForm))} форм`}
           </span>
         </div>
-        <div class="flex items-center justify-between text-xs">
-          <span class="${bridgeFormReady ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-            🌀 В прорыв: #${formatNumber(b.currentForm)} / #${formatNumber(bridgeForm)}
-          </span>
-          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${bridgeFormReady ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-            ${bridgeFormReady ? '✓ Хватает' : `Нужно ещё +${formatNumber(Math.max(0, bridgeForm - b.currentForm))}`}
-          </span>
-        </div>
-        <div class="text-[10px] text-purple-200 leading-snug">Смыв засчитывается в прорыв с формы #${formatNumber(bridgeForm)}, эпоха ${formatNumber(bridgePhase.id)}. Сейчас форма #${formatNumber(b.currentForm)}.</div>
         <div class="flex items-center justify-between text-xs">
           <span class="${b.meetsBiomass ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
             💨 Биомасса: ${formatNumber(b.currentBiomass)} / ${formatNumber(b.reqBiomass)} 💨
@@ -88,21 +89,20 @@ export function updatePrestigeModalRealtime() {
           <div>├─ 🧻 Втулки за этот смыв: <b class="text-white">+${formatNumber(b.bioPart)}</b></div>
           <div>├─ 🌀 Эхо эпохи ${formatNumber(echoPhaseId)}: <b class="text-white">${b.pairSealed ? 'пара уже на x3' : `x${formatNumber(nextEcho)} у этой эпохи`}</b></div>
           <div>├─ 🪠 Вантуз: <b class="${b.plungerGain > 0 ? 'text-cyan-300' : 'text-stone-400'}">${b.plungerGain > 0 ? `+${formatNumber(1)}` : (echoPhaseId === bridge.id && !b.pairSealed ? (plungerRoom > 0 ? `даст +${formatNumber(1)}, запас ${formatNumber(plungerRoom)}` : 'запас эпохи набран') : 'с этой эпохи вантуза нет')}</b></div>
-          <div>├─ 🗡️ Бонус оружия (Коса): <b class="${b.scytheActive ? 'text-emerald-300' : 'text-stone-400'}">${b.scytheActive ? '+25% (АКТИВЕН)' : '0%'}</b></div>
           <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${formatNumber(Math.round((b.flushTalentBonus - 1) * 100))}%</b></div>
         </div>
-        <div class="pt-1.5 border-t border-purple-800/60 text-[10px] text-amber-300 font-sans space-y-0.5">
-          <div class="font-bold flex items-center gap-1">
-            <span>💡</span>
-            <span>Втулки, эхо и прорыв — разные вещи</span>
-          </div>
-          <div class="text-purple-200/90 text-[9px] leading-tight">
-            • Втулки тратят на таланты и кейсы. Ранняя эпоха даёт их меньше<br/>
-            • Пока пара открыта, первый смыв эпохи даёт x2, повторы ползут к x3<br/>
-            • Прорыв ставит всей паре x3, даже если эпоху до неё не смывали. Забег он не сбрасывает<br/>
-            • Смыв эпохи ${formatNumber(bridge.id)} даёт ${formatNumber(1)} вантуз, пока с пары не собрано ${formatNumber(plungerFlushCap())}<br/>
-            • Прорыву нужны ${formatNumber(bridgeNeed)} смыва на эпохе ${formatNumber(bridge.id)}. Потом снова дойдите до формы и биомассы и нажмите Прорыв
-          </div>
+        <div class="text-[11px] text-yellow-100 font-game leading-snug">
+          Эхо этой эпохи: ${b.pairSealed ? 'пара уже на x3 от прорыва' : `после смыва x${formatNumber(nextEcho)}, дальше ползёт к x3`}. Прорыв отдельно ставит всей паре x3.
+        </div>
+        <button type="button" id="flushNotesToggle" class="w-full text-left font-bold text-[10px] text-amber-200 flex items-center justify-between gap-2 rounded-full border border-amber-400/50 px-3 py-1.5">
+          <span>Втулки, эхо и прорыв — разные вещи</span>
+          <span>${flushNotesOpen ? '▴' : '▾'}</span>
+        </button>
+        <div class="${flushNotesOpen ? '' : 'hidden'} text-purple-200/90 text-[9px] leading-tight space-y-0.5">
+          <div>• Втулки тратят на таланты и кейсы. Доход они не множат</div>
+          <div>• Эхо множит доход открытой эпохи. Первый смыв ставит x2, следующие подходят к x3</div>
+          <div>• В прорыв идут смывы эпохи ${formatNumber(bridge.id)}, и только с формы #${formatNumber(bridgeForm)}. Сейчас ${formatNumber(bridgeHave)} из ${formatNumber(bridgeNeed)}</div>
+          <div>• Прорыв ставит паре доход x3 и не сбрасывает забег. Смыв сбрасывает форму, биомассу и заводы</div>
         </div>
       </div>
       <div class="text-[11px] text-purple-200 mt-2">
@@ -183,17 +183,19 @@ export function updateTranscendModalRealtime() {
           <div>├─ <span class="plunger-icon"></span> Астральный Инкубатор: <b class="${t.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(t.incubatorBonus * 100))}%</b></div>
           <div>└─ 🔮 Душа Прорыва (Талант): <b class="${t.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(t.soulBonus * 100))}%</b></div>
         </div>
-        <div class="pt-1.5 border-t border-indigo-800/60 text-[10px] text-cyan-300 font-sans space-y-0.5">
-          <div class="font-bold flex items-center gap-1">
-            <span>💡</span>
-            <span>Как получить больше Вантузов?</span>
-          </div>
-          <div class="text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
-            <div>• <b>${formatNumber(t.reqPrestiges)} смыва на эпохе ${formatNumber(t.phase?.id || 2)}</b>. Смыв этой эпохи даёт ${formatNumber(1)} вантуз, пока не набран запас пары</div>
-            <div>• <b>Потом Прорыв</b>: снова наберите форму и биомассу этой эпохи. Лишний смыв не нужен</div>
-            <div>• <b>Пара</b> получает доход x3, сколько бы смывов на ней ни было. Уже сделанные прорывы этот дар тоже получают</div>
-            <div>• <b>Забег остаётся</b>. Прорыв открывает следующую пару. Награда — ${formatNumber(1)} вантуз, и ещё ${formatNumber(1)} за конец эпохи</div>
-          </div>
+        <div class="text-[11px] text-cyan-100 font-game leading-snug">
+          Доход пары после прорыва: x3. Забег не сбрасывается, открывается следующая пара.
+          ${t.doubleChance > 0 ? ` Шанс удвоить вантузы сработает только в момент нажатия, прогноз его не крутит.` : ''}
+        </div>
+        <button type="button" id="transcendNotesToggle" class="w-full text-left font-bold text-[10px] text-cyan-200 flex items-center justify-between gap-2 rounded-full border border-cyan-400/50 px-3 py-1.5">
+          <span>Как получить больше вантузов</span>
+          <span>${transcendNotesOpen ? '▴' : '▾'}</span>
+        </button>
+        <div class="${transcendNotesOpen ? '' : 'hidden'} text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
+          <div>• Нужны ${formatNumber(t.reqPrestiges)} смыва на эпохе ${formatNumber(t.phase?.id || 2)}, которые считаются в прорыв. Смыв этой эпохи даёт ${formatNumber(1)} вантуз, пока не набран запас пары</div>
+          <div>• Потом снова дойдите до формы и биомассы этой эпохи и нажмите Прорыв. Лишний смыв не нужен</div>
+          <div>• Пара получает доход x3, сколько бы смывов на ней ни было. Уже сделанные прорывы этот дар тоже получают</div>
+          <div>• Награда — ${formatNumber(1)} вантуз, и ещё ${formatNumber(1)}, если форма дошла до конца эпохи</div>
         </div>
       </div>
     `;
@@ -263,6 +265,19 @@ export function openTranscendModal() {
 }
 
 export function initModals() {
+  document.getElementById('prestigeModal')?.addEventListener('click', (event) => {
+    if (!event.target.closest('#flushNotesToggle')) return;
+    event.preventDefault();
+    flushNotesOpen = !flushNotesOpen;
+    updatePrestigeModalRealtime();
+  });
+  document.getElementById('transcendModal')?.addEventListener('click', (event) => {
+    if (!event.target.closest('#transcendNotesToggle')) return;
+    event.preventDefault();
+    transcendNotesOpen = !transcendNotesOpen;
+    updateTranscendModalRealtime();
+  });
+
   // Global modal close buttons
   document.querySelectorAll('.modal-close').forEach(btn => {
     btn.addEventListener('click', () => {

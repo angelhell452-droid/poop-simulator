@@ -1,10 +1,10 @@
-import { GAME } from '../core/state.js?v=5.0.26';
+import { GAME } from '../core/state.js?v=5.0.29';
 import { TALENTS } from '../data/talents.data.js';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.26';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.29';
 import { events } from '../core/events.js';
-import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.26';
-import { gte, mul } from '../utils/big.js?v=5.0.26';
-import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.26';
+import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.29';
+import { gte, mul } from '../utils/big.js?v=5.0.29';
+import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.29';
 
 export const BRIDGE_FLUSHES_NEEDED = 2;
 
@@ -98,12 +98,12 @@ export function getTranscendRewardBreakdown() {
   const incubator = GAME.transcendUpgrades?.plungerIncubator || 0;
   const incubatorBonus = incubator * 0.08;
 
-  let totalGain = Math.round((basePlungers + epochBonus) * (1 + soulBonus + incubatorBonus));
   const astralTalent = TALENTS.find(t => t.id === 'astral_splendor');
-  if (astralTalent && astralTalent.level > 0) {
-    const doubleChance = Math.min(0.25, astralTalent.level * 0.015);
-    if (Math.random() < doubleChance) totalGain *= 2;
-  }
+  const doubleChance = astralTalent && astralTalent.level > 0
+    ? Math.min(0.25, astralTalent.level * 0.015)
+    : 0;
+
+  let totalGain = Math.round((basePlungers + epochBonus) * (1 + soulBonus + incubatorBonus));
   totalGain = Math.max(1, Math.min(4, totalGain));
 
   return {
@@ -114,6 +114,7 @@ export function getTranscendRewardBreakdown() {
     basePlungers,
     soulBonus,
     incubatorBonus,
+    doubleChance,
     totalGain,
     nextPlungerRollsNeeded: 0,
     nextPlungerFormsNeeded: Math.max(0, req.phase.formEnd - req.currentForm)
@@ -127,8 +128,12 @@ export function getTranscendPlungersReward() {
 
 export function executeTranscend() {
   const breakdown = getTranscendRewardBreakdown();
-  const gain = breakdown.totalGain;
-  if (!breakdown.isMet || gain <= 0) return false;
+  if (!breakdown.isMet) return false;
+  let gain = breakdown.totalGain;
+  if (breakdown.doubleChance > 0 && Math.random() < breakdown.doubleChance) {
+    gain = Math.max(1, Math.min(4, gain * 2));
+  }
+  if (gain <= 0) return false;
 
   GAME.transcendPlungers = (GAME.transcendPlungers || 0) + gain;
   GAME.totalTranscend = (GAME.totalTranscend || 0) + 1;

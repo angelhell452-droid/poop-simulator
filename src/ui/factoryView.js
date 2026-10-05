@@ -1,14 +1,14 @@
-import { GAME } from '../core/state.js?v=5.0.26';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.26';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.26';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.26';
-import { buyFactory } from '../systems/factoryService.js?v=5.0.26';
-import { updateHUD, openRateBreakdown } from './hudView.js?v=5.0.26';
-import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production.js?v=5.0.26';
-import { saveLocal } from '../save/saveManager.js?v=5.0.26';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.26';
-import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.0.26';
-import { mul } from '../utils/big.js?v=5.0.26';
+import { GAME } from '../core/state.js?v=5.0.29';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.29';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.29';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.29';
+import { buyFactory } from '../systems/factoryService.js?v=5.0.29';
+import { updateHUD, openRateBreakdown } from './hudView.js?v=5.0.29';
+import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production.js?v=5.0.29';
+import { saveLocal } from '../save/saveManager.js?v=5.0.29';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.29';
+import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.0.29';
+import { mul } from '../utils/big.js?v=5.0.29';
 
 let activeFactoryTier = 'all'; // 'all' | '1' | '2' | '3' | '4' | '5'
 
@@ -77,10 +77,14 @@ export function renderFactories() {
           return `<button type="button" class="horizon-buy w-full text-left px-3 py-2 rounded-full border border-emerald-700/50 ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:border-emerald-300'}" data-horizon="${row.id}" ${disabled ? 'disabled' : ''}><b>${row.name}</b> — ${row.text}<br><span class="text-amber-200">${row.label}</span></button>`;
         }).join('')
         : '';
-      const closed = horizonEpochWindow()
+      const horizonLive = !!horizonEpochWindow();
+      const closed = horizonLive
         ? ''
         : `<div class="px-3 py-2 rounded-full bg-stone-900 border border-stone-700 text-stone-300">Заводы горизонта открываются с формы ${formatNumber(20000)}.</div>`;
-      shop.innerHTML = `<div class="px-3 py-2 rounded-full bg-stone-900 border border-emerald-700/40 text-emerald-100">Искры горизонта: ${formatNumber(sparks)}. Тратятся на форме ${formatNumber(100000)}.</div>${closed}${rows}`;
+      const sparkLine = horizonLive
+        ? `<div class="px-3 py-2 rounded-full bg-stone-900 border border-emerald-700/40 text-emerald-100">Искры горизонта: ${formatNumber(sparks)}. Тратятся на форме ${formatNumber(100000)}.</div>`
+        : '';
+      shop.innerHTML = `${sparkLine}${closed}${rows}`;
       shop.classList.remove('hidden');
       shop.querySelectorAll('.horizon-buy').forEach((btn) => {
         btn.addEventListener('click', () => {

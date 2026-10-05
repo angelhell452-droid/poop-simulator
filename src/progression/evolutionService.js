@@ -1,11 +1,11 @@
-import { GAME } from '../core/state.js?v=5.0.26';
-import { EVOLUTIONS, calcEvolutionCost } from '../data/evolutions.data.js?v=5.0.26';
+import { GAME } from '../core/state.js?v=5.0.29';
+import { EVOLUTIONS, calcEvolutionCost } from '../data/evolutions.data.js?v=5.0.29';
 import { TALENTS } from '../data/talents.data.js';
-import { getAsymptoticDiscountFactor } from '../economy/costs.js?v=5.0.26';
+import { getAsymptoticDiscountFactor } from '../economy/costs.js?v=5.0.29';
 import { events } from '../core/events.js';
 import { notePeakForm } from './unlocks.js';
-import { maxUnlockedStage } from './phases.data.js?v=5.0.26';
-import { gte, isBig, mulFloor } from '../utils/big.js?v=5.0.26';
+import { maxUnlockedStage } from './phases.data.js?v=5.0.29';
+import { gte, isBig, mulFloor } from '../utils/big.js?v=5.0.29';
 
 export function effectiveFormCost(stage) {
   const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');

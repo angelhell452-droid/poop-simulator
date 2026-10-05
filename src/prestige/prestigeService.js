@@ -1,11 +1,10 @@
-import { GAME } from '../core/state.js?v=5.0.26';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.26';
+import { GAME } from '../core/state.js?v=5.0.29';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.29';
 import { TALENTS } from '../data/talents.data.js';
-import { KNIVES } from '../data/knives.data.js';
 import { events } from '../core/events.js';
-import { getPhaseByIndex, getPhaseForForm, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.26';
-import { flushCountsForBridge, flushPaysPlunger, pairIsClosed } from './transcendService.js?v=5.0.26';
-import { gte } from '../utils/big.js?v=5.0.26';
+import { getPhaseByIndex, getPhaseForForm, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.29';
+import { flushCountsForBridge, flushPaysPlunger, pairIsClosed } from './transcendService.js?v=5.0.29';
+import { gte } from '../utils/big.js?v=5.0.29';
 
 function gateStatus(phase) {
   const currentStage = GAME.evoStage || 0;
@@ -65,14 +64,10 @@ export function getPrestigeRewardBreakdown() {
   const phaseId = req.echoPhase || req.phase.id;
   const pack = flushRollPack(phaseId);
 
-  const scythe = KNIVES.find(k => k.type === 'Scythe' && k.owned);
-  const scytheActive = !!scythe;
-  const scytheMult = scytheActive ? 1.25 : 1;
-
   const infFlush = TALENTS.find(t => t.id === 'infinity_flush');
   const flushTalentBonus = 1 + (infFlush ? infFlush.level * 0.06 : 0);
 
-  const totalGain = req.isMet ? Math.max(1, Math.round(pack * scytheMult * flushTalentBonus)) : 0;
+  const totalGain = req.isMet ? Math.max(1, Math.round(pack * flushTalentBonus)) : 0;
   const sealed = req.isMet && pairIsClosed(phaseId);
   const plungerGain = req.isMet && flushPaysPlunger(phaseId) ? 1 : 0;
 
@@ -82,8 +77,6 @@ export function getPrestigeRewardBreakdown() {
     bioPart: pack,
     stagePart: 0,
     baseRolls: pack,
-    scytheActive,
-    scytheMult,
     flushTalentBonus,
     totalGain,
     nextRollBiomassNeeded: 0,
