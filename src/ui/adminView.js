@@ -1,17 +1,17 @@
-import { applySaveDataSafely, saveLocal } from '../save/saveManager.js?v=5.0.23';
-import { AUTH_STORAGE_KEY, adminRequest, fetchAdminSession, getStoredAccount, wipeAllCloudSaves, wipeCloudPlayer } from '../save/cloudSync.js?v=5.0.23';
-import { STORAGE_KEY, BACKUP_KEY } from '../save/saveManager.js?v=5.0.23';
-import { updateHUD } from './hudView.js?v=5.0.23';
-import { renderFactories } from './factoryView.js?v=5.0.23';
-import { renderTalents } from './talentView.js';
+import { applySaveDataSafely, saveLocal } from '../save/saveManager.js?v=5.0.26';
+import { AUTH_STORAGE_KEY, adminRequest, fetchAdminSession, getStoredAccount, wipeAllCloudSaves, wipeCloudPlayer } from '../save/cloudSync.js?v=5.0.26';
+import { STORAGE_KEY, BACKUP_KEY } from '../save/saveManager.js?v=5.0.26';
+import { updateHUD } from './hudView.js?v=5.0.26';
+import { renderFactories } from './factoryView.js?v=5.0.26';
+import { renderTalents } from './talentView.js?v=5.0.26';
 import { renderShop } from './shopView.js';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.23';
-import { formatNumber, parseShorthand } from '../utils/numberFormatter.js?v=5.0.23';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.23';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.26';
+import { formatNumber, parseShorthand } from '../utils/numberFormatter.js?v=5.0.26';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.26';
 import { TALENTS } from '../data/talents.data.js';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.23';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.26';
 import { KNIVES } from '../data/knives.data.js';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.23';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.26';
 import { setConfirmedVip } from '../economy/pace.js';
 
 let adminRole = null;

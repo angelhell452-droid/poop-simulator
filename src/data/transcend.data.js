@@ -97,7 +97,7 @@ export const TRANSCEND_UPGRADES = [
     id: 'art_factory_overdrive',
     key: 'factoryOverdrive',
     name: '⚡ Гипер-Ускоритель Заводов',
-    desc: '+12% к CPS всех фабрик за уровень',
+    desc: '+12% к пассивному доходу всех заводов за уровень',
     cost: 8,
     costStep: 3,
     max: 15,

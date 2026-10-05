@@ -1,14 +1,14 @@
-import { GAME } from '../core/state.js?v=5.0.23';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.23';
-import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.23';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.23';
-import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.23';
+import { GAME } from '../core/state.js?v=5.0.26';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.26';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.26';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.26';
+import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.26';
 
-import { updateHUD } from './hudView.js?v=5.0.23';
-import { renderCasesSystem } from './casesView.js?v=5.0.23';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.23';
-import { renderTalents, switchTalentSubTab } from './talentView.js';
-import { renderFactories } from './factoryView.js?v=5.0.23';
+import { updateHUD } from './hudView.js?v=5.0.27';
+import { renderCasesSystem } from './casesView.js?v=5.0.26';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.26';
+import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.26';
+import { renderFactories } from './factoryView.js?v=5.0.26';
 import { renderShop } from './shopView.js';
 import { events } from '../core/events.js';
 import { isRelicSectionUnlocked } from '../progression/unlocks.js';
@@ -21,6 +21,9 @@ export function updatePrestigeModalRealtime() {
 
   const b = getPrestigeRewardBreakdown();
   const gain = b.totalGain;
+  const bridgePhase = currentBridgePhase();
+  const bridgeForm = bridgePhase.flushForm;
+  const bridgeFormReady = b.currentForm >= bridgeForm;
 
   const reqLabel = document.getElementById('prestigeReqLabel');
   if (reqLabel) {
@@ -34,6 +37,15 @@ export function updatePrestigeModalRealtime() {
             ${b.meetsStage ? '✓ Достигнуто' : `Нужно еще +${formatNumber(Math.max(0, b.reqForm - b.currentForm))} форм`}
           </span>
         </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="${bridgeFormReady ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
+            🌀 В прорыв: #${formatNumber(b.currentForm)} / #${formatNumber(bridgeForm)}
+          </span>
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${bridgeFormReady ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+            ${bridgeFormReady ? '✓ Хватает' : `Нужно ещё +${formatNumber(Math.max(0, bridgeForm - b.currentForm))}`}
+          </span>
+        </div>
+        <div class="text-[10px] text-purple-200 leading-snug">Смыв засчитывается в прорыв с формы #${formatNumber(bridgeForm)}, эпоха ${formatNumber(bridgePhase.id)}. Сейчас форма #${formatNumber(b.currentForm)}.</div>
         <div class="flex items-center justify-between text-xs">
           <span class="${b.meetsBiomass ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
             💨 Биомасса: ${formatNumber(b.currentBiomass)} / ${formatNumber(b.reqBiomass)} 💨
@@ -193,7 +205,7 @@ export function updateTranscendModalRealtime() {
     let tMilestoneText = '';
     if (transcends < 1) tMilestoneText = '🎯 Прорыв #1: Вантузы и Базовые Реликвии (Тир 1)';
     else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: 🌠 Звёздный дождь и кузница [${formatNumber(transcends)}/3]`;
-    else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⏳ Временной Разлом (+25% к CPS) [${formatNumber(transcends)}/5]`;
+    else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⚡ Гипер-Ускоритель заводов (+12% к пассивному доходу) [${formatNumber(transcends)}/5]`;
     else if (transcends < 10) tMilestoneText = `🎯 Прорыв #10: 🌌 Сингулярность & Корона Демиурга [${formatNumber(transcends)}/10]`;
     else tMilestoneText = `🏆 Повелитель Астральной Сингулярности (${formatNumber(transcends)} прорывов)!`;
 

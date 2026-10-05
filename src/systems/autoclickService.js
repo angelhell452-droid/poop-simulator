@@ -1,7 +1,7 @@
-import { GAME } from '../core/state.js?v=5.0.23';
+import { GAME } from '../core/state.js?v=5.0.26';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.23';
-import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.0.23';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.26';
+import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.0.26';
 
 export const BARE_CLICK_CAP = 40;
 
@@ -14,8 +14,8 @@ const KNIFE_CPS_BONUS = {
   classified: 34,
   covert: 44,
   rainbow: 56,
-  titanium: 70,
-  celestial: 84,
+  celestial: 70,
+  titanium: 84,
   godly: 100,
   special: 100
 };
