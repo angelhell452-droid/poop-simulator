@@ -232,10 +232,9 @@ export async function bootstrap() {
       checkAchievements();
       updateHUD();
       saveLocal();
+      return;
     }
-  });
-
-  document.getElementById('btnPolish')?.addEventListener('click', () => {
+    if (Math.round(GAME.clean) >= 100) return;
     if (polishPet()) {
       addVisualParticle('✨ Идеальный блеск! +4 ✨', '#facc15', 1.35);
       checkAchievements();

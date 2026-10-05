@@ -1,10 +1,23 @@
 import { GAME } from '../core/state.js';
-import { getPhaseForStage, PHASE_COUNT } from '../progression/phases.data.js';
+import { getPhaseForForm, getPhaseForStage, PHASE_COUNT } from '../progression/phases.data.js';
 
 function echoCount(phaseId) {
   const bag = GAME.phaseEcho || {};
   const raw = bag[phaseId] ?? bag[String(phaseId)] ?? 0;
   return Math.max(0, Number(raw) || 0);
+}
+
+/** Epoch the echoes are scored from. A fresh run starts at form 1, but flushed epochs stay earned. */
+function echoViewpoint() {
+  const run = getPhaseForStage(GAME.evoStage).id;
+  const peak = getPhaseForForm(GAME.peakForm || 1).id;
+  let highest = 0;
+  const bag = GAME.phaseEcho || {};
+  for (const key of Object.keys(bag)) {
+    const id = Number(key);
+    if (id > highest && echoCount(id) > 0) highest = id;
+  }
+  return Math.max(run, peak, highest);
 }
 
 /** Bonus from one epoch's echoes. The first echo is +1 (x2). Further echoes approach +2, so the multiplier approaches x3. */
@@ -21,7 +34,7 @@ export function getEchoBonus(count) {
  * atPhaseId previews the multiplier as if the run stood in that epoch.
  */
 export function getRollsIncomeMult(previewPhase = 0, previewAdd = 0, atPhaseId = 0) {
-  const at = atPhaseId || getPhaseForStage(GAME.evoStage).id;
+  const at = atPhaseId || echoViewpoint();
   let bonus = 0;
   for (let id = 1; id <= PHASE_COUNT; id++) {
     const count = echoCount(id) + (id === previewPhase ? previewAdd : 0);

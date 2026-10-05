@@ -584,16 +584,16 @@ export function getActiveBuffsList() {
 
   // 9. Смыв Судьбы (Втулки)
   if ((GAME.totalPrestiges || 0) > 0) {
+    const rollsMult = getRollsIncomeMult();
     const totalRolls = Math.max(GAME.allTimePrestigeRolls || 0, GAME.prestigeRolls || 0);
-    const boostPct = Math.round((getRollsIncomeMult() - 1) * 100);
     buffs.push({
       id: 'prestige_rolls',
       icon: '🌀',
       name: 'Мудрость Смыва Судьбы',
-      short: `+${formatNumber(boostPct)}%`,
-      bonusText: `+${formatNumber(boostPct)}% ко всему доходу`,
+      short: `x${formatNumber(rollsMult)}`,
+      bonusText: `x${formatNumber(rollsMult)} ко всему доходу`,
       badgeColor: 'bg-purple-950/90 border-yellow-400 text-yellow-300 shadow-[0_0_8px_rgba(168,85,247,0.3)]',
-      desc: 'Эхо закрытых эпох усиливает доход. Текущая и предыдущая эпоха считаются целиком, более старые — на четверть.',
+      desc: 'Смыв новой эпохи оставляет ей эхо: первый раз x2, повтор той же эпохи почти не растит, потолок x3. Рекордная эпоха и предыдущая считаются целиком, более старые — на четверть. После сброса забега множитель не откатывается к одному x2.',
       progress: `Смывов совершено: ${formatNumber(GAME.totalPrestiges)} | Втулок в кошельке: ${formatNumber(totalRolls)} 🧻`,
       source: 'Смыв Судьбы',
       tip: 'Совершайте регулярные Смывы при достижении высоких наград Втулок.'

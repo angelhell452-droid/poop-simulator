@@ -16,9 +16,7 @@ import { updateSmartAssistant } from './smartAssistantView.js';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js';
 import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
-import { getPrestigeRewardBreakdown, executePrestige } from '../prestige/prestigeService.js';
-import { getTranscendRewardBreakdown, executeTranscend } from '../prestige/transcendService.js';
-import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal } from './modalManager.js';
+import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js';
 import { showKnifeToast } from './characterInventoryView.js';
 import { getConfirmedVip } from '../economy/pace.js';
 
@@ -128,14 +126,13 @@ export function updateHUD() {
   }
 
   // Buttons state validation
+  const meterFull = (value) => Math.round(value) >= 100;
   const btnFeed = document.getElementById('btnFeed');
-  if (btnFeed) btnFeed.disabled = GAME.hunger >= 90;
+  if (btnFeed) btnFeed.disabled = meterFull(GAME.hunger);
   const btnWash = document.getElementById('btnWash');
-  if (btnWash) btnWash.disabled = GAME.clean >= 85;
-  const btnPolish = document.getElementById('btnPolish');
-  if (btnPolish) btnPolish.disabled = GAME.clean < 70;
+  if (btnWash) btnWash.disabled = meterFull(GAME.clean);
   const btnTickle = document.getElementById('btnTickle');
-  if (btnTickle) btnTickle.disabled = GAME.happy >= 100;
+  if (btnTickle) btnTickle.disabled = meterFull(GAME.happy);
 
   // Evolution Info
   const currEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
@@ -271,39 +268,6 @@ export function updateHUD() {
     }
   }
 
-  // Quick Prestige Button Check
-  const pBreakdown = getPrestigeRewardBreakdown();
-  const btnQuick = document.getElementById('btnQuickPrestige');
-  const btnQuickText = document.getElementById('btnQuickPrestigeText');
-  if (btnQuick) {
-    if (pBreakdown.isMet) {
-      btnQuick.classList.remove('hidden');
-      const newText = `Смыв +${formatNumber(pBreakdown.totalGain)}`;
-      if (btnQuickText && btnQuickText.dataset.sig !== newText) {
-        btnQuickText.dataset.sig = newText;
-        btnQuickText.innerHTML = `${newText} <span class="roll-icon"></span>`;
-      }
-    } else {
-      btnQuick.classList.add('hidden');
-    }
-  }
-
-  // Quick Transcend Button Check
-  const tBreakdown = getTranscendRewardBreakdown();
-  const btnQuickTrans = document.getElementById('btnQuickTranscend');
-  const btnQuickTransText = document.getElementById('btnQuickTranscendText');
-  if (btnQuickTrans) {
-    if (tBreakdown.isMet) {
-      btnQuickTrans.classList.remove('hidden');
-      const newTransText = `Прорыв (+${formatNumber(tBreakdown.totalGain)} 🪠)`;
-      if (btnQuickTransText && btnQuickTransText.textContent !== newTransText) {
-        btnQuickTransText.textContent = newTransText;
-      }
-    } else {
-      btnQuickTrans.classList.add('hidden');
-    }
-  }
-
   // Real-time update of open Prestige / Transcend Modals (Task 8)
   updatePrestigeModalRealtime();
   updateTranscendModalRealtime();
@@ -328,16 +292,16 @@ export function updateAutocareUI() {
     led.className = 'need-led';
     if (!hasAutoCare) {
       btn.classList.add('is-locked');
-      txt.textContent = '🔒 Авто';
+      txt.textContent = '🔒';
       btn.title = 'Астральный Авто-Уход (Тир I Прорыва: 25 Вантузов). Нажмите, чтобы открыть Прорыв!';
     } else if (isOn) {
       btn.classList.add('is-on');
       led.classList.add('is-on');
-      txt.textContent = 'Авто: ВКЛ';
-      btn.title = 'Авто-действие ВКЛЮЧЕНО (нажмите для выключения)';
+      txt.textContent = 'Вкл';
+      btn.title = 'Авто-действие включено. Нажмите, чтобы выключить.';
     } else {
-      txt.textContent = 'Авто: ВЫКЛ';
-      btn.title = 'Авто-действие ВЫКЛЮЧЕНО (нажмите для включения)';
+      txt.textContent = 'Авто';
+      btn.title = 'Авто-действие выключено. Нажмите, чтобы включить.';
     }
   };
 
@@ -361,88 +325,9 @@ export function initAutocareListeners() {
   document.getElementById('btnAutoWash')?.addEventListener('click', () => handleAutoClick('autoWash'));
   document.getElementById('btnAutoTickle')?.addEventListener('click', () => handleAutoClick('autoTickle'));
 
-  const btnQuick = document.getElementById('btnQuickPrestige');
-  if (btnQuick) {
-    let lastQuickPrestigeTime = 0;
-    const triggerQuickPrestige = (e) => {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      const now = Date.now();
-      if (now - lastQuickPrestigeTime < 500) return;
-      lastQuickPrestigeTime = now;
-
-      const pBreakdown = getPrestigeRewardBreakdown();
-      if (!pBreakdown.isMet) return;
-
-      const arch = GAME.archetype || 'balanced';
-      const rollsBefore = GAME.prestigeRolls || 0;
-      if (executePrestige(arch)) {
-        const gained = (GAME.prestigeRolls || 0) - rollsBefore;
-        saveLocal();
-        updateHUD();
-
-        const overlay = document.getElementById('waterFlushOverlay');
-        if (overlay) {
-          overlay.style.opacity = '0.9';
-          overlay.style.transition = 'opacity 0.2s ease';
-          setTimeout(() => {
-            overlay.style.opacity = '0';
-            overlay.style.transition = 'opacity 0.6s ease';
-          }, 400);
-        }
-        showWelcomeGreeting(`⚡ Быстрый Смыв выполнен! +${formatNumber(gained)} 🧻 Втулок Судьбы!`);
-      }
-    };
-
-    btnQuick.addEventListener('pointerdown', triggerQuickPrestige);
-    btnQuick.addEventListener('click', triggerQuickPrestige);
-  }
-
-  // Top Archetype Badge click to open Prestige Modal
   document.getElementById('topArchetypeBadge')?.addEventListener('click', () => {
     openPrestigeModal();
   });
-
-  // 1-Click Fast Transcend Button listener
-  const btnQuickTrans = document.getElementById('btnQuickTranscend');
-  if (btnQuickTrans) {
-    let lastQuickTranscendTime = 0;
-    const triggerQuickTranscend = (e) => {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      const now = Date.now();
-      if (now - lastQuickTranscendTime < 500) return;
-      lastQuickTranscendTime = now;
-
-      const tBreakdown = getTranscendRewardBreakdown();
-      if (!tBreakdown.isMet) return;
-
-      const plungersBefore = GAME.transcendPlungers || 0;
-      if (executeTranscend()) {
-        const gained = (GAME.transcendPlungers || 0) - plungersBefore;
-        saveLocal();
-        updateHUD();
-
-        const flash = document.getElementById('rouletteFlashOverlay');
-        if (flash) {
-          flash.style.opacity = '0.9';
-          flash.style.transition = 'opacity 0.2s ease';
-          setTimeout(() => {
-            flash.style.opacity = '0';
-            flash.style.transition = 'opacity 0.5s ease';
-          }, 350);
-        }
-        showWelcomeGreeting(`🌌 Быстрый Прорыв совершен! Получено: +${formatNumber(gained)} 🪠 Вантузов!`);
-      }
-    };
-
-    btnQuickTrans.addEventListener('pointerdown', triggerQuickTranscend);
-    btnQuickTrans.addEventListener('click', triggerQuickTranscend);
-  }
 }
 
 let lastBuffsSignature = '';
@@ -587,7 +472,7 @@ export function initAutomationToggleListeners() {
     document.getElementById('autoBuyerModeMenu')?.classList.add('hidden');
   });
   document.getElementById('transcendAutoLockedNotice')?.addEventListener('click', () => {
-    document.getElementById('btnCanvasTranscend')?.click();
+    openTranscendModal();
   });
 }
 

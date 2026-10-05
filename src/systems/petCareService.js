@@ -2,8 +2,12 @@ import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { events } from '../core/events.js';
 
+function meterHasRoom(value) {
+  return Math.round(value) < 100;
+}
+
 export function feedPet() {
-  if (GAME.hunger >= 90) return false;
+  if (!meterHasRoom(GAME.hunger)) return false;
   GAME.hunger = Math.min(100, GAME.hunger + 30);
   GAME.happy = Math.min(100, GAME.happy + 10);
   GAME.sparkles += 1;
@@ -13,7 +17,7 @@ export function feedPet() {
 }
 
 export function washPet() {
-  if (GAME.clean >= 85) return false;
+  if (!meterHasRoom(GAME.clean)) return false;
   GAME.clean = Math.min(100, GAME.clean + 35);
   GAME.happy = Math.min(100, GAME.happy + 8);
   GAME.sparkles += 1;
@@ -32,7 +36,7 @@ export function polishPet() {
 }
 
 export function ticklePet() {
-  if (GAME.happy >= 100) return false;
+  if (!meterHasRoom(GAME.happy)) return false;
   GAME.happy = Math.min(100, GAME.happy + 15);
   GAME.comboHeat = Math.min(100, (GAME.comboHeat || 0) + 8);
   events.emit('pet:tickle');

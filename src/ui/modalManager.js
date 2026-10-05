@@ -49,11 +49,11 @@ export function updatePrestigeModalRealtime() {
   const calcEl = document.getElementById('prestigeCalcRolls');
   if (calcEl) {
     const flushes = b.flushes || GAME.totalPrestiges || 0;
-    const currentBoost = Math.round((getRollsIncomeMult() - 1) * 100);
     const echoPhaseId = b.echoPhase || b.phase?.id || 1;
     const hadEcho = Number((GAME.phaseEcho || {})[echoPhaseId] ?? (GAME.phaseEcho || {})[String(echoPhaseId)] ?? 0);
     const nextEcho = 1 + getEchoBonus(hadEcho + 1);
-    const postBoost = Math.round((getRollsIncomeMult(echoPhaseId, b.isMet ? 1 : 0) - 1) * 100);
+    const nowMult = getRollsIncomeMult();
+    const afterMult = getRollsIncomeMult(echoPhaseId, b.isMet ? 1 : 0);
     const bridge = currentBridgePhase();
     const bridgeHave = GAME.flushesThisCycle || 0;
 
@@ -70,7 +70,7 @@ export function updatePrestigeModalRealtime() {
         </div>
         <div class="text-[10px] text-purple-200 space-y-0.5 font-mono">
           <div>├─ 🧻 Втулки за этот мост: <b class="text-white">+${formatNumber(b.bioPart)}</b></div>
-          <div>├─ 🌀 Эхо эпохи ${formatNumber(echoPhaseId)} после смыва: <b class="text-white">доход x${formatNumber(nextEcho)}</b></div>
+          <div>├─ 🌀 Эхо эпохи ${formatNumber(echoPhaseId)}: <b class="text-white">x${formatNumber(nextEcho)}</b> у этой эпохи</div>
           <div>├─ 🗡️ Бонус оружия (Коса): <b class="${b.scytheActive ? 'text-emerald-300' : 'text-stone-400'}">${b.scytheActive ? '+25% (АКТИВЕН)' : '0%'}</b></div>
           <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${formatNumber(Math.round((b.flushTalentBonus - 1) * 100))}%</b></div>
         </div>
@@ -82,13 +82,14 @@ export function updatePrestigeModalRealtime() {
           <div class="text-purple-200/90 text-[9px] leading-tight">
             • Втулки — валюта. Их тратят на таланты и кейсы<br/>
             • Эхо — множитель дохода эпохи, которую смыли. Его не тратят и на прорыв оно не копится<br/>
-            • Первый смыв эпохи ставит эхо на x2. Следующие подходят к x3<br/>
+            • Первый смыв новой эпохи даёт ей x2 и остаётся после сброса забега. Повтор той же эпохи почти не растит, потолок x3<br/>
+            • Целиком считаются рекордная эпоха и предыдущая. Более старые эхо — на четверть<br/>
             • Прорыву нужны ${formatNumber(BRIDGE_FLUSHES_NEEDED)} смыва моста эпохи ${formatNumber(bridge.id)} (форма #${formatNumber(bridge.flushForm)}). Третий заход на этот мост — сам прорыв, награда там вантузы
           </div>
         </div>
       </div>
       <div class="text-[11px] text-purple-200 mt-2">
-        Бонус эха к доходу: <b class="text-white">+${formatNumber(currentBoost)}%</b> ➔ После смыва: <b class="text-emerald-300">+${formatNumber(postBoost)}%</b>
+        Доход от эха: <b class="text-white">x${formatNumber(nowMult)}</b> ➔ после смыва <b class="text-emerald-300">x${formatNumber(afterMult)}</b>
       </div>
       <div class="mt-1.5 pt-1.5 border-t border-yellow-400/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px]">
         <span class="text-yellow-400 font-bold">Смыв: Ранг ${formatNumber(flushes)}</span>
@@ -281,6 +282,10 @@ export function initModals() {
   document.getElementById('btnPrestigeModal')?.addEventListener('click', openPrestigeModal);
   document.getElementById('btnCanvasPrestige')?.addEventListener('click', openPrestigeModal);
   document.getElementById('currencyPrestigeBox')?.addEventListener('click', openPrestigeModal);
+  document.getElementById('btnReadTranscend')?.addEventListener('click', () => {
+    document.getElementById('prestigeModal')?.classList.add('hidden');
+    openTranscendModal();
+  });
 
   document.getElementById('btnTranscendModal')?.addEventListener('click', openTranscendModal);
   document.getElementById('btnCanvasTranscend')?.addEventListener('click', openTranscendModal);

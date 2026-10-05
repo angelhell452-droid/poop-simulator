@@ -183,9 +183,13 @@ export async function syncToCloudDatabase() {
 
   const statusIndicator = document.getElementById('cloudStatusText');
   const stored = getStoredAccount();
-  if (stored?.username && !stored.sessionToken) {
-    if (statusIndicator) statusIndicator.textContent = "D1: Войдите";
-    askRelogin();
+  if (!stored?.sessionToken) {
+    if (stored?.username) {
+      if (statusIndicator) statusIndicator.textContent = "D1: Войдите";
+      askRelogin();
+    } else if (statusIndicator) {
+      statusIndicator.textContent = "D1: Локально";
+    }
     return;
   }
   if (statusIndicator) statusIndicator.textContent = "D1: Сохр...";

@@ -109,11 +109,11 @@ export function renderFactories() {
     else if (fac.tierNumber === 4) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-amber-950/80 text-yellow-300 border border-yellow-500/50 shadow-[0_0_8px_rgba(234,179,8,0.3)]">🌌 Т4</span>`;
 
     const row = document.createElement('div');
-    row.className = `p-3 rounded-2xl bg-stone-900 border ${isLocked ? 'border-stone-800/60 opacity-75' : 'border-stone-800 hover:border-amber-600'} transition flex flex-col gap-2 shadow-sm`;
+    row.className = `factory-card p-3 rounded-2xl bg-stone-900 border ${isLocked ? 'border-stone-800/60 opacity-75' : 'border-stone-800 hover:border-amber-600'} transition flex flex-col gap-2 shadow-sm`;
     row.innerHTML = `
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <span class="text-2xl">${fac.icon}</span>
+          <span class="factory-icon">${fac.icon}</span>
           <div>
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="font-bold text-xs text-stone-200">${fac.name}</span>

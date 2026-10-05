@@ -1,6 +1,6 @@
 import { GAME } from '../core/state.js';
 import { formatNumber } from '../utils/numberFormatter.js';
-import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, syncToCloudDatabase } from '../save/cloudSync.js';
+import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js';
 import { saveLocal } from '../save/saveManager.js';
 import { updateHUD } from './hudView.js';
 
@@ -51,7 +51,9 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
   if (!leaderboard || leaderboard.length === 0) {
     const note = boardOffline
       ? 'Нет связи с сервером. Рейтинг один на всех и появится, когда база ответит.'
-      : 'В Зале Славы пока нет записей. Сыграй и сохранись в облако.';
+      : (!getStoredAccount()?.username
+        ? 'Зал славы только для аккаунтов. Гости в топ не попадают.'
+        : 'В Зале Славы пока нет записей. Сыграй и сохранись в облако.');
     containerEl.innerHTML = `<div class="text-stone-400 text-center py-4 text-xs font-game">${note}</div>`;
     return;
   }
@@ -128,7 +130,8 @@ function updateDailyRewardCard(leaderboard) {
   const badgeEl = document.getElementById('playerRankBadge');
 
   const playerRank = boardOffline ? 0 : Number(cachedYou?.rank || 0);
-  const viewerIsUnlistedGuest = !boardOffline && cachedYou?.guest && !playerRank;
+  const localGuest = !getStoredAccount()?.username;
+  const viewerIsUnlistedGuest = !boardOffline && !playerRank && (cachedYou?.guest || localGuest);
   if (badgeEl) {
     if (boardOffline) badgeEl.textContent = 'НЕТ СВЯЗИ';
     else if (viewerIsUnlistedGuest) badgeEl.textContent = 'ГОСТЬ';
@@ -187,7 +190,7 @@ function updateDailyRewardCard(leaderboard) {
       infoEl.textContent = boardOffline
         ? 'Награда считается только по месту с сервера. Сейчас базы нет, забрать нельзя.'
         : (viewerIsUnlistedGuest
-          ? 'Гости занимают в зале одно место. В топе виден самый сильный гость.'
+          ? 'Зал славы только для аккаунтов. Гости в топ не попадают.'
           : (playerRank > 0
           ? `Вы на #${formatNumber(playerRank)} месте. Поднимитесь в Топ-10 по Очкам Славы, чтобы получать до ${formatNumber(50000)} ✨ в день!`
           : `Сначала появись в облачном сохранении. Топ-10 получает до ${formatNumber(50000)} ✨ в день.`));

@@ -244,11 +244,9 @@ async function handleCloudSave(req, env) {
       }
 
       const owner = await env.DB.prepare(`SELECT username FROM user_accounts WHERE player_id = ? LIMIT 1`).bind(playerId).first();
-      if (owner) {
-        const actor = await sessionUser(env.DB, req);
-        if (!actor || actor.playerId !== playerId) {
-          return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
-        }
+      const actor = await sessionUser(env.DB, req);
+      if (!owner || !actor || actor.playerId !== playerId) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
       }
 
       const seasonName = await displayName(env.DB, playerId, playerName);
@@ -435,40 +433,33 @@ function publicLadderEntry(entry) {
   return rest;
 }
 
-// Guests have no account. The hall keeps the strongest one so the rest do not stack as copies.
-export function collapseGuestLadder(ranked) {
-  const accounts = [];
-  let bestGuest = null;
-  for (const entry of ranked) {
-    if (entry.accountName) accounts.push(entry);
-    else if (!bestGuest || byGlory(entry, bestGuest) < 0) bestGuest = entry;
-  }
-  const board = bestGuest ? accounts.concat(bestGuest) : accounts.slice();
-  board.sort(byGlory);
-  return board;
+// The hall lists accounts only. A save with no user_accounts row is a guest and stays out.
+export function accountLadder(ranked) {
+  return ranked.filter((entry) => entry.accountName).sort(byGlory);
 }
 
 async function handleLeaderboard(url, env, headers) {
   const { results } = await env.DB.prepare(`
     SELECT
-      player_id as playerId,
-      player_name as playerName,
-      stage,
-      biomass,
-      CAST(IFNULL(json_extract(save_data, '$.game.totalTranscend'), 0) AS INTEGER) as transcends,
-      CAST(IFNULL(json_extract(save_data, '$.game.transcendPlungers'), 0) AS INTEGER) as plungers,
-      CAST(IFNULL(json_extract(save_data, '$.game.totalPrestiges'), 0) AS INTEGER) as prestiges,
-      CAST(IFNULL(json_extract(save_data, '$.game.allTimePrestigeRolls'), 0) AS INTEGER) as rolls,
-      CAST(IFNULL((SELECT vip_level FROM user_accounts WHERE user_accounts.player_id = player_saves.player_id), 0) AS INTEGER) as vipLevel,
-      (SELECT username FROM user_accounts WHERE user_accounts.player_id = player_saves.player_id LIMIT 1) as accountName,
-      updated_at as updatedAt
+      player_saves.player_id as playerId,
+      player_saves.player_name as playerName,
+      player_saves.stage,
+      player_saves.biomass,
+      CAST(IFNULL(json_extract(player_saves.save_data, '$.game.totalTranscend'), 0) AS INTEGER) as transcends,
+      CAST(IFNULL(json_extract(player_saves.save_data, '$.game.transcendPlungers'), 0) AS INTEGER) as plungers,
+      CAST(IFNULL(json_extract(player_saves.save_data, '$.game.totalPrestiges'), 0) AS INTEGER) as prestiges,
+      CAST(IFNULL(json_extract(player_saves.save_data, '$.game.allTimePrestigeRolls'), 0) AS INTEGER) as rolls,
+      CAST(IFNULL(user_accounts.vip_level, 0) AS INTEGER) as vipLevel,
+      user_accounts.username as accountName,
+      player_saves.updated_at as updatedAt
     FROM player_saves
+    INNER JOIN user_accounts ON user_accounts.player_id = player_saves.player_id
   `).all();
 
   const ranked = (results || []).map((row) => {
     const entry = {
       playerId: row.playerId,
-      playerName: row.playerName,
+      playerName: String(row.accountName || row.playerName || "Игрок"),
       stage: Number(row.stage) || 1,
       biomass: Number(row.biomass) || 0,
       transcends: Number(row.transcends) || 0,
@@ -483,7 +474,7 @@ async function handleLeaderboard(url, env, headers) {
     return entry;
   }).sort(byGlory);
 
-  const board = collapseGuestLadder(ranked);
+  const board = accountLadder(ranked);
   const top = board.slice(0, 50).map((entry, index) => ({ ...publicLadderEntry(entry), rank: index + 1 }));
   const viewerId = url.searchParams.get("playerId");
   const youIndex = viewerId ? board.findIndex((entry) => entry.playerId === viewerId) : -1;
