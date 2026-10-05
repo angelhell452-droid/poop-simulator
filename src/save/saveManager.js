@@ -165,6 +165,7 @@ export function applySaveDataSafely(rawData) {
   if (GAME.evoStage >= EVOLUTIONS.length) GAME.evoStage = EVOLUTIONS.length - 1;
   if (!GAME.phaseEcho || typeof GAME.phaseEcho !== 'object') GAME.phaseEcho = {};
   if (!Number.isFinite(GAME.flushesThisCycle) || GAME.flushesThisCycle < 0) GAME.flushesThisCycle = 0;
+  if (!Number.isFinite(GAME.pairPlungersFromFlushes) || GAME.pairPlungersFromFlushes < 0) GAME.pairPlungersFromFlushes = 0;
   const phaseCap = maxUnlockedStage(GAME.totalTranscend || 0);
   if (GAME.evoStage > phaseCap) GAME.evoStage = phaseCap;
 

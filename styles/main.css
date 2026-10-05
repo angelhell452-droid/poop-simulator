@@ -294,6 +294,51 @@ header {
   color: var(--ink);
 }
 
+header #btnAdminPanel {
+  background: #e8943a !important;
+  color: #3a2412 !important;
+  border: 3px solid #8a4e16 !important;
+}
+
+header #btnVipShop {
+  background: #e8c15a !important;
+  color: #3a120e !important;
+  border: 3px solid #b4232a !important;
+}
+
+header #btnLeaderboardModal,
+header #btnGuideModal,
+header #btnPatchNotesModal {
+  background: #eab308 !important;
+  color: #1c1917 !important;
+  border: 3px solid #a16207 !important;
+}
+
+#cloudIndicator {
+  width: 132px;
+  min-width: 132px;
+  max-width: 132px;
+  font-family: var(--font-main);
+}
+
+#cloudStatusText {
+  font-family: var(--font-main);
+  font-weight: 800;
+}
+
+#cloudIndicator[data-mode="save"] #cloudLed,
+#cloudIndicator[data-mode="wait"] #cloudLed {
+  background: #e8943a;
+}
+
+#cloudIndicator[data-mode="ok"] #cloudLed {
+  background: #7dcea0;
+}
+
+#cloudIndicator[data-mode="local"] #cloudLed {
+  background: #8eaaa0;
+}
+
 header #btnBugReport {
   background: #d4534e !important;
   color: #fff8f6 !important;
@@ -312,6 +357,25 @@ header #btnBugReport {
   box-shadow: var(--shadow-sm) !important;
   font-size: 12px !important;
   font-weight: 800 !important;
+}
+
+.canvas-split {
+  display: inline-flex;
+  overflow: hidden;
+  border: 3px solid var(--border-light);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.canvas-split .canvas-tool {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.canvas-split .canvas-tool + .canvas-tool {
+  border-left: 3px solid var(--border-light) !important;
 }
 
 .factory-icon {
@@ -592,6 +656,10 @@ button.jelly-btn {
   border-radius: var(--radius-full) !important;
   font-family: var(--font-main) !important;
   font-weight: 700 !important;
+}
+
+.dash-tabs {
+  padding: 14px 16px 8px;
 }
 
 .dash-tab {

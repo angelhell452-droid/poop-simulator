@@ -27,6 +27,7 @@ export function getDefaultGameState() {
     totalTranscend: 0,
     phaseEcho: {},
     flushesThisCycle: 0,
+    pairPlungersFromFlushes: 0,
 
     evoStage: 0,
     peakForm: 1,

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.12 PRO</title>
+  <title>Poop Simulator v5.0.16 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.12">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.16">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.12 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.16 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             title="Сообщить об ошибке">
@@ -82,10 +82,11 @@
       </div>
 
       <div id="cloudIndicator"
-        class="hidden sm:flex items-center justify-center gap-1.5 text-[10px] bg-stone-900/90 px-2 py-1 rounded-xl border border-stone-700 font-bold text-stone-300 w-[84px] min-w-[84px] max-w-[84px] shrink-0 flex-none text-center select-none overflow-hidden"
-        title="Статус синхронизации с базой данных Cloudflare D1">
-        <span id="cloudLed" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
-        <span id="cloudStatusText" class="truncate font-mono">D1: OK</span>
+        class="hidden sm:flex items-center justify-center gap-1.5 text-[10px] bg-stone-900/90 px-2 py-1 rounded-xl border border-stone-700 font-bold text-stone-300 shrink-0 flex-none text-center select-none overflow-hidden"
+        data-mode="save"
+        title="Сохранение игры">
+        <span id="cloudLed" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+        <span id="cloudStatusText" class="truncate">Сохранение…</span>
       </div>
 
       <button id="btnAdminPanel"
@@ -360,12 +361,16 @@
             <span>🎒</span>
             <span>Инвентарь</span>
           </button>
-          <button id="btnCanvasPrestige"
-            class="canvas-tool jelly-btn"
-            title="Прочитать, что такое Смыв и Прорыв">
-            <span>🌀</span>
-            <span>Смыв и прорыв</span>
-          </button>
+          <div class="canvas-split">
+            <button id="btnCanvasPrestige" type="button" class="canvas-tool jelly-btn" title="Что такое Смыв">
+              <span>🌀</span>
+              <span>Смыв</span>
+            </button>
+            <button id="btnCanvasTranscend" type="button" class="canvas-tool jelly-btn" title="Что такое Прорыв">
+              <span class="plunger-icon"></span>
+              <span>Прорыв</span>
+            </button>
+          </div>
         </div>
 
         <!-- Flush Overlay -->
@@ -439,7 +444,7 @@
 
       <!-- Nav Tabs (6 Tabs) -->
       <div
-        class="grid grid-cols-5 bg-stone-950 border-b border-amber-900/80 text-[10px] sm:text-[11px] font-black shrink-0">
+        class="dash-tabs grid grid-cols-5 bg-stone-950 border-b border-amber-900/80 text-[10px] sm:text-[11px] font-black shrink-0">
         <button class="dash-tab py-1.5 text-center bg-amber-700 text-white" data-target="panelFactories">🏭
           Заводы</button>
         <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelCases">🔪
@@ -997,16 +1002,12 @@
         class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
       <div class="text-5xl my-1 animate-spin-slow">🌀</div>
       <h3 class="font-game text-2xl text-yellow-300">ВЕЛИКИЙ СМЫВ СУДЬБЫ</h3>
-      <p class="text-xs text-purple-200 mt-1">Сбросьте биомассу, текущую форму и фабрики, чтобы получить священные
-        Золотые Втулки!</p>
-      <button id="btnReadTranscend" type="button" class="jelly-btn w-full mt-2 px-3 py-2 text-xs">
-        Прорыв — следующий шаг. Нажмите, чтобы прочитать
-      </button>
+      <p class="text-xs text-purple-200 mt-1">Сбросьте биомассу, текущую форму и фабрики. За это дают втулки и эхо дохода.</p>
 
       <div class="bg-purple-900/60 border border-yellow-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex flex-col gap-0.5">
           <span class="text-stone-300 text-[10px] uppercase font-bold">Условие доступа:</span>
-          <div id="prestigeReqLabel" class="text-yellow-300 font-bold">Мост эпохи: форма и биомасса забега</div>
+          <div id="prestigeReqLabel" class="text-yellow-300 font-bold">Форма и биомасса этой эпохи</div>
         </div>
         <div id="prestigeCalcRolls">
           <span class="font-game text-yellow-300 text-sm">+0 <span class="roll-icon"></span></span>
@@ -1073,13 +1074,12 @@
         <span class="plunger-icon text-4xl"></span>
       </div>
       <h3 class="font-game text-2xl text-cyan-300">АСТРАЛЬНЫЙ ПРОРЫВ</h3>
-      <p class="text-xs text-indigo-200 mt-1">Трансцендентное перерождение 2-го уровня! Получите священные <b>Астральные
-          Вантузы</b> и открывает следующую пару эпох.</p>
+      <p class="text-xs text-indigo-200 mt-1">Открывает следующую пару эпох и ставит текущей паре доход x3. Забег не сбрасывается.</p>
 
       <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex flex-col gap-0.5">
           <span class="text-stone-300 text-[10px] uppercase font-bold">Условие доступа:</span>
-          <div id="transcendReqLabel" class="text-cyan-300 font-bold">2 смыва моста и третий заход на него</div>
+          <div id="transcendReqLabel" class="text-cyan-300 font-bold">2 смыва на эпохе 2</div>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300">Запас Втулок Судьбы:</span>
@@ -1640,7 +1640,7 @@
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Первый Смыв созревает примерно за 5–10 минут: форма 80 и биомасса забега. Он даёт втулки и эхо x2</li>
                 <li>Эхо — множитель дохода этой эпохи. Первый смыв ставит x2, следующие подходят к x3. Эхо не тратится и для прорыва не копится</li>
-                <li>Дальше мост эпохи стоит примерно на 40% её форм. Втулки тратятся на таланты и кейсы</li>
+                <li>Дальше смыв эпохи стоит примерно на 40% её форм. Втулки тратят на таланты и кейсы</li>
                 <li>Пассивный Хроно-генератор втулок из Прорыва</li>
               </ul>
             </div>
@@ -1649,7 +1649,7 @@
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Древо Талантов: 18 вечных умений прокачки</li>
                 <li>Открытие оружейных контейнеров (Фазы 1-3)</li>
-                <li>Астральный Прорыв — отдельная награда. Ему нужны 2 смыва моста чётной эпохи и третий заход на этот мост</li>
+                <li>Астральный Прорыв открывает следующую пару эпох и ставит закрытой паре доход x3. Первый просит 2 смыва, второй 3, дальше 4</li>
               </ul>
             </div>
           </div>
@@ -1672,8 +1672,8 @@
               <b class="text-emerald-400">⚡ Как зарабатывать:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Астральный Прорыв (кнопка 🪠 Прорыв)</li>
-                <li>Условие: 2 смыва, закрывших мост текущей чётной эпохи, и третий заход на этот же мост. Ранний смыв даёт втулки и эхо, в счётчик прорыва не входит. Награда — 1 вантуз, и ещё 1 если закрыт конец эпохи. Потолок 4. Плюс ключ следующей пары</li>
-                <li>Втулки после Прорыва остаются. Сбрасываются форма, заводы и счётчик смывов этой пары эпох</li>
+                <li>Смывы чётной эпохи открытой пары: сначала 2, потом 3, с третьего прорыва всегда 4. Затем снова форма и биомасса, и кнопка Прорыв. Забег не сбрасывается. Награда — 1 вантуз, и ещё 1 если дошли до конца эпохи. Смыв этой эпохи тоже даёт 1 вантуз, пока не набран запас пары.</li>
+                <li>Втулки и вантузы остаются. Смыв сбрасывает форму и заводы. Прорыв сбрасывает только счётчик смывов пары</li>
               </ul>
             </div>
             <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
@@ -2079,7 +2079,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.12"></script>
+  <script type="module" src="src/main.js?v=5.0.16"></script>
 </body>
 
 </html>

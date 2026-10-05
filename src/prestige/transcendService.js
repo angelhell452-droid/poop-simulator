@@ -1,5 +1,4 @@
 import { GAME } from '../core/state.js';
-import { FACTORIES } from '../data/factories.data.js';
 import { TALENTS } from '../data/talents.data.js';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
 import { events } from '../core/events.js';
@@ -7,10 +6,40 @@ import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js';
 
 export const BRIDGE_FLUSHES_NEEDED = 2;
 
+/** First breakthrough asks for 2 flushes, the second for 3, and every later one for 4. */
+export function flushesNeededForBridge(transcends = GAME.totalTranscend || 0) {
+  const done = Math.max(0, Number(transcends) || 0);
+  if (done <= 0) return 2;
+  if (done === 1) return 3;
+  return 4;
+}
+
+/** Plungers a pair can pay from flushes of its even epoch. Enough for the first level of relics that breakthrough opens. */
+export function plungerFlushCap(transcends = GAME.totalTranscend || 0) {
+  const next = Math.max(1, (Number(transcends) || 0) + 1);
+  if (next === 1) return 12;
+  const firsts = TRANSCEND_UPGRADES
+    .filter((row) => (row.reqTranscend || 1) === next)
+    .reduce((sum, row) => sum + (row.cost || 0), 0);
+  return Math.max(8, firsts);
+}
+
 export function currentBridgePhase() {
   const t = GAME.totalTranscend || 0;
   const pair = Math.min(PHASE_COUNT / 2, 1 + t);
   return getPhaseByIndex(pair * 2);
+}
+
+export function pairIsClosed(phaseId) {
+  return Math.ceil(Math.max(1, phaseId || 1) / 2) <= (GAME.totalTranscend || 0);
+}
+
+/** One plunger per flush of the even epoch of the pair that is still open, until the pair cap. */
+export function flushPaysPlunger(phaseId) {
+  const bridge = currentBridgePhase();
+  if ((phaseId || 0) !== bridge.id) return false;
+  if (pairIsClosed(phaseId)) return false;
+  return (GAME.pairPlungersFromFlushes || 0) < plungerFlushCap();
 }
 
 export function flushCountsForBridge(phaseId) {
@@ -21,7 +50,7 @@ export function getTranscendRequirement() {
   const bridge = currentBridgePhase();
   const reqForm = bridge.flushForm;
   const reqStage = reqForm - 1;
-  const reqPrestiges = BRIDGE_FLUSHES_NEEDED;
+  const reqPrestiges = flushesNeededForBridge();
   const reqBiomass = bridge.ceiling * 0.1;
 
   const currentStage = GAME.evoStage || 0;
@@ -102,17 +131,10 @@ export function executeTranscend() {
   GAME.transcendPlungers = (GAME.transcendPlungers || 0) + gain;
   GAME.totalTranscend = (GAME.totalTranscend || 0) + 1;
 
-  GAME.flushesThisCycle = 0;
-  GAME.cycleBiomass = 0;
-  GAME.biomass = 0;
-  GAME.currentRunPeakGPS = 0;
   const reached = (GAME.evoStage || 0) + 1;
   if (reached > (GAME.peakForm || 1)) GAME.peakForm = reached;
-  GAME.evoStage = 0;
-  FACTORIES.forEach(fac => { fac.count = 0; });
-  GAME.clean = 100;
-  GAME.hunger = 100;
-  GAME.happy = 100;
+  GAME.flushesThisCycle = 0;
+  GAME.pairPlungersFromFlushes = 0;
 
   events.emit('transcend:completed', { gain });
   return true;

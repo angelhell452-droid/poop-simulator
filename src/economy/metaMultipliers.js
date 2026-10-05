@@ -27,14 +27,12 @@ export function getEchoBonus(count) {
   return 1 + (c - 1) / (c - 1 + 8);
 }
 
-/**
- * Flush income. The current epoch and the one before it count in full.
- * Older echoes count at a quarter. Rolls in the wallet do not multiply income.
- * previewPhase / previewAdd show the boost of one more echo on that epoch.
- * atPhaseId previews the multiplier as if the run stood in that epoch.
- */
-export function getRollsIncomeMult(previewPhase = 0, previewAdd = 0, atPhaseId = 0) {
-  const at = atPhaseId || echoViewpoint();
+function pairOf(phaseId) {
+  return Math.ceil(Math.max(1, phaseId || 1) / 2);
+}
+
+/** Echo bonus the way it worked before pair gifts: current and previous in full, older at a quarter. */
+function legacyEchoBonus(at, previewPhase = 0, previewAdd = 0) {
   let bonus = 0;
   for (let id = 1; id <= PHASE_COUNT; id++) {
     const count = echoCount(id) + (id === previewPhase ? previewAdd : 0);
@@ -43,7 +41,36 @@ export function getRollsIncomeMult(previewPhase = 0, previewAdd = 0, atPhaseId =
     if (id === at || id === at - 1) bonus += part;
     else if (id < at - 1) bonus += part * 0.25;
   }
-  return 1 + bonus;
+  return bonus;
+}
+
+/** Echoes of the pair that is still open. Closed pairs are replaced by the breakthrough gift. */
+function openPairEchoBonus(at, closedPairs, previewPhase = 0, previewAdd = 0) {
+  let bonus = 0;
+  for (let id = 1; id <= PHASE_COUNT; id++) {
+    if (pairOf(id) <= closedPairs) continue;
+    const count = echoCount(id) + (id === previewPhase ? previewAdd : 0);
+    const part = getEchoBonus(count);
+    if (part <= 0) continue;
+    if (id === at || id === at - 1) bonus += part;
+    else if (id < at - 1) bonus += part * 0.25;
+  }
+  return bonus;
+}
+
+/**
+ * Flush income. A closed pair is one gift of +2 (x3 together), whatever the flush count was.
+ * The open pair still uses real echoes. Existing saves keep the old number when it is higher.
+ * Rolls in the wallet do not multiply income.
+ */
+export function getRollsIncomeMult(previewPhase = 0, previewAdd = 0, atPhaseId = 0) {
+  const at = atPhaseId || echoViewpoint();
+  const closed = Math.max(0, GAME.totalTranscend || 0);
+  const previewClosed = pairOf(previewPhase) <= closed;
+  const add = previewClosed ? 0 : previewAdd;
+  const legacy = legacyEchoBonus(at, 0, 0);
+  const gifted = closed * 2 + openPairEchoBonus(at, closed, previewPhase, add);
+  return 1 + Math.max(legacy, gifted);
 }
 
 /**

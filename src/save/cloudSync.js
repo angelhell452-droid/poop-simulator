@@ -178,21 +178,27 @@ export function requestCloudSync(delayMs = 2500) {
   }, delayMs);
 }
 
+function setCloudStatus(text, mode) {
+  const statusIndicator = document.getElementById('cloudStatusText');
+  const box = document.getElementById('cloudIndicator');
+  if (statusIndicator) statusIndicator.textContent = text;
+  if (box) box.dataset.mode = mode;
+}
+
 export async function syncToCloudDatabase() {
   saveLocal();
 
-  const statusIndicator = document.getElementById('cloudStatusText');
   const stored = getStoredAccount();
   if (!stored?.sessionToken) {
     if (stored?.username) {
-      if (statusIndicator) statusIndicator.textContent = "D1: Войдите";
+      setCloudStatus('Войдите', 'wait');
       askRelogin();
-    } else if (statusIndicator) {
-      statusIndicator.textContent = "D1: Локально";
+    } else {
+      setCloudStatus('На устройстве', 'local');
     }
     return;
   }
-  if (statusIndicator) statusIndicator.textContent = "D1: Сохр...";
+  setCloudStatus('Сохранение…', 'save');
 
   const bodyStr = cloudBody();
 
@@ -201,7 +207,7 @@ export async function syncToCloudDatabase() {
 
     if (res.status === 401) {
       dropDeadSession();
-      if (statusIndicator) statusIndicator.textContent = "D1: Войдите";
+      setCloudStatus('Войдите', 'wait');
       return;
     }
 
@@ -211,17 +217,17 @@ export async function syncToCloudDatabase() {
         applySaveDataSafely(data.saveData);
         saveLocal();
       }
-      if (statusIndicator) statusIndicator.textContent = "D1: Выдача";
+      setCloudStatus('Обновление…', 'save');
       return;
     }
 
     if (res.ok) {
-      if (statusIndicator) statusIndicator.textContent = "D1: OK";
+      setCloudStatus('Сохранено', 'ok');
     } else {
-      if (statusIndicator) statusIndicator.textContent = "D1: Локально";
+      setCloudStatus('На устройстве', 'local');
     }
   } catch (err) {
-    if (statusIndicator) statusIndicator.textContent = "D1: Офлайн";
+    setCloudStatus('Нет сети', 'wait');
   }
 }
 
@@ -349,7 +355,7 @@ export async function loadFromCloudDatabaseOrLocal() {
       const data = await res.json();
       const cloudPayload = data.data || data.save_data;
       if (data?.parseError) {
-        if (statusIndicator) statusIndicator.textContent = "D1: Локально";
+        setCloudStatus('На устройстве', 'local');
       } else if (data && cloudPayload) {
         const parsed = typeof cloudPayload === 'string' ? JSON.parse(cloudPayload) : cloudPayload;
         const localParsed = readLocalSave();

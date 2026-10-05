@@ -4,7 +4,7 @@ import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { events } from '../core/events.js';
 import { getPhaseByIndex, getPhaseForForm, maxUnlockedForm } from '../progression/phases.data.js';
-import { flushCountsForBridge } from './transcendService.js';
+import { flushCountsForBridge, flushPaysPlunger, pairIsClosed } from './transcendService.js';
 
 function gateStatus(phase) {
   const currentStage = GAME.evoStage || 0;
@@ -72,6 +72,8 @@ export function getPrestigeRewardBreakdown() {
   const flushTalentBonus = 1 + (infFlush ? infFlush.level * 0.06 : 0);
 
   const totalGain = req.isMet ? Math.max(1, Math.round(pack * scytheMult * flushTalentBonus)) : 0;
+  const sealed = req.isMet && pairIsClosed(phaseId);
+  const plungerGain = req.isMet && flushPaysPlunger(phaseId) ? 1 : 0;
 
   return {
     ...req,
@@ -84,7 +86,9 @@ export function getPrestigeRewardBreakdown() {
     flushTalentBonus,
     totalGain,
     nextRollBiomassNeeded: 0,
-    echoGain: req.isMet ? 1 : 0
+    pairSealed: sealed,
+    plungerGain,
+    echoGain: req.isMet && !sealed ? 1 : 0
   };
 }
 
@@ -97,8 +101,14 @@ export function executePrestige(chosenArchetype = 'balanced') {
   if (!breakdown.isMet || breakdown.totalGain <= 0) return false;
 
   const phaseId = breakdown.echoPhase;
-  if (!GAME.phaseEcho || typeof GAME.phaseEcho !== 'object') GAME.phaseEcho = {};
-  GAME.phaseEcho[phaseId] = (Number(GAME.phaseEcho[phaseId]) || 0) + 1;
+  if (!breakdown.pairSealed) {
+    if (!GAME.phaseEcho || typeof GAME.phaseEcho !== 'object') GAME.phaseEcho = {};
+    GAME.phaseEcho[phaseId] = (Number(GAME.phaseEcho[phaseId]) || 0) + 1;
+  }
+  if (breakdown.plungerGain > 0) {
+    GAME.transcendPlungers = (GAME.transcendPlungers || 0) + breakdown.plungerGain;
+    GAME.pairPlungersFromFlushes = (GAME.pairPlungersFromFlushes || 0) + breakdown.plungerGain;
+  }
 
   GAME.prestigeRolls += breakdown.totalGain;
   GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + breakdown.totalGain;
