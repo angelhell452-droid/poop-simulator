@@ -1,22 +1,22 @@
-import { GAME } from '../core/state.js';
-import { EVOLUTIONS } from '../data/evolutions.data.js';
-import { formatNumber } from '../utils/numberFormatter.js';
-import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js';
-import { getAffordableEvoInfo } from '../economy/costs.js';
-import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js';
+import { GAME } from '../core/state.js?v=5.0.22';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.22';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.22';
+import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.22';
+import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.22';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
-import { liveCps } from '../core/gameLoop.js';
-import { saveLocal } from '../save/saveManager.js';
-import { updateFactoryButtons } from './factoryView.js';
+import { liveCps } from '../core/gameLoop.js?v=5.0.22';
+import { saveLocal } from '../save/saveManager.js?v=5.0.22';
+import { updateFactoryButtons } from './factoryView.js?v=5.0.22';
 import { updateTalentButtons } from './talentView.js';
 import { updateShopButtons } from './shopView.js';
-import { updateCasesButtons } from './casesView.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js';
-import { updateSmartAssistant } from './smartAssistantView.js';
+import { updateCasesButtons } from './casesView.js?v=5.0.22';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.22';
+import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.22';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js';
+import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.22';
 import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
-import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js';
+import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.22';
 import { showKnifeToast } from './characterInventoryView.js';
 import { getConfirmedVip } from '../economy/pace.js';
 
@@ -260,7 +260,7 @@ export function updateHUD() {
     if (skinTierEl) skinTierEl.textContent = `Тир ${skinInfo.tier}`;
     const skinHintEl = document.getElementById('poopSkinProgressHint');
     if (skinHintEl) {
-      if (skinInfo.nextAt >= 20000) {
+      if (skinInfo.nextAt >= 100000) {
         skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • облик за горизонтом`;
       } else {
         skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • след. облик на форме #${formatNumber(skinInfo.nextAt)}`;

@@ -1,9 +1,10 @@
-import { GAME } from '../core/state.js';
+import { GAME } from '../core/state.js?v=5.0.22';
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
-import { getClickPower, getEquippedKnife } from '../economy/production.js';
+import { getClickPower, getEquippedKnife } from '../economy/production.js?v=5.0.22';
 import { takeClickBudget } from './autoclickService.js';
 import { events } from '../core/events.js';
+import { add, gainBio, mul } from '../utils/big.js?v=5.0.22';
 
 export let pendingClicks = 0;
 
@@ -46,7 +47,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     critsCount = Math.round(expectedCrits + (Math.random() - 0.5) * variance);
     critsCount = Math.max(0, Math.min(clicksToProcess, critsCount));
     const regularClicks = clicksToProcess - critsCount;
-    totalEarned = regularClicks * basePower + critsCount * basePower * critMultiplier;
+    totalEarned = add(mul(regularClicks, basePower), mul(mul(critsCount, basePower), critMultiplier));
 
     const expectedSparkles = clicksToProcess * sparkleChance;
     sparklesEarned = Math.round(expectedSparkles + (Math.random() - 0.5) * Math.sqrt(Math.max(1, expectedSparkles)));
@@ -55,10 +56,10 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     for (let i = 0; i < clicksToProcess; i++) {
       const isCrit = Math.random() < critChance;
       if (isCrit) {
-        totalEarned += basePower * critMultiplier;
+        totalEarned = add(totalEarned, mul(basePower, critMultiplier));
         critsCount++;
       } else {
-        totalEarned += basePower;
+        totalEarned = add(totalEarned, basePower);
       }
       if (Math.random() < sparkleChance) {
         sparklesEarned++;
@@ -66,9 +67,9 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     }
   }
 
-  GAME.biomass += totalEarned;
-  GAME.allTimeBiomass += totalEarned;
-  GAME.cycleBiomass += totalEarned;
+  GAME.biomass = gainBio(GAME.biomass, totalEarned);
+  GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, totalEarned);
+  GAME.cycleBiomass = gainBio(GAME.cycleBiomass, totalEarned);
   GAME.totalClicks += clicksToProcess;
   GAME.sparkles += sparklesEarned;
 

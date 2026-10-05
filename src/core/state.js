@@ -28,6 +28,8 @@ export function getDefaultGameState() {
     phaseEcho: {},
     flushesThisCycle: 0,
     pairPlungersFromFlushes: 0,
+    horizonSparks: 0,
+    horizonUpgrades: { pace: 0, seal: 0 },
 
     evoStage: 0,
     peakForm: 1,

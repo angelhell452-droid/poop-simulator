@@ -1,5 +1,5 @@
-import { GAME } from '../core/state.js';
-import { getPhaseForForm, getPhaseForStage, PHASE_COUNT } from '../progression/phases.data.js';
+import { GAME } from '../core/state.js?v=5.0.22';
+import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.22';
 
 function echoCount(phaseId) {
   const bag = GAME.phaseEcho || {};
@@ -78,7 +78,7 @@ export function getRollsIncomeMult(previewPhase = 0, previewAdd = 0, atPhaseId =
  * Factories are tuned to it. Live gear above the knee is dampened.
  */
 export function expectedAccountMult(phaseId) {
-  const id = Math.min(PHASE_COUNT, Math.max(1, phaseId || 1));
+  const id = Math.min(CLASSIC_EPOCHS, Math.max(1, phaseId || 1));
   if (id <= 4) return 4 + (id - 1) * 2.5;
   return 11.5 * Math.pow(1.14, id - 4);
 }
@@ -90,7 +90,7 @@ export function expectedAccountMult(phaseId) {
  * Tuned so that run reaches form 20000 in about 77 hours. Epochs 1–10 stay put.
  */
 export function lateComboMult(phaseId, readiness) {
-  const phase = Math.max(1, phaseId || 1);
+  const phase = Math.min(CLASSIC_EPOCHS, Math.max(1, phaseId || 1));
   if (phase <= 10) return 1;
   const ready = Math.max(0, Math.min(1, Number(readiness) || 0));
   if (ready <= 0) return 1;

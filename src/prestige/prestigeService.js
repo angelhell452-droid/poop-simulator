@@ -1,10 +1,11 @@
-import { GAME } from '../core/state.js';
-import { FACTORIES } from '../data/factories.data.js';
+import { GAME } from '../core/state.js?v=5.0.22';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
 import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { events } from '../core/events.js';
-import { getPhaseByIndex, getPhaseForForm, maxUnlockedForm } from '../progression/phases.data.js';
-import { flushCountsForBridge, flushPaysPlunger, pairIsClosed } from './transcendService.js';
+import { getPhaseByIndex, getPhaseForForm, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.22';
+import { flushCountsForBridge, flushPaysPlunger, pairIsClosed } from './transcendService.js?v=5.0.22';
+import { gte } from '../utils/big.js?v=5.0.22';
 
 function gateStatus(phase) {
   const currentStage = GAME.evoStage || 0;
@@ -13,7 +14,7 @@ function gateStatus(phase) {
   const reqBiomass = phase.biomassGate ?? phase.ceiling * 0.1;
   return {
     meetsStage: currentForm >= phase.flushForm,
-    meetsBiomass: currentBiomass >= reqBiomass,
+    meetsBiomass: gte(currentBiomass, reqBiomass),
     reqForm: phase.flushForm,
     reqBiomass
   };

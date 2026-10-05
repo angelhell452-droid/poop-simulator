@@ -1,18 +1,18 @@
-import { GAME } from '../core/state.js';
+import { GAME } from '../core/state.js?v=5.0.22';
 import { KNIVES } from '../data/knives.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import {
   getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js';
-import { getKnifeShownBonuses } from '../economy/production.js';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.22';
+import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.22';
 import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.20';
-import { updateHUD } from './hudView.js';
+import { saveLocal } from '../save/saveManager.js?v=5.0.22';
+import { updateHUD } from './hudView.js?v=5.0.22';
 import { renderShop } from './shopView.js';
-import { checkAchievements } from '../systems/achievementsService.js';
-import { formatNumber } from '../utils/numberFormatter.js';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.22';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';

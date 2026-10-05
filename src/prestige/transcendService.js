@@ -1,8 +1,10 @@
-import { GAME } from '../core/state.js';
+import { GAME } from '../core/state.js?v=5.0.22';
 import { TALENTS } from '../data/talents.data.js';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
 import { events } from '../core/events.js';
-import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js';
+import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.22';
+import { gte, mul } from '../utils/big.js?v=5.0.22';
+import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.22';
 
 export const BRIDGE_FLUSHES_NEEDED = 2;
 
@@ -51,7 +53,7 @@ export function getTranscendRequirement() {
   const reqForm = bridge.flushForm;
   const reqStage = reqForm - 1;
   const reqPrestiges = flushesNeededForBridge();
-  const reqBiomass = bridge.ceiling * 0.1;
+  const reqBiomass = mul(bridge.ceiling, 0.1);
 
   const currentStage = GAME.evoStage || 0;
   const currentForm = currentStage + 1;
@@ -60,7 +62,7 @@ export function getTranscendRequirement() {
 
   const meetsStage = currentForm >= reqForm;
   const meetsPrestiges = currentPrestiges >= reqPrestiges;
-  const meetsBiomass = currentBiomass >= reqBiomass;
+  const meetsBiomass = gte(currentBiomass, reqBiomass);
   const isMet = meetsPrestiges && meetsStage && meetsBiomass;
 
   return {
@@ -130,6 +132,7 @@ export function executeTranscend() {
 
   GAME.transcendPlungers = (GAME.transcendPlungers || 0) + gain;
   GAME.totalTranscend = (GAME.totalTranscend || 0) + 1;
+  noteHorizonSpark(GAME.totalTranscend);
 
   const reached = (GAME.evoStage || 0) + 1;
   if (reached > (GAME.peakForm || 1)) GAME.peakForm = reached;

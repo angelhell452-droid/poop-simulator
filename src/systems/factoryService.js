@@ -1,7 +1,8 @@
-import { GAME } from '../core/state.js';
-import { FACTORIES } from '../data/factories.data.js';
-import { getAffordableFactoryInfo } from '../economy/costs.js';
+import { GAME } from '../core/state.js?v=5.0.22';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.22';
 import { events } from '../core/events.js';
+import { spendBio } from '../utils/big.js?v=5.0.22';
 
 export function buyFactory(facId) {
   const fac = FACTORIES.find(f => f.id === facId);
@@ -15,7 +16,7 @@ export function buyFactory(facId) {
   const info = getAffordableFactoryInfo(fac);
   if (!info.canBuy || info.count <= 0) return false;
 
-  GAME.biomass -= info.totalCost;
+  GAME.biomass = spendBio(GAME.biomass, info.totalCost);
   fac.count = (fac.count || 0) + info.count;
 
   events.emit('factory:purchased', { factory: fac, count: info.count });

@@ -1,7 +1,9 @@
-import { formatNumber } from '../utils/numberFormatter.js';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { bigPow10, div, mul } from '../utils/big.js?v=5.0.22';
 
-export const PHASE_COUNT = 40;
+export const PHASE_COUNT = 200;
 export const PHASE_FORMS = 500;
+export const CLASSIC_EPOCHS = 40;
 
 const BANDS = [
   'миллионы',
@@ -18,7 +20,9 @@ const BANDS = [
 
 export function phaseCeiling(phaseId) {
   const n = Math.min(PHASE_COUNT, Math.max(1, phaseId));
-  return 1e6 * Math.pow(1000, n - 1);
+  const raw = 1e6 * Math.pow(1000, n - 1);
+  if (Number.isFinite(raw)) return raw;
+  return bigPow10(6 + 3 * (n - 1));
 }
 
 export function getPhaseByIndex(phaseId) {
@@ -31,9 +35,9 @@ export function getPhaseByIndex(phaseId) {
     formStart,
     formEnd,
     ceiling,
-    floor: ceiling / 1000,
+    floor: div(ceiling, 1000),
     flushForm: id === 1 ? 80 : formStart + 199,
-    biomassGate: id === 1 ? 4000000 : ceiling * 0.08,
+    biomassGate: id === 1 ? 4000000 : mul(ceiling, 0.08),
     pair: Math.ceil(id / 2),
     transcend: id % 2 === 0,
     band: id <= BANDS.length ? BANDS[id - 1] : formatNumber(ceiling)

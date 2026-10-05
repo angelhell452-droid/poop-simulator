@@ -1,10 +1,11 @@
-import { GAME } from '../core/state.js';
-import { EVOLUTIONS, calcEvolutionCost } from '../data/evolutions.data.js';
+import { GAME } from '../core/state.js?v=5.0.22';
+import { EVOLUTIONS, calcEvolutionCost } from '../data/evolutions.data.js?v=5.0.22';
 import { TALENTS } from '../data/talents.data.js';
-import { getAsymptoticDiscountFactor } from '../economy/costs.js';
+import { getAsymptoticDiscountFactor } from '../economy/costs.js?v=5.0.22';
 import { events } from '../core/events.js';
 import { notePeakForm } from './unlocks.js';
-import { maxUnlockedStage } from './phases.data.js';
+import { maxUnlockedStage } from './phases.data.js?v=5.0.22';
+import { gte, isBig, mulFloor } from '../utils/big.js?v=5.0.22';
 
 export function effectiveFormCost(stage) {
   const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');
@@ -14,7 +15,7 @@ export function effectiveFormCost(stage) {
   const discs = [];
   if (stage >= 3999 && omegaDisc > 0) discs.push(omegaDisc);
   if (stage >= 5000 && unbreakRaw > 0) discs.push(unbreakRaw);
-  return Math.max(1, Math.floor(calcEvolutionCost(stage) * getAsymptoticDiscountFactor(discs, 0.90)));
+  return mulFloor(calcEvolutionCost(stage), getAsymptoticDiscountFactor(discs, 0.90));
 }
 
 function stageForEarnedBiomass(earned, cap) {
@@ -22,14 +23,16 @@ function stageForEarnedBiomass(earned, cap) {
   let hi = cap;
   while (lo < hi) {
     const mid = Math.ceil((lo + hi) / 2);
-    if (effectiveFormCost(mid) <= earned) lo = mid;
+    if (gte(earned, effectiveFormCost(mid))) lo = mid;
     else hi = mid - 1;
   }
   return lo;
 }
 
 export function formBiomassCredit() {
-  return Math.max(0, GAME.cycleBiomass || 0);
+  const earned = GAME.cycleBiomass || 0;
+  if (isBig(earned)) return earned;
+  return Math.max(0, earned);
 }
 
 export function syncEvolutionToBiomass() {
@@ -78,7 +81,7 @@ export function getPoopSkinInfo(stage, isGirly) {
       { id: 'girl_valkyrie', name: 'Священная Валькирия', tier: 7, rank: 'Валькирия', icon: '🪽', desc: 'Четыре пастельных ангельских крыла и нимб', nextAt: 11000 },
       { id: 'girl_empress', name: 'Звездная Императрица', tier: 8, rank: 'Императрица', icon: '👑', desc: 'Галактический шлейф и орбитальные планеты', nextAt: 14500 },
       { id: 'girl_love_goddess', name: 'Богиня Вселенской Любви', tier: 9, rank: 'Богиня', icon: '💖', desc: 'Радужные крылья бабочки и бесконечные сердца', nextAt: 18000 },
-      { id: 'girl_omega_queen', name: 'Омега-Королева Омниверса', tier: 10, rank: 'Абсолют', icon: '🌟', desc: 'Священная корона бесконечности и сверхсветовая аура', nextAt: 20000 }
+      { id: 'girl_omega_queen', name: 'Омега-Королева Омниверса', tier: 10, rank: 'Абсолют', icon: '🌟', desc: 'Священная корона бесконечности и сверхсветовая аура', nextAt: 100000 }
     ];
     return girlyTiers[tier - 1];
   } else {
@@ -92,7 +95,7 @@ export function getPoopSkinInfo(stage, isGirly) {
       { id: 'boy_shadow_monarch', name: 'Теневой Владыка Бездны', tier: 7, rank: 'Монарх Тьмы', icon: '🔮', desc: 'Фиолетовая теневая аура и горящие аметистовые очи', nextAt: 11000 },
       { id: 'boy_dragon_sovereign', name: 'Галактический Дракон', tier: 8, rank: 'Повелитель Драконов', icon: '🐉', desc: 'Драконьи рога, энергетическое ядро и пламя звезд', nextAt: 14500 },
       { id: 'boy_thunder_god', name: 'Титан Грома и Бури', tier: 9, rank: 'Бог Молний', icon: '⚡', desc: 'Корона из молний, электрические искры и синий разряд', nextAt: 18000 },
-      { id: 'boy_omega_god', name: 'Абсолютный Бог Омниверса', tier: 10, rank: 'Создатель Миров', icon: '🌌', desc: 'Вращающийся золотой нимб, 6 крыльев и вихрь творения', nextAt: 20000 }
+      { id: 'boy_omega_god', name: 'Абсолютный Бог Омниверса', tier: 10, rank: 'Создатель Миров', icon: '🌌', desc: 'Вращающийся золотой нимб, 6 крыльев и вихрь творения', nextAt: 100000 }
     ];
     return boysTiers[tier - 1];
   }

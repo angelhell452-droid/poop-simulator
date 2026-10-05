@@ -1,11 +1,11 @@
-import { GAME } from '../core/state.js';
+import { GAME } from '../core/state.js?v=5.0.22';
 import { TALENTS } from '../data/talents.data.js';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js';
-import { formatNumber } from '../utils/numberFormatter.js';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
 import { getAffordableTalentInfo, buyTalent } from '../systems/talentService.js';
-import { buyTranscendUpgrade } from '../prestige/transcendService.js';
-import { updateHUD } from './hudView.js';
-import { saveLocal } from '../save/saveManager.js';
+import { buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.22';
+import { updateHUD } from './hudView.js?v=5.0.22';
+import { saveLocal } from '../save/saveManager.js?v=5.0.22';
 import { getRollIcon } from '../utils/icons.js';
 import { isRelicSectionUnlocked, isTalentVisible } from '../progression/unlocks.js';
 

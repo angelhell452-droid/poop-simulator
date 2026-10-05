@@ -1,18 +1,19 @@
-import { GAME } from './state.js';
-import { getPassiveIncome } from '../economy/production.js';
-import { processBatchedClicks, addPendingClicks } from '../systems/clickService.js';
+import { GAME } from './state.js?v=5.0.22';
+import { getPassiveIncome } from '../economy/production.js?v=5.0.22';
+import { processBatchedClicks, addPendingClicks } from '../systems/clickService.js?v=5.0.22';
 import { decayNeeds, runAutoCare } from '../systems/petCareService.js';
-import { syncEvolutionToBiomass } from '../progression/evolutionService.js';
-import { checkAchievements } from '../systems/achievementsService.js';
+import { syncEvolutionToBiomass } from '../progression/evolutionService.js?v=5.0.22';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.22';
 import { renderAchievements } from '../ui/achievementsView.js';
-import { saveLocal } from '../save/saveManager.js';
+import { saveLocal } from '../save/saveManager.js?v=5.0.22';
 import { SHOP_ITEMS } from '../data/shop.data.js';
-import { FACTORIES } from '../data/factories.data.js';
-import { buyFactory } from '../systems/factoryService.js';
-import { getAffordableFactoryInfo } from '../economy/costs.js';
-import { triggerPetSquash } from '../ui/petCanvasView.js';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
+import { buyFactory } from '../systems/factoryService.js?v=5.0.22';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.22';
+import { triggerPetSquash } from '../ui/petCanvasView.js?v=5.0.22';
 import { getAutoclickCps } from '../systems/autoclickService.js';
 import { events } from './events.js';
+import { gainBio, mul } from '../utils/big.js?v=5.0.22';
 
 let lastTickTime = performance.now();
 let autoEvoTimer = 0;
@@ -36,10 +37,10 @@ export function gameEngineTick() {
 
   // 1. Passive Income with Delta-Time (dt)
   const passivePerSec = getPassiveIncome();
-  const passiveGained = passivePerSec * dt;
-  GAME.biomass += passiveGained;
-  GAME.allTimeBiomass += passiveGained;
-  GAME.cycleBiomass += passiveGained;
+  const passiveGained = mul(passivePerSec, dt);
+  GAME.biomass = gainBio(GAME.biomass, passiveGained);
+  GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, passiveGained);
+  GAME.cycleBiomass = gainBio(GAME.cycleBiomass, passiveGained);
 
   // 2. High-Speed Autoclicker Engine
   // Uses a fractional accumulator so we add exactly 1 click at a time,

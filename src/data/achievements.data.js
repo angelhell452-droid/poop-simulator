@@ -1,4 +1,4 @@
-import { formatNumber } from '../utils/numberFormatter.js';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
 
 export function generateAchievements() {
   const list = [];
@@ -49,14 +49,22 @@ export function generateAchievements() {
     { form: 12500, reward: 18000, rolls: 8 },
     { form: 15000, reward: 22000, rolls: 8 },
     { form: 17500, reward: 26000, rolls: 10 },
-    { form: 20000, reward: 30000, rolls: 12 }
+    { form: 20000, reward: 30000, rolls: 12 },
+    { form: 30000, reward: 36000, rolls: 14 },
+    { form: 40000, reward: 42000, rolls: 16 },
+    { form: 50000, reward: 48000, rolls: 18 },
+    { form: 60000, reward: 54000, rolls: 20 },
+    { form: 70000, reward: 60000, rolls: 22 },
+    { form: 80000, reward: 66000, rolls: 24 },
+    { form: 90000, reward: 72000, rolls: 26 },
+    { form: 100000, reward: 80000, rolls: 30 }
   ];
   achEvoGoals.forEach((e) => {
     list.push({
       id: `ach_e_${e.form}`,
-      title: e.form >= 20000 ? 'Эволюция: эпоха без подписи' : `Эволюция: Форма ${formatNumber(e.form)}`,
-      desc: e.form >= 20000 ? 'Дойти до горизонта, который игра не подписывает' : `Достичь ${formatNumber(e.form)}-й формы`,
-      concealTarget: e.form >= 20000,
+      title: e.form >= 100000 ? 'Эволюция: эпоха без подписи' : `Эволюция: Форма ${formatNumber(e.form)}`,
+      desc: e.form >= 100000 ? 'Дойти до горизонта, который игра не подписывает' : `Достичь ${formatNumber(e.form)}-й формы`,
+      concealTarget: e.form >= 100000,
       target: e.form - 1,
       type: 'evo',
       reward: e.reward,

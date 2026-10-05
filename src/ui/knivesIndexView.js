@@ -1,17 +1,17 @@
-import { GAME } from '../core/state.js';
+import { GAME } from '../core/state.js?v=5.0.22';
 import { KNIVES } from '../data/knives.data.js';
 import { WEAPON_CASES } from '../data/cases.data.js';
-import { FACTORIES } from '../data/factories.data.js';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
 import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js';
 import { TALENTS } from '../data/talents.data.js';
 import { getKnifeStar, getKnifeSharpenCost, sharpenKnife, getHatLevel } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js';
-import { updateHUD } from './hudView.js';
-import { renderCasesSystem } from './casesView.js';
-import { formatNumber } from '../utils/numberFormatter.js';
+import { saveLocal } from '../save/saveManager.js?v=5.0.22';
+import { updateHUD } from './hudView.js?v=5.0.22';
+import { renderCasesSystem } from './casesView.js?v=5.0.22';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { getKnifeShownBonuses } from '../economy/production.js';
+import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.22';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js';
 
 // Быстрый поиск кейса для ножа

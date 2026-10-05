@@ -1,15 +1,17 @@
-import { GAME } from '../core/state.js';
-import { EVOLUTIONS } from '../data/evolutions.data.js';
-import { FACTORIES } from '../data/factories.data.js';
+import { GAME } from '../core/state.js?v=5.0.22';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.22';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
 import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
-import { formatNumber } from '../utils/numberFormatter.js';
-import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.22';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage } from '../progression/phases.data.js';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.22';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
 import { findBodySkin } from '../data/skins.data.js';
+import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.22';
+import { horizonIncomeMult } from './horizon.js?v=5.0.22';
 
 export function getEquippedBodySkin() {
   const skin = findBodySkin(GAME.equippedSkin);
@@ -179,7 +181,7 @@ function describeFactory(fac, idx, count) {
   const highTier = fac.tier === 'late' || fac.tier === 'endgame' || fac.tier === 'singularity';
   const core = (coreOn && highTier) ? 1.5 : 1;
   const milestone = milestoneMult(count);
-  const raw = count * fac.baseCps * milestone * knife * quantum * core;
+  const raw = mul(mul(mul(count, fac.baseCps), milestone * knife * quantum * core), 1);
   return { raw, milestone, knife, quantum, core, count, perCopy: fac.baseCps };
 }
 
@@ -243,12 +245,13 @@ function passiveGlobalLines() {
   pushAboveOne(lines, 'Собранный билд', late);
   pushAboveOne(lines, 'Темп игры', INCOME_PACE);
   pushAboveOne(lines, 'VIP', getVipIncomeMult());
+  pushAboveOne(lines, 'Горизонт', horizonIncomeMult());
 
   const product = turboMult * goldRushMult * overclockMult * styles.butterfly
     * crystalMult * evo.mult * gearMult * softRollsMult * cosmicMult * omniRelicMult
     * facOverdriveMult * cleanBuff * archMult * evoBlessingMult * omniWealthMult
     * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult * idealMult * late
-    * getIncomePace();
+    * getIncomePace() * horizonIncomeMult();
   return { lines, gearBits, product, gearRaw, gearMult };
 }
 
@@ -293,7 +296,7 @@ function clickParts() {
   const gearRaw = rollsMult * plungersMult * knifeClickMult * hatClickBoost * getSkinClickMult();
   const gearMult = dampenGearMult(gearRaw, getPhaseForStage(GAME.evoStage).id);
   const late = getLateComboMult();
-  const product = evo.mult * gearMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late * getIncomePace();
+  const product = evo.mult * gearMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late * getIncomePace() * horizonIncomeMult();
   const syncRate = talentLevel('quantum_mastery') * 0.004 + (SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned ? 0.02 : 0);
 
   const gearBits = [];
@@ -324,6 +327,7 @@ function clickParts() {
   pushAboveOne(lines, 'Собранный билд', late);
   pushAboveOne(lines, 'Темп игры', INCOME_PACE);
   pushAboveOne(lines, 'VIP', getVipIncomeMult());
+  pushAboveOne(lines, 'Горизонт', horizonIncomeMult());
   return { lines, gearBits, product, syncRate, gearRaw, gearMult };
 }
 
@@ -345,8 +349,9 @@ export function getClickPower() {
   const parts = clickParts();
   let basePower = parts.product;
   if (parts.syncRate > 0) {
-    basePower += getPassiveIncome() * parts.syncRate;
+    basePower = add(basePower, mul(getPassiveIncome(), parts.syncRate));
   }
+  if (isBig(basePower)) return basePower;
   return Math.max(1, basePower);
 }
 
@@ -354,7 +359,7 @@ export function getClickBreakdown() {
   const parts = clickParts();
   const rows = [{ name: 'База клика', text: '1' }, ...multRows(parts)];
   if (parts.syncRate > 0) {
-    rows.push({ name: 'Доля дохода заводов', text: `+${formatNumber(getPassiveIncome() * parts.syncRate)}` });
+    rows.push({ name: 'Доля дохода заводов', text: `+${formatNumber(mul(getPassiveIncome(), parts.syncRate))}` });
   }
   const critTalent = TALENTS.find(t => t.id === 'crit_master');
   const luckLvl = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
@@ -377,11 +382,12 @@ export function getClickBreakdown() {
 export function getPassiveIncome() {
   let base = 0;
   FACTORIES.forEach((fac, idx) => {
-    base += describeFactory(fac, idx, fac.count || 0).raw;
+    base = add(base, describeFactory(fac, idx, fac.count || 0).raw);
   });
   const { product } = passiveGlobalLines();
-  const finalGPS = Math.max(0, Math.round(base * product));
-  if (finalGPS > (GAME.currentRunPeakGPS || 0)) {
+  const scaled = mul(base, product);
+  const finalGPS = isBig(scaled) ? scaled : Math.max(0, Math.round(scaled));
+  if (cmp(finalGPS, GAME.currentRunPeakGPS || 0) > 0) {
     GAME.currentRunPeakGPS = finalGPS;
   }
   return finalGPS;
@@ -394,7 +400,7 @@ export function getPassiveBreakdown() {
     const count = fac.count || 0;
     if (!count) return;
     const stack = describeFactory(fac, idx, count);
-    rawSum += stack.raw;
+    rawSum = add(rawSum, stack.raw);
     const extra = stack.milestone > 1.001 ? ` · веха x${formatNumber(stack.milestone)}` : '';
     rows.push({ name: `${fac.icon} ${fac.name} ×${formatNumber(count)}`, text: `${formatNumber(stack.raw)}${extra}` });
   });

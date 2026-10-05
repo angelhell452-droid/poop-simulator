@@ -1,16 +1,17 @@
-import { GAME } from '../core/state.js';
-import { getEquippedKnife } from '../economy/production.js';
+import { GAME } from '../core/state.js?v=5.0.22';
+import { getEquippedKnife } from '../economy/production.js?v=5.0.22';
 
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js';
-import { formatNumber } from '../utils/numberFormatter.js';
-import { checkAchievements } from '../systems/achievementsService.js';
-import { updateHUD } from './hudView.js';
-import { saveLocal } from '../save/saveManager.js';
-import { requestCloudSync } from '../save/cloudSync.js';
+import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.22';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.22';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.22';
+import { updateHUD } from './hudView.js?v=5.0.22';
+import { saveLocal } from '../save/saveManager.js?v=5.0.22';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.22';
 import { events } from '../core/events.js';
-import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js';
+import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.22';
 import { KNIVES } from '../data/knives.data.js';
 import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.20';
 
@@ -830,7 +831,7 @@ function visibleArtIds() {
   const body = equippedBodyArt(isGirly);
   const look = body ? body.look : (isGirly ? girlLook : boyLook);
   const prefix = body ? body.key : (isGirly ? 'girl' : 'boy');
-  const epoch = Math.min(39, Math.max(0, Math.floor((GAME.evoStage || 0) / 500)));
+  const epoch = Math.max(0, Math.floor((GAME.evoStage || 0) / 500)) % 40;
   const hat = clayHats[GAME.equippedHat];
   const knife = getEquippedKnife();
   return {
@@ -1139,7 +1140,7 @@ function renderPetLoop(time) {
     ctx.imageSmoothingQuality = 'high';
   const isGirly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
 
-  const epochIndex = Math.floor((GAME.evoStage || 0) / 500);
+  const epochIndex = Math.max(0, Math.floor((GAME.evoStage || 0) / 500)) % 40;
   const epochBg = epochBackgrounds[epochIndex];
 
   // Painted epoch scene. Until the picture arrives, the canvas stays the garden color.
@@ -1360,10 +1361,10 @@ export function catchGoldenMeteor() {
     }
     label = `⚡ ЗВЕЗДА: Турбо x${formatNumber(getTurboClickMult())} на 12с!`;
   } else if (roll < 0.70) {
-    const burst = Math.max(2500 * getClickPower(), getPassiveIncome() * 1200) * lootMult;
-    GAME.biomass += burst;
-    GAME.allTimeBiomass += burst;
-    GAME.cycleBiomass += burst;
+    const burst = mul(cmp(mul(2500, getClickPower()), mul(getPassiveIncome(), 1200)) >= 0 ? mul(2500, getClickPower()) : mul(getPassiveIncome(), 1200), lootMult);
+    GAME.biomass = gainBio(GAME.biomass, burst);
+    GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, burst);
+    GAME.cycleBiomass = gainBio(GAME.cycleBiomass, burst);
     label = `💰 ЗОЛОТОЙ ВЗРЫВ: +${formatNumber(burst)} 💨!`;
   } else if (roll < 0.90) {
     const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);

@@ -1,10 +1,10 @@
-import { GAME } from '../core/state.js';
+import { GAME } from '../core/state.js?v=5.0.22';
 import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js';
-import { formatNumber } from '../utils/numberFormatter.js';
-import { saveLocal } from '../save/saveManager.js';
-import { updateHUD } from './hudView.js';
-import { checkAchievements } from '../systems/achievementsService.js';
-import { requestCloudSync } from '../save/cloudSync.js';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { saveLocal } from '../save/saveManager.js?v=5.0.22';
+import { updateHUD } from './hudView.js?v=5.0.22';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.22';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.22';
 import { openCharacterInventoryModal } from './characterInventoryView.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
 import { isBoutiqueUnlocked, isShopOfferUnlocked, peakForm } from '../progression/unlocks.js';

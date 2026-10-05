@@ -1,17 +1,17 @@
-import { GAME } from '../core/state.js';
+import { GAME } from '../core/state.js?v=5.0.22';
 import { WEAPON_CASES } from '../data/cases.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { TALENTS } from '../data/talents.data.js';
-import { formatNumber } from '../utils/numberFormatter.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.22';
 import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js';
-import { requestCloudSync } from '../save/cloudSync.js';
-import { updateHUD } from './hudView.js';
+import { saveLocal } from '../save/saveManager.js?v=5.0.22';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.22';
+import { updateHUD } from './hudView.js?v=5.0.22';
 import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getKnifeShownBonuses } from '../economy/production.js';
+import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.22';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js';
 import { isCasesUnlocked } from '../progression/unlocks.js';
 
@@ -702,7 +702,7 @@ export function renderCasesSystem() {
   if (skinTierEl) skinTierEl.textContent = `Тир ${skinInfo.tier}`;
   const skinHintEl = document.getElementById('poopSkinProgressHint');
   if (skinHintEl) {
-    if (skinInfo.nextAt >= 20000) {
+    if (skinInfo.nextAt >= 100000) {
       skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • облик за горизонтом`;
     } else {
       skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • след. облик на форме #${formatNumber(skinInfo.nextAt)}`;

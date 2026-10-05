@@ -1,13 +1,35 @@
-import { GAME } from '../core/state.js';
-import { FACTORIES } from '../data/factories.data.js';
-import { formatNumber } from '../utils/numberFormatter.js';
-import { getAffordableFactoryInfo } from '../economy/costs.js';
-import { buyFactory } from '../systems/factoryService.js';
-import { updateHUD, openRateBreakdown } from './hudView.js';
-import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production.js';
-import { saveLocal } from '../save/saveManager.js';
+import { GAME } from '../core/state.js?v=5.0.22';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.22';
+import { buyFactory } from '../systems/factoryService.js?v=5.0.22';
+import { updateHUD, openRateBreakdown } from './hudView.js?v=5.0.22';
+import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production.js?v=5.0.22';
+import { saveLocal } from '../save/saveManager.js?v=5.0.22';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.22';
+import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.0.22';
+import { mul } from '../utils/big.js?v=5.0.22';
 
-let activeFactoryTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
+let activeFactoryTier = 'all'; // 'all' | '1' | '2' | '3' | '4' | '5'
+
+function horizonEpochWindow() {
+  const epoch = getPhaseForStage(GAME.evoStage || 0).id;
+  if (epoch < 41) return null;
+  const pairStart = epoch % 2 === 0 ? epoch - 1 : epoch;
+  return { lo: Math.max(41, pairStart - 2), hi: pairStart + 1 };
+}
+
+function factoryVisible(fac) {
+  if ((fac.tierNumber || 1) !== 5) {
+    if (activeFactoryTier === '5') return false;
+    if (activeFactoryTier === 'all') return true;
+    return fac.tierNumber === Number(activeFactoryTier);
+  }
+  const window = horizonEpochWindow();
+  if (!window) return false;
+  const inWindow = fac.epoch >= window.lo && fac.epoch <= window.hi;
+  return (activeFactoryTier === 'all' || activeFactoryTier === '5') && inWindow;
+}
 let paintedFactoryStage = -1;
 
 export function initFactoryListeners() {
@@ -45,15 +67,43 @@ export function renderFactories() {
   let unownedCount = 0;
   const buyMultiplier = GAME.buyMultiplier || 1;
 
-  const visibleFactories = activeFactoryTier === 'all'
-    ? FACTORIES
-    : FACTORIES.filter(fac => fac.tierNumber === Number(activeFactoryTier));
+  const shop = document.getElementById('horizonShop');
+  if (shop) {
+    if (activeFactoryTier === '5') {
+      const sparks = horizonSparkCount();
+      const rows = horizonOpen()
+        ? horizonShopRows().map((row) => {
+          const disabled = row.locked || row.owned || sparks < row.cost;
+          return `<button type="button" class="horizon-buy w-full text-left px-3 py-2 rounded-full border border-emerald-700/50 ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:border-emerald-300'}" data-horizon="${row.id}" ${disabled ? 'disabled' : ''}><b>${row.name}</b> — ${row.text}<br><span class="text-amber-200">${row.label}</span></button>`;
+        }).join('')
+        : '';
+      const closed = horizonEpochWindow()
+        ? ''
+        : `<div class="px-3 py-2 rounded-full bg-stone-900 border border-stone-700 text-stone-300">Заводы горизонта открываются с формы ${formatNumber(20000)}.</div>`;
+      shop.innerHTML = `<div class="px-3 py-2 rounded-full bg-stone-900 border border-emerald-700/40 text-emerald-100">Искры горизонта: ${formatNumber(sparks)}. Тратятся на форме ${formatNumber(100000)}.</div>${closed}${rows}`;
+      shop.classList.remove('hidden');
+      shop.querySelectorAll('.horizon-buy').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (buyHorizonUpgrade(btn.dataset.horizon)) {
+            renderFactories();
+            updateHUD();
+            saveLocal();
+          }
+        });
+      });
+    } else {
+      shop.innerHTML = '';
+      shop.classList.add('hidden');
+    }
+  }
+
+  const visibleFactories = FACTORIES.filter(factoryVisible);
 
   visibleFactories.forEach((fac) => {
     const currentCount = fac.count || 0;
     const isLocked = fac.reqStage !== undefined && (GAME.evoStage || 0) < fac.reqStage;
 
-    if (currentCount === 0 && activeFactoryTier === 'all') {
+    if (currentCount === 0 && activeFactoryTier === 'all' && fac.tierNumber !== 5) {
       unownedCount++;
       // Show up to 2 unowned upcoming tiers, plus the next locked goal
       if (unownedCount > 3) return;
@@ -107,6 +157,7 @@ export function renderFactories() {
     if (fac.tierNumber === 2) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">⚡ Т2</span>`;
     else if (fac.tierNumber === 3) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-purple-950/80 text-purple-300 border border-purple-500/40">🔮 Т3</span>`;
     else if (fac.tierNumber === 4) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-amber-950/80 text-yellow-300 border border-yellow-500/50 shadow-[0_0_8px_rgba(234,179,8,0.3)]">🌌 Т4</span>`;
+    else if (fac.tierNumber === 5) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-emerald-950/80 text-emerald-200 border border-emerald-400/50">🌅 Горизонт</span>`;
 
     const row = document.createElement('div');
     row.className = `factory-card p-3 rounded-2xl bg-stone-900 border ${isLocked ? 'border-stone-800/60 opacity-75' : 'border-stone-800 hover:border-amber-600'} transition flex flex-col gap-2 shadow-sm`;
@@ -122,7 +173,7 @@ export function renderFactories() {
               ${isLocked ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-red-950/80 text-red-300 border border-red-700/50 font-bold">Форма #${fac.reqStage + 1}</span>` : ''}
             </div>
             <div class="flex items-center gap-2 text-[11px] font-game flex-wrap">
-              <button type="button" class="factory-income-btn text-emerald-400 underline decoration-dotted decoration-emerald-700" data-id="${fac.id}" title="Сырой доход. Нажмите, чтобы увидеть множители">+${formatNumber(fac.baseCps * (currentCount || 1))} /сек</button>
+              <button type="button" class="factory-income-btn text-emerald-400 underline decoration-dotted decoration-emerald-700" data-id="${fac.id}" title="Сырой доход. Нажмите, чтобы увидеть множители">+${formatNumber(mul(fac.baseCps, currentCount || 1))} /сек</button>
               <span class="text-stone-600">•</span>
               <span class="text-stone-400">1 шт: <b class="text-amber-300 font-mono">${formatNumber(facInfo.singleCost)} 💨</b></span>
             </div>

@@ -1,16 +1,24 @@
-import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js';
-import { FACTORIES } from '../data/factories.data.js';
+import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.0.22';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
 import { TALENTS } from '../data/talents.data.js';
-import { ACHIEVEMENTS } from '../data/achievements.data.js';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.22';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.0.20';
-import { EVOLUTIONS } from '../data/evolutions.data.js';
-import { migrateSaveData } from './migrations.js';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.22';
+import { migrateSaveData } from './migrations.js?v=5.0.22';
 import { clampAutoclickerState } from '../systems/autoclickService.js';
 import { notePeakForm } from '../progression/unlocks.js';
-import { maxUnlockedStage } from '../progression/phases.data.js';
+import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.22';
 import { events } from '../core/events.js';
+import { isBig, rehydrateBig } from '../utils/big.js?v=5.0.22';
+
+function keepBio(value) {
+  const n = rehydrateBig(value);
+  if (isBig(n)) return n;
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return n;
+}
 
 export const STORAGE_KEY = 'PoopSim_Pro_Save';
 export const BACKUP_KEY = 'PoopSim_Pro_Backup';
@@ -38,9 +46,9 @@ export function buildSavePayload() {
 
 export function saveLocal() {
   try {
-    if (!isFinite(GAME.biomass) || GAME.biomass < 0 || GAME.biomass > 1e308) GAME.biomass = 0;
-    if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e308) GAME.cycleBiomass = 0;
-    if (!isFinite(GAME.allTimeBiomass) || GAME.allTimeBiomass < 0 || GAME.allTimeBiomass > 1e308) GAME.allTimeBiomass = 0;
+    GAME.biomass = keepBio(GAME.biomass);
+    GAME.cycleBiomass = keepBio(GAME.cycleBiomass);
+    GAME.allTimeBiomass = keepBio(GAME.allTimeBiomass);
     
     const payload = buildSavePayload();
     const json = JSON.stringify(payload);
@@ -102,6 +110,8 @@ function wipeRuntimeCatalogs() {
   GAME.transcendPlungers = 0;
   GAME.totalTranscend = 0;
   GAME.flushesThisCycle = 0;
+  GAME.horizonSparks = 0;
+  GAME.horizonUpgrades = { pace: 0, seal: 0 };
   GAME.evoStage = 0;
   GAME.hunger = 100;
   GAME.clean = 100;
@@ -153,9 +163,13 @@ export function applySaveDataSafely(rawData) {
   }
 
   // Safety sanitisers
-  if (!isFinite(GAME.biomass) || GAME.biomass < 0 || GAME.biomass > 1e308) GAME.biomass = 0;
-  if (!isFinite(GAME.allTimeBiomass) || GAME.allTimeBiomass < 0 || GAME.allTimeBiomass > 1e308) GAME.allTimeBiomass = 0;
-  if (!isFinite(GAME.cycleBiomass) || GAME.cycleBiomass < 0 || GAME.cycleBiomass > 1e308) GAME.cycleBiomass = 0;
+  GAME.biomass = keepBio(GAME.biomass);
+  GAME.allTimeBiomass = keepBio(GAME.allTimeBiomass);
+  GAME.cycleBiomass = keepBio(GAME.cycleBiomass);
+  GAME.horizonSparks = Math.max(0, Math.floor(Number(GAME.horizonSparks) || 0));
+  if (!GAME.horizonUpgrades || typeof GAME.horizonUpgrades !== 'object') GAME.horizonUpgrades = { pace: 0, seal: 0 };
+  GAME.horizonUpgrades.pace = Math.max(0, Math.min(5, Math.floor(Number(GAME.horizonUpgrades.pace) || 0)));
+  GAME.horizonUpgrades.seal = GAME.horizonUpgrades.seal ? 1 : 0;
   if (!isFinite(GAME.prestigeRolls) || GAME.prestigeRolls < 0 || GAME.prestigeRolls > 1e308) GAME.prestigeRolls = 0;
   if (!Number.isFinite(GAME.transcendCycleRolls) || GAME.transcendCycleRolls < 0 || GAME.transcendCycleRolls > 1e308) {
     GAME.transcendCycleRolls = GAME.prestigeRolls || 0;

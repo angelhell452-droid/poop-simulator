@@ -2,8 +2,8 @@
 
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
-import { FACTORIES } from '../data/factories.data.js';
-import { getPhaseForForm } from '../progression/phases.data.js';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.22';
 
 export function migrateSaveData(rawSave) {
   if (!rawSave) return null;
@@ -29,7 +29,7 @@ export function migrateSaveData(rawSave) {
         totalPrestiges: legacy.totalPrestiges || 0,
         transcendPlungers: legacy.transcendPlungers || 0,
         totalTranscend: legacy.totalTranscend || 0,
-        evoStage: Math.min(19999, Math.max(0, legacy.evoStage || 0)),
+        evoStage: Math.min(99999, Math.max(0, legacy.evoStage || 0)),
         archetype: legacy.archetype || 'balanced',
         hunger: legacy.hunger ?? 100,
         clean: legacy.clean ?? 100,

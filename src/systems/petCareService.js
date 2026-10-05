@@ -1,4 +1,4 @@
-import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.js';
+import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.js?v=5.0.22';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { events } from '../core/events.js';
 

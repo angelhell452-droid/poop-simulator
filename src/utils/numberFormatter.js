@@ -1,5 +1,13 @@
-// Safe number formatting supporting up to 1.79e308 (Break Infinity)
+import { isBig, log10Of } from './big.js?v=5.0.22';
+
+// Ordinary numbers stay as they were. Bigger values print as 1.23e603.
 export function formatNumber(num, decimals = 2) {
+  if (isBig(num)) {
+    const exp = Math.floor(log10Of(num));
+    const mantissa = Math.pow(10, log10Of(num) - exp);
+    const shown = mantissa >= 100 ? mantissa.toFixed(0) : (mantissa >= 10 ? mantissa.toFixed(1) : mantissa.toFixed(decimals));
+    return `${Number(shown)}e${exp}`;
+  }
   if (num === null || num === undefined || isNaN(num)) return '0';
   if (!isFinite(num) || num >= 1.7976931348623157e308) return '1.79e308 (MAX)';
   if (num === 0) return '0';

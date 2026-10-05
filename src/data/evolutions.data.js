@@ -1,5 +1,6 @@
-import { getPhaseForStage, PHASE_FORMS } from '../progression/phases.data.js';
-import { formatNumber } from '../utils/numberFormatter.js';
+import { getPhaseForStage, PHASE_FORMS, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.22';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { isBig, mul } from '../utils/big.js?v=5.0.22';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
@@ -56,11 +57,12 @@ export function calcEvolutionCost(i) {
   if (i <= 0) return 0;
   const phase = getPhaseForStage(i);
   const local = (i - (phase.formStart - 1)) / PHASE_FORMS;
-  const cost = phase.floor * Math.pow(1000, Math.min(1, Math.max(0, local)));
+  const climb = Math.pow(1000, Math.min(1, Math.max(0, local)));
   const stretch = Math.pow(i + 1, 1.25);
-  const stretched = cost * stretch;
-  if (!Number.isFinite(stretched)) return phase.ceiling * stretch;
-  return Math.max(1, Math.floor(stretched));
+  const cost = mul(phase.floor, climb);
+  const stretched = mul(cost, stretch);
+  if (!isBig(stretched) && Number.isFinite(stretched)) return Math.max(1, Math.floor(stretched));
+  return stretched;
 }
 
 export function calcEvolutionMult(i) {
@@ -74,14 +76,22 @@ export function calcEvolutionMult(i) {
   return atEndOfFourth * Math.pow(1.25, (phase.id - 5) + t);
 }
 
+function lookForIndex(i) {
+  const epochIdx = Math.floor(i / PHASE_FORMS);
+  if (epochIdx < EPOCH_NAMES.length) return EPOCH_NAMES[epochIdx];
+  const base = EPOCH_NAMES[epochIdx % EPOCH_NAMES.length];
+  const ent = ENTITIES[epochIdx % ENTITIES.length];
+  return { ...base, epoch: `Горизонт: ${ent}` };
+}
+
 export function generateEvolutions() {
   const list = [];
-  for (let i = 0; i < 20000; i++) {
-    const epochIdx = Math.min(EPOCH_NAMES.length - 1, Math.floor(i / 500));
-    const ep = EPOCH_NAMES[epochIdx];
+  const last = PHASE_COUNT * PHASE_FORMS;
+  for (let i = 0; i < last; i++) {
+    const ep = lookForIndex(i);
     const ent = ENTITIES[(i * 3 + Math.floor(i / 7)) % ENTITIES.length];
     const tier = (i % 100) + 1;
-    const name = (i === 19999)
+    const name = (i === last - 1)
       ? 'Омега'
       : (i % 500 === 0 ? 'Владыка' : `${ent} ${tier}`);
 

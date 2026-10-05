@@ -1,8 +1,9 @@
-import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js';
-import { ACHIEVEMENTS } from '../data/achievements.data.js';
-import { FACTORIES } from '../data/factories.data.js';
+import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.22';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.22';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { events } from '../core/events.js';
+import { gte } from '../utils/big.js?v=5.0.22';
 
 export function checkAchievements() {
   const completed = [];
@@ -12,7 +13,7 @@ export function checkAchievements() {
     let met = false;
     if (ach.type === 'clicks' && GAME.totalClicks >= ach.target) met = true;
     if (ach.type === 'evo' && GAME.evoStage >= ach.target) met = true;
-    if (ach.type === 'allBiomass' && GAME.allTimeBiomass >= ach.target) met = true;
+    if (ach.type === 'allBiomass' && gte(GAME.allTimeBiomass, ach.target)) met = true;
     if (ach.type === 'feed' && feedCount >= ach.target) met = true;
     if (ach.type === 'wash' && washCount >= ach.target) met = true;
     if (ach.type === 'knives' && (GAME.unlockedKnives || []).length >= ach.target) met = true;

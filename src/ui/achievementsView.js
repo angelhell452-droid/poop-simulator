@@ -1,8 +1,8 @@
-import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js';
-import { ACHIEVEMENTS } from '../data/achievements.data.js';
-import { FACTORIES } from '../data/factories.data.js';
+import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.22';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.22';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
 import { SHOP_ITEMS } from '../data/shop.data.js';
-import { formatNumber } from '../utils/numberFormatter.js';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
 
 export function renderAchievements() {
   const container = document.getElementById('achievementsContainer');

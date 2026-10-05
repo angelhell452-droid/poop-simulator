@@ -1,7 +1,12 @@
-import { GAME } from '../core/state.js';
+import { GAME } from '../core/state.js?v=5.0.22';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.20';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.22';
 import { setConfirmedVip } from '../economy/pace.js';
+import { cmp } from '../utils/big.js?v=5.0.22';
+
+function cmpBio(a, b) {
+  return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
+}
 
 export const CLOUD_SAVE_ENDPOINT = '/api/cloud-save';
 export const LEGACY_SAVE_ENDPOINT = '/.netlify/functions/cloud-save';
@@ -152,9 +157,7 @@ function localIsAhead(localParsed, cloudParsed) {
   const localCopies = factoryCopies(localParsed);
   const cloudCopies = factoryCopies(cloudParsed);
   if (localCopies !== cloudCopies) return localCopies > cloudCopies;
-  const localBio = Number(localGame.allTimeBiomass) || 0;
-  const cloudBio = Number(cloudGame.allTimeBiomass) || 0;
-  return localBio > cloudBio;
+  return cmpBio(localGame.allTimeBiomass, cloudGame.allTimeBiomass) > 0;
 }
 
 export function flushCloudSave() {

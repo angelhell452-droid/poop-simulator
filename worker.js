@@ -154,7 +154,7 @@ async function handleCloudSave(req, env) {
         if (body.saveData) {
           const sData = body.saveData;
           const stage = Number(sData?.game?.evoStage !== undefined ? sData.game.evoStage + 1 : sData?.game?.stage) || 1;
-          const biomass = Number(sData?.game?.allTimeBiomass ?? sData?.game?.biomass) || 0;
+          const biomass = storedBiomass(sData?.game?.allTimeBiomass ?? sData?.game?.biomass);
           const sparkles = Number(sData?.game?.sparkles) || 0;
           const prestigeCurrency = Number(sData?.game?.prestigeRolls ?? sData?.game?.prestigeCurrency) || 0;
           const jsonStr = typeof sData === "string" ? sData : JSON.stringify(sData);
@@ -265,7 +265,7 @@ async function handleCloudSave(req, env) {
       }
 
       const stage = Number(saveData?.game?.evoStage !== undefined ? saveData.game.evoStage + 1 : saveData?.game?.stage) || 1;
-      const biomass = Number(saveData?.game?.allTimeBiomass ?? saveData?.game?.biomass) || 0;
+      const biomass = storedBiomass(saveData?.game?.allTimeBiomass ?? saveData?.game?.biomass);
       const sparkles = Number(saveData?.game?.sparkles) || 0;
       const prestigeCurrency = Number(saveData?.game?.prestigeRolls ?? saveData?.game?.prestigeCurrency) || 0;
       const name = await displayName(env.DB, playerId, playerName);
@@ -402,6 +402,18 @@ async function handleCloudSave(req, env) {
       { status: 500, headers }
     );
   }
+}
+
+function storedBiomass(value) {
+  if (value && typeof value === "object" && value.__big === true && Number.isFinite(Number(value.e))) {
+    const exp = Math.min(300, Math.max(0, Math.floor(Number(value.e))));
+    const mantissa = Number(value.m) || 1;
+    const capped = mantissa * Math.pow(10, exp);
+    return Number.isFinite(capped) ? capped : 1e300;
+  }
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.min(n, 1e300);
 }
 
 function gloryScore(player) {

@@ -1,16 +1,17 @@
-import { GAME } from '../core/state.js';
-import { FACTORIES } from '../data/factories.data.js';
-import { buyFactory } from '../systems/factoryService.js';
-import { getAffordableFactoryInfo } from '../economy/costs.js';
+import { GAME } from '../core/state.js?v=5.0.22';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.22';
+import { buyFactory } from '../systems/factoryService.js?v=5.0.22';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.22';
 import { getBestKnife, equipBestKnife } from '../systems/knifeService.js';
 import { feedPet, washPet } from '../systems/petCareService.js';
-import { getPrestigeRollsReward } from '../prestige/prestigeService.js';
+import { getPrestigeRollsReward } from '../prestige/prestigeService.js?v=5.0.22';
 import { WEAPON_CASES } from '../data/cases.data.js';
-import { formatNumber } from '../utils/numberFormatter.js';
-import { updateHUD } from './hudView.js';
-import { renderCasesSystem } from './casesView.js';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { gte } from '../utils/big.js?v=5.0.22';
+import { updateHUD } from './hudView.js?v=5.0.22';
+import { renderCasesSystem } from './casesView.js?v=5.0.22';
 import { renderCharacterInventory } from './characterInventoryView.js';
-import { addVisualParticle } from './petCanvasView.js';
+import { addVisualParticle } from './petCanvasView.js?v=5.0.22';
 
 let lastHintAction = null;
 
@@ -120,7 +121,7 @@ function determineBestHint() {
 
   // 6. Good Flush Opportunity (Gain >= 25 rolls and accumulated cycle biomass)
   const rollsGain = getPrestigeRollsReward();
-  if (rollsGain >= 25 && (GAME.cycleBiomass || 0) >= 300000) {
+  if (rollsGain >= 25 && gte(GAME.cycleBiomass || 0, 300000)) {
     return {
       icon: '🌀',
       text: `За Смыв Судьбы доступно <b>+${formatNumber(rollsGain)} 🧻 Втулок</b>! Пора совершить Смыв!`,

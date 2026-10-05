@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.21 PRO</title>
+  <title>Poop Simulator v5.0.22 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.21 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.22 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             title="Сообщить об ошибке">
@@ -505,7 +505,11 @@
             <button
               class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800"
               data-tier="4">🌌 Тир 4</button>
+            <button
+              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800"
+              data-tier="5">🌅 Горизонт</button>
           </div>
+          <div id="horizonShop" class="hidden space-y-2"></div>
           <div class="space-y-2 pr-1" id="factoriesContainer"></div>
         </div>
 
@@ -1189,7 +1193,7 @@
         <h3 class="font-game text-xl sm:text-2xl text-yellow-300 tracking-wide">ОМНИВЕРС ЭНЦИКЛОПЕДИЯ</h3>
       </div>
       <p class="text-[11px] text-stone-300 max-w-xl mx-auto mb-2">
-        Полный справочник вселенной: 200 ножей, 120 заводов (по три на эпоху), 7 шапок до потолка x8 и постоянные перки!
+        Полный справочник вселенной: 200 ножей, 760 заводов (три в первых 40 эпохах, четыре на горизонте), 7 шапок до потолка x8 и постоянные перки!
       </p>
 
       <!-- Category Tabs (Ножи, Заводы, Шапки, Перки) -->
@@ -1541,7 +1545,7 @@
               <b class="text-emerald-400">⚡ Как зарабатывать:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Клики по персонажу (усиливаются ножами, сытостью и талантами)</li>
-                <li>Автоматические заводы: три на эпоху, от мух до венца эпохи</li>
+                <li>Автоматические заводы: три в эпохах 1–40, четыре на вкладке «Горизонт»</li>
                 <li>Ловля пролетающей золотой звезды</li>
               </ul>
             </div>
@@ -1549,7 +1553,7 @@
               <b class="text-yellow-400">🎯 Зачем нужна:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
                 <li>Покупка новых фабрик и расширение пассивного CPS</li>
-                <li>Форма растёт сама от биомассы забега. Дальше подписанных вех карта не показывает, где конец</li>
+                <li>Форма растёт сама от биомассы забега. Последняя форма — 100k</li>
                 <li>Активация множителей покупки (x1, x10, x100, МАКС)</li>
               </ul>
             </div>
@@ -2111,7 +2115,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.21"></script>
+  <script type="module" src="src/main.js?v=5.0.22"></script>
 </body>
 
 </html>

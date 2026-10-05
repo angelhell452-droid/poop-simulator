@@ -1,6 +1,8 @@
-import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js';
-import { calcEvolutionMult } from './evolutions.data.js';
-import { expectedAccountMult } from '../economy/metaMultipliers.js';
+import { getPhaseByIndex, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.22';
+import { calcEvolutionMult } from './evolutions.data.js?v=5.0.22';
+import { expectedAccountMult } from '../economy/metaMultipliers.js?v=5.0.22';
+import { div, isBig, mul } from '../utils/big.js?v=5.0.22';
+import { horizonDrag } from '../economy/horizon.js?v=5.0.22';
 
 export const FACTORIES_PER_EPOCH = 3;
 
@@ -62,11 +64,11 @@ export const FACTORIES = [
   { id: 'alpha_omega_apex', name: 'Вершина Альфа и Омега Бытия', cost: 1e305, baseCps: 1e299, count: 0, icon: '👑', tier: 'singularity', tierNumber: 4, tierTitle: '🌌 Тир 4: Омниверс и Сингулярность', reqStage: 19999 }
 ];
 
-const FACTORY_COUNT = PHASE_COUNT * FACTORIES_PER_EPOCH;
+const CLASSIC_COUNT = CLASSIC_EPOCHS * FACTORIES_PER_EPOCH;
 const PLANT_ICONS = ['🏭', '🌀', '⚙️', '🪐', '⚡', '🌟', '🕳️', '🔨', '☀️', '👑', '🎻', '⏳', '🚪', '💠', '🚀', '❄️', '👁️', '💫', '🔱', '🌌'];
 const SLOT_NAMES = ['Подход', 'Разгон', 'Венец'];
 
-while (FACTORIES.length < FACTORY_COUNT) {
+while (FACTORIES.length < CLASSIC_COUNT) {
   const i = FACTORIES.length;
   FACTORIES.push({
     id: `plant_${i}`,
@@ -81,7 +83,7 @@ while (FACTORIES.length < FACTORY_COUNT) {
     reqStage: 0
   });
 }
-if (FACTORIES.length > FACTORY_COUNT) FACTORIES.length = FACTORY_COUNT;
+if (FACTORIES.length > CLASSIC_COUNT) FACTORIES.length = CLASSIC_COUNT;
 
 const TIER_TITLES = [
   '⭐ Тир 1: Бытовой Дренаж',
@@ -141,4 +143,45 @@ for (let i = 0; i < FACTORIES.length; i++) {
   const lateDrag = Math.pow(1.18, Math.max(0, epoch - 10));
   fac.cost = Math.max(1, Math.round(income * spec.payback * pace));
   fac.baseCps = (income * cpsFactor) / (formMult * expected * lateDrag);
+}
+
+const HORIZON_SLOTS = [
+  { formOffset: 0, payback: 90, decade: 0, name: 'Подход' },
+  { formOffset: 40, payback: 180, decade: 1, name: 'Разгон' },
+  { formOffset: 200, payback: 240, decade: 2, name: 'Венец' },
+  { formOffset: 400, payback: 360, decade: 2, name: 'Закат' }
+];
+
+for (let epoch = CLASSIC_EPOCHS + 1; epoch <= PHASE_COUNT; epoch++) {
+  const phase = getPhaseByIndex(epoch);
+  const pace = Math.pow(1.12, CLASSIC_EPOCHS - 1);
+  const drag = horizonDrag(epoch);
+  HORIZON_SLOTS.forEach((spec, slot) => {
+    const rawArrival = 400000 * Math.pow(1000, epoch - 2);
+    const arrival = Number.isFinite(rawArrival)
+      ? rawArrival
+      : { __big: true, m: 4, e: 5 + 3 * (epoch - 2) };
+    const income = mul(arrival, Math.pow(10, spec.decade));
+    const reqStage = phase.formStart - 1 + spec.formOffset;
+    const formMult = Math.max(1, calcEvolutionMult(reqStage));
+    const expected = expectedAccountMult(epoch);
+    const cpsFactor = 9 * Math.pow(pace, 0.45);
+    const lateDrag = Math.pow(1.18, CLASSIC_EPOCHS - 10);
+    const divisor = formMult * expected * lateDrag * drag;
+    const cost = mul(mul(income, spec.payback), pace);
+    const baseCps = div(mul(income, cpsFactor), divisor);
+    FACTORIES.push({
+      id: `horizon_${epoch}_${slot}`,
+      name: `${spec.name} эпохи ${epoch}`,
+      cost: isBig(cost) ? cost : Math.max(1, Math.round(cost)),
+      baseCps,
+      count: 0,
+      icon: PLANT_ICONS[(epoch + slot) % PLANT_ICONS.length],
+      tier: 'horizon',
+      tierNumber: 5,
+      tierTitle: '🌅 Горизонт',
+      reqStage,
+      epoch
+    });
+  });
 }

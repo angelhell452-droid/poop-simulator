@@ -1,7 +1,7 @@
-import { GAME } from '../core/state.js';
+import { GAME } from '../core/state.js?v=5.0.22';
 import { ARCHETYPES } from './archetypes.js';
-import { EVOLUTIONS } from '../data/evolutions.data.js';
-import { formatNumber } from '../utils/numberFormatter.js';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.22';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
 
 export const MILESTONES = [
   { form: 5, icon: '🏭', title: 'Форма 5: Мушиная Ферма', reward: 'Разблокировка фабрик' },

@@ -1,14 +1,14 @@
-import { GAME } from '../core/state.js';
-import { formatNumber } from '../utils/numberFormatter.js';
-import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js';
-import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js';
+import { GAME } from '../core/state.js?v=5.0.22';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.22';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.22';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.22';
+import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.22';
 
-import { updateHUD } from './hudView.js';
-import { renderCasesSystem } from './casesView.js';
+import { updateHUD } from './hudView.js?v=5.0.22';
+import { renderCasesSystem } from './casesView.js?v=5.0.22';
 import { renderCharacterInventory } from './characterInventoryView.js';
 import { renderTalents, switchTalentSubTab } from './talentView.js';
-import { renderFactories } from './factoryView.js';
+import { renderFactories } from './factoryView.js?v=5.0.22';
 import { renderShop } from './shopView.js';
 import { events } from '../core/events.js';
 import { isRelicSectionUnlocked } from '../progression/unlocks.js';

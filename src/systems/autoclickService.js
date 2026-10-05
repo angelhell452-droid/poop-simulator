@@ -1,7 +1,7 @@
-import { GAME } from '../core/state.js';
+import { GAME } from '../core/state.js?v=5.0.22';
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
-import { getEquippedKnife, getKnifeStar } from '../economy/production.js';
+import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.0.22';
 
 export const BARE_CLICK_CAP = 40;
 
