@@ -12,7 +12,7 @@ import { requestCloudSync } from '../save/cloudSync.js';
 import { events } from '../core/events.js';
 import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js';
 import { KNIVES } from '../data/knives.data.js';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.19m';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.20';
 
 let canvas = null;
 let ctx = null;

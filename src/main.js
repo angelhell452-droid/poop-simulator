@@ -1,7 +1,7 @@
 import { GAME } from './core/state.js';
 import { startGameLoop } from './core/gameLoop.js';
-import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.0.19m';
-import { saveLocal } from './save/saveManager.js?v=5.0.19m';
+import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.0.20';
+import { saveLocal } from './save/saveManager.js?v=5.0.20';
 import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting } from './ui/hudView.js';
 import { renderFactories, initFactoryListeners } from './ui/factoryView.js';
 import { renderTalents, initTalentsListeners } from './ui/talentView.js';
@@ -9,7 +9,7 @@ import { renderShop } from './ui/shopView.js';
 import { renderAchievements } from './ui/achievementsView.js';
 import { renderCasesSystem, initCasesListeners } from './ui/casesView.js';
 import { initKnivesIndexListeners } from './ui/knivesIndexView.js';
-import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.0.19m';
+import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.0.20';
 import { initModals } from './ui/modalManager.js';
 import { initAuthModal } from './ui/authModalView.js';
 import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js';
@@ -18,7 +18,7 @@ import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesVie
 import { initVipShop } from './ui/vipShopView.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js';
 import { initBugReportListeners } from './ui/bugReportView.js';
-import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.0.19m';
+import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.0.20';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
 import { addPendingClicks, processBatchedClicks } from './systems/clickService.js';
 import { checkAchievements } from './systems/achievementsService.js';

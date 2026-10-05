@@ -8,7 +8,7 @@ import {
 import { getPoopSkinInfo } from '../progression/evolutionService.js';
 import { getKnifeShownBonuses } from '../economy/production.js';
 import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.19m';
+import { saveLocal } from '../save/saveManager.js?v=5.0.20';
 import { updateHUD } from './hudView.js';
 import { renderShop } from './shopView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
@@ -17,7 +17,7 @@ import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.19m';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.20';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'

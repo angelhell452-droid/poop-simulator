@@ -37,7 +37,7 @@ export const BODY_SKINS = [
   }
 ];
 
-export const SKIN_FITTING = true;
+export const SKIN_FITTING = false;
 
 export function findBodySkin(id) {
   return BODY_SKINS.find((skin) => skin.id === id) || null;

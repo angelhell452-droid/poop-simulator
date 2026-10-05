@@ -4,7 +4,7 @@ import { TALENTS } from '../data/talents.data.js';
 import { ACHIEVEMENTS } from '../data/achievements.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { KNIVES } from '../data/knives.data.js';
-import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.0.19m';
+import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.0.20';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { migrateSaveData } from './migrations.js';
 import { clampAutoclickerState } from '../systems/autoclickService.js';
