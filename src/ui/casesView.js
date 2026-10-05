@@ -1,18 +1,18 @@
-import { GAME } from '../core/state.js?v=5.0.29';
+import { GAME } from '../core/state.js?v=5.0.30';
 import { WEAPON_CASES } from '../data/cases.data.js';
 import { KNIVES } from '../data/knives.data.js';
 import { TALENTS } from '../data/talents.data.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.29';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.29';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.30';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.30';
 import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.29';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.29';
-import { updateHUD } from './hudView.js?v=5.0.29';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.29';
+import { saveLocal } from '../save/saveManager.js?v=5.0.30';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.30';
+import { updateHUD } from './hudView.js?v=5.0.30';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.30';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.29';
-import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.29';
+import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.30';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.30';
 import { isCasesUnlocked } from '../progression/unlocks.js';
 
 let caseAudioEnabled = true;

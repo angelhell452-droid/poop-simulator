@@ -1,14 +1,15 @@
-import { GAME } from '../core/state.js?v=5.0.29';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.29';
-import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.29';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.29';
-import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.29';
+import { GAME } from '../core/state.js?v=5.0.30';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.30';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.30';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.30';
+import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.30';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.30';
 
-import { updateHUD } from './hudView.js?v=5.0.29';
-import { renderCasesSystem } from './casesView.js?v=5.0.29';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.29';
-import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.29';
-import { renderFactories } from './factoryView.js?v=5.0.29';
+import { updateHUD } from './hudView.js?v=5.0.30';
+import { renderCasesSystem } from './casesView.js?v=5.0.30';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.30';
+import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.30';
+import { renderFactories } from './factoryView.js?v=5.0.30';
 import { renderShop } from './shopView.js';
 import { events } from '../core/events.js';
 import { isRelicSectionUnlocked } from '../progression/unlocks.js';
@@ -71,6 +72,12 @@ export function updatePrestigeModalRealtime() {
     const bridgeHave = GAME.flushesThisCycle || 0;
     const bridgeNeed = flushesNeededForBridge();
     const plungerRoom = Math.max(0, plungerFlushCap() - (GAME.pairPlungersFromFlushes || 0));
+    const yourEpoch = getPhaseForStage(GAME.evoStage || 0).id;
+    const plungerLine = b.plungerGain > 0
+      ? `+${formatNumber(1)}`
+      : (echoPhaseId === bridge.id && !b.pairSealed
+        ? (plungerRoom > 0 ? `даст +${formatNumber(1)}, запас ${formatNumber(plungerRoom)}` : 'запас эпохи набран')
+        : `У вас эпоха ${formatNumber(yourEpoch)}, а надо ${formatNumber(bridge.id)}`);
 
     let nextMilestoneText = '';
     if (!b.isMet) nextMilestoneText = 'Смыв откроется на нужной форме этой эпохи';
@@ -88,7 +95,7 @@ export function updatePrestigeModalRealtime() {
         <div class="text-[10px] text-purple-200 space-y-0.5 font-mono">
           <div>├─ 🧻 Втулки за этот смыв: <b class="text-white">+${formatNumber(b.bioPart)}</b></div>
           <div>├─ 🌀 Эхо эпохи ${formatNumber(echoPhaseId)}: <b class="text-white">${b.pairSealed ? 'пара уже на x3' : `x${formatNumber(nextEcho)} у этой эпохи`}</b></div>
-          <div>├─ 🪠 Вантуз: <b class="${b.plungerGain > 0 ? 'text-cyan-300' : 'text-stone-400'}">${b.plungerGain > 0 ? `+${formatNumber(1)}` : (echoPhaseId === bridge.id && !b.pairSealed ? (plungerRoom > 0 ? `даст +${formatNumber(1)}, запас ${formatNumber(plungerRoom)}` : 'запас эпохи набран') : 'с этой эпохи вантуза нет')}</b></div>
+          <div>├─ 🪠 Вантуз: <b class="${b.plungerGain > 0 ? 'text-cyan-300' : 'text-amber-200'}">${plungerLine}</b></div>
           <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${formatNumber(Math.round((b.flushTalentBonus - 1) * 100))}%</b></div>
         </div>
         <div class="text-[11px] text-yellow-100 font-game leading-snug">

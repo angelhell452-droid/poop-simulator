@@ -1,8 +1,8 @@
-import { GAME } from '../core/state.js?v=5.0.29';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.29';
+import { GAME } from '../core/state.js?v=5.0.30';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.30';
 import { TALENTS } from '../data/talents.data.js';
-import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.29';
-import { add, div, gte, isBig, log10Of, mul, sub } from '../utils/big.js?v=5.0.29';
+import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.30';
+import { add, div, gte, isBig, log10Of, mul, sub } from '../utils/big.js?v=5.0.30';
 
 /**
  * Asymptotic discount model with soft-cap guarantee.
