@@ -1,5 +1,15 @@
 export const PATCH_NOTES = [
   {
+    version: 'v5.0.24 PRO',
+    date: '5 Октября 2026',
+    title: 'Новости без лишних карточек',
+    badge: 'Патч 5.0',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      { type: 'ui', icon: '📰', text: 'Карточки про горизонт и про шапки с нарядами убраны из новостей. Текст этих обновлений остаётся в патчах.' }
+    ]
+  },
+  {
     version: 'v5.0.23 PRO',
     date: '5 Октября 2026',
     title: 'Шапки, наряды и Врата вечности',
