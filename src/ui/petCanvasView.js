@@ -12,6 +12,7 @@ import { requestCloudSync } from '../save/cloudSync.js';
 import { events } from '../core/events.js';
 import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js';
 import { KNIVES } from '../data/knives.data.js';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.19m';
 
 let canvas = null;
 let ctx = null;
@@ -80,6 +81,32 @@ let listenersInitialized = false;
 
 const boyLook = { open: null, blink: null };
 const girlLook = { open: null, blink: null };
+const robeBoyLook = { open: null, blink: null };
+const robeGirlLook = { open: null, blink: null };
+const hoodieBoyLook = { open: null, blink: null };
+const hoodieGirlLook = { open: null, blink: null };
+const tunicBoyLook = { open: null, blink: null };
+const tunicGirlLook = { open: null, blink: null };
+const tuxedoBoyLook = { open: null, blink: null };
+const tuxedoGirlLook = { open: null, blink: null };
+const bodyLooks = {
+  skin_robe: {
+    boy: { key: 'robe-boy', look: robeBoyLook },
+    girl: { key: 'robe-girl', look: robeGirlLook }
+  },
+  skin_hoodie: {
+    boy: { key: 'hoodie-boy', look: hoodieBoyLook },
+    girl: { key: 'hoodie-girl', look: hoodieGirlLook }
+  },
+  skin_tunic: {
+    boy: { key: 'tunic-boy', look: tunicBoyLook },
+    girl: { key: 'tunic-girl', look: tunicGirlLook }
+  },
+  skin_tuxedo: {
+    boy: { key: 'tuxedo-boy', look: tuxedoBoyLook },
+    girl: { key: 'tuxedo-girl', look: tuxedoGirlLook }
+  }
+};
 const propLooks = {
   chef: null, cap: null, party: null, shades: null, cowboy: null, viking: null, crown: null
 };
@@ -130,9 +157,11 @@ function cutSpriteBackdrop(img, options = {}) {
   const seen = new Uint8Array(w * h);
   const stack = new Int32Array(w * h);
   let sp = 0;
+  const prepared = options.prepared === true;
   const isBackdrop = (i) => {
     const o = i * 4;
     if (d[o + 3] < 16) return true;
+    if (prepared) return false;
     const r = d[o];
     const gc = d[o + 1];
     const b = d[o + 2];
@@ -230,7 +259,7 @@ function cutSpriteBackdrop(img, options = {}) {
       bestId = blobId;
     }
   }
-  if (bestId) {
+  if (!prepared && bestId) {
     for (let i = 0; i < w * h; i++) {
       if (labels[i] !== bestId) d[i * 4 + 3] = 0;
     }
@@ -763,11 +792,16 @@ function queueEpoch(index, priority) {
 }
 
 function queueLook(prefix, look, openSrc, blinkSrc, options, priority) {
+  const apply = (img) => {
+    const frame = cutSpriteBackdrop(img, options);
+    if (options.foot != null) frame.foot = options.foot;
+    return frame;
+  };
   queueArt(`${prefix}-open`, openSrc, (img) => {
-    look.open = cutSpriteBackdrop(img, options);
+    look.open = apply(img);
   }, priority);
   queueArt(`${prefix}-blink`, blinkSrc, (img) => {
-    look.blink = cutSpriteBackdrop(img, options);
+    look.blink = apply(img);
   }, priority + 1);
 }
 
@@ -781,10 +815,21 @@ const hatFiles = {
   crown: 'assets/poop/props/hat-crown.png?v=cut5'
 };
 
+function equippedBodyArt(isGirly) {
+  const skin = findBodySkin(GAME.equippedSkin);
+  if (!skin) return null;
+  if (!Array.isArray(GAME.ownedSkins) || !GAME.ownedSkins.includes(skin.id)) {
+    if (!SKIN_FITTING) return null;
+  }
+  const pair = bodyLooks[skin.id];
+  return pair ? (isGirly ? pair.girl : pair.boy) : null;
+}
+
 function visibleArtIds() {
   const isGirly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
-  const prefix = isGirly ? 'girl' : 'boy';
-  const look = isGirly ? girlLook : boyLook;
+  const body = equippedBodyArt(isGirly);
+  const look = body ? body.look : (isGirly ? girlLook : boyLook);
+  const prefix = body ? body.key : (isGirly ? 'girl' : 'boy');
   const epoch = Math.min(39, Math.max(0, Math.floor((GAME.evoStage || 0) / 500)));
   const hat = clayHats[GAME.equippedHat];
   const knife = getEquippedKnife();
@@ -863,7 +908,8 @@ function drawCoverImage(ctx, img, w, h) {
 function characterDest(frame) {
   const destH = 168;
   const destW = destH * (frame.sw / frame.sh);
-  return { destW, destH, x: -destW / 2, y: 62 - destH };
+  const foot = frame.foot == null ? 62 : frame.foot;
+  return { destW, destH, x: -destW / 2, y: foot - destH };
 }
 
 function drawCharacterFrame(ctx, frame) {
@@ -878,20 +924,32 @@ function drawCharacterFrame(ctx, frame) {
 function drawCharacterGlow(ctx, frame, alpha) {
   if (!frame.glow) return;
   const box = characterDest(frame);
-  const pulse = 0.82 + Math.sin(performance.now() * 0.003) * 0.18;
-  ctx.save();
-  ctx.filter = 'blur(16px)';
-  ctx.globalAlpha = alpha * pulse;
-  ctx.drawImage(frame.glow, box.x - 8, box.y - 8, box.destW + 16, box.destH + 16);
-  ctx.restore();
+  const pulse = 0.88 + Math.sin(performance.now() * 0.003) * 0.12;
+  const paint = (pad, blur, strength) => {
+    ctx.save();
+    ctx.filter = `blur(${blur}px)`;
+    ctx.globalAlpha = Math.min(1, alpha * pulse * strength);
+    ctx.drawImage(frame.glow, box.x - pad, box.y - pad, box.destW + pad * 2, box.destH + pad * 2);
+    ctx.restore();
+  };
+  paint(30, 18, 1);
+  paint(10, 5, 0.85);
 }
 
 export function initPetCanvas() {
   canvas = document.getElementById('petCanvas');
   if (!canvas) return;
   ctx = canvas.getContext('2d');
-  queueLook('boy', boyLook, 'assets/poop/boy.png', 'assets/poop/boy-blink.png', { maxEdge: 720 }, 1);
-  queueLook('girl', girlLook, 'assets/poop/girl.png?v=5.0', 'assets/poop/girl-blink.png', { neutral: true, maxEdge: 720 }, 1);
+  queueLook('boy', boyLook, 'assets/poop/boy.png', 'assets/poop/boy-blink.png?v=5.0.19m', { maxEdge: 720 }, 1);
+  queueLook('girl', girlLook, 'assets/poop/girl.png?v=5.0', 'assets/poop/girl-blink.png?v=5.0.19m', { neutral: true, maxEdge: 720 }, 1);
+  queueLook('robe-boy', robeBoyLook, 'assets/poop/skins/robe-boy.png?v=5.0.19h', 'assets/poop/skins/robe-boy-blink.png?v=5.0.19l', { maxEdge: 720, prepared: true }, 2);
+  queueLook('robe-girl', robeGirlLook, 'assets/poop/skins/robe-girl.png?v=5.0.19h', 'assets/poop/skins/robe-girl-blink.png?v=5.0.19l', { maxEdge: 720, prepared: true }, 2);
+  queueLook('hoodie-boy', hoodieBoyLook, 'assets/poop/skins/hoodie-boy.png?v=5.0.19m', 'assets/poop/skins/hoodie-boy-blink.png?v=5.0.19m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('hoodie-girl', hoodieGirlLook, 'assets/poop/skins/hoodie-girl.png?v=5.0.19m', 'assets/poop/skins/hoodie-girl-blink.png?v=5.0.19m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('tunic-boy', tunicBoyLook, 'assets/poop/skins/tunic-boy.png?v=5.0.19m', 'assets/poop/skins/tunic-boy-blink.png?v=5.0.19m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('tunic-girl', tunicGirlLook, 'assets/poop/skins/tunic-girl.png?v=5.0.19m', 'assets/poop/skins/tunic-girl-blink.png?v=5.0.19m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('tuxedo-boy', tuxedoBoyLook, 'assets/poop/skins/tuxedo-boy.png?v=5.0.19m', 'assets/poop/skins/tuxedo-boy-blink.png?v=5.0.19m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('tuxedo-girl', tuxedoGirlLook, 'assets/poop/skins/tuxedo-girl.png?v=5.0.19m', 'assets/poop/skins/tuxedo-girl-blink.png?v=5.0.19m', { maxEdge: 720, prepared: true }, 2);
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
@@ -1121,7 +1179,9 @@ function renderPetLoop(time) {
 
   blinkTimer += 0.016;
   const isBlinking = (blinkTimer % 4.0) < 0.15;
-  const look = isGirly ? girlLook : boyLook;
+  const body = equippedBodyArt(isGirly);
+  const baseLook = isGirly ? girlLook : boyLook;
+  const look = (body && body.look.open) ? body.look : baseLook;
   const characterFrame = look.open
     ? ((isBlinking && look.blink) ? look.blink : look.open)
     : null;
@@ -1131,7 +1191,7 @@ function renderPetLoop(time) {
   const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
   const turboOn = (GAME.turboStarMultTime || 0) > 0 || GAME.turboRushTime > 0;
   if (characterFrame) {
-    const glowAlpha = turboOn ? 0.95 : (isIdealPet ? 0.7 : 0.42);
+    const glowAlpha = turboOn ? 1 : (isIdealPet ? 0.92 : 0.78);
     drawCharacterGlow(ctx, characterFrame, glowAlpha);
     drawCharacterFrame(ctx, characterFrame);
   }

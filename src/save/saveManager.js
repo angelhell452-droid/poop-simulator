@@ -4,6 +4,7 @@ import { TALENTS } from '../data/talents.data.js';
 import { ACHIEVEMENTS } from '../data/achievements.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js';
 import { KNIVES } from '../data/knives.data.js';
+import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.0.19m';
 import { EVOLUTIONS } from '../data/evolutions.data.js';
 import { migrateSaveData } from './migrations.js';
 import { clampAutoclickerState } from '../systems/autoclickService.js';
@@ -82,6 +83,8 @@ function wipeRuntimeCatalogs() {
   GAME.boutiqueLevels = {};
   GAME.equippedHat = null;
   GAME.equippedKnife = null;
+  GAME.equippedSkin = null;
+  GAME.ownedSkins = [];
   GAME.peakForm = 1;
   GAME.meteorsCaught = 0;
   GAME.turboCount = 0;
@@ -218,6 +221,13 @@ export function applySaveDataSafely(rawData) {
     GAME.hatLevels = { ...data.hatLevels };
   } else if (!GAME.hatLevels) {
     GAME.hatLevels = {};
+  }
+
+  const knownSkins = new Set(BODY_SKINS.map((skin) => skin.id));
+  if (!Array.isArray(GAME.ownedSkins)) GAME.ownedSkins = [];
+  GAME.ownedSkins = GAME.ownedSkins.filter((id) => knownSkins.has(id));
+  if (!knownSkins.has(GAME.equippedSkin) || (!GAME.ownedSkins.includes(GAME.equippedSkin) && !SKIN_FITTING)) {
+    GAME.equippedSkin = null;
   }
 
   TALENTS.forEach((row) => {

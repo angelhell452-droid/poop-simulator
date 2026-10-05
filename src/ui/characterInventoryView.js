@@ -8,7 +8,7 @@ import {
 import { getPoopSkinInfo } from '../progression/evolutionService.js';
 import { getKnifeShownBonuses } from '../economy/production.js';
 import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js';
-import { saveLocal } from '../save/saveManager.js';
+import { saveLocal } from '../save/saveManager.js?v=5.0.19m';
 import { updateHUD } from './hudView.js';
 import { renderShop } from './shopView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
@@ -17,14 +17,148 @@ import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.19m';
 
 
-let currentInvTab = 'knives'; // 'knives' | 'hats'
+let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'
 
 function hatClickLabel(hat, level) {
   const total = (hat.clickBoost || 1) * (1 + (Math.max(1, level) - 1) * 0.35);
   const pct = Math.max(0, Math.round((total - 1) * 100));
   return `+${formatNumber(pct)}% к силе клика`;
+}
+
+function skinOwned(id) {
+  return Array.isArray(GAME.ownedSkins) && GAME.ownedSkins.includes(id);
+}
+
+function skinWorn(skin) {
+  if (!skin || GAME.equippedSkin !== skin.id) return false;
+  return skinOwned(skin.id) || SKIN_FITTING;
+}
+
+function skinFormOpen(skin) {
+  return (GAME.evoStage || 0) + 1 >= skin.form;
+}
+
+function skinArtHtml(skin, size) {
+  const girly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
+  const src = girly ? skin.girl : skin.boy;
+  return `<img src="${src}?v=5.0.19m" alt="" class="art-icon" width="${size}" height="${size}">`;
+}
+
+function skinClickLabel(skin) {
+  const pct = Math.max(0, Math.round((skin.clickMult - 1) * 100));
+  return `+${formatNumber(pct)}% к клику`;
+}
+
+function renderBodySlot() {
+  const skin = findBodySkin(GAME.equippedSkin);
+  const worn = skinWorn(skin) ? skin : null;
+  const icon = document.getElementById('invBodyIcon');
+  const name = document.getElementById('invBodyName');
+  const bonus = document.getElementById('invBodyBonus');
+  const unequip = document.getElementById('btnUnequipSkin');
+  if (icon) icon.innerHTML = worn ? skinArtHtml(worn, 56) : '💩';
+  if (name) name.textContent = worn ? worn.name : 'Скин какашечки не надет';
+  if (bonus) {
+    bonus.textContent = worn
+      ? (skinOwned(worn.id) ? skinClickLabel(worn) : 'Примерка. Бонус к клику включится после покупки.')
+      : 'Тело без наряда';
+    bonus.className = worn ? 'text-[10px] text-emerald-300 font-bold' : 'text-[10px] text-stone-400';
+  }
+  if (unequip) unequip.classList.toggle('hidden', !worn);
+}
+
+function paintInvTabs() {
+  const tabs = [
+    ['knives', 'invTabKnives', 'invKnivesPanel', 'bg-gradient-to-r from-amber-500 to-yellow-500 text-stone-950 shadow-md border border-yellow-300'],
+    ['hats', 'invTabHats', 'invHatsPanel', 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md border border-pink-300'],
+    ['skins', 'invTabSkins', 'invSkinsPanel', 'bg-gradient-to-r from-emerald-400 to-teal-300 text-stone-950 shadow-md border border-emerald-200']
+  ];
+  const idle = 'bg-stone-900 text-stone-400 hover:text-white border border-stone-800';
+  const base = 'inv-sub-tab px-4 py-2 rounded-2xl font-game text-xs flex items-center gap-1.5 transition font-bold ';
+  tabs.forEach(([id, btnId, panelId, active]) => {
+    const btn = document.getElementById(btnId);
+    const panel = document.getElementById(panelId);
+    const on = currentInvTab === id;
+    if (btn) btn.className = base + (on ? active : idle);
+    if (panel) panel.classList.toggle('hidden', !on);
+  });
+  if (currentInvTab === 'knives') renderKnivesGrid();
+  else if (currentInvTab === 'hats') renderHatsGrid();
+  else renderSkinsGrid();
+}
+
+function renderSkinsGrid() {
+  const box = document.getElementById('skinsInventoryContainer');
+  if (!box) return;
+  box.innerHTML = BODY_SKINS.map((skin) => {
+    const owned = skinOwned(skin.id);
+    const worn = skinWorn(skin);
+    const open = skinFormOpen(skin);
+    const price = `${formatNumber(skin.price)} ✨`;
+    let action = '';
+    if (worn) {
+      action = `<button type="button" class="skin-unequip text-[10px] font-bold px-2 py-1.5 rounded-xl border border-stone-600 bg-stone-800 text-stone-200" data-id="${skin.id}">Снять</button>`;
+    } else if (owned) {
+      action = `<button type="button" class="skin-equip text-[10px] font-black px-2 py-1.5 rounded-xl bg-emerald-400 text-stone-950" data-id="${skin.id}">Надеть</button>`;
+    } else if (SKIN_FITTING) {
+      action = `<button type="button" class="skin-equip text-[10px] font-black px-2 py-1.5 rounded-xl bg-emerald-400 text-stone-950" data-id="${skin.id}">Примерить</button>`;
+    } else if (!open) {
+      action = `<span class="text-[10px] text-stone-400 font-bold">Форма ${formatNumber(skin.form)}</span>`;
+    } else {
+      action = `<button type="button" class="skin-buy text-[10px] font-black px-2 py-1.5 rounded-xl bg-yellow-400 text-stone-950" data-id="${skin.id}">Купить ${price}</button>`;
+    }
+    return `
+      <div class="p-2.5 rounded-2xl border ${worn ? 'border-emerald-300 bg-emerald-950/40' : 'border-stone-700 bg-stone-900'} flex items-center gap-2">
+        <span class="inv-gear-icon">${skinArtHtml(skin, 56)}</span>
+        <div class="min-w-0 flex-1">
+          <div class="font-game text-xs text-yellow-300 font-bold">${skin.name}</div>
+          <div class="text-[10px] text-emerald-200">${skinClickLabel(skin)}</div>
+          <div class="text-[10px] text-stone-400">${open ? price : `с формы ${formatNumber(skin.form)}`}</div>
+        </div>
+        ${action}
+      </div>`;
+  }).join('');
+}
+
+function equipOwnedSkin(id) {
+  const skin = findBodySkin(id);
+  if (!skin) return;
+  if (!skinOwned(id) && !SKIN_FITTING) return;
+  GAME.equippedSkin = id;
+  updateHUD();
+  renderCharacterInventory();
+  saveLocal();
+  if (!skinOwned(id)) showKnifeToast(`Примерка: ${skin.name}`);
+}
+
+function buyBodySkin(id) {
+  const skin = findBodySkin(id);
+  if (!skin || !skinFormOpen(skin)) return;
+  if (skinOwned(id)) {
+    equipOwnedSkin(id);
+    return;
+  }
+  if ((GAME.sparkles || 0) < skin.price) {
+    showKnifeToast(`Нужно ${formatNumber(skin.price)} ✨`);
+    return;
+  }
+  GAME.sparkles -= skin.price;
+  GAME.ownedSkins = [...(GAME.ownedSkins || []), id];
+  GAME.equippedSkin = id;
+  updateHUD();
+  renderCharacterInventory();
+  saveLocal();
+  showKnifeToast(`${skin.name} надет`);
+}
+
+function unequipBodySkin() {
+  GAME.equippedSkin = null;
+  updateHUD();
+  renderCharacterInventory();
+  saveLocal();
 }
 let knifeFilterRarity = 'all';
 let knifeSearchQuery = '';
@@ -78,6 +212,8 @@ export function renderCharacterInventory() {
   if (pTier) pTier.textContent = `Тир ${skinInfo.tier}`;
   const cpsEl = document.getElementById('invTotalCps');
   if (cpsEl) cpsEl.textContent = `${formatNumber(getClickCapCps())} CPS`;
+
+  renderBodySlot();
 
   // 2. Dedicated Hat Slot (Слот Шапки)
   const equippedHat = GAME.equippedHat ? SHOP_ITEMS.find(i => i.id === GAME.equippedHat) : null;
@@ -235,27 +371,11 @@ export function renderCharacterInventory() {
   const invHatsCount = document.getElementById('invHatsCount');
   if (invHatsCount) invHatsCount.textContent = `${ownedHatsCount}/${allHats.length}`;
 
-  // 5. Update Tab Visibility and Styles
-  const tabKnivesBtn = document.getElementById('invTabKnives');
-  const tabHatsBtn = document.getElementById('invTabHats');
-  const knivesPanel = document.getElementById('invKnivesPanel');
-  const hatsPanel = document.getElementById('invHatsPanel');
+  const ownedSkinCount = BODY_SKINS.filter((skin) => skinOwned(skin.id)).length;
+  const invSkinsCount = document.getElementById('invSkinsCount');
+  if (invSkinsCount) invSkinsCount.textContent = `${formatNumber(ownedSkinCount)}/${formatNumber(BODY_SKINS.length)}`;
 
-  if (tabKnivesBtn && tabHatsBtn && knivesPanel && hatsPanel) {
-    if (currentInvTab === 'knives') {
-      tabKnivesBtn.className = 'inv-sub-tab px-4 py-2 rounded-2xl font-game text-xs flex items-center gap-1.5 transition font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-stone-950 shadow-md border border-yellow-300';
-      tabHatsBtn.className = 'inv-sub-tab px-4 py-2 rounded-2xl font-game text-xs flex items-center gap-1.5 transition font-bold bg-stone-900 text-stone-400 hover:text-white border border-stone-800';
-      knivesPanel.classList.remove('hidden');
-      hatsPanel.classList.add('hidden');
-      renderKnivesGrid();
-    } else {
-      tabHatsBtn.className = 'inv-sub-tab px-4 py-2 rounded-2xl font-game text-xs flex items-center gap-1.5 transition font-bold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md border border-pink-300';
-      tabKnivesBtn.className = 'inv-sub-tab px-4 py-2 rounded-2xl font-game text-xs flex items-center gap-1.5 transition font-bold bg-stone-900 text-stone-400 hover:text-white border border-stone-800';
-      hatsPanel.classList.remove('hidden');
-      knivesPanel.classList.add('hidden');
-      renderHatsGrid();
-    }
-  }
+  paintInvTabs();
 }
 
 function renderKnivesGrid() {
@@ -648,6 +768,23 @@ export function initCharacterInventoryListeners() {
   document.getElementById('invTabHats')?.addEventListener('click', () => {
     currentInvTab = 'hats';
     renderCharacterInventory();
+  });
+  document.getElementById('invTabSkins')?.addEventListener('click', () => {
+    currentInvTab = 'skins';
+    renderCharacterInventory();
+  });
+  document.getElementById('btnInvGoToSkins')?.addEventListener('click', () => {
+    currentInvTab = 'skins';
+    renderCharacterInventory();
+  });
+  document.getElementById('btnUnequipSkin')?.addEventListener('click', unequipBodySkin);
+  document.getElementById('skinsInventoryContainer')?.addEventListener('click', (event) => {
+    const buy = event.target.closest('.skin-buy');
+    const equip = event.target.closest('.skin-equip');
+    const off = event.target.closest('.skin-unequip');
+    if (buy) buyBodySkin(buy.dataset.id);
+    else if (equip) equipOwnedSkin(equip.dataset.id);
+    else if (off) unequipBodySkin();
   });
 
   // Unequip Hat button in loadout slot

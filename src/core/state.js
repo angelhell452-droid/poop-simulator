@@ -43,6 +43,8 @@ export function getDefaultGameState() {
     totalClicks: 0,
     lastFlushTime: 0,
     equippedHat: null,
+    equippedSkin: null,
+    ownedSkins: [],
 
     autoclickerActive: false,
     autoclickerSpeed: 1,

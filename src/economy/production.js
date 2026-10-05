@@ -9,6 +9,20 @@ import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, 
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { getPhaseForStage } from '../progression/phases.data.js';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
+import { findBodySkin } from '../data/skins.data.js';
+
+export function getEquippedBodySkin() {
+  const skin = findBodySkin(GAME.equippedSkin);
+  if (!skin) return null;
+  if (!Array.isArray(GAME.ownedSkins) || !GAME.ownedSkins.includes(skin.id)) return null;
+  if ((GAME.evoStage || 0) + 1 < skin.form) return null;
+  return skin;
+}
+
+export function getSkinClickMult() {
+  const skin = getEquippedBodySkin();
+  return skin ? skin.clickMult : 1;
+}
 
 export function getEquippedKnife() {
   if (!GAME.equippedKnife) return null;
@@ -276,7 +290,7 @@ function clickParts() {
   const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.06;
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
-  const gearRaw = rollsMult * plungersMult * knifeClickMult * hatClickBoost;
+  const gearRaw = rollsMult * plungersMult * knifeClickMult * hatClickBoost * getSkinClickMult();
   const gearMult = dampenGearMult(gearRaw, getPhaseForStage(GAME.evoStage).id);
   const late = getLateComboMult();
   const product = evo.mult * gearMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late * getIncomePace();
@@ -287,6 +301,7 @@ function clickParts() {
   pushAboveOne(gearBits, 'Вантузы', plungersMult);
   pushAboveOne(gearBits, 'Нож', knifeClickMult);
   pushAboveOne(gearBits, 'Шапка', hatClickBoost);
+  pushAboveOne(gearBits, 'Скин', getSkinClickMult());
 
   const lines = [];
   pushAboveOne(lines, 'Форма', evo.mult);

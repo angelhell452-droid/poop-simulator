@@ -1,6 +1,6 @@
 import { GAME } from '../core/state.js';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.19m';
 import { setConfirmedVip } from '../economy/pace.js';
 
 export const CLOUD_SAVE_ENDPOINT = '/api/cloud-save';
