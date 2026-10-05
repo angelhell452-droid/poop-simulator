@@ -1,5 +1,15 @@
 export const PATCH_NOTES = [
   {
+    version: 'v5.0.18 PRO',
+    date: '5 Октября 2026',
+    title: 'Идеал поверх холста',
+    badge: 'Патч 5.0',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      { type: 'ui', icon: '👑', text: 'Плашка «Идеал» — короткая корона с подписью поверх экрана. Кнопки ухода и холст больше не сдвигаются.' }
+    ]
+  },
+  {
     version: 'v5.0.17 PRO',
     date: '5 Октября 2026',
     title: 'Иконки без розового поля',
