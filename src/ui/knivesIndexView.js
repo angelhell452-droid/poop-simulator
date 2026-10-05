@@ -10,7 +10,7 @@ import { updateHUD } from './hudView.js';
 import { renderCasesSystem } from './casesView.js';
 import { formatNumber } from '../utils/numberFormatter.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { hatArtHtml } from './artIcon.js';
+import { hatArtHtml } from './artIcon.js?v=5.0.17';
 import { getKnifeShownBonuses } from '../economy/production.js';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js';
 

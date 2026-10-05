@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.16 PRO</title>
+  <title>Poop Simulator v5.0.17 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.16">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.17">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.16 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.17 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             title="Сообщить об ошибке">
@@ -1828,35 +1828,30 @@
 
         <!-- 2. Dedicated Hat Slot (Слот Шапки) -->
         <div
-          class="p-3 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-950 border-2 border-pink-500/60 shadow flex flex-col justify-between">
-          <div class="flex items-center justify-between mb-1.5">
-            <span
-              class="text-[10px] font-game text-pink-400 uppercase font-black tracking-wider flex items-center gap-1">
-              <span>🎩</span> Слот Головного Убора
-            </span>
-            <button id="btnUnequipHat" class="hidden text-[10px] text-stone-400 hover:text-red-400 font-bold underline">
-              Снять шапку
-            </button>
+          class="p-3 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-950 border-2 border-pink-500/60 shadow flex flex-col gap-2">
+          <span
+            class="text-[10px] font-game text-pink-400 uppercase font-black tracking-wider flex items-center gap-1">
+            <span>🎩</span> Слот Головного Убора
+          </span>
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="inv-gear-icon text-3xl" id="invHatIcon">🧢</span>
+            <div class="min-w-0 flex-1">
+              <div class="font-game text-xs text-yellow-300 font-bold leading-tight" id="invHatName">Без головного убора</div>
+              <div class="text-[10px] text-stone-400 leading-tight mt-0.5" id="invHatBonus">Шапка не надета (+0% бонус)</div>
+            </div>
           </div>
-          <div class="flex items-center justify-between gap-2.5">
-            <div class="flex items-center gap-2.5 overflow-hidden">
-              <span class="text-3xl shrink-0" id="invHatIcon">🧢</span>
-              <div class="truncate">
-                <div class="font-game text-xs text-yellow-300 truncate font-bold" id="invHatName">Без головного убора
-                </div>
-                <div class="text-[10px] text-stone-400" id="invHatBonus">Шапка не надета (+0% бонус)</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button id="btnInlayEquippedHat"
-                class="hidden text-[10px] font-game bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 text-white font-bold px-2 py-1.5 rounded-xl jelly-btn flex items-center gap-1">
-                💎 Инкрустация
-              </button>
-              <button id="btnInvGoToShop"
-                class="shrink-0 text-[10px] font-game bg-pink-900/50 hover:bg-pink-800 text-pink-200 border border-pink-500/50 px-2.5 py-1.5 rounded-xl jelly-btn">
-                Гардероб 🎩
-              </button>
-            </div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button id="btnUnequipHat" class="hidden text-[10px] text-stone-300 hover:text-red-300 font-bold px-2 py-1.5 rounded-xl border border-stone-600 bg-stone-800">
+              Снять
+            </button>
+            <button id="btnInlayEquippedHat"
+              class="hidden text-[10px] font-game bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 text-white font-bold px-2 py-1.5 rounded-xl jelly-btn flex items-center gap-1">
+              💎 Инкрустация
+            </button>
+            <button id="btnInvGoToShop"
+              class="text-[10px] font-game bg-pink-900/50 hover:bg-pink-800 text-pink-200 border border-pink-500/50 px-2.5 py-1.5 rounded-xl jelly-btn">
+              Гардероб 🎩
+            </button>
           </div>
         </div>
       </div>
@@ -2079,7 +2074,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.16"></script>
+  <script type="module" src="src/main.js?v=5.0.17"></script>
 </body>
 
 </html>

@@ -16,7 +16,7 @@ import { formatNumber } from '../utils/numberFormatter.js';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { hatArtHtml } from './artIcon.js';
+import { hatArtHtml } from './artIcon.js?v=5.0.17';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats'
@@ -87,7 +87,7 @@ export function renderCharacterInventory() {
   const btnUnequipHat = document.getElementById('btnUnequipHat');
   const btnInlayHat = document.getElementById('btnInlayEquippedHat');
 
-  if (hIcon) hIcon.innerHTML = equippedHat ? hatArtHtml(equippedHat, 40) : '🧢';
+  if (hIcon) hIcon.innerHTML = equippedHat ? hatArtHtml(equippedHat, 56) : '🧢';
   if (hName) {
     if (equippedHat) {
       const hatLvl = getHatLevel(equippedHat.id);
@@ -162,16 +162,15 @@ export function renderCharacterInventory() {
       }
 
       equippedCard.innerHTML = `
-        <div class="flex flex-col gap-2 w-full">
-          <div class="flex items-center justify-between gap-2 w-full">
+        <div class="flex flex-col gap-2 w-full min-w-0">
           <div class="flex items-center gap-2.5 min-w-0">
-            <div class="shrink-0 flex items-center justify-center">${getKnifeImageHtml(equippedObj, 52)}</div>
-            <div class="min-w-0">
-              <div class="font-game text-sm text-white font-black truncate drop-shadow-md" style="text-shadow:0 1px 4px rgba(0,0,0,0.9)">${equippedObj.name}</div>
-              <div class="text-[10px] text-stone-400 truncate">${equippedObj.rarityName || 'Нож'}</div>
+            <div class="inv-gear-icon">${getKnifeImageHtml(equippedObj, 56)}</div>
+            <div class="min-w-0 flex-1">
+              <div class="font-game text-sm text-white font-black leading-tight">${equippedObj.name}</div>
+              <div class="text-[10px] text-stone-400 leading-tight mt-0.5">${equippedObj.rarityName || 'Нож'}</div>
             </div>
           </div>
-          <div class="flex items-center gap-1.5 shrink-0">
+          <div class="flex flex-wrap items-center gap-1.5">
             ${sharpenBtnHtml}
             <button id="btnEquipBestKnifeEquipped" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black text-[11px] px-2 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="Надеть нож с наибольшим уроном">
               ⚔️ Лучший
@@ -179,7 +178,6 @@ export function renderCharacterInventory() {
             <button id="btnUnequipKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-600 text-[11px] px-2 py-1.5 rounded-xl font-bold jelly-btn">
               Снять
             </button>
-          </div>
           </div>
           <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
             <span class="text-emerald-300 font-currency bg-emerald-950/70 px-1.5 py-0.5 rounded">Клик +${formatNumber(eqClickPct)}%</span>

@@ -6,7 +6,7 @@ import { updateHUD } from './hudView.js';
 import { checkAchievements } from '../systems/achievementsService.js';
 import { requestCloudSync } from '../save/cloudSync.js';
 import { openCharacterInventoryModal } from './characterInventoryView.js';
-import { hatArtHtml } from './artIcon.js';
+import { hatArtHtml } from './artIcon.js?v=5.0.17';
 import { isBoutiqueUnlocked, isShopOfferUnlocked, peakForm } from '../progression/unlocks.js';
 
 export function getBoutiqueRepeatableCost(item) {

@@ -751,6 +751,21 @@ select {
   display: none;
 }
 
+.inv-gear-icon {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.inv-gear-icon .art-icon {
+  width: 56px !important;
+  height: 56px !important;
+}
+
 .art-icon {
   display: inline-flex;
   align-items: center;

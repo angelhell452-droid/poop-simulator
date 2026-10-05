@@ -21,7 +21,7 @@ function knifeArtSrc(knife) {
 
 function cutMagentaIcon(img) {
   const edge = Math.max(img.width, img.height);
-  const scale = edge > 160 ? 160 / edge : 1;
+  const scale = edge > 280 ? 280 / edge : 1;
   const w = Math.max(1, Math.round(img.width * scale));
   const h = Math.max(1, Math.round(img.height * scale));
   const surface = document.createElement('canvas');
@@ -31,18 +31,51 @@ function cutMagentaIcon(img) {
   g.drawImage(img, 0, 0, w, h);
   const image = g.getImageData(0, 0, w, h);
   const d = image.data;
+
+  let sr = 0;
+  let sg = 0;
+  let sb = 0;
+  let samples = 0;
+  const sample = (i) => {
+    const r = d[i * 4];
+    const gc = d[i * 4 + 1];
+    const b = d[i * 4 + 2];
+    if (gc < 90 && r > 140 && r > gc + 80 && b > 20 && b < 170 && r > b + 40) {
+      sr += r;
+      sg += gc;
+      sb += b;
+      samples++;
+    }
+  };
+  const step = Math.max(1, Math.floor(w / 40));
+  for (let x = 0; x < w; x += step) {
+    sample(x);
+    sample((h - 1) * w + x);
+  }
+  for (let y = 0; y < h; y += step) {
+    sample(y * w);
+    sample(y * w + w - 1);
+  }
+  if (samples < 4) return surface;
+  sr /= samples;
+  sg /= samples;
+  sb /= samples;
+
+  const nearBackdrop = (i, reach) => {
+    const o = i * 4;
+    if (d[o + 3] === 0) return false;
+    const dr = d[o] - sr;
+    const dg = d[o + 1] - sg;
+    const db = d[o + 2] - sb;
+    return dr * dr + dg * dg + db * db <= reach && d[o + 1] < 110;
+  };
+
   const seen = new Uint8Array(w * h);
   const stack = new Int32Array(w * h);
   let sp = 0;
-  const isField = (i) => {
-    const o = i * 4;
-    const r = d[o];
-    const gc = d[o + 1];
-    const b = d[o + 2];
-    return gc < 120 && r > 130 && b > 70 && r > gc + 50 && b > gc + 20;
-  };
+  const fieldReach = 36 * 36;
   const push = (i) => {
-    if (i < 0 || i >= seen.length || seen[i] || !isField(i)) return;
+    if (i < 0 || i >= seen.length || seen[i] || !nearBackdrop(i, fieldReach)) return;
     seen[i] = 1;
     stack[sp++] = i;
   };
@@ -64,8 +97,57 @@ function cutMagentaIcon(img) {
     if (y > 0) push(i - w);
     if (y + 1 < h) push(i + w);
   }
+  for (let i = 0; i < w * h; i++) {
+    if (nearBackdrop(i, fieldReach)) d[i * 4 + 3] = 0;
+  }
+
+  const fringeReach = 64 * 64;
+  for (let pass = 0; pass < 4; pass++) {
+    const kill = [];
+    for (let i = 0; i < w * h; i++) {
+      const o = i * 4;
+      if (d[o + 3] === 0 || d[o + 1] > 90) continue;
+      const dr = d[o] - sr;
+      const dg = d[o + 1] - sg;
+      const db = d[o + 2] - sb;
+      if (dr * dr + dg * dg + db * db > fringeReach) continue;
+      const x = i % w;
+      const y = (i / w) | 0;
+      const touchesHole = (x === 0 || d[(i - 1) * 4 + 3] === 0)
+        || (x + 1 === w || d[(i + 1) * 4 + 3] === 0)
+        || (y === 0 || d[(i - w) * 4 + 3] === 0)
+        || (y + 1 === h || d[(i + w) * 4 + 3] === 0);
+      if (touchesHole) kill.push(i);
+    }
+    kill.forEach((i) => { d[i * 4 + 3] = 0; });
+  }
+
+  let minX = w;
+  let minY = h;
+  let maxX = -1;
+  let maxY = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (d[(y * w + x) * 4 + 3] > 16) {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
   g.putImageData(image, 0, 0);
-  return surface;
+  if (maxX < minX) return surface;
+  const pad = 2;
+  minX = Math.max(0, minX - pad);
+  minY = Math.max(0, minY - pad);
+  maxX = Math.min(w - 1, maxX + pad);
+  maxY = Math.min(h - 1, maxY + pad);
+  const cropped = document.createElement('canvas');
+  cropped.width = maxX - minX + 1;
+  cropped.height = maxY - minY + 1;
+  cropped.getContext('2d').drawImage(surface, minX, minY, cropped.width, cropped.height, 0, 0, cropped.width, cropped.height);
+  return cropped;
 }
 
 function paintIcon(el, canvas) {
