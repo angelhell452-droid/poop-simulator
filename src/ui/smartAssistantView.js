@@ -1,17 +1,18 @@
-import { GAME } from '../core/state.js?v=5.0.35';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.35';
-import { buyFactory } from '../systems/factoryService.js?v=5.0.35';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.35';
+import { GAME } from '../core/state.js?v=5.0.39';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.39';
+import { buyFactory } from '../systems/factoryService.js?v=5.0.39';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.39';
 import { getBestKnife, equipBestKnife } from '../systems/knifeService.js';
 import { feedPet, washPet } from '../systems/petCareService.js';
-import { getPrestigeRollsReward } from '../prestige/prestigeService.js?v=5.0.35';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.35';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
-import { gte } from '../utils/big.js?v=5.0.35';
-import { updateHUD } from './hudView.js?v=5.0.35';
-import { renderCasesSystem } from './casesView.js?v=5.0.35';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.35';
-import { addVisualParticle } from './petCanvasView.js?v=5.0.35';
+import { getPrestigeRollsReward } from '../prestige/prestigeService.js?v=5.0.39';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.39';
+import { peakForm } from '../progression/unlocks.js?v=5.0.39';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.39';
+import { gte } from '../utils/big.js?v=5.0.39';
+import { updateHUD } from './hudView.js?v=5.0.39';
+import { renderCasesSystem } from './casesView.js?v=5.0.39';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.39';
+import { addVisualParticle } from './petCanvasView.js?v=5.0.39';
 
 let lastHintAction = null;
 
@@ -134,10 +135,9 @@ function determineBestHint() {
 
   // 7. Affordable CS:GO Case
   for (let c of WEAPON_CASES) {
-    const meetsP = !c.reqPrestiges || (GAME.totalPrestiges || 0) >= c.reqPrestiges;
-    const meetsT = !c.reqTranscend || (GAME.totalTranscend || 0) >= c.reqTranscend;
-    if (meetsP && meetsT) {
-      const hasCur = c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost : (GAME.transcendPlungers || 0) >= c.cost;
+    const meetsEpoch = peakForm() >= (c.reqForm || 1);
+    if (meetsEpoch) {
+      const hasCur = (GAME.prestigeRolls || 0) >= (c.cost || 0) && (GAME.transcendPlungers || 0) >= (c.costPlungers || 0);
       if (hasCur) {
         return {
           icon: '📦',

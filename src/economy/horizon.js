@@ -1,5 +1,5 @@
-import { GAME } from '../core/state.js?v=5.0.35';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.35';
+import { GAME } from '../core/state.js?v=5.0.39';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.39';
 
 export const HORIZON_FORM = 100000;
 export const SEAL_FORMS = [30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000];

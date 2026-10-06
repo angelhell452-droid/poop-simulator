@@ -5,11 +5,16 @@ export const WEAPON_CASES = [
     "icon": "📦",
     "currency": "rolls",
     "cost": 24,
-    "reqPrestiges": 1,
+    "costPlungers": 0,
+    "reqEpoch": 1,
+    "reqForm": 1,
     "currencySymbol": "🧻",
     "borderClass": "border-blue-500/70",
     "bgClass": "from-blue-950 via-stone-900 to-stone-950",
-    "desc": "Классический первый оружейный кейс: базовые и армейские ножи первого эшелона.",
+    "desc": "Классический первый оружейный кейс: базовые и армейские ножи первого эшелона. С шансом 1% — лучший нож Хромы.",
+    "fixedChances": {
+      "knife_karambit_safari": 0.01
+    },
     "pool": [
       "knife_navaja_safari",
       "knife_gut_rust",
@@ -40,7 +45,8 @@ export const WEAPON_CASES = [
       "knife_bowie_stained",
       "knife_stiletto_boreal",
       "knife_stiletto_damascus",
-      "knife_navaja_damascus"
+      "knife_navaja_damascus",
+      "knife_karambit_safari"
     ]
   },
   {
@@ -48,12 +54,17 @@ export const WEAPON_CASES = [
     "name": "Кейс «Хрома 3» (Chroma)",
     "icon": "🧰",
     "currency": "rolls",
-    "cost": 45,
-    "reqPrestiges": 2,
+    "cost": 40,
+    "costPlungers": 0,
+    "reqEpoch": 2,
+    "reqForm": 501,
     "currencySymbol": "🧻",
     "borderClass": "border-purple-500/70",
     "bgClass": "from-purple-950 via-stone-900 to-stone-950",
-    "desc": "Металлические и камуфляжные лезвия: Ursus, Bowie, Stiletto и Tiger Tooth.",
+    "desc": "Металлические и камуфляжные лезвия: Ursus, Bowie, Stiletto и Tiger Tooth. С шансом 1% — лучший нож Гаммы.",
+    "fixedChances": {
+      "knife_bayonet_tiger": 0.01
+    },
     "pool": [
       "knife_paracord_stained",
       "knife_survival_bluesteel",
@@ -81,7 +92,8 @@ export const WEAPON_CASES = [
       "knife_flip_tiger",
       "knife_gut_tiger",
       "knife_stiletto_tiger",
-      "knife_stiletto_crimson"
+      "knife_stiletto_crimson",
+      "knife_bayonet_tiger"
     ]
   },
   {
@@ -89,12 +101,17 @@ export const WEAPON_CASES = [
     "name": "Кейс «Гамма 2» (Gamma Waves)",
     "icon": "🎁",
     "currency": "rolls",
-    "cost": 80,
-    "reqPrestiges": 3,
+    "cost": 50,
+    "costPlungers": 1,
+    "reqEpoch": 3,
+    "reqForm": 1001,
     "currencySymbol": "🧻",
     "borderClass": "border-emerald-500/70",
     "bgClass": "from-emerald-950 via-stone-900 to-stone-950",
-    "desc": "Неоновые и изумрудные клинки: Hyper Beast, Doppler Phase 4 и острые кинжалы.",
+    "desc": "Неоновые и изумрудные клинки: Hyper Beast, Doppler Phase 4 и острые кинжалы. С шансом 1% — лучший нож Призмы.",
+    "fixedChances": {
+      "knife_butterfly_doppler": 0.01
+    },
     "pool": [
       "knife_ursus_tiger",
       "knife_nomad_crimson",
@@ -123,7 +140,8 @@ export const WEAPON_CASES = [
       "knife_talon_tiger",
       "knife_talon_fade",
       "knife_bayonet_autotronic",
-      "knife_bayonet_tiger"
+      "knife_bayonet_tiger",
+      "knife_butterfly_doppler"
     ]
   },
   {
@@ -131,12 +149,17 @@ export const WEAPON_CASES = [
     "name": "Кейс «Призма» (Prisma Spectrum)",
     "icon": "💎",
     "currency": "rolls",
-    "cost": 140,
-    "reqPrestiges": 5,
+    "cost": 90,
+    "costPlungers": 2,
+    "reqEpoch": 5,
+    "reqForm": 2001,
     "currencySymbol": "🧻",
     "borderClass": "border-cyan-500/70",
     "bgClass": "from-cyan-950 via-stone-900 to-stone-950",
-    "desc": "Спектральные клинки: Fire & Ice, Talon Fade, Nomad Blue Gem и градиентные лезвия.",
+    "desc": "Спектральные клинки: Fire & Ice, Talon Fade, Nomad Blue Gem и градиентные лезвия. С шансом 1% — лучший нож Грёз.",
+    "fixedChances": {
+      "knife_talon_emerald": 0.01
+    },
     "pool": [
       "knife_bayonet_fade",
       "knife_bayonet_doppler",
@@ -164,7 +187,8 @@ export const WEAPON_CASES = [
       "knife_butterfly_tiger",
       "knife_butterfly_autotronic",
       "knife_butterfly_marble",
-      "knife_butterfly_doppler"
+      "knife_butterfly_doppler",
+      "knife_talon_emerald"
     ]
   },
   {
@@ -172,12 +196,17 @@ export const WEAPON_CASES = [
     "name": "Кейс «Грёзы и Кошмары»",
     "icon": "🔮",
     "currency": "rolls",
-    "cost": 240,
-    "reqPrestiges": 8,
+    "cost": 140,
+    "costPlungers": 2,
+    "reqEpoch": 8,
+    "reqForm": 3501,
     "currencySymbol": "🧻",
     "borderClass": "border-pink-500/80",
     "bgClass": "from-pink-950 via-stone-900 to-stone-950",
-    "desc": "Премиальные ножи Doppler, Printstream, Skeleton Crimson, Рубины и Сапфиры.",
+    "desc": "Премиальные ножи Doppler, Printstream, Skeleton Crimson, Рубины и Сапфиры. С шансом 1% — лучший нож Радуги.",
+    "fixedChances": {
+      "knife_rainbow_paracord": 0.01
+    },
     "pool": [
       "knife_butterfly_doppler4",
       "knife_butterfly_printstream",
@@ -203,7 +232,8 @@ export const WEAPON_CASES = [
       "knife_stiletto_emerald",
       "knife_ursus_emerald",
       "knife_shadow_emerald",
-      "knife_talon_emerald"
+      "knife_talon_emerald",
+      "knife_rainbow_paracord"
     ]
   },
   {
@@ -211,12 +241,17 @@ export const WEAPON_CASES = [
     "name": "Кейс «Радужная Призма»",
     "icon": "🌈",
     "currency": "rolls",
-    "cost": 400,
-    "reqPrestiges": 12,
+    "cost": 230,
+    "costPlungers": 4,
+    "reqEpoch": 12,
+    "reqForm": 5501,
     "currencySymbol": "🧻",
     "borderClass": "border-amber-300",
     "bgClass": "from-red-950 via-purple-950 to-blue-950",
-    "desc": "Радужные Chroma-ножи со спектральным свечением всех 7 цветов радуги!",
+    "desc": "Радужные Chroma-ножи со спектральным свечением всех 7 цветов радуги! С шансом 1% — лучший нож Кибер-Титана.",
+    "fixedChances": {
+      "knife_celestial_m9": 0.01
+    },
     "pool": [
       "knife_karambit_emerald",
       "knife_butterfly_emerald",
@@ -240,7 +275,8 @@ export const WEAPON_CASES = [
       "knife_rainbow_bowie",
       "knife_rainbow_ursus",
       "knife_rainbow_stiletto",
-      "knife_rainbow_paracord"
+      "knife_rainbow_paracord",
+      "knife_celestial_m9"
     ]
   },
   {
@@ -248,15 +284,17 @@ export const WEAPON_CASES = [
     "name": "Кейс «Кибер-Титан 2077»",
     "icon": "⚙️",
     "currency": "rolls",
-    "cost": 700,
-    "reqPrestiges": 15,
-    "reqTalent": "star_forge_master",
-    "reqTalentName": "⚔️ Ковка Звездной Стали",
-    "reqTalentShortName": "Ковка Звездной Стали",
+    "cost": 340,
+    "costPlungers": 4,
+    "reqEpoch": 16,
+    "reqForm": 7501,
     "currencySymbol": "🧻",
     "borderClass": "border-teal-400",
     "bgClass": "from-stone-900 via-teal-950 to-stone-950",
-    "desc": "Высокотехнологичный сплав титана. ТРЕБУЕТ ТАЛАНТ «Ковка Звездной Стали»! Мощные радужные и небесные клинки!",
+    "desc": "Радужные и небесные клинки эпохи 16. С шансом 1% — лучший обычный нож Сингулярности.",
+    "fixedChances": {
+      "knife_titanium_bayonet": 0.01
+    },
     "pool": [
       "knife_rainbow_survival",
       "knife_rainbow_nomad",
@@ -275,7 +313,8 @@ export const WEAPON_CASES = [
       "knife_celestial_bowie",
       "knife_celestial_nomad",
       "knife_celestial_bayonet",
-      "knife_celestial_m9"
+      "knife_celestial_m9",
+      "knife_titanium_bayonet"
     ]
   },
   {
@@ -283,15 +322,14 @@ export const WEAPON_CASES = [
     "name": "Кейс «Сингулярность Бездны»",
     "icon": "🌌",
     "currency": "rolls",
-    "cost": 1200,
-    "reqPrestiges": 25,
-    "reqTalent": "quantum_mastery",
-    "reqTalentName": "🔮 Квантовое Господство",
-    "reqTalentShortName": "Квантовое Господство",
+    "cost": 480,
+    "costPlungers": 4,
+    "reqEpoch": 20,
+    "reqForm": 9501,
     "currencySymbol": "🧻",
     "borderClass": "border-violet-400 shadow-[0_0_15px_#8b5cf6]",
     "bgClass": "from-violet-950 via-purple-950 to-black",
-    "desc": "Эндгейм-кейс сингулярности. ТРЕБУЕТ ТАЛАНТ «Квантовое Господство»! Титановый керамбит выпадает с шансом 1%.",
+    "desc": "Небесные и титановые клинки эпохи 20. Титановый керамбит выпадает с шансом 1%.",
     "fixedChances": {
       "knife_titanium_karambit": 0.01
     },
@@ -315,75 +353,87 @@ export const WEAPON_CASES = [
     "id": "case_celestial",
     "name": "Кейс «Небесный Пантеон»",
     "icon": "✨",
-    "currency": "plungers",
-    "cost": 4,
-    "reqTranscend": 1,
+    "currency": "rolls",
+    "cost": 400,
+    "costPlungers": 6,
+    "reqEpoch": 24,
+    "reqForm": 11501,
     "currencySymbol": "🪠",
     "borderClass": "border-cyan-400",
     "bgClass": "from-cyan-950 via-indigo-950 to-purple-950",
-    "desc": "Титан выше сингулярности: от M9 до керамбита. В кейсах за втулки керамбит только с шансом 1%.",
+    "desc": "Титан выше сингулярности: от M9 до керамбита. С шансом 1% — Dragon Lore из следующего кейса.",
+    "fixedChances": {
+      "knife_karambit_lore": 0.01
+    },
     "pool": [
       "knife_titanium_m9",
       "knife_titanium_talon",
       "knife_titanium_skeleton",
       "knife_titanium_butterfly",
-      "knife_titanium_karambit"
+      "knife_titanium_karambit",
+      "knife_karambit_lore"
     ]
   },
   {
     "id": "case_dragon",
     "name": "Cobblestone & Omniverse Souvenir",
     "icon": "👑",
-    "currency": "plungers",
-    "cost": 8,
-    "reqTranscend": 3,
-    "reqTranscendUpgrade": "knifeForge",
-    "reqTranscendUpgradeName": "🗡️ Небесная Кузница Ножей",
+    "currency": "rolls",
+    "cost": 500,
+    "costPlungers": 8,
+    "reqEpoch": 28,
+    "reqForm": 13501,
     "currencySymbol": "🪠",
     "borderClass": "border-yellow-400 shadow-[0_0_20px_#facc15]",
     "bgClass": "from-yellow-950 via-amber-950 to-stone-950",
-    "desc": "Blue Gem и Dragon Lore. Экскалибур выпадает с шансом 1%. ТРЕБУЕТ РЕЛИКВИЮ «Небесная Кузница Ножей»!",
+    "desc": "Blue Gem и Dragon Lore эпохи 28. С шансом 1% — Коса Бесконечности из Короны.",
     "fixedChances": {
-      "knife_godly_katana": 0.01
+      "knife_godly_scythe": 0.01
     },
     "pool": [
       "knife_titanium_karambit",
       "knife_karambit_bluegem",
       "knife_karambit_lore",
-      "knife_godly_katana"
+      "knife_godly_scythe"
     ]
   },
   {
     "id": "case_demigod",
     "name": "Кейс «Корона Демиурга Омниверса»",
     "icon": "🔱",
-    "currency": "plungers",
-    "cost": 16,
-    "reqTranscend": 5,
+    "currency": "rolls",
+    "cost": 700,
+    "costPlungers": 10,
+    "reqEpoch": 34,
+    "reqForm": 16501,
     "currencySymbol": "🪠",
     "borderClass": "border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.6)]",
     "bgClass": "from-amber-950 via-yellow-950 to-black",
-    "desc": "Божественные клинки: Blue Gem, Dragon Lore, Экскалибур и Коса Бесконечности.",
+    "desc": "Божественные клинки: Blue Gem, Dragon Lore, Экскалибур и Коса Бесконечности. С шансом 1% — Точка Омега.",
+    "fixedChances": {
+      "knife_godly_omega": 0.01
+    },
     "pool": [
       "knife_karambit_bluegem",
       "knife_karambit_lore",
       "knife_godly_katana",
-      "knife_godly_scythe"
+      "knife_godly_scythe",
+      "knife_godly_omega"
     ]
   },
   {
     "id": "case_infinity",
     "name": "Кейс «Абсолютная Вечность»",
     "icon": "♾️",
-    "currency": "plungers",
-    "cost": 32,
-    "reqTranscend": 10,
-    "reqTranscendUpgrade": "singularityRift",
-    "reqTranscendUpgradeName": "♾️ Врата Вечности",
+    "currency": "rolls",
+    "cost": 900,
+    "costPlungers": 12,
+    "reqEpoch": 40,
+    "reqForm": 19501,
     "currencySymbol": "🪠",
     "borderClass": "border-fuchsia-400 shadow-[0_0_25px_rgba(217,70,239,0.6)]",
     "bgClass": "from-fuchsia-950 via-purple-950 to-black",
-    "desc": "Священный грааль Омниверса. ТРЕБУЕТ РЕЛИКВИЮ «Врата Вечности»! Только 5 чистейших Божественных ножей во главе с Omega Absolute!",
+    "desc": "Пять божественных ножей эпохи 40 во главе с Omega Absolute.",
     "pool": [
       "knife_karambit_bluegem",
       "knife_karambit_lore",

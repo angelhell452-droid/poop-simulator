@@ -1,18 +1,18 @@
-import { GAME } from '../core/state.js?v=5.0.35';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.35';
-import { KNIVES } from '../data/knives.data.js?v=5.0.35';
-import { TALENTS } from '../data/talents.data.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
+import { GAME } from '../core/state.js?v=5.0.39';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.39';
+import { KNIVES } from '../data/knives.data.js?v=5.0.39';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.39';
 import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.35';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.35';
-import { updateHUD } from './hudView.js?v=5.0.35';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.35';
+import { saveLocal } from '../save/saveManager.js?v=5.0.39';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.39';
+import { updateHUD } from './hudView.js?v=5.0.39';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.39';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.35';
-import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.35';
-import { isCasesUnlocked } from '../progression/unlocks.js';
+import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.39';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.39';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.0.39';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.39';
 
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -25,6 +25,77 @@ let spinAnimFrameId = null;
 let unlockTimeoutId = null;
 let currentWinnerIndex = 48;
 let currentWinningOffset = 0;
+
+function casePlungerCost(caseObj) {
+  return Math.max(0, Number(caseObj?.costPlungers) || 0);
+}
+
+function caseIsOpen(caseObj) {
+  return peakForm() >= (caseObj?.reqForm || 1);
+}
+
+function caseRollNeed(caseObj, count = 1) {
+  return Math.max(0, Number(caseObj?.cost) || 0) * count;
+}
+
+function missingCaseFunds(caseObj, count = 1) {
+  const parts = [];
+  const rolls = caseRollNeed(caseObj, count);
+  const plungers = casePlungerCost(caseObj) * count;
+  if ((GAME.prestigeRolls || 0) < rolls) parts.push(`${formatNumber(rolls)} втулок`);
+  if ((GAME.transcendPlungers || 0) < plungers) parts.push(`${formatNumber(plungers)} вантузов`);
+  return parts;
+}
+
+function canAffordCase(caseObj, count = 1) {
+  return missingCaseFunds(caseObj, count).length === 0;
+}
+
+function payForCase(caseObj, count = 1) {
+  GAME.prestigeRolls -= caseRollNeed(caseObj, count);
+  const plungers = casePlungerCost(caseObj) * count;
+  if (plungers > 0) GAME.transcendPlungers = (GAME.transcendPlungers || 0) - plungers;
+}
+
+function refundDuplicate(caseObj) {
+  const rolls = caseRollNeed(caseObj) > 0 ? Math.max(1, Math.round(caseRollNeed(caseObj) * 0.5)) : 0;
+  const plungers = Math.floor(casePlungerCost(caseObj) * 0.5);
+  if (rolls > 0) GAME.prestigeRolls = (GAME.prestigeRolls || 0) + rolls;
+  if (plungers > 0) GAME.transcendPlungers = (GAME.transcendPlungers || 0) + plungers;
+  return { rolls, plungers };
+}
+
+function refundLabel(refund) {
+  const parts = [];
+  if (refund.rolls > 0) parts.push(`+${formatNumber(refund.rolls)} втулок`);
+  if (refund.plungers > 0) parts.push(`+${formatNumber(refund.plungers)} вантузов`);
+  return parts.join(' и ');
+}
+
+function casePriceHtml(caseObj) {
+  const rolls = `<span class="inline-flex items-center gap-1">${formatNumber(caseObj.cost)} <span class="roll-icon"></span></span>`;
+  const plungers = casePlungerCost(caseObj);
+  if (plungers <= 0) return rolls;
+  return `${rolls}<span class="text-stone-500">+</span><span class="inline-flex items-center gap-1">${formatNumber(plungers)} <span class="plunger-icon"></span></span>`;
+}
+
+function casesInEpochOrder() {
+  return [...WEAPON_CASES].sort((a, b) => (a.reqEpoch || 1) - (b.reqEpoch || 1));
+}
+
+function assertCaseReady(caseObj, count = 1) {
+  if (!caseIsOpen(caseObj)) {
+    const epoch = getPhaseForForm(peakForm()).id;
+    alert(`Этот кейс откроется с эпохи ${formatNumber(caseObj.reqEpoch)}. Рекорд сейчас: эпоха ${formatNumber(epoch)}.`);
+    return false;
+  }
+  const missing = missingCaseFunds(caseObj, count);
+  if (missing.length > 0) {
+    alert(`Не хватает: ${missing.join(' и ')}.`);
+    return false;
+  }
+  return true;
+}
 
 let knifeFilterRarity = 'all';
 let knifeSearchQuery = '';
@@ -205,47 +276,8 @@ export function openCaseRoulette(caseId) {
   const caseObj = WEAPON_CASES.find(c => c.id === caseId);
   if (!caseObj) return;
 
-  if (caseObj.reqPrestiges && (GAME.totalPrestiges || 0) < caseObj.reqPrestiges) {
-    alert(`Этот кейс откроется после ${caseObj.reqPrestiges} Смывов! У вас выполнено: ${GAME.totalPrestiges || 0}.`);
-    return;
-  }
-  if (caseObj.reqTranscend && (GAME.totalTranscend || 0) < caseObj.reqTranscend) {
-    alert(`Этот кейс откроется после ${caseObj.reqTranscend} Прорывов! У вас выполнено: ${GAME.totalTranscend || 0}.`);
-    return;
-  }
-
-  // 🔒 Гейтинг по таланту
-  if (caseObj.reqTalent) {
-    const talent = TALENTS.find(t => t.id === caseObj.reqTalent);
-    if (!talent || talent.level <= 0) {
-      alert(`🔒 Этот кейс заблокирован! Требуется талант: «${caseObj.reqTalentName || caseObj.reqTalent}».\nКупите его во вкладке «Таланты»!`);
-      return;
-    }
-  }
-
-  // 🔒 Гейтинг по астральной реликвии
-  if (caseObj.reqTranscendUpgrade) {
-    const hasUpgrade = GAME.transcendUpgrades && GAME.transcendUpgrades[caseObj.reqTranscendUpgrade];
-    if (!hasUpgrade) {
-      alert(`🔒 Этот кейс заблокирован! Требуется реликвия: «${caseObj.reqTranscendUpgradeName || caseObj.reqTranscendUpgrade}».\nКупите её во вкладке «Таланты» → «Реликвии»!`);
-      return;
-    }
-  }
-
-  if (caseObj.currency === 'rolls' && GAME.prestigeRolls < caseObj.cost) {
-    alert('Недостаточно Золотых Втулок Судьбы (🧻)! Совершите Смыв Судьбы для их получения.');
-    return;
-  }
-  if (caseObj.currency === 'plungers' && (GAME.transcendPlungers || 0) < caseObj.cost) {
-    alert('Недостаточно Астральных Вантузов (🪠)! Совершите Астральный Прорыв.');
-    return;
-  }
-
-  if (caseObj.currency === 'rolls') {
-    GAME.prestigeRolls -= caseObj.cost;
-  } else {
-    GAME.transcendPlungers -= caseObj.cost;
-  }
+  if (!assertCaseReady(caseObj, 1)) return;
+  payForCase(caseObj, 1);
   saveLocal();
 
   activeRouletteCase = caseObj;
@@ -558,9 +590,7 @@ function onRouletteFinished() {
   if (!GAME.knifeStars) GAME.knifeStars = {};
   let isDuplicate = false;
   let star = 1;
-  let duplicateCashback = 0;
-  const isPlungers = activeRouletteCase?.currency === 'plungers';
-  const currSym = isPlungers ? '🪠' : '🧻';
+  let duplicateRefundText = '';
 
   if (!GAME.unlockedKnives.includes(rouletteWinningKnife.id)) {
     GAME.unlockedKnives.push(rouletteWinningKnife.id);
@@ -569,19 +599,13 @@ function onRouletteFinished() {
   } else {
     isDuplicate = true;
     star = GAME.knifeStars[rouletteWinningKnife.id] || 1;
-    // 50% Cashback of case cost
-    duplicateCashback = Math.max(1, Math.round((activeRouletteCase ? activeRouletteCase.cost : 10) * 0.5));
-    if (isPlungers) {
-      GAME.transcendPlungers = (GAME.transcendPlungers || 0) + duplicateCashback;
-    } else {
-      GAME.prestigeRolls = (GAME.prestigeRolls || 0) + duplicateCashback;
-    }
+    duplicateRefundText = refundLabel(refundDuplicate(activeRouletteCase || { cost: 10, costPlungers: 0 }));
   }
 
   const rarityEl = document.getElementById('rouletteResultRarity');
   if (rarityEl) {
     if (isDuplicate) {
-      rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${rouletteWinningKnife.rarityName}</span> • <span class="text-yellow-400 font-bold">🔁 ДУБЛИКАТ! (Кэшбэк 50%: +${formatNumber(duplicateCashback)} ${currSym})</span>`;
+      rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${rouletteWinningKnife.rarityName}</span> • <span class="text-yellow-400 font-bold">🔁 ДУБЛИКАТ! (Кэшбэк 50%: ${duplicateRefundText})</span>`;
     } else {
       rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${rouletteWinningKnife.rarityName}</span> • <span class="text-emerald-400 font-bold">✨ НОВЫЙ НОЖ! (★ Lv.1)</span>`;
     }
@@ -595,7 +619,7 @@ function onRouletteFinished() {
   if (pbEl) pbEl.textContent = `+${formatNumber(getKnifeCpsBonus(rouletteWinningKnife))} CPS`;
 
   showKnifeToast(isDuplicate
-    ? `🔁 Дубликат "${rouletteWinningKnife.name}"! Кэшбэк 50%: +${formatNumber(duplicateCashback)} ${currSym}`
+    ? `🔁 Дубликат "${rouletteWinningKnife.name}"! Кэшбэк 50%: ${duplicateRefundText}`
     : `🎉 Новый нож получен: ${rouletteWinningKnife.name}!`
   );
 
@@ -609,25 +633,11 @@ function onRouletteFinished() {
 
 export function openMultipleCases(caseObj, count = 3) {
   if (!caseObj || count <= 0 || !isCasesUnlocked()) return;
-  const isPlungers = caseObj.currency === 'plungers';
-  const totalCost = caseObj.cost * count;
-  const available = isPlungers ? (GAME.transcendPlungers || 0) : GAME.prestigeRolls;
-
-  if (available < totalCost) {
-    const sym = isPlungers ? '🪠' : '🧻';
-    alert(`Недостаточно валюты для открытия ${count} шт! Требуется: ${formatNumber(totalCost)} ${sym}`);
-    return;
-  }
-
-  // Deduct cost
-  if (isPlungers) {
-    GAME.transcendPlungers -= totalCost;
-  } else {
-    GAME.prestigeRolls -= totalCost;
-  }
+  if (!assertCaseReady(caseObj, count)) return;
 
   const poolKnives = caseObj.pool.map(id => KNIVES.find(k => k.id === id)).filter(Boolean);
   if (poolKnives.length === 0) return;
+  payForCase(caseObj, count);
 
   const wonKnives = [];
   for (let i = 0; i < count; i++) {
@@ -639,13 +649,7 @@ export function openMultipleCases(caseObj, count = 3) {
       GAME.unlockedKnives.push(won.id);
       GAME.knifeStars[won.id] = 1;
     } else {
-      // Duplicate cashback 50%
-      const cashback = Math.max(1, Math.round(caseObj.cost * 0.5));
-      if (isPlungers) {
-        GAME.transcendPlungers = (GAME.transcendPlungers || 0) + cashback;
-      } else {
-        GAME.prestigeRolls = (GAME.prestigeRolls || 0) + cashback;
-      }
+      refundDuplicate(caseObj);
     }
   }
 
@@ -714,32 +718,17 @@ export function renderCasesSystem() {
   if (cratesList && !isCasesUnlocked()) {
     cratesList.innerHTML = `<div class="col-span-full p-4 rounded-2xl border border-amber-900/60 bg-stone-950 text-center"><div class="text-2xl mb-1">🔒</div><div class="font-game text-sm text-amber-200">Кейсы закрыты</div><p class="text-[11px] text-stone-400 mt-1">Раздел откроется после первого Смыва. Смывов сейчас: ${formatNumber(GAME.totalPrestiges || 0)}.</p></div>`;
   } else if (cratesList) {
-    cratesList.innerHTML = WEAPON_CASES.map(c => {
-      const meetsPrestige = !c.reqPrestiges || (GAME.totalPrestiges || 0) >= c.reqPrestiges;
-      const meetsTranscend = !c.reqTranscend || (GAME.totalTranscend || 0) >= c.reqTranscend;
-      // 🔒 Talent gate check
-      const meetsTalent = !c.reqTalent || (() => {
-        const t = TALENTS.find(t => t.id === c.reqTalent);
-        return t && t.level > 0;
-      })();
-      // 🔒 Transcend upgrade (relic) gate check
-      const meetsRelic = !c.reqTranscendUpgrade || !!(GAME.transcendUpgrades && GAME.transcendUpgrades[c.reqTranscendUpgrade]);
-      const isUnlocked = meetsPrestige && meetsTranscend && meetsTalent && meetsRelic;
-      const hasCurrency = c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost : (GAME.transcendPlungers || 0) >= c.cost;
-      const hasCurrency3 = isUnlocked && (c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost * 3 : (GAME.transcendPlungers || 0) >= c.cost * 3);
+    cratesList.innerHTML = casesInEpochOrder().map(c => {
+      const isUnlocked = caseIsOpen(c);
+      const hasCurrency = canAffordCase(c, 1);
+      const hasCurrency3 = isUnlocked && canAffordCase(c, 3);
       const canOpen = isUnlocked && hasCurrency;
-
-      let lockReason = '';
-      if (!meetsPrestige) lockReason = `${c.reqPrestiges} Смывов`;
-      else if (!meetsTranscend) lockReason = `${c.reqTranscend} Прорывов`;
-      else if (!meetsTalent) lockReason = `Талант «${c.reqTalentShortName || c.reqTalent}»`;
-      else if (!meetsRelic) lockReason = `Реликвия «${c.reqTranscendUpgradeName || c.reqTranscendUpgrade}»`;
+      const lockReason = `Эпоха ${formatNumber(c.reqEpoch)}`;
 
       const lockBadge = !isUnlocked
-        ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 Требуется: ${lockReason}</div>`
+        ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 ${lockReason}</div>`
         : '';
 
-      const currIcon = c.currency === 'plungers' ? '<span class="plunger-icon"></span>' : '<span class="roll-icon"></span>';
       const btnText = !isUnlocked
         ? `🔒 ${lockReason}`
         : (hasCurrency ? `Открыть 🎰` : `Мало валюты ❌`);
@@ -750,7 +739,7 @@ export function renderCasesSystem() {
             <!-- Top Bar: Info button & Price badge cleanly separated -->
             <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-white/10 gap-2">
               <button class="case-info-btn w-6 h-6 rounded-full bg-stone-950/80 hover:bg-stone-850 text-yellow-300 border border-yellow-400/70 flex items-center justify-center text-xs font-black transition shadow-sm jelly-btn cursor-pointer shrink-0" data-case="${c.id}" title="Просмотреть шансы выпадения и список ножей">ⓘ</button>
-              <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-stone-950/90 text-yellow-300 border border-yellow-500/50 inline-flex items-center gap-1.5 shrink-0 shadow-sm whitespace-nowrap">${formatNumber(c.cost)} ${currIcon}</span>
+              <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-stone-950/90 text-yellow-300 border border-yellow-500/50 inline-flex items-center gap-1.5 shrink-0 shadow-sm whitespace-nowrap">${casePriceHtml(c)}</span>
             </div>
 
             <!-- Central Showcase: Centered big icon, full readable title and description -->
@@ -819,8 +808,7 @@ export function openCasePreviewModal(caseId) {
   if (titleEl) titleEl.textContent = caseObj.name;
   if (iconEl) iconEl.textContent = caseObj.icon;
   if (descEl) descEl.textContent = caseObj.desc;
-  const currIcon = caseObj.currency === 'plungers' ? '<span class="plunger-icon"></span>' : '<span class="roll-icon"></span>';
-  if (costEl) costEl.innerHTML = `${formatNumber(caseObj.cost)} ${currIcon} ${caseObj.currency === 'plungers' ? 'Вантузов' : 'Втулок'}`;
+  if (costEl) costEl.innerHTML = casePriceHtml(caseObj);
 
   if (listEl) {
     listEl.innerHTML = '';
@@ -998,15 +986,13 @@ export function updateCasesButtons() {
   cratesList.querySelectorAll('.open-case-btn').forEach(btn => {
     const c = WEAPON_CASES.find(cs => cs.id === btn.dataset.case);
     if (!c) return;
-    const meetsPrestige = !c.reqPrestiges || (GAME.totalPrestiges || 0) >= c.reqPrestiges;
-    const meetsTranscend = !c.reqTranscend || (GAME.totalTranscend || 0) >= c.reqTranscend;
-    const isUnlocked = meetsPrestige && meetsTranscend;
-    const hasCurrency = c.currency === 'rolls' ? GAME.prestigeRolls >= c.cost : (GAME.transcendPlungers || 0) >= c.cost;
+    const isUnlocked = caseIsOpen(c);
+    const hasCurrency = canAffordCase(c, 1);
     const canOpen = isUnlocked && hasCurrency;
     btn.disabled = !canOpen;
 
     const newText = !isUnlocked
-      ? `🔒 ${c.reqTranscend ? `${c.reqTranscend} Прорыв` : `${c.reqPrestiges} Смыв`}`
+      ? `🔒 Эпоха ${formatNumber(c.reqEpoch)}`
       : (hasCurrency ? `Открыть 🎰` : `Мало валюты ❌`);
 
     if (btn.textContent.trim() !== newText) {

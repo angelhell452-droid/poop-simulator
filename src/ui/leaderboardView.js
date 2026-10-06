@@ -1,8 +1,8 @@
-import { GAME } from '../core/state.js?v=5.0.35';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
-import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.0.35';
-import { saveLocal } from '../save/saveManager.js?v=5.0.35';
-import { updateHUD } from './hudView.js?v=5.0.35';
+import { GAME } from '../core/state.js?v=5.0.39';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.39';
+import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.0.39';
+import { saveLocal } from '../save/saveManager.js?v=5.0.39';
+import { updateHUD } from './hudView.js?v=5.0.39';
 
 let cachedLeaderboard = null;
 let cachedYou = null;

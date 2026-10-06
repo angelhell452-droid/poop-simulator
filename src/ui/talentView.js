@@ -1,12 +1,12 @@
-import { GAME } from '../core/state.js?v=5.0.35';
+import { GAME } from '../core/state.js?v=5.0.39';
 import { TALENTS } from '../data/talents.data.js';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.35';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
-import { drawPlunger } from '../utils/icons.js?v=5.0.35';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.39';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.39';
+import { drawPlunger } from '../utils/icons.js?v=5.0.39';
 import { getAffordableTalentInfo, buyTalent } from '../systems/talentService.js';
-import { buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.35';
-import { updateHUD } from './hudView.js?v=5.0.35';
-import { saveLocal } from '../save/saveManager.js?v=5.0.35';
+import { buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.39';
+import { updateHUD } from './hudView.js?v=5.0.39';
+import { saveLocal } from '../save/saveManager.js?v=5.0.39';
 import { getRollIcon } from '../utils/icons.js';
 import { isRelicSectionUnlocked, isTalentVisible } from '../progression/unlocks.js';
 
@@ -170,8 +170,8 @@ export function renderFlushTalents() {
       row.querySelector('.buy-talent-btn').addEventListener('click', async () => {
         if (buyTalent(tl.id)) {
           renderTalents();
-          const inventory = await import('./characterInventoryView.js?v=5.0.35');
-          const index = await import('./knivesIndexView.js?v=5.0.35');
+          const inventory = await import('./characterInventoryView.js?v=5.0.39');
+          const index = await import('./knivesIndexView.js?v=5.0.39');
           inventory.renderCharacterInventory();
           index.renderKnivesIndexBook();
           updateHUD();

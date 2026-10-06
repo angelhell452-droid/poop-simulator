@@ -1,27 +1,27 @@
-import { GAME } from '../core/state.js?v=5.0.35';
-import { KNIVES } from '../data/knives.data.js?v=5.0.35';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.35';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.35';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.35';
+import { GAME } from '../core/state.js?v=5.0.39';
+import { KNIVES } from '../data/knives.data.js?v=5.0.39';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.39';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.39';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.39';
 import { TALENTS } from '../data/talents.data.js';
 import { getKnifeStar, getKnifeSharpenCost, sharpenKnife, getHatLevel } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.35';
-import { updateHUD } from './hudView.js?v=5.0.35';
-import { renderCasesSystem } from './casesView.js?v=5.0.35';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
-import { drawPlunger } from '../utils/icons.js?v=5.0.35';
+import { saveLocal } from '../save/saveManager.js?v=5.0.39';
+import { updateHUD } from './hudView.js?v=5.0.39';
+import { renderCasesSystem } from './casesView.js?v=5.0.39';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.39';
+import { drawPlunger } from '../utils/icons.js?v=5.0.39';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.35';
-import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.35';
+import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.39';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.39';
 
 // Быстрый поиск кейса для ножа
 const KNIFE_CASE_MAP = new Map();
-WEAPON_CASES.forEach(c => {
+[...WEAPON_CASES].sort((a, b) => (a.reqEpoch || 1) - (b.reqEpoch || 1)).forEach(c => {
+  const teased = new Set(Object.keys(c.fixedChances || {}));
   (c.pool || []).forEach(kid => {
-    if (!KNIFE_CASE_MAP.has(kid)) {
-      KNIFE_CASE_MAP.set(kid, { id: c.id, name: c.name, icon: c.icon, cost: c.cost, currency: c.currency });
-    }
+    if (teased.has(kid) || KNIFE_CASE_MAP.has(kid)) return;
+    KNIFE_CASE_MAP.set(kid, { id: c.id, name: c.name, icon: c.icon, cost: c.cost, currency: c.currency });
   });
 });
 

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.35 PRO</title>
+  <title>Poop Simulator v5.0.39 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.35">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.39">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,16 +36,11 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.35 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.39 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             title="Сообщить об ошибке">
             <span>🐛</span> <span>Баг</span>
-          </button>
-          <button id="btnLeaderboardModal"
-            class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
-            title="Зал славы">
-            <span>🏆</span> <span>Топ</span>
           </button>
         </div>
 
@@ -98,6 +93,11 @@
         class="jelly-btn font-game px-2.5 sm:px-3 py-1 text-xs flex items-center gap-1.5 font-bold"
         title="VIP-статус. Покупка пока недоступна">
         <span>👑</span> <span>VIP</span>
+      </button>
+      <button id="btnLeaderboardModal"
+        class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
+        title="Зал славы">
+        <span>🏆</span> <span>Топ</span>
       </button>
       <button id="btnGuideModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
@@ -547,7 +547,7 @@
               class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:brightness-110 text-white font-game text-xs flex items-center justify-between gap-2 shadow-lg shadow-purple-500/25 border border-yellow-300/40 jelly-btn">
               <div class="flex items-center gap-2">
                 <span class="text-lg">📖</span>
-                <span class="tracking-wide">КНИГА ИНДЕКСА НОЖЕЙ (200 НОЖЕЙ)</span>
+                <span class="tracking-wide">Книга Индекса Ножей</span>
               </div>
               <div class="flex items-center gap-1.5">
                 <span id="indexBookHeaderBadge"
@@ -1703,8 +1703,9 @@
           <div class="mt-2 bg-stone-900/80 p-2 rounded-xl border border-stone-700 text-[11px] space-y-1">
             <div><b class="text-cyan-300">⭐ Редкости:</b> Армейские ➔ Запрещенные ➔ Засекреченные ➔ Тайные (Covert) ➔
               Радужные (Rainbow) ➔ Титановые ➔ Небесные (Celestial) ➔ Божественные (Godly Omega)!</div>
-            <div><b class="text-yellow-300">⭐ Фазы кейсов:</b> Кейсы за втулки идут лесенкой: следующий сильнее и стоит несколько смывов той эпохи.
-              Кейсы за вантузы начинаются выше: титан, затем божественные ножи.</div>
+            <div><b class="text-yellow-300">⭐ Фазы кейсов:</b> Кейс открывается с рекорда эпохи и стоит два-три смыва этой эпохи.
+              С эпохи 3 к втулкам добавляются вантузы. Смыв рекорд не стирает, кейс остаётся открытым.
+              В каждом кейсе, кроме последнего, 1% на лучший обычный нож следующего.</div>
             <div><b class="text-orange-400">⭐ StatTrak™:</b> Каждый клик экипированным ножом навсегда увеличивает
               счётчик его фрагов!</div>
           </div>
@@ -2111,7 +2112,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.35"></script>
+  <script type="module" src="src/main.js?v=5.0.39"></script>
 </body>
 
 </html>
