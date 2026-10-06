@@ -1,10 +1,10 @@
-import { GAME } from '../core/state.js?v=5.0.30';
+import { GAME } from '../core/state.js?v=5.0.35';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.30';
-import { getClickPower, getEquippedKnife } from '../economy/production.js?v=5.0.30';
-import { takeClickBudget } from './autoclickService.js?v=5.0.30';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.35';
+import { getClickPower, getEquippedKnife } from '../economy/production.js?v=5.0.35';
+import { takeClickBudget } from './autoclickService.js?v=5.0.35';
 import { events } from '../core/events.js';
-import { add, gainBio, mul } from '../utils/big.js?v=5.0.30';
+import { add, gainBio, mul } from '../utils/big.js?v=5.0.35';
 
 export let pendingClicks = 0;
 

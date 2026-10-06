@@ -1,22 +1,23 @@
-import { GAME } from '../core/state.js?v=5.0.30';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.30';
-import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.30';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.30';
-import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.30';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.30';
+import { GAME } from '../core/state.js?v=5.0.35';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.35';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.35';
+import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.35';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.35';
 
-import { updateHUD } from './hudView.js?v=5.0.30';
-import { renderCasesSystem } from './casesView.js?v=5.0.30';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.30';
-import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.30';
-import { renderFactories } from './factoryView.js?v=5.0.30';
+import { updateHUD } from './hudView.js?v=5.0.35';
+import { renderCasesSystem } from './casesView.js?v=5.0.35';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.35';
+import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.35';
+import { renderFactories } from './factoryView.js?v=5.0.35';
 import { renderShop } from './shopView.js';
 import { events } from '../core/events.js';
 import { isRelicSectionUnlocked } from '../progression/unlocks.js';
 
 let pendingPrestigeArchetype = 'balanced';
-let flushNotesOpen = false;
-let transcendNotesOpen = false;
+function notesAreOpen(modalId) {
+  return document.getElementById(modalId)?.dataset.notesOpen === '1';
+}
 
 export function updatePrestigeModalRealtime() {
   const modal = document.getElementById('prestigeModal');
@@ -37,8 +38,8 @@ export function updatePrestigeModalRealtime() {
     reqLabel.innerHTML = `
       <div class="space-y-1.5">
         <div class="rounded-full border-2 px-3 py-2 text-center font-game text-sm font-bold ${verdictClass}">${verdict}</div>
-        <div class="rounded-full border-2 border-yellow-300 bg-stone-950 px-3 py-2 text-center font-game text-sm text-yellow-200">
-          Сейчас форма #${formatNumber(b.currentForm)} · для прорыва нужна #${formatNumber(bridgeForm)}
+        <div class="rounded-full border-2 border-yellow-300 bg-stone-950 px-3 py-1.5 text-center font-game text-xs text-yellow-200 whitespace-nowrap">
+          Сейчас #${formatNumber(b.currentForm)} · надо #${formatNumber(bridgeForm)}
         </div>
         <div class="flex items-center justify-between text-xs">
           <span class="${b.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
@@ -94,18 +95,18 @@ export function updatePrestigeModalRealtime() {
         </div>
         <div class="text-[10px] text-purple-200 space-y-0.5 font-mono">
           <div>├─ 🧻 Втулки за этот смыв: <b class="text-white">+${formatNumber(b.bioPart)}</b></div>
-          <div>├─ 🌀 Эхо эпохи ${formatNumber(echoPhaseId)}: <b class="text-white">${b.pairSealed ? 'пара уже на x3' : `x${formatNumber(nextEcho)} у этой эпохи`}</b></div>
-          <div>├─ 🪠 Вантуз: <b class="${b.plungerGain > 0 ? 'text-cyan-300' : 'text-amber-200'}">${plungerLine}</b></div>
+          <div>├─ 🌀 Эхо эпохи ${formatNumber(echoPhaseId)}: <b class="text-white">${b.pairSealed ? 'уже x3' : `после смыва x${formatNumber(nextEcho)}`}</b></div>
+          <div>├─ <span class="plunger-icon" aria-hidden="true"></span> Вантуз: <b class="${b.plungerGain > 0 ? 'text-cyan-300' : 'text-amber-200'}">${plungerLine}</b></div>
           <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${formatNumber(Math.round((b.flushTalentBonus - 1) * 100))}%</b></div>
         </div>
         <div class="text-[11px] text-yellow-100 font-game leading-snug">
-          Эхо этой эпохи: ${b.pairSealed ? 'пара уже на x3 от прорыва' : `после смыва x${formatNumber(nextEcho)}, дальше ползёт к x3`}. Прорыв отдельно ставит всей паре x3.
+          ${b.pairSealed ? 'Эхо этой эпохи уже x3.' : `Эхо этой эпохи: после смыва x${formatNumber(nextEcho)}, дальше к x3.`}
         </div>
         <button type="button" id="flushNotesToggle" class="w-full text-left font-bold text-[10px] text-amber-200 flex items-center justify-between gap-2 rounded-full border border-amber-400/50 px-3 py-1.5">
           <span>Втулки, эхо и прорыв — разные вещи</span>
-          <span>${flushNotesOpen ? '▴' : '▾'}</span>
+          <span>${notesAreOpen('prestigeModal') ? '▴' : '▾'}</span>
         </button>
-        <div class="${flushNotesOpen ? '' : 'hidden'} text-purple-200/90 text-[9px] leading-tight space-y-0.5">
+        <div class="${notesAreOpen('prestigeModal') ? '' : 'hidden'} text-purple-200/90 text-[9px] leading-tight space-y-0.5">
           <div>• Втулки тратят на таланты и кейсы. Доход они не множат</div>
           <div>• Эхо множит доход открытой эпохи. Первый смыв ставит x2, следующие подходят к x3</div>
           <div>• В прорыв идут смывы эпохи ${formatNumber(bridge.id)}, и только с формы #${formatNumber(bridgeForm)}. Сейчас ${formatNumber(bridgeHave)} из ${formatNumber(bridgeNeed)}</div>
@@ -181,7 +182,7 @@ export function updateTranscendModalRealtime() {
 
       <div class="mt-2 p-2.5 rounded-xl bg-indigo-950/80 border border-cyan-400/40 text-left space-y-1.5">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] text-cyan-300 uppercase font-black tracking-wider">🪠 Расчет награды Вантузов:</span>
+          <span class="text-[10px] text-cyan-300 uppercase font-black tracking-wider"><span class="plunger-icon" aria-hidden="true"></span> Расчет награды Вантузов:</span>
           <span class="font-game text-sm text-cyan-300 font-bold">+${formatNumber(gain)} <span class="plunger-icon"></span></span>
         </div>
         <div class="text-[10px] text-indigo-200 space-y-0.5 font-mono">
@@ -196,9 +197,9 @@ export function updateTranscendModalRealtime() {
         </div>
         <button type="button" id="transcendNotesToggle" class="w-full text-left font-bold text-[10px] text-cyan-200 flex items-center justify-between gap-2 rounded-full border border-cyan-400/50 px-3 py-1.5">
           <span>Как получить больше вантузов</span>
-          <span>${transcendNotesOpen ? '▴' : '▾'}</span>
+          <span>${notesAreOpen('transcendModal') ? '▴' : '▾'}</span>
         </button>
-        <div class="${transcendNotesOpen ? '' : 'hidden'} text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
+        <div class="${notesAreOpen('transcendModal') ? '' : 'hidden'} text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
           <div>• Нужны ${formatNumber(t.reqPrestiges)} смыва на эпохе ${formatNumber(t.phase?.id || 2)}, которые считаются в прорыв. Смыв этой эпохи даёт ${formatNumber(1)} вантуз, пока не набран запас пары</div>
           <div>• Потом снова дойдите до формы и биомассы этой эпохи и нажмите Прорыв. Лишний смыв не нужен</div>
           <div>• Пара получает доход x3, сколько бы смывов на ней ни было. Уже сделанные прорывы этот дар тоже получают</div>
@@ -271,19 +272,26 @@ export function openTranscendModal() {
   updateTranscendModalRealtime();
 }
 
+function bindNotesToggle(modalId, buttonId, update) {
+  const modal = document.getElementById(modalId);
+  if (!modal || modal.dataset.notesBound === '1') return;
+  modal.dataset.notesBound = '1';
+  modal.addEventListener('pointerdown', (event) => {
+    if (!event.target.closest(buttonId)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    const now = Date.now();
+    if (now < Number(modal.dataset.notesGuard || 0)) return;
+    modal.dataset.notesGuard = String(now + 450);
+    modal.dataset.notesOpen = modal.dataset.notesOpen === '1' ? '0' : '1';
+    update();
+  });
+}
+
 export function initModals() {
-  document.getElementById('prestigeModal')?.addEventListener('click', (event) => {
-    if (!event.target.closest('#flushNotesToggle')) return;
-    event.preventDefault();
-    flushNotesOpen = !flushNotesOpen;
-    updatePrestigeModalRealtime();
-  });
-  document.getElementById('transcendModal')?.addEventListener('click', (event) => {
-    if (!event.target.closest('#transcendNotesToggle')) return;
-    event.preventDefault();
-    transcendNotesOpen = !transcendNotesOpen;
-    updateTranscendModalRealtime();
-  });
+  bindNotesToggle('prestigeModal', '#flushNotesToggle', updatePrestigeModalRealtime);
+  bindNotesToggle('transcendModal', '#transcendNotesToggle', updateTranscendModalRealtime);
 
   // Global modal close buttons
   document.querySelectorAll('.modal-close').forEach(btn => {

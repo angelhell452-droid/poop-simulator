@@ -278,11 +278,11 @@ body.girly-mode {
   display: inline-block;
   width: 1.15em;
   height: 1.15em;
-  vertical-align: -0.18em;
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11 2.5C11 1.67 11.67 1 12.5 1C13.33 1 14 1.67 14 2.5V13H11V2.5Z' fill='%23D97706'/%3E%3Cpath d='M11.8 2C11.8 1.7 12.1 1.5 12.5 1.5C12.9 1.5 13.2 1.7 13.2 2V13H11.8V2Z' fill='%23FBBF24'/%3E%3Cpath d='M7 19.5C7 15.5 9.5 13.5 11 13H14C15.5 13.5 18 15.5 18 19.5H7Z' fill='%23DC2626'/%3E%3Cpath d='M9 18C9 15.8 10.5 14.5 12 14.2' stroke='%23FCA5A5' stroke-width='1.2' stroke-linecap='round'/%3E%3Cellipse cx='12.5' cy='19.8' rx='6' ry='1.7' fill='%23991B1B'/%3E%3Cellipse cx='12.5' cy='19.5' rx='5.2' ry='1.2' fill='%23EF4444'/%3E%3C/svg%3E");
+  min-width: 1.15em;
+  min-height: 1.15em;
+  flex: 0 0 auto;
+  vertical-align: -0.2em;
+  background: url("../assets/icons/plunger.svg") center / contain no-repeat;
 }
 
 /* Universal SVG Golden Paper Roll Icon (Втулка Судьбы - 100% crisp across all OS) */
@@ -361,7 +361,7 @@ header #btnBugReport {
 
 .canvas-split {
   display: inline-flex;
-  overflow: hidden;
+  overflow: visible;
   border: 3px solid var(--border-light);
   border-radius: var(--radius-full);
   background: var(--surface);
@@ -372,6 +372,37 @@ header #btnBugReport {
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+}
+
+.canvas-split .canvas-tool:first-child {
+  border-top-left-radius: var(--radius-full) !important;
+  border-bottom-left-radius: var(--radius-full) !important;
+}
+
+.canvas-split .canvas-tool:last-child {
+  border-top-right-radius: var(--radius-full) !important;
+  border-bottom-right-radius: var(--radius-full) !important;
+}
+
+.canvas-split .canvas-tool.glow-gold {
+  background: #f6c453 !important;
+  color: #3a2412 !important;
+  box-shadow: inset 0 0 12px #fff6d0, 0 0 16px 2px #e8b423 !important;
+}
+
+.canvas-split .canvas-tool.glow-green {
+  background: #5dce86 !important;
+  color: #143024 !important;
+  box-shadow: inset 0 0 12px #ecfdf5, 0 0 16px 2px #10b981 !important;
+}
+
+#btnExecutePrestige.glow-gold,
+#btnExecuteTranscend.glow-gold {
+  box-shadow: inset 0 0 16px #fff6d0, 0 0 18px 2px #e8b423 !important;
+}
+
+#btnExecutePrestige.glow-green {
+  box-shadow: inset 0 0 16px #ecfdf5, 0 0 18px 2px #10b981 !important;
 }
 
 .canvas-split .canvas-tool + .canvas-tool {

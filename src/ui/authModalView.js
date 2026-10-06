@@ -1,14 +1,14 @@
-import { GAME } from '../core/state.js?v=5.0.30';
+import { GAME } from '../core/state.js?v=5.0.35';
 import { events } from '../core/events.js';
-import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.0.30';
-import { updateHUD } from './hudView.js?v=5.0.30';
-import { renderFactories } from './factoryView.js?v=5.0.30';
-import { renderTalents } from './talentView.js?v=5.0.30';
+import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.0.35';
+import { updateHUD } from './hudView.js?v=5.0.35';
+import { renderFactories } from './factoryView.js?v=5.0.35';
+import { renderTalents } from './talentView.js?v=5.0.35';
 import { renderShop } from './shopView.js';
 import { renderAchievements } from './achievementsView.js';
 import { renderEvoChronicles } from './evoChroniclesView.js';
-import { renderCasesSystem } from './casesView.js?v=5.0.30';
-import { refreshAdminAccess } from './adminView.js?v=5.0.30';
+import { renderCasesSystem } from './casesView.js?v=5.0.35';
+import { refreshAdminAccess } from './adminView.js?v=5.0.35';
 
 export function openAuthModal(defaultTab = 'login') {
   const modal = document.getElementById('authModal');

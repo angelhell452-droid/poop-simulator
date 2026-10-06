@@ -1,18 +1,17 @@
-import { GAME } from '../core/state.js?v=5.0.30';
-import { WEAPON_CASES } from '../data/cases.data.js';
-import { KNIVES } from '../data/knives.data.js';
+import { GAME } from '../core/state.js?v=5.0.35';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.35';
+import { KNIVES } from '../data/knives.data.js?v=5.0.35';
 import { TALENTS } from '../data/talents.data.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.30';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.30';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
 import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.30';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.30';
-import { updateHUD } from './hudView.js?v=5.0.30';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.30';
+import { saveLocal } from '../save/saveManager.js?v=5.0.35';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.35';
+import { updateHUD } from './hudView.js?v=5.0.35';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.35';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.30';
-import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.30';
+import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.35';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.35';
 import { isCasesUnlocked } from '../progression/unlocks.js';
 
 let caseAudioEnabled = true;
@@ -290,39 +289,57 @@ export const KNIFE_RARITY_WEIGHTS = {
   'mil-spec': 70.00
 };
 
-export function getKnifePoolWithChances(poolKnives) {
+export function getKnifePoolWithChances(poolKnives, fixedChances = null) {
   if (!poolKnives || poolKnives.length === 0) return [];
 
-  // Find power range within this specific pool
-  const minPower = Math.min(...poolKnives.map(k => k.clickMult || 1));
-  const maxPower = Math.max(...poolKnives.map(k => k.clickMult || 1));
-  const powerRange = maxPower / minPower;
+  const fixedChanceOf = (knife) => {
+    const value = fixedChances && Number(fixedChances[knife.id]);
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  };
+  const fixedKnives = [];
+  const regular = [];
+  for (const knife of poolKnives) {
+    if (fixedChanceOf(knife) > 0) fixedKnives.push(knife);
+    else regular.push(knife);
+  }
 
-  // Curve strength: 0.0 = equal chances, 1.0 = fully linear inverse.
-  // 0.65 gives a nice balance — strongest is ~3-8x rarer than weakest,
-  // but never falls below 5% of the max weight (so always obtainable).
-  const CURVE = 0.65;
-  const MIN_WEIGHT_RATIO = 0.05; // strongest can never be less than 5% of weakest's weight
+  const asked = fixedKnives.reduce((sum, knife) => sum + fixedChanceOf(knife), 0);
+  const fixedBudget = Math.min(0.95, asked);
+  const fixedScale = asked > 0 ? fixedBudget / asked : 1;
+  const rest = 1 - fixedBudget;
 
-  const rawWeights = poolKnives.map(k => {
-    const normalizedPower = (k.clickMult || 1) / minPower; // 1.0 for weakest, >1 for stronger
-    const raw = 1.0 / Math.pow(normalizedPower, CURVE);     // inverted: weak=high, strong=low
-    return Math.max(raw, MIN_WEIGHT_RATIO);                 // floor so best knife is still obtainable
-  });
+  const rows = [];
+  if (regular.length > 0) {
+    const minPower = Math.min(...regular.map(k => k.clickMult || 1));
+    // Curve strength: 0.0 = equal chances, 1.0 = fully linear inverse.
+    // 0.65 gives a nice balance — strongest is ~3-8x rarer than weakest,
+    // but never falls below 5% of the max weight (so always obtainable).
+    const CURVE = 0.65;
+    const MIN_WEIGHT_RATIO = 0.05;
+    const rawWeights = regular.map(k => {
+      const normalizedPower = (k.clickMult || 1) / minPower;
+      const raw = 1.0 / Math.pow(normalizedPower, CURVE);
+      return Math.max(raw, MIN_WEIGHT_RATIO);
+    });
+    const totalWeight = rawWeights.reduce((s, w) => s + w, 0);
+    const shareOfRest = fixedKnives.length > 0 ? rest : 1;
+    regular.forEach((knife, i) => {
+      const share = (rawWeights[i] / totalWeight) * shareOfRest;
+      rows.push({ knife, weight: share, chancePercent: share * 100 });
+    });
+  }
 
-  const totalWeight = rawWeights.reduce((s, w) => s + w, 0);
-
-  return poolKnives.map((k, i) => {
-    const weight = rawWeights[i];
-    const chancePercent = (weight / totalWeight) * 100;
-    return { knife: k, weight, chancePercent };
-  });
+  for (const knife of fixedKnives) {
+    const chance = fixedChanceOf(knife) * fixedScale;
+    rows.push({ knife, weight: chance, chancePercent: chance * 100 });
+  }
+  return rows;
 }
 
 
-export function pickWeightedKnife(poolKnives) {
+export function pickWeightedKnife(poolKnives, fixedChances = null) {
   if (!poolKnives || poolKnives.length === 0) return null;
-  const list = getKnifePoolWithChances(poolKnives);
+  const list = getKnifePoolWithChances(poolKnives, fixedChances);
   const totalWeight = list.reduce((sum, item) => sum + item.weight, 0);
   let rand = Math.random() * totalWeight;
   for (const item of list) {
@@ -340,7 +357,7 @@ export function setupAndRunRouletteTape(caseObj, instantSkip = false) {
   track.style.filter = 'none';
 
   const poolKnives = caseObj.pool.map(id => KNIVES.find(k => k.id === id)).filter(Boolean);
-  rouletteWinningKnife = pickWeightedKnife(poolKnives) || poolKnives[0];
+  rouletteWinningKnife = pickWeightedKnife(poolKnives, caseObj.fixedChances) || poolKnives[0];
 
   const winnerIndex = 48;
   currentWinnerIndex = winnerIndex;
@@ -614,7 +631,7 @@ export function openMultipleCases(caseObj, count = 3) {
 
   const wonKnives = [];
   for (let i = 0; i < count; i++) {
-    const won = pickWeightedKnife(poolKnives) || poolKnives[0];
+    const won = pickWeightedKnife(poolKnives, caseObj.fixedChances) || poolKnives[0];
     wonKnives.push(won);
 
     if (!GAME.knifeStars) GAME.knifeStars = {};
@@ -692,22 +709,6 @@ export function renderCasesSystem() {
 
   const pnlIndexBadge = document.getElementById('indexBookHeaderBadge');
   if (pnlIndexBadge) pnlIndexBadge.textContent = `${unlockedCount} / ${KNIVES.length}`;
-
-  const skinInfo = getPoopSkinInfo(GAME.evoStage, GAME.girlyMode);
-  const skinIconEl = document.getElementById('poopSkinIcon');
-  if (skinIconEl) skinIconEl.textContent = skinInfo.icon;
-  const skinNameEl = document.getElementById('poopSkinName');
-  if (skinNameEl) skinNameEl.textContent = skinInfo.name;
-  const skinTierEl = document.getElementById('poopSkinTierBadge');
-  if (skinTierEl) skinTierEl.textContent = `Тир ${skinInfo.tier}`;
-  const skinHintEl = document.getElementById('poopSkinProgressHint');
-  if (skinHintEl) {
-    if (skinInfo.nextAt >= 100000) {
-      skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • облик за горизонтом`;
-    } else {
-      skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • след. облик на форме #${formatNumber(skinInfo.nextAt)}`;
-    }
-  }
 
   const cratesList = document.getElementById('casesCratesList');
   if (cratesList && !isCasesUnlocked()) {
@@ -824,7 +825,7 @@ export function openCasePreviewModal(caseId) {
   if (listEl) {
     listEl.innerHTML = '';
     const poolKnives = caseObj.pool.map(id => KNIVES.find(k => k.id === id)).filter(Boolean);
-    const poolWithChances = getKnifePoolWithChances(poolKnives);
+    const poolWithChances = getKnifePoolWithChances(poolKnives, caseObj.fixedChances);
 
     // Sort by rarity (rarest knives first), then by clickMult descending
     poolWithChances.sort((a, b) => (a.weight - b.weight) || (b.knife.clickMult - a.knife.clickMult));
@@ -878,7 +879,7 @@ export function openCasePreviewModal(caseId) {
               <span class="text-stone-600">•</span>
               <span>CPS: <b class="text-cyan-300 font-bold">+${formatNumber(getKnifeCpsBonus(knife))}</b></span>
               <span class="text-stone-600">•</span>
-              <span>Множитель: <b class="text-amber-300 font-bold">x${knife.clickMult}</b></span>
+              <span>Множитель: <b class="text-amber-300 font-bold">x${formatNumber(knife.clickMult)}</b></span>
             </div>
           </div>
         </div>

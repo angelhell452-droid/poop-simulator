@@ -1,18 +1,19 @@
-import { GAME } from '../core/state.js?v=5.0.30';
-import { KNIVES } from '../data/knives.data.js';
-import { WEAPON_CASES } from '../data/cases.data.js';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.30';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.30';
+import { GAME } from '../core/state.js?v=5.0.35';
+import { KNIVES } from '../data/knives.data.js?v=5.0.35';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.35';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.35';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.35';
 import { TALENTS } from '../data/talents.data.js';
 import { getKnifeStar, getKnifeSharpenCost, sharpenKnife, getHatLevel } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.30';
-import { updateHUD } from './hudView.js?v=5.0.30';
-import { renderCasesSystem } from './casesView.js?v=5.0.30';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.30';
+import { saveLocal } from '../save/saveManager.js?v=5.0.35';
+import { updateHUD } from './hudView.js?v=5.0.35';
+import { renderCasesSystem } from './casesView.js?v=5.0.35';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
+import { drawPlunger } from '../utils/icons.js?v=5.0.35';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.30';
-import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.30';
+import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.35';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.35';
 
 // Быстрый поиск кейса для ножа
 const KNIFE_CASE_MAP = new Map();
@@ -242,7 +243,7 @@ export function renderFactoriesIndex() {
 
     return `
       <div class="p-3 rounded-2xl border ${isActive ? 'border-amber-500/60 bg-stone-900/90 shadow' : 'border-stone-800 bg-stone-950/70'} flex items-start gap-3">
-        <span class="text-3xl shrink-0 p-2 bg-stone-800/80 rounded-xl border border-stone-700">${fac.icon}</span>
+        <span class="text-3xl shrink-0 p-2 bg-stone-800/80 rounded-xl border border-stone-700">${drawPlunger(fac.icon)}</span>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between gap-1">
             <span class="font-game text-xs font-bold ${isActive ? 'text-yellow-300' : 'text-stone-200'} truncate">#${idx + 1} ${fac.name}</span>
@@ -360,7 +361,7 @@ export function renderPerksIndex() {
     const curLvl = t.level || 0;
     return `
       <div class="p-2.5 rounded-2xl border border-stone-800 bg-stone-950/80 flex items-start gap-2.5 text-left">
-        <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${t.icon}</span>
+        <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${drawPlunger(t.icon)}</span>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between">
             <span class="font-game text-xs font-bold text-yellow-300 truncate">${t.name}</span>

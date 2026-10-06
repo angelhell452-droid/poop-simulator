@@ -1,14 +1,15 @@
-import { GAME } from '../core/state.js?v=5.0.30';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.30';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.30';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.30';
-import { buyFactory } from '../systems/factoryService.js?v=5.0.30';
-import { updateHUD, openRateBreakdown } from './hudView.js?v=5.0.30';
-import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production.js?v=5.0.30';
-import { saveLocal } from '../save/saveManager.js?v=5.0.30';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.30';
-import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.0.30';
-import { mul } from '../utils/big.js?v=5.0.30';
+import { GAME } from '../core/state.js?v=5.0.35';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.35';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.35';
+import { buyFactory } from '../systems/factoryService.js?v=5.0.35';
+import { updateHUD, openRateBreakdown } from './hudView.js?v=5.0.35';
+import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production.js?v=5.0.35';
+import { saveLocal } from '../save/saveManager.js?v=5.0.35';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.35';
+import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.0.35';
+import { mul } from '../utils/big.js?v=5.0.35';
+import { drawPlunger } from '../utils/icons.js?v=5.0.35';
 
 let activeFactoryTier = 'all'; // 'all' | '1' | '2' | '3' | '4' | '5'
 
@@ -168,7 +169,7 @@ export function renderFactories() {
     row.innerHTML = `
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <span class="factory-icon">${fac.icon}</span>
+          <span class="factory-icon">${drawPlunger(fac.icon)}</span>
           <div>
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="font-bold text-xs text-stone-200">${fac.name}</span>

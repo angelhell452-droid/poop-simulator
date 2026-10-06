@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.30 PRO</title>
+  <title>Poop Simulator v5.0.35 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.19">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.35">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.30 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.35 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             title="Сообщить об ошибке">
@@ -340,16 +340,12 @@
 
         <!-- Dynamic Poop Skin Badge (Roblox Top-Tier Game aesthetic) -->
         <div id="poopSkinPill"
-          class="absolute top-3 left-3 bg-stone-900/85 hover:bg-stone-850 backdrop-blur-md px-3 py-1.5 rounded-2xl border-2 border-yellow-400/70 shadow-lg flex items-center gap-2 z-10 select-none pointer-events-none">
-          <span id="poopSkinIcon" class="text-xl">💩</span>
-          <div class="flex flex-col text-left">
-            <div class="flex items-center gap-1.5">
-              <span id="poopSkinName" class="font-game text-xs text-yellow-300">Какашич-Новичок</span>
-              <span id="poopSkinTierBadge"
-                class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500 text-stone-950 uppercase">Тир 1</span>
-            </div>
-            <span id="poopSkinProgressHint" class="text-[9px] text-stone-400">Форма 1</span>
+          class="absolute top-3 left-3 bg-stone-900/85 backdrop-blur-md px-3 py-1.5 rounded-2xl border-2 border-emerald-400/70 shadow-lg flex flex-col gap-1 z-10 select-none pointer-events-none min-w-[9.5rem]">
+          <span id="poopSkinName" class="font-game text-xs text-emerald-200">Эпоха 1</span>
+          <div class="h-1.5 w-full rounded-full bg-stone-600 overflow-hidden">
+            <div id="epochScaleFill" class="h-full rounded-full bg-emerald-400" style="width:0%"></div>
           </div>
+          <span id="poopSkinProgressHint" class="text-[9px] text-stone-200 whitespace-nowrap">следующая через 499 форм</span>
         </div>
 
         <!-- Canvas Quick Prestige & Transcend Badges (Prominent immediate access) -->
@@ -521,7 +517,7 @@
               <span class="font-game text-yellow-300 text-sm">📦 Оружейные Контейнеры</span>
               <div class="flex items-center gap-2 text-xs">
                 <span class="text-yellow-200 font-game" id="casesRollsLabel">0 🧻</span>
-                <span class="text-cyan-300 font-game" id="casesPlungersLabel">0 🪠</span>
+                <span class="text-cyan-300 font-game" id="casesPlungersLabel">0 <span class="plunger-icon" aria-hidden="true"></span></span>
               </div>
             </div>
             <p class="text-[10px] text-stone-300 mt-0.5">Раздел открывается после первого Смыва. Дальше кейсы за втулки и вантузы.
@@ -635,7 +631,7 @@
             <div class="bg-indigo-950/80 p-2.5 rounded-2xl border border-cyan-400/50">
               <div class="flex justify-between items-center">
                 <span class="font-game text-cyan-300 text-sm">Астральные Реликвии Омниверса</span>
-                <span class="font-game text-xs text-cyan-200" id="talentPlungersLabel">0 🪠</span>
+                <span class="font-game text-xs text-cyan-200" id="talentPlungersLabel">0 <span class="plunger-icon" aria-hidden="true"></span></span>
               </div>
               <p class="text-[10px] text-indigo-200 mt-0.5">Высшие артефакты автоматизации и космической силы,
                 открываемые
@@ -1663,7 +1659,7 @@
         <!-- 4. ASTRAL PLUNGERS -->
         <div class="p-3.5 rounded-2xl bg-indigo-950/40 border border-cyan-400/50 shadow">
           <div class="flex items-center gap-2 mb-1">
-            <span class="text-2xl">🪠</span>
+            <span class="plunger-icon text-2xl" aria-hidden="true"></span>
             <span class="font-game text-sm text-cyan-300">Астральные Вантузы (Astral Plungers)</span>
             <span
               class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/40 font-bold ml-auto">Престиж
@@ -1676,7 +1672,7 @@
             <div class="bg-stone-900/80 p-2 rounded-xl border border-stone-700">
               <b class="text-emerald-400">⚡ Как зарабатывать:</b>
               <ul class="list-disc list-inside text-stone-300 mt-0.5 space-y-0.5">
-                <li>Астральный Прорыв (кнопка 🪠 Прорыв)</li>
+                <li>Астральный Прорыв (кнопка <span class="plunger-icon" aria-hidden="true"></span> Прорыв)</li>
                 <li>Смывы чётной эпохи открытой пары: сначала 2, потом 3, с третьего прорыва всегда 4. Затем снова форма и биомасса, и кнопка Прорыв. Забег не сбрасывается. Награда — 1 вантуз, и ещё 1 если дошли до конца эпохи. Смыв этой эпохи тоже даёт 1 вантуз, пока не набран запас пары.</li>
                 <li>Втулки и вантузы остаются. Смыв сбрасывает форму и заводы. Прорыв сбрасывает только счётчик смывов пары</li>
               </ul>
@@ -1707,8 +1703,8 @@
           <div class="mt-2 bg-stone-900/80 p-2 rounded-xl border border-stone-700 text-[11px] space-y-1">
             <div><b class="text-cyan-300">⭐ Редкости:</b> Армейские ➔ Запрещенные ➔ Засекреченные ➔ Тайные (Covert) ➔
               Радужные (Rainbow) ➔ Титановые ➔ Небесные (Celestial) ➔ Божественные (Godly Omega)!</div>
-            <div><b class="text-yellow-300">⭐ Фазы кейсов:</b> Первый кейс стоит несколько Смывов во втулках,
-              каждый следующий примерно в 4 раза дороже. Поздние кейсы требуют Прорывов и Астральных Вантузов.</div>
+            <div><b class="text-yellow-300">⭐ Фазы кейсов:</b> Кейсы за втулки идут лесенкой: следующий сильнее и стоит несколько смывов той эпохи.
+              Кейсы за вантузы начинаются выше: титан, затем божественные ножи.</div>
             <div><b class="text-orange-400">⭐ StatTrak™:</b> Каждый клик экипированным ножом навсегда увеличивает
               счётчик его фрагов!</div>
           </div>
@@ -2115,7 +2111,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.30"></script>
+  <script type="module" src="src/main.js?v=5.0.35"></script>
 </body>
 
 </html>

@@ -1,8 +1,9 @@
-import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.30';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.30';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.30';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.30';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.30';
+import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.35';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.35';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.35';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.35';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
+import { drawPlunger } from '../utils/icons.js?v=5.0.35';
 
 export function renderAchievements() {
   const container = document.getElementById('achievementsContainer');
@@ -72,7 +73,7 @@ export function renderAchievements() {
     row.className = `p-2.5 rounded-2xl border flex items-center justify-between gap-2 shadow-sm transition ${ach.done ? 'bg-emerald-950/40 border-emerald-600/70' : 'bg-stone-950/90 border-stone-800'}`;
     row.innerHTML = `
       <div class="flex items-center gap-2.5 min-w-0 flex-1">
-        <span class="text-2xl shrink-0">${ach.icon}</span>
+        <span class="text-2xl shrink-0">${drawPlunger(ach.icon)}</span>
         <div class="min-w-0 flex-1">
           <div class="font-bold text-xs ${ach.done ? 'text-emerald-300' : 'text-stone-200'}">${ach.title} ${ach.done ? '✓' : ''}</div>
           <div class="text-[10px] text-stone-400 leading-snug mt-0.5">${ach.desc}</div>

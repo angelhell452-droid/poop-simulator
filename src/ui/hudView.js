@@ -1,23 +1,25 @@
-import { GAME } from '../core/state.js?v=5.0.30';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.30';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.30';
-import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.30';
-import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.30';
-import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.30';
+import { GAME } from '../core/state.js?v=5.0.35';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.35';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
+import { drawPlunger } from '../utils/icons.js?v=5.0.35';
+import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.35';
+import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.35';
+import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.35';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
-import { liveCps } from '../core/gameLoop.js?v=5.0.30';
-import { saveLocal } from '../save/saveManager.js?v=5.0.30';
-import { updateFactoryButtons } from './factoryView.js?v=5.0.30';
-import { updateTalentButtons } from './talentView.js?v=5.0.30';
+import { liveCps } from '../core/gameLoop.js?v=5.0.35';
+import { saveLocal } from '../save/saveManager.js?v=5.0.35';
+import { updateFactoryButtons } from './factoryView.js?v=5.0.35';
+import { updateTalentButtons } from './talentView.js?v=5.0.35';
 import { updateShopButtons } from './shopView.js';
-import { updateCasesButtons } from './casesView.js?v=5.0.30';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.30';
-import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.30';
+import { updateCasesButtons } from './casesView.js?v=5.0.35';
+import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.35';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.30';
+import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.35';
 import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
-import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.30';
-import { showKnifeToast } from './characterInventoryView.js?v=5.0.30';
+import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.35';
+import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.35';
+import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.0.35';
+import { showKnifeToast } from './characterInventoryView.js?v=5.0.35';
 import { getConfirmedVip } from '../economy/pace.js';
 
 const FLUSH_COOLDOWN = 35000;
@@ -250,27 +252,28 @@ export function updateHUD() {
   updateCasesButtons();
 
   // Dynamic Poop Skin Badge (Ensures accurate form & tier without tab dependency)
-  const skinInfo = getPoopSkinInfo(GAME.evoStage, GAME.girlyMode);
-  if (skinInfo) {
-    const skinIconEl = document.getElementById('poopSkinIcon');
-    if (skinIconEl) skinIconEl.textContent = skinInfo.icon;
-    const skinNameEl = document.getElementById('poopSkinName');
-    if (skinNameEl) skinNameEl.textContent = skinInfo.name;
-    const skinTierEl = document.getElementById('poopSkinTierBadge');
-    if (skinTierEl) skinTierEl.textContent = `Тир ${skinInfo.tier}`;
-    const skinHintEl = document.getElementById('poopSkinProgressHint');
-    if (skinHintEl) {
-      if (skinInfo.nextAt >= 100000) {
-        skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • облик за горизонтом`;
-      } else {
-        skinHintEl.textContent = `Форма #${formatNumber(GAME.evoStage + 1)} • след. облик на форме #${formatNumber(skinInfo.nextAt)}`;
-      }
-    }
+  const epoch = getPhaseForStage(GAME.evoStage || 0);
+  const epochForm = (GAME.evoStage || 0) + 1;
+  const epochSpan = Math.max(1, epoch.formEnd - epoch.formStart + 1);
+  const epochLeft = Math.max(0, epoch.formEnd - epochForm);
+  const epochNameEl = document.getElementById('poopSkinName');
+  if (epochNameEl) epochNameEl.textContent = `Эпоха ${formatNumber(epoch.id)}`;
+  const epochFillEl = document.getElementById('epochScaleFill');
+  if (epochFillEl) {
+    const pct = Math.max(0, Math.min(100, ((epochForm - epoch.formStart) / epochSpan) * 100));
+    epochFillEl.style.width = pct <= 0 ? '0%' : `max(4px, ${pct}%)`;
+  }
+  const epochHintEl = document.getElementById('poopSkinProgressHint');
+  if (epochHintEl) {
+    if (epoch.id >= 200) epochHintEl.textContent = 'последняя эпоха';
+    else if (epochLeft <= 0) epochHintEl.textContent = `дальше эпоха ${formatNumber(epoch.id + 1)}`;
+    else epochHintEl.textContent = `следующая через ${formatNumber(epochLeft)} форм`;
   }
 
   // Real-time update of open Prestige / Transcend Modals (Task 8)
   updatePrestigeModalRealtime();
   updateTranscendModalRealtime();
+  paintActionGlow();
 
   notePeakForm();
   paintProgressTabs();
@@ -348,7 +351,7 @@ export function updateActiveBuffsUI() {
 
   buffsListEl.innerHTML = buffs.map(b => `
     <button class="buff-pill px-2 py-0.5 rounded-lg border text-[10px] font-game font-bold flex items-center gap-1 transition shadow-sm jelly-btn cursor-pointer whitespace-nowrap shrink-0 ${b.badgeColor}" data-buff="${b.id}" title="Нажмите, чтобы просмотреть действие баффа">
-      <span>${b.icon}</span>
+      <span>${drawPlunger(b.icon)}</span>
       <span>${b.short}</span>
     </button>
   `).join('');
@@ -375,14 +378,14 @@ export function showBuffDetailsModal(buff) {
   const sourceEl = document.getElementById('buffModalSource');
   const tipEl = document.getElementById('buffModalTip');
 
-  if (iconEl) iconEl.textContent = buff.icon;
+  if (iconEl) iconEl.innerHTML = drawPlunger(buff.icon);
   if (titleEl) titleEl.textContent = buff.name;
   if (badgeEl) {
     badgeEl.textContent = buff.bonusText || buff.short;
     badgeEl.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${buff.badgeColor || 'border-yellow-400 text-yellow-300'}`;
   }
   if (descEl) descEl.textContent = buff.desc || '';
-  if (progressEl) progressEl.textContent = buff.progress || 'Активен';
+  if (progressEl) progressEl.innerHTML = drawPlunger(buff.progress || 'Активен');
   if (sourceEl) sourceEl.textContent = buff.source || 'Игровой процесс';
   if (tipEl) tipEl.innerHTML = `💡 <b>Совет:</b> ${buff.tip || 'Развивайте эту механику для усиления множителя.'}`;
 
@@ -447,6 +450,25 @@ export function updateAutomationTogglesUI() {
       : 'auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-stone-200 hover:bg-stone-800 border border-transparent';
   });
 
+}
+
+function paintReady(button, kind) {
+  if (!button) return;
+  button.classList.toggle('glow-gold', kind === 'gold');
+  button.classList.toggle('glow-green', kind === 'green');
+}
+
+function paintActionGlow() {
+  const flush = getPrestigeRewardBreakdown();
+  const flushReady = !!(flush.isMet && flush.totalGain > 0);
+  const flushForBridge = flushReady && flush.countsForBridge && !flush.pairSealed;
+  paintReady(document.getElementById('btnCanvasPrestige'), flushForBridge ? 'green' : (flushReady ? 'gold' : ''));
+  paintReady(document.getElementById('btnExecutePrestige'), flushForBridge ? 'green' : (flushReady ? 'gold' : ''));
+
+  const bridge = getTranscendRewardBreakdown();
+  const bridgeReady = !!bridge.isMet;
+  paintReady(document.getElementById('btnCanvasTranscend'), bridgeReady ? 'gold' : '');
+  paintReady(document.getElementById('btnExecuteTranscend'), bridgeReady ? 'gold' : '');
 }
 
 export function initAutomationToggleListeners() {

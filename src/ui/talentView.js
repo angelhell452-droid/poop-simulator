@@ -1,11 +1,12 @@
-import { GAME } from '../core/state.js?v=5.0.30';
+import { GAME } from '../core/state.js?v=5.0.35';
 import { TALENTS } from '../data/talents.data.js';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.30';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.30';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.35';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.35';
+import { drawPlunger } from '../utils/icons.js?v=5.0.35';
 import { getAffordableTalentInfo, buyTalent } from '../systems/talentService.js';
-import { buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.30';
-import { updateHUD } from './hudView.js?v=5.0.30';
-import { saveLocal } from '../save/saveManager.js?v=5.0.30';
+import { buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.35';
+import { updateHUD } from './hudView.js?v=5.0.35';
+import { saveLocal } from '../save/saveManager.js?v=5.0.35';
 import { getRollIcon } from '../utils/icons.js';
 import { isRelicSectionUnlocked, isTalentVisible } from '../progression/unlocks.js';
 
@@ -148,7 +149,7 @@ export function renderFlushTalents() {
       row.className = `flex items-center justify-between p-2.5 rounded-2xl bg-stone-900 border ${tl.tier === 4 ? 'border-amber-500/50 shadow-md' : 'border-purple-900/60'} shadow-sm`;
       row.innerHTML = `
         <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
-          <span class="text-2xl shrink-0">${tl.icon}</span>
+          <span class="text-2xl shrink-0">${drawPlunger(tl.icon)}</span>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="font-bold text-xs text-purple-200">${tl.name}</span>
@@ -169,8 +170,8 @@ export function renderFlushTalents() {
       row.querySelector('.buy-talent-btn').addEventListener('click', async () => {
         if (buyTalent(tl.id)) {
           renderTalents();
-          const inventory = await import('./characterInventoryView.js?v=5.0.30');
-          const index = await import('./knivesIndexView.js?v=5.0.30');
+          const inventory = await import('./characterInventoryView.js?v=5.0.35');
+          const index = await import('./knivesIndexView.js?v=5.0.35');
           inventory.renderCharacterInventory();
           index.renderKnivesIndexBook();
           updateHUD();
@@ -255,7 +256,7 @@ export function renderTranscendRelics() {
       row.innerHTML = `
         <div class="pr-2 min-w-0 flex-1">
           <div class="font-bold text-xs flex items-center gap-1.5 flex-wrap ${isLocked ? 'text-stone-400' : 'text-cyan-200'}">
-            <span>${upg.name}</span>
+            <span>${drawPlunger(upg.name)}</span>
             <span class="text-yellow-400 font-game text-[11px]">(${formatNumber(lvl)}/${formatNumber(upg.max)})</span>
           </div>
           <div class="text-[10px] text-stone-300 leading-snug mt-0.5">${upg.desc}</div>
