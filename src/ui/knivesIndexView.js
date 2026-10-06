@@ -1,19 +1,19 @@
-import { GAME } from '../core/state.js?v=5.0.39';
-import { KNIVES } from '../data/knives.data.js?v=5.0.39';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.39';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.39';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.39';
+import { GAME } from '../core/state.js?v=5.0.40';
+import { KNIVES } from '../data/knives.data.js?v=5.0.40';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.40';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.40';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.40';
 import { TALENTS } from '../data/talents.data.js';
 import { getKnifeStar, getKnifeSharpenCost, sharpenKnife, getHatLevel } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.39';
-import { updateHUD } from './hudView.js?v=5.0.39';
-import { renderCasesSystem } from './casesView.js?v=5.0.39';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.39';
-import { drawPlunger } from '../utils/icons.js?v=5.0.39';
+import { saveLocal } from '../save/saveManager.js?v=5.0.40';
+import { updateHUD } from './hudView.js?v=5.0.40';
+import { renderCasesSystem } from './casesView.js?v=5.0.40';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.40';
+import { drawPlunger } from '../utils/icons.js?v=5.0.40';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.39';
-import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.39';
+import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.40';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.40';
 
 // Быстрый поиск кейса для ножа
 const KNIFE_CASE_MAP = new Map();

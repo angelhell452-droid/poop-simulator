@@ -1,17 +1,17 @@
-import { GAME } from '../core/state.js?v=5.0.39';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.39';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.39';
+import { GAME } from '../core/state.js?v=5.0.40';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.40';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.40';
 import { TALENTS } from '../data/talents.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.0.39';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.39';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.39';
-import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.39';
+import { KNIVES } from '../data/knives.data.js?v=5.0.40';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.40';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.40';
+import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.40';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.39';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.40';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.39';
-import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.39';
-import { horizonIncomeMult } from './horizon.js?v=5.0.39';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.40';
+import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.40';
+import { horizonIncomeMult } from './horizon.js?v=5.0.40';
 
 export function getEquippedBodySkin() {
   const skin = findBodySkin(GAME.equippedSkin);

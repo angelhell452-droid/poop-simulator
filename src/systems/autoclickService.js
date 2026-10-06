@@ -1,7 +1,9 @@
-import { GAME } from '../core/state.js?v=5.0.39';
+import { GAME } from '../core/state.js?v=5.0.40';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.39';
-import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.0.39';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.40';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.40';
+import { KNIVES } from '../data/knives.data.js?v=5.0.40';
+import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.0.40';
 
 export const BARE_CLICK_CAP = 40;
 
@@ -20,16 +22,57 @@ const KNIFE_CPS_BONUS = {
   special: 100
 };
 
+const CASE_CPS_BAND = {
+  case_classic: [8, 18],
+  case_chroma: [22, 34],
+  case_gamma: [38, 52],
+  case_prisma: [56, 72],
+  case_dreams: [76, 94],
+  case_rainbow: [98, 118],
+  case_titanium: [122, 144],
+  case_singularity: [148, 172],
+  case_celestial: [176, 202],
+  case_dragon: [206, 234],
+  case_demigod: [238, 268],
+  case_infinity: [272, 304]
+};
+
+const knifeById = new Map(KNIVES.map(knife => [knife.id, knife]));
+const knifeHomeCase = new Map();
+[...WEAPON_CASES].sort((a, b) => (a.reqEpoch || 1) - (b.reqEpoch || 1)).forEach(caseObj => {
+  const teased = new Set(Object.keys(caseObj.fixedChances || {}));
+  (caseObj.pool || []).forEach(id => {
+    if (teased.has(id) || knifeHomeCase.has(id)) return;
+    knifeHomeCase.set(id, caseObj.id);
+  });
+});
+const caseMateIds = new Map();
+for (const [id, caseId] of knifeHomeCase) {
+  if (!caseMateIds.has(caseId)) caseMateIds.set(caseId, []);
+  caseMateIds.get(caseId).push(id);
+}
+
+function caseCpsBase(knife) {
+  const caseId = knifeHomeCase.get(knife.id);
+  const band = CASE_CPS_BAND[caseId];
+  if (!band) return KNIFE_CPS_BONUS[knife.rarity] || 6;
+  const mates = caseMateIds.get(caseId) || [knife.id];
+  const clicks = mates.map(id => knifeById.get(id)?.clickMult || 1);
+  const min = Math.min(...clicks);
+  const max = Math.max(...clicks);
+  const t = max === min ? 1 : ((knife.clickMult || 1) - min) / (max - min);
+  return Math.round(band[0] + t * (band[1] - band[0]));
+}
+
 export function isAutoclickUnlocked() {
   return true;
 }
 
-/** Clicks per second this knife adds to the player's cap. */
+/** Clicks per second this knife adds to the player's cap. Later cases sit above earlier ones. */
 export function getKnifeCpsBonus(knife) {
   if (!knife) return 0;
-  const rarity = KNIFE_CPS_BONUS[knife.rarity] || 6;
   const stars = Math.min(15, Math.max(0, getKnifeStar(knife.id) - 1));
-  return rarity + stars;
+  return caseCpsBase(knife) + stars;
 }
 
 const CLICK_SPEED_PRESETS = [10, 20, 30];

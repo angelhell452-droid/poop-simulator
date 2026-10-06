@@ -293,7 +293,7 @@ export const WEAPON_CASES = [
     "bgClass": "from-stone-900 via-teal-950 to-stone-950",
     "desc": "Радужные и небесные клинки эпохи 16. С шансом 1% — лучший обычный нож Сингулярности.",
     "fixedChances": {
-      "knife_titanium_bayonet": 0.01
+      "knife_titanium_karambit": 0.01
     },
     "pool": [
       "knife_rainbow_survival",
@@ -314,7 +314,7 @@ export const WEAPON_CASES = [
       "knife_celestial_nomad",
       "knife_celestial_bayonet",
       "knife_celestial_m9",
-      "knife_titanium_bayonet"
+      "knife_titanium_karambit"
     ]
   },
   {
@@ -329,9 +329,9 @@ export const WEAPON_CASES = [
     "currencySymbol": "🧻",
     "borderClass": "border-violet-400 shadow-[0_0_15px_#8b5cf6]",
     "bgClass": "from-violet-950 via-purple-950 to-black",
-    "desc": "Небесные и титановые клинки эпохи 20. Титановый керамбит выпадает с шансом 1%.",
+    "desc": "Небесные и титановые клинки эпохи 20. С шансом 1% — титановая бабочка Пантеона.",
     "fixedChances": {
-      "knife_titanium_karambit": 0.01
+      "knife_titanium_butterfly": 0.01
     },
     "pool": [
       "knife_celestial_talon",
@@ -346,7 +346,8 @@ export const WEAPON_CASES = [
       "knife_titanium_stiletto",
       "knife_titanium_huntsman",
       "knife_titanium_bayonet",
-      "knife_titanium_karambit"
+      "knife_titanium_karambit",
+      "knife_titanium_butterfly"
     ]
   },
   {
@@ -361,7 +362,7 @@ export const WEAPON_CASES = [
     "currencySymbol": "🪠",
     "borderClass": "border-cyan-400",
     "bgClass": "from-cyan-950 via-indigo-950 to-purple-950",
-    "desc": "Титан выше сингулярности: от M9 до керамбита. С шансом 1% — Dragon Lore из следующего кейса.",
+    "desc": "Титан выше керамбита Сингулярности: от Гипер-Титана до кибер-бабочки. С шансом 1% — Dragon Lore.",
     "fixedChances": {
       "knife_karambit_lore": 0.01
     },
@@ -370,7 +371,6 @@ export const WEAPON_CASES = [
       "knife_titanium_talon",
       "knife_titanium_skeleton",
       "knife_titanium_butterfly",
-      "knife_titanium_karambit",
       "knife_karambit_lore"
     ]
   },
@@ -391,7 +391,6 @@ export const WEAPON_CASES = [
       "knife_godly_scythe": 0.01
     },
     "pool": [
-      "knife_titanium_karambit",
       "knife_karambit_bluegem",
       "knife_karambit_lore",
       "knife_godly_scythe"
@@ -409,13 +408,11 @@ export const WEAPON_CASES = [
     "currencySymbol": "🪠",
     "borderClass": "border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.6)]",
     "bgClass": "from-amber-950 via-yellow-950 to-black",
-    "desc": "Божественные клинки: Blue Gem, Dragon Lore, Экскалибур и Коса Бесконечности. С шансом 1% — Точка Омега.",
+    "desc": "Экскалибур и Коса Бесконечности. Оба выше Dragon Lore. С шансом 1% — Точка Омега.",
     "fixedChances": {
       "knife_godly_omega": 0.01
     },
     "pool": [
-      "knife_karambit_bluegem",
-      "knife_karambit_lore",
       "knife_godly_katana",
       "knife_godly_scythe",
       "knife_godly_omega"
@@ -433,12 +430,8 @@ export const WEAPON_CASES = [
     "currencySymbol": "🪠",
     "borderClass": "border-fuchsia-400 shadow-[0_0_25px_rgba(217,70,239,0.6)]",
     "bgClass": "from-fuchsia-950 via-purple-950 to-black",
-    "desc": "Пять божественных ножей эпохи 40 во главе с Omega Absolute.",
+    "desc": "Точка Омега. Её клик и CPS выше каждого ножа Короны.",
     "pool": [
-      "knife_karambit_bluegem",
-      "knife_karambit_lore",
-      "knife_godly_katana",
-      "knife_godly_scythe",
       "knife_godly_omega"
     ]
   }
