@@ -1,19 +1,19 @@
-import { GAME } from '../core/state.js?v=5.0.40';
-import { getEquippedKnife } from '../economy/production.js?v=5.0.40';
+import { GAME } from '../core/state.js?v=5.0.41';
+import { getEquippedKnife } from '../economy/production.js?v=5.0.41';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.40';
-import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.40';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.40';
-import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.40';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.40';
-import { updateHUD } from './hudView.js?v=5.0.40';
-import { saveLocal } from '../save/saveManager.js?v=5.0.40';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.40';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.41';
+import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.41';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.41';
+import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.41';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.41';
+import { updateHUD } from './hudView.js?v=5.0.41';
+import { saveLocal } from '../save/saveManager.js?v=5.0.41';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.41';
 import { events } from '../core/events.js';
-import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.40';
-import { KNIVES } from '../data/knives.data.js?v=5.0.40';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.40';
+import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.41';
+import { KNIVES } from '../data/knives.data.js?v=5.0.41';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.41';
 
 let canvas = null;
 let ctx = null;
@@ -769,7 +769,7 @@ function knifeCutOptions(id) {
   const cut = { glove: true, maxEdge: 512 };
   if (id.startsWith('knife_celestial_')) cut.celestial = true;
   if (id === 'knife_godly_katana' || id === 'knife_godly_omega' || id === 'knife_celestial_karambit') cut.goldHalo = true;
-  if (id === 'knife_godly_scythe') cut.voidHalo = true;
+  if (id === 'knife_godly_scythe' || id === 'knife_godly_eclipse') cut.voidHalo = true;
   if (id.startsWith('knife_titanium_')) cut.neonHalo = true;
   return cut;
 }

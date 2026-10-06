@@ -1,10 +1,10 @@
-import { GAME } from '../core/state.js?v=5.0.40';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.40';
+import { GAME } from '../core/state.js?v=5.0.41';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.41';
 import { TALENTS } from '../data/talents.data.js';
 import { events } from '../core/events.js';
-import { getPhaseByIndex, getPhaseForForm, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.40';
-import { flushCountsForBridge, flushPaysPlunger, pairIsClosed } from './transcendService.js?v=5.0.40';
-import { gte } from '../utils/big.js?v=5.0.40';
+import { getPhaseByIndex, getPhaseForForm, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.41';
+import { flushCountsForBridge, flushPaysPlunger, pairIsClosed } from './transcendService.js?v=5.0.41';
+import { gte } from '../utils/big.js?v=5.0.41';
 
 function gateStatus(phase) {
   const currentStage = GAME.evoStage || 0;

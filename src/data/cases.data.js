@@ -430,8 +430,10 @@ export const WEAPON_CASES = [
     "currencySymbol": "🪠",
     "borderClass": "border-fuchsia-400 shadow-[0_0_25px_rgba(217,70,239,0.6)]",
     "bgClass": "from-fuchsia-950 via-purple-950 to-black",
-    "desc": "Точка Омега. Её клик и CPS выше каждого ножа Короны.",
+    "desc": "Затмение Абсолюта и Рассвет Омеги. Оба выше Косы Бесконечности по клику и по CPS. Точка Омега остаётся самым сильным ножом кейса.",
     "pool": [
+      "knife_godly_eclipse",
+      "knife_godly_dawn",
       "knife_godly_omega"
     ]
   }

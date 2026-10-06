@@ -2587,6 +2587,32 @@ export const KNIVES = [
         "desc": "Оружие за гранью пространства и времени: дарует владычество над биомассой."
       },
       {
+        "id": "knife_godly_eclipse",
+        "name": "👑 Talon | Затмение Абсолюта (Absolute Eclipse)",
+        "rarity": "godly",
+        "rarityName": "★ БОЖЕСТВЕННЫЙ",
+        "clickMult": 120000,
+        "passiveMult": 24000,
+        "icon": "🦞",
+        "bladeColor": "godly",
+        "handleColor": "#3b0764",
+        "style": "talon",
+        "desc": "Коготь, в котором ночь ещё не кончилась. Выше Косы Бесконечности и по клику, и по CPS."
+      },
+      {
+        "id": "knife_godly_dawn",
+        "name": "👑 Stiletto | Рассвет Омеги (Omega Dawn)",
+        "rarity": "godly",
+        "rarityName": "★ БОЖЕСТВЕННЫЙ",
+        "clickMult": 135000,
+        "passiveMult": 27000,
+        "icon": "💉",
+        "bladeColor": "godly",
+        "handleColor": "#451a03",
+        "style": "stiletto",
+        "desc": "Кристалл первого света. Выше Затмения Абсолюта и ниже Точки Омеги."
+      },
+      {
         "id": "knife_godly_omega",
         "name": "👑 Karambit | Точка Омега: Абсолютный Бог (Omega Absolute)",
         "rarity": "godly",
