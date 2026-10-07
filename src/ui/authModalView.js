@@ -1,15 +1,64 @@
-import { GAME } from '../core/state.js?v=5.0.67';
+import { GAME } from '../core/state.js?v=5.0.68';
 import { events } from '../core/events.js';
-import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.0.67';
-import { updateHUD } from './hudView.js?v=5.0.67';
-import { renderFactories } from './factoryView.js?v=5.0.67';
-import { renderTalents } from './talentView.js?v=5.0.67';
+import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase, probeCloudServers } from '../save/cloudSync.js?v=5.0.68';
+import { updateHUD } from './hudView.js?v=5.0.68';
+import { renderFactories } from './factoryView.js?v=5.0.68';
+import { renderTalents } from './talentView.js?v=5.0.68';
 import { renderShop } from './shopView.js';
 import { renderAchievements } from './achievementsView.js';
 import { renderEvoChronicles } from './evoChroniclesView.js';
-import { renderCasesSystem } from './casesView.js?v=5.0.67';
-import { refreshAdminAccess } from './adminView.js?v=5.0.67';
-import { currentGuildTag, formatTaggedName } from '../guild/guildPresence.js?v=5.0.67';
+import { renderCasesSystem } from './casesView.js?v=5.0.68';
+import { refreshAdminAccess } from './adminView.js?v=5.0.68';
+import { currentGuildTag, formatTaggedName } from '../guild/guildPresence.js?v=5.0.68';
+
+function paintServerLine(id, row) {
+  const node = document.getElementById(id);
+  if (!node || !row) return;
+  node.textContent = row.detail || '—';
+  node.className = row.ok
+    ? 'text-[11px] text-emerald-300 font-bold text-right'
+    : 'text-[11px] text-amber-300 font-bold text-right';
+}
+
+export async function refreshServerStatus() {
+  const hint = document.getElementById('serverStatusHint');
+  const btn = document.getElementById('btnProbeServers');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '…';
+  }
+  paintServerLine('serverStatusCloud', { ok: false, detail: 'проверка…' });
+  paintServerLine('serverStatusSocial', { ok: false, detail: 'проверка…' });
+  paintServerLine('serverStatusSession', { ok: false, detail: 'проверка…' });
+  if (hint) hint.textContent = 'Стучимся в Cloudflare…';
+  try {
+    const probe = await probeCloudServers();
+    paintServerLine('serverStatusCloud', probe.cloud);
+    paintServerLine('serverStatusSocial', probe.social);
+    paintServerLine('serverStatusSession', probe.session);
+    if (hint) {
+      if (probe.cloud.ok && probe.social.ok && (probe.session.ok || !getStoredAccount()?.sessionToken)) {
+        hint.textContent = 'Серверы отвечают. Если окно друзей всё ещё пустое — закройте и откройте его снова.';
+      } else if (!probe.cloud.ok && !probe.social.ok) {
+        hint.textContent = 'Облако не отвечает. Проверьте интернет или подождите минуту — Worker мог быть перегружен.';
+      } else if (getStoredAccount()?.sessionToken && !probe.session.ok) {
+        hint.textContent = 'Сессия закрыта. Выйдите и войдите тем же логином — иначе друзья и гильдия не откроются.';
+      } else {
+        hint.textContent = 'Часть сервисов хромает. Нажмите «Проверить» ещё раз через несколько секунд.';
+      }
+    }
+  } catch (_) {
+    paintServerLine('serverStatusCloud', { ok: false, detail: 'сбой проверки' });
+    paintServerLine('serverStatusSocial', { ok: false, detail: 'сбой проверки' });
+    paintServerLine('serverStatusSession', { ok: false, detail: 'сбой проверки' });
+    if (hint) hint.textContent = 'Проверка не удалась. Попробуйте ещё раз.';
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Проверить';
+    }
+  }
+}
 
 export function openAuthModal(defaultTab = 'login') {
   const modal = document.getElementById('authModal');
@@ -221,6 +270,10 @@ export function initAuthModal() {
   document.getElementById('btnForceCloudSave')?.addEventListener('click', async () => {
     await syncToCloudDatabase();
     alert('✅ Прогресс успешно отправлен в Cloudflare D1!');
+  });
+
+  document.getElementById('btnProbeServers')?.addEventListener('click', () => {
+    refreshServerStatus();
   });
 
   // Initialize UI

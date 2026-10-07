@@ -1,4 +1,4 @@
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.67';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.68';
 
 /**
  * One slow heartbeat for header badges. Open modals refresh themselves
@@ -38,8 +38,11 @@ async function pulseBadges() {
       socialRequest('mail'),
       socialRequest('friends')
     ]);
+    // Quiet on offline blips — account modal shows the real status.
     if (mail?.success) hooks.setMailBadge?.(mail.rewardCount);
     if (friends?.success) hooks.setFriendsBadge?.((friends.incoming || []).length);
+  } catch (_) {
+    /* ignore background probe failures */
   } finally {
     badgeBusy = false;
   }

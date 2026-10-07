@@ -1,9 +1,9 @@
-import { GAME } from '../core/state.js?v=5.0.67';
+import { GAME } from '../core/state.js?v=5.0.68';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.67';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.68';
 import { setConfirmedVip } from '../economy/pace.js';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.67';
-import { cmp } from '../utils/big.js?v=5.0.67';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.68';
+import { cmp } from '../utils/big.js?v=5.0.68';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
@@ -407,25 +407,109 @@ export async function adminRequest(action, options = {}) {
   return data;
 }
 
-export async function socialRequest(action, options = {}) {
+function socialFail(detail) {
+  return {
+    success: false,
+    offline: true,
+    error: detail || 'Облако временно не отвечает. Откройте профиль → статус серверов.'
+  };
+}
+
+async function socialRequestOnce(action, options = {}) {
   const query = options.query ? `&${options.query}` : '';
-  try {
-    const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=${encodeURIComponent(action)}${query}`, {
-      method: options.method || 'GET',
-      body: options.body ? JSON.stringify(options.body) : undefined
-    });
-    let data = null;
-    try { data = await res.json(); } catch (err) { data = null; }
-    if (res.status === 401) askRelogin();
-    if (!data || typeof data !== 'object') {
-      return { success: false, error: 'Сервер друзей ещё не отвечает' };
-    }
-    if (!res.ok) data.success = false;
-    if (!res.ok && !data.error) data.error = 'Запрос отклонён';
-    return data;
-  } catch (err) {
-    return { success: false, error: 'Сервер друзей ещё не отвечает' };
+  const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=${encodeURIComponent(action)}${query}`, {
+    method: options.method || 'GET',
+    body: options.body ? JSON.stringify(options.body) : undefined
+  });
+  let data = null;
+  try { data = await res.json(); } catch (err) { data = null; }
+  if (res.status === 401) askRelogin();
+  if (!data || typeof data !== 'object') {
+    return socialFail(res.status >= 500
+      ? `Облако перегружено (код ${res.status}). Подождите и нажмите «Проверить» в профиле.`
+      : `Облако вернуло пустой ответ (код ${res.status || '—'}).`);
   }
+  if (!res.ok) data.success = false;
+  if (!res.ok && !data.error) data.error = `Запрос отклонён (код ${res.status})`;
+  data.offline = false;
+  return data;
+}
+
+export async function socialRequest(action, options = {}) {
+  try {
+    return await socialRequestOnce(action, options);
+  } catch (err) {
+    // One quiet retry — transient Worker/D1 blips are common.
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+      return await socialRequestOnce(action, options);
+    } catch (err2) {
+      return socialFail('Нет сети или облако недоступно. Проверьте интернет и статус в профиле.');
+    }
+  }
+}
+
+/** Live probe for the account modal: save/session + social actions share one Worker. */
+export async function probeCloudServers() {
+  const out = {
+    cloud: { ok: false, ms: 0, label: 'Сохранение', detail: '…' },
+    social: { ok: false, ms: 0, label: 'Друзья / почта / гильдия', detail: '…' },
+    session: { ok: false, ms: 0, label: 'Сессия', detail: '…' }
+  };
+
+  const timed = async (fn) => {
+    const t0 = performance.now();
+    try {
+      const value = await fn();
+      return { ok: true, ms: Math.round(performance.now() - t0), value };
+    } catch (err) {
+      return { ok: false, ms: Math.round(performance.now() - t0), value: null, err };
+    }
+  };
+
+  const cloud = await timed(() => cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=session`));
+  out.cloud.ms = cloud.ms;
+  out.session.ms = cloud.ms;
+  if (!cloud.ok) {
+    out.cloud.detail = 'нет ответа';
+    out.session.detail = 'нет ответа';
+  } else {
+    const res = cloud.value;
+    out.cloud.ok = res.ok || res.status === 401;
+    out.cloud.detail = out.cloud.ok
+      ? (res.status === 401 ? `ок · ${cloud.ms} мс · нужен вход` : `ок · ${cloud.ms} мс`)
+      : `ошибка · код ${res.status} · ${cloud.ms} мс`;
+    if (res.status === 401) {
+      out.session.ok = false;
+      out.session.detail = 'сессия закрыта — войдите снова';
+    } else if (res.ok) {
+      out.session.ok = true;
+      out.session.detail = `в сети · ${cloud.ms} мс`;
+    } else {
+      out.session.detail = `код ${res.status}`;
+    }
+  }
+
+  const social = await timed(() => socialRequestOnce('mail'));
+  out.social.ms = social.ms;
+  if (!social.ok) {
+    out.social.detail = `нет сети · ${social.ms} мс`;
+  } else if (social.value?.success) {
+    out.social.ok = true;
+    out.social.detail = `ок · ${social.ms} мс`;
+  } else if (social.value?.offline) {
+    out.social.detail = social.value.error || `нет ответа · ${social.ms} мс`;
+  } else {
+    // 401 on mail still means the Worker answered.
+    out.social.ok = true;
+    out.social.detail = social.value?.error
+      ? `${social.value.error} · ${social.ms} мс`
+      : `ответ есть · ${social.ms} мс`;
+  }
+
+  out.anyOk = !!(out.cloud.ok || out.social.ok);
+  out.allOk = !!(out.cloud.ok && out.social.ok && (out.session.ok || !getStoredAccount()?.sessionToken));
+  return out;
 }
 
 export async function wipeCloudPlayer(playerId) {
