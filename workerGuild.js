@@ -270,12 +270,12 @@ async function gearOf(db, playerId) {
 }
 
 async function settleBoss(db, guild) {
-  if (!guild || !Number(guild.boss_index)) return guild;
+  if (!guild || !Number(guild.boss_index)) return { guild, result: null };
   const now = Date.now();
   const hp = Number(guild.boss_hp) || 0;
-  if (hp > 0 && now < Number(guild.boss_deadline_ms)) return guild;
-  await finishAttempt(db, guild, hp <= 0);
-  return guildRow(db, guild.id);
+  if (hp > 0 && now < Number(guild.boss_deadline_ms)) return { guild, result: null };
+  const result = await finishAttempt(db, guild, hp <= 0);
+  return { guild: await guildRow(db, guild.id), result };
 }
 
 async function finishAttempt(db, guild, win) {
@@ -310,6 +310,8 @@ async function finishAttempt(db, guild, win) {
     WHERE guild_id = ? AND started_ms = ? AND damage > 0
   `).bind(guild.id, started).first();
   const hitters = new Set((hits || []).map((row) => row.playerId));
+  const totalDamage = Number(hitSum?.total) || 0;
+  const hitterCount = Number(hitSum?.n) || 0;
   if (index > 0) {
     await db.prepare(`
       INSERT INTO guild_boss_log (
@@ -320,8 +322,8 @@ async function finishAttempt(db, guild, win) {
       index,
       circle,
       win ? 1 : 0,
-      Number(hitSum?.total) || 0,
-      Number(hitSum?.n) || 0,
+      totalDamage,
+      hitterCount,
       win ? reward.points : 0,
       win ? reward.plungers : 0,
       started,
@@ -330,18 +332,19 @@ async function finishAttempt(db, guild, win) {
   }
   const title = win ? "Победа" : "Проигрыш";
   const name = boss?.name || "Босс";
-  for (const member of members || []) {
+  const mailStmts = (members || []).map((member) => {
     const plungers = win && hitters.has(member.playerId) ? reward.plungers : 0;
-    const body = plungers > 0
-      ? `${title}. ${name}, круг ${circle}. В письме ${plungers} вантузов за ваш удар.`
-      : `${title}. ${name}, круг ${circle}. Награды нет: удара по этому боссу не было.`;
-    await db.prepare(`
+    const body = !win
+      ? `${title}. ${name}, круг ${circle}. Вантузов за проигрыш нет.`
+      : plungers > 0
+        ? `${title}. ${name}, круг ${circle}. В письме ${plungers} вантузов за ваш удар.`
+        : `${title}. ${name}, круг ${circle}. Вы были в гильдии, но не били. Вантузов нет.`;
+    return db.prepare(`
       INSERT INTO mail (player_id, kind, title, body, plungers, seen, claimed, created_at)
       VALUES (?, ?, ?, ?, ?, 0, 0, datetime('now'))
-    `).bind(member.playerId, win ? "boss_win" : "boss_loss", title, win && plungers === 0
-      ? `${title}. ${name}, круг ${circle}. Вы были в гильдии, но не били. Вантузов нет.`
-      : (win ? body : `${title}. ${name}, круг ${circle}. Вантузов за проигрыш нет.`), plungers).run();
-  }
+    `).bind(member.playerId, win ? "boss_win" : "boss_loss", title, body, plungers);
+  });
+  if (mailStmts.length) await db.batch(mailStmts);
   await db.prepare(`
     UPDATE guilds
     SET boss_index = 0, boss_circle = 1, boss_hp = 0, boss_max_hp = 0, boss_started_ms = 0, boss_deadline_ms = 0
@@ -350,6 +353,18 @@ async function finishAttempt(db, guild, win) {
   await db.prepare(`
     UPDATE guild_members SET strike_open_ms = 0, strike_clicks = 0, strike_started_ms = 0 WHERE guild_id = ?
   `).bind(guild.id).run();
+  return {
+    win: !!win,
+    bossName: name,
+    bossIcon: boss?.icon || "💀",
+    bossId: boss?.id || "",
+    circle,
+    totalDamage,
+    hitters: hitterCount,
+    points: win ? reward.points : 0,
+    plungers: win ? reward.plungers : 0,
+    durationMs: Math.max(0, ended - started)
+  };
 }
 
 function publicBoss(guild, me) {
@@ -431,7 +446,10 @@ async function journalOf(db, guildId) {
 async function viewOf(db, playerId) {
   let member = await membership(db, playerId);
   let guild = member ? await guildRow(db, member.guildId) : null;
-  if (guild) guild = await settleBoss(db, guild);
+  if (guild) {
+    const settled = await settleBoss(db, guild);
+    guild = settled.guild;
+  }
   member = await membership(db, playerId);
   const invites = await incomingInvites(db, playerId);
   if (!guild || !member) {
@@ -502,7 +520,7 @@ async function clearJoinQueue(db, playerId) {
 async function listGuilds(db, headers, playerId, query, levelRaw) {
   const needle = clean(query, 24).toLocaleLowerCase("ru");
   const level = Math.floor(Number(levelRaw));
-  const wantLevel = Number.isFinite(level) && level >= 1 && level <= 10 ? level : 0;
+  const wantLevel = Number.isFinite(level) && level >= 1 && level <= 25 ? level : 0;
   const { results } = await db.prepare(`
     SELECT guilds.id as id, guilds.name as name, guilds.tag as tag, guilds.points as points,
       guilds.req_epoch as reqEpoch,
@@ -811,7 +829,7 @@ async function summon(db, headers, me, bossIndex) {
   if (!mine || (mine.role !== "leader" && mine.role !== "officer")) {
     return json(headers, { success: false, error: "Босса вызывают глава и офицер" }, 403);
   }
-  let guild = await settleBoss(db, await guildRow(db, mine.guildId));
+  let guild = (await settleBoss(db, await guildRow(db, mine.guildId))).guild;
   if (Number(guild.boss_index)) return json(headers, { success: false, error: "Сначала закончите текущего босса" }, 409);
   const boss = bossByIndex(bossIndex);
   if (!boss) return json(headers, { success: false, error: "Такого босса нет" }, 404);
@@ -833,13 +851,68 @@ async function summon(db, headers, me, bossIndex) {
 async function strike(db, headers, me, reported) {
   const mine = await membership(db, me);
   if (!mine) return json(headers, { success: false, error: "Вы не в гильдии" }, 404);
-  let guild = await settleBoss(db, await guildRow(db, mine.guildId));
+  const live = await guildRow(db, mine.guildId);
+  const settled = await settleBoss(db, live);
+  let guild = settled.guild;
+  if (settled.result) {
+    const gear = await gearOf(db, me);
+    const myDamage = await damageOf(db, live, me);
+    const clicks = Number(mine.strikeClicks) || 0;
+    return json(headers, {
+      success: true,
+      mailReady: true,
+      fight: {
+        ended: settled.result.win ? "win" : "loss",
+        result: {
+          ...settled.result,
+          kind: settled.result.win ? "win" : "loss",
+          myDamage,
+          myClicks: clicks,
+          myPlungers: settled.result.win && myDamage > 0 ? settled.result.plungers : 0,
+          perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars),
+          cap: bossClickCap(gear.knifeId, gear.stars)
+        }
+      }
+    });
+  }
   if (!Number(guild.boss_index)) return json(headers, { success: false, error: "Босс не вызван" }, 409);
   const fresh = await membership(db, me);
   const now = Date.now();
   let openMs = Number(fresh.strikeOpenMs) || 0;
   let clicks = Number(fresh.strikeClicks) || 0;
-  if (!openMs || fresh.strikeStartedMs !== guild.boss_started_ms || now > openMs + STRIKE_MS) {
+  const windowExpired = openMs > 0
+    && Number(fresh.strikeStartedMs) === Number(guild.boss_started_ms)
+    && now > openMs + STRIKE_MS;
+  if (!openMs || fresh.strikeStartedMs !== guild.boss_started_ms || windowExpired) {
+    if (windowExpired && clicks > 0) {
+      const gear = await gearOf(db, me);
+      const boss = bossByIndex(guild.boss_index);
+      return json(headers, {
+        success: true,
+        fight: {
+          ended: "window",
+          result: {
+            win: false,
+            kind: "window",
+            bossName: boss?.name || "Босс",
+            bossIcon: boss?.icon || "💀",
+            bossId: boss?.id || "",
+            circle: Number(guild.boss_circle) || 1,
+            totalDamage: 0,
+            hitters: 0,
+            points: 0,
+            plungers: 0,
+            myDamage: await damageOf(db, guild, me),
+            myClicks: clicks,
+            myPlungers: 0,
+            perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars),
+            cap: bossClickCap(gear.knifeId, gear.stars),
+            durationMs: STRIKE_MS
+          },
+          ...publicBoss(guild, fresh)
+        }
+      });
+    }
     if (now < Number(fresh.nextStrikeMs || 0)) {
       const gear = await gearOf(db, me);
       const boss = publicBoss(guild, fresh);
@@ -868,7 +941,6 @@ async function strike(db, headers, me, reported) {
   const allowed = Math.floor(cap * elapsed);
   const want = Math.max(0, Math.min(Math.floor(reported) || 0, allowed));
   const add = want - clicks;
-  let ended = "";
   if (add > 0) {
     const tick = add * bossClickPower(gear.stage, gear.knifeId, gear.stars);
     const hp = Math.max(0, (Number(guild.boss_hp) || 0) - tick);
@@ -880,21 +952,33 @@ async function strike(db, headers, me, reported) {
     `).bind(guild.id, me, guild.boss_started_ms, tick).run();
     guild = await guildRow(db, guild.id);
     if (hp <= 0) {
-      await finishAttempt(db, guild, true);
-      ended = "win";
+      const myDamage = await damageOf(db, guild, me);
+      const summary = await finishAttempt(db, guild, true);
+      return json(headers, {
+        success: true,
+        mailReady: true,
+        fight: {
+          ended: "win",
+          result: {
+            ...summary,
+            kind: "win",
+            myDamage,
+            myClicks: want,
+            myPlungers: myDamage > 0 ? summary.plungers : 0,
+            perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars),
+            cap
+          }
+        }
+      });
     }
   }
   const freshMember = await membership(db, me);
-  const current = ended ? null : await guildRow(db, guild.id);
-  if (!current || !Number(current.boss_index)) {
-    return json(headers, { success: true, fight: { ended: ended || "end" } });
-  }
+  const current = await guildRow(db, guild.id);
   const boss = publicBoss(current, freshMember);
   return json(headers, {
     success: true,
     fight: {
       ...boss,
-      ended,
       blow: blowOf(gear, {
         added: add,
         myDamage: await damageOf(db, current, me),
@@ -916,10 +1000,13 @@ async function setGate(db, headers, me, epochRaw) {
 }
 
 async function listMail(db, headers, playerId) {
-  await db.prepare(`
-    DELETE FROM mail
-    WHERE player_id = ? AND plungers = 0 AND created_at < datetime('now', '-30 days')
-  `).bind(playerId).run();
+  // Mark unseen first so badge drops quickly; prune old empty mail only occasionally.
+  const unseen = await db.prepare(`
+    SELECT COUNT(*) as n FROM mail WHERE player_id = ? AND seen = 0
+  `).bind(playerId).first();
+  if (Number(unseen?.n) > 0) {
+    await db.prepare(`UPDATE mail SET seen = 1 WHERE player_id = ? AND seen = 0`).bind(playerId).run();
+  }
   const { results } = await db.prepare(`
     SELECT id, kind, title, body, plungers, seen, claimed, created_at as createdAt
     FROM mail WHERE player_id = ? ORDER BY id DESC LIMIT 50
@@ -930,12 +1017,18 @@ async function listMail(db, headers, playerId) {
     title: row.title,
     body: row.body,
     plungers: Number(row.plungers) || 0,
-    seen: Number(row.seen) === 1,
+    seen: true,
     claimed: Number(row.claimed) === 1,
     createdAt: row.createdAt
   }));
-  await db.prepare(`UPDATE mail SET seen = 1 WHERE player_id = ? AND seen = 0`).bind(playerId).run();
   const rewardCount = letters.filter((letter) => letter.plungers > 0 && !letter.claimed).length;
+  // Lightweight prune once per ~20 reads with empty mail at the end of the page.
+  if ((letters.length || 0) >= 40) {
+    db.prepare(`
+      DELETE FROM mail
+      WHERE player_id = ? AND plungers = 0 AND claimed = 1 AND created_at < datetime('now', '-30 days')
+    `).bind(playerId).run();
+  }
   return json(headers, { success: true, letters, rewardCount });
 }
 

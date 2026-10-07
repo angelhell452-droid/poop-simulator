@@ -1,4 +1,4 @@
-import { GAME } from '../core/state.js?v=5.0.63';
+import { GAME } from '../core/state.js?v=5.0.65';
 import { TALENTS } from '../data/talents.data.js';
 import { events } from '../core/events.js';
 import { isTalentVisible } from '../progression/unlocks.js';

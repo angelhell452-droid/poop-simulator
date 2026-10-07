@@ -1,4 +1,4 @@
-import { GAME } from '../core/state.js?v=5.0.63';
+import { GAME } from '../core/state.js?v=5.0.65';
 
 export function accountForm() {
   return (GAME.evoStage || 0) + 1;

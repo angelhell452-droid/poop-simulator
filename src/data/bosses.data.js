@@ -9,8 +9,28 @@ export const GUILD_BOSSES = [
   { index: 8, id: 'crown', name: 'Венец Вечности', icon: '👑', points: 150, plungers: 4 }
 ];
 
-const LEVEL_POINTS = [0, 50, 120, 220, 360, 540, 780, 1100, 1500, 2000];
-export const GUILD_MAX_LEVEL = 10;
+/** Points required to reach each level (index = level - 1). */
+const LEVEL_POINTS = [
+  0, 50, 120, 220, 360, 540, 780, 1100, 1500, 2000,
+  2600, 3300, 4100, 5000, 6100,
+  7400, 8900, 10600, 12500, 14700,
+  17200, 20000, 23200, 26800, 31000
+];
+
+/**
+ * Income mult by guild level. Soft steps with jumps at 5 / 10 / 15 / 20 / 25.
+ * Lv.5 → x1.1, Lv.10 → x1.25, Lv.15 → x1.45, Lv.20 → x1.8, Lv.25 → x2.25.
+ */
+const GUILD_BONUS_BY_LEVEL = [
+  1,
+  1.02, 1.04, 1.06, 1.08, 1.10,
+  1.12, 1.14, 1.16, 1.18, 1.25,
+  1.28, 1.31, 1.34, 1.37, 1.45,
+  1.50, 1.55, 1.60, 1.65, 1.80,
+  1.85, 1.90, 1.95, 2.10, 2.25
+];
+
+export const GUILD_MAX_LEVEL = 25;
 
 export function bossByIndex(index) {
   return GUILD_BOSSES.find((boss) => boss.index === Number(index)) || null;
@@ -44,11 +64,15 @@ export function guildLevelFromPoints(points) {
 export function guildBonusMult(level) {
   const step = Math.max(0, Math.min(GUILD_MAX_LEVEL, Math.floor(Number(level) || 0)));
   if (step <= 0) return 1;
-  return 1 + step * 0.02;
+  return GUILD_BONUS_BY_LEVEL[step] || 1;
 }
 
-export function guildBonusPct(level) {
-  return Math.round((guildBonusMult(level) - 1) * 100);
+/** Short label like x1.1 / x1.25 for UI. */
+export function guildBonusLabel(level) {
+  const mult = guildBonusMult(level);
+  const rounded = Math.round(mult * 100) / 100;
+  const text = Number.isInteger(rounded) ? String(rounded) : String(rounded);
+  return `x${text}`;
 }
 
 /** Progress of current level: points toward the next tier. */

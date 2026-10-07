@@ -1,8 +1,12 @@
-import { GAME } from '../core/state.js?v=5.0.63';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.63';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.63';
-import { saveLocal } from '../save/saveManager.js?v=5.0.63';
-import { updateHUD } from './hudView.js?v=5.0.63';
+import { GAME } from '../core/state.js?v=5.0.65';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.65';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.65';
+import { saveLocal } from '../save/saveManager.js?v=5.0.65';
+import { updateHUD } from './hudView.js?v=5.0.65';
+
+let lettersCache = [];
+let mailBusy = false;
+let mailPulse = 0;
 
 function esc(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -16,6 +20,15 @@ function toast(text) {
   setTimeout(() => node.remove(), 2800);
 }
 
+function signedIn() {
+  return !!getStoredAccount()?.username;
+}
+
+function mailOpen() {
+  const modal = document.getElementById('mailModal');
+  return !!(modal && !modal.classList.contains('hidden'));
+}
+
 function setBadge(count) {
   const badge = document.getElementById('mailRewardBadge');
   if (!badge) return;
@@ -27,7 +40,7 @@ function setBadge(count) {
 function render(letters) {
   const box = document.getElementById('mailBody');
   if (!box) return;
-  if (!getStoredAccount()?.username) {
+  if (!signedIn()) {
     setBadge(0);
     box.innerHTML = `<div class="garden-empty">Почта открывается с аккаунта.</div>`;
     return;
@@ -49,18 +62,31 @@ function render(letters) {
   `).join('')}</div>`;
 }
 
-async function loadMail() {
-  if (!getStoredAccount()?.username) {
+async function loadMail(forceRender = false) {
+  if (!signedIn()) {
+    lettersCache = [];
     render([]);
     return;
   }
-  const data = await socialRequest('mail');
-  if (!data.success) {
-    toast(data.error || 'Почта не открылась');
-    return;
+  if (mailBusy) return;
+  mailBusy = true;
+  try {
+    const data = await socialRequest('mail');
+    if (!data.success) {
+      if (mailOpen()) toast(data.error || 'Почта не открылась');
+      return;
+    }
+    lettersCache = Array.isArray(data.letters) ? data.letters : [];
+    setBadge(data.rewardCount);
+    if (forceRender || mailOpen()) render(lettersCache);
+  } finally {
+    mailBusy = false;
   }
-  setBadge(data.rewardCount);
-  render(Array.isArray(data.letters) ? data.letters : []);
+}
+
+/** Fast badge/list refresh — call after boss fights and while mail is open. */
+export function pulseMail(forceRender = false) {
+  return loadMail(forceRender || mailOpen());
 }
 
 async function claim(id) {
@@ -76,22 +102,23 @@ async function claim(id) {
     updateHUD();
     toast(`+${formatNumber(data.gained || 0)} вантузов`);
   }
-  await loadMail();
+  await loadMail(true);
 }
 
 export function initMailView() {
   document.getElementById('btnMailModal')?.addEventListener('click', () => {
     document.getElementById('mailModal')?.classList.remove('hidden');
-    loadMail();
+    loadMail(true);
   });
   document.getElementById('mailBody')?.addEventListener('click', (event) => {
     const button = event.target.closest('[data-mail-id]');
     if (!button) return;
     claim(button.dataset.mailId);
   });
-  if (getStoredAccount()?.username) {
-    socialRequest('mail').then((data) => {
-      if (data.success) setBadge(data.rewardCount);
-    });
-  }
+  if (mailPulse) clearInterval(mailPulse);
+  mailPulse = setInterval(() => {
+    if (!signedIn() || document.visibilityState === 'hidden') return;
+    loadMail(mailOpen());
+  }, 3500);
+  if (signedIn()) loadMail(false);
 }

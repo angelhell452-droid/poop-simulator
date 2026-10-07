@@ -214,7 +214,7 @@ async function sendRequest(db, headers, me, other) {
     return json(headers, { success: false, error: "Вы уже друзья" }, 409);
   }
   if (existing?.status === "pending" && existing.fromId === me) {
-    return json(headers, { success: true, pending: true, username: other.username });
+    return withRoster(db, headers, me, { pending: true, username: other.username });
   }
   if (existing?.status === "pending" && existing.toId === me) {
     return acceptRequest(db, headers, me, other);
@@ -229,13 +229,13 @@ async function sendRequest(db, headers, me, other) {
     INSERT INTO friend_links (from_id, to_id, status, created_at, updated_at)
     VALUES (?, ?, 'pending', datetime('now'), datetime('now'))
   `).bind(me, other.playerId).run();
-  return json(headers, { success: true, pending: true, username: other.username });
+  return withRoster(db, headers, me, { pending: true, username: other.username });
 }
 
 async function acceptRequest(db, headers, me, other) {
   const existing = await linkBetween(db, me, other.playerId);
   if (!existing || existing.status !== "pending" || existing.toId !== me) {
-    if (existing?.status === "accepted") return json(headers, { success: true, username: other.username });
+    if (existing?.status === "accepted") return withRoster(db, headers, me, { username: other.username });
     return json(headers, { success: false, error: "Заявки нет" }, 404);
   }
   if ((await acceptedCount(db, me)) >= FRIEND_CAP || (await acceptedCount(db, other.playerId)) >= FRIEND_CAP) {
@@ -244,7 +244,7 @@ async function acceptRequest(db, headers, me, other) {
   await db.prepare(`
     UPDATE friend_links SET status = 'accepted', updated_at = datetime('now') WHERE id = ?
   `).bind(existing.id).run();
-  return json(headers, { success: true, username: other.username });
+  return withRoster(db, headers, me, { username: other.username });
 }
 
 async function dropPending(db, headers, me, other, action) {
@@ -255,7 +255,7 @@ async function dropPending(db, headers, me, other, action) {
   const mine = action === "friend_cancel" ? existing.fromId === me : existing.toId === me;
   if (!mine) return json(headers, { success: false, error: "Заявки нет" }, 404);
   await db.prepare(`DELETE FROM friend_links WHERE id = ?`).bind(existing.id).run();
-  return json(headers, { success: true, username: other.username });
+  return withRoster(db, headers, me, { username: other.username });
 }
 
 async function removeFriend(db, headers, me, other) {
@@ -267,7 +267,7 @@ async function removeFriend(db, headers, me, other) {
     DELETE FROM friend_links
     WHERE (from_id = ? AND to_id = ?) OR (from_id = ? AND to_id = ?)
   `).bind(me, other.playerId, other.playerId, me).run();
-  return json(headers, { success: true, username: other.username });
+  return withRoster(db, headers, me, { username: other.username });
 }
 
 export async function handleFriendGet(action, url, req, env, headers) {
@@ -280,7 +280,7 @@ export async function handleFriendGet(action, url, req, env, headers) {
   return json(headers, { success: false, error: "Неизвестное действие" }, 400);
 }
 
-async function listFriends(db, headers, me) {
+async function friendsPayload(db, me) {
   const { results } = await db.prepare(`
     SELECT
       links.status as status,
@@ -318,7 +318,20 @@ async function listFriends(db, headers, me) {
     friend.guildTag = tagMap.get(friendIds[index]) || "";
   });
   friends.sort((a, b) => Number(b.online) - Number(a.online) || String(a.username).localeCompare(String(b.username)));
-  return json(headers, { success: true, friends, incoming, outgoing, canInvite: await inviteRight(db, me) });
+  return {
+    friends,
+    incoming,
+    outgoing,
+    canInvite: await inviteRight(db, me)
+  };
+}
+
+async function listFriends(db, headers, me) {
+  return json(headers, { success: true, ...(await friendsPayload(db, me)) });
+}
+
+async function withRoster(db, headers, me, extra = {}) {
+  return json(headers, { success: true, ...(await friendsPayload(db, me)), ...extra });
 }
 
 async function friendProfile(db, headers, me, username) {

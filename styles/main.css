@@ -433,6 +433,16 @@ body {
   text-align: center;
 }
 
+.boss-result {
+  width: min(100%, 360px);
+  margin: 0 auto;
+  text-align: left;
+}
+
+.boss-result-stats {
+  margin-top: 4px;
+}
+
 .boss-hp {
   width: min(100%, 280px);
   height: 14px;

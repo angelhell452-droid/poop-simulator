@@ -1,12 +1,13 @@
-import { GAME } from '../core/state.js?v=5.0.63';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.63';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.63';
-import { GUILD_MAX_LEVEL, guildBonusPct, guildLevelProgress } from '../data/bosses.data.js?v=5.0.63';
-import { KNIVES } from '../data/knives.data.js?v=5.0.63';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.63';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.63';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.63';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.63';
+import { GAME } from '../core/state.js?v=5.0.65';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.65';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.65';
+import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.65';
+import { KNIVES } from '../data/knives.data.js?v=5.0.65';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.65';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.65';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.65';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.65';
+import { pulseMail } from './mailView.js?v=5.0.65';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
 
@@ -23,6 +24,9 @@ let strikeQueued = false;
 let striking = false;
 let toldAt = 0;
 let autoFight = false;
+let fightResult = null;
+let guildPulse = 0;
+let shownWindowKey = '';
 
 try {
   autoFight = localStorage.getItem(AUTO_KEY) === '1';
@@ -92,10 +96,14 @@ function canManageGuild(guild = state?.guild) {
 }
 
 function showPage(next) {
-  let want = next === 'fight' || next === 'search' || next === 'journal' || next === 'settings' ? next : 'mine';
+  let want = next === 'fight' || next === 'search' || next === 'journal' || next === 'settings' || next === 'bonuses'
+    ? next
+    : 'mine';
   if (want === 'settings' && !canManageGuild()) want = 'mine';
+  if (want === 'bonuses' && !state?.guild) want = 'mine';
   page = want;
   document.getElementById('guildPageMine')?.classList.toggle('hidden', page !== 'mine');
+  document.getElementById('guildPageBonuses')?.classList.toggle('hidden', page !== 'bonuses');
   document.getElementById('guildPageFight')?.classList.toggle('hidden', page !== 'fight');
   document.getElementById('guildPageJournal')?.classList.toggle('hidden', page !== 'journal');
   document.getElementById('guildPageSettings')?.classList.toggle('hidden', page !== 'settings');
@@ -107,6 +115,7 @@ function showPage(next) {
   if (page === 'fight') paintFight();
   if (page === 'journal') renderJournal();
   if (page === 'settings') renderSettings();
+  if (page === 'bonuses') renderBonuses();
 }
 
 async function loadDirectory(query, level, announce) {
@@ -217,11 +226,13 @@ function renderMine() {
   if (!box) return;
   const guest = !signedIn();
   const settingsTab = document.getElementById('guildTabSettings');
+  const bonusesTab = document.getElementById('guildTabBonuses');
   if (tabs) tabs.classList.toggle('hidden', guest);
   if (search) search.classList.toggle('hidden', guest || page !== 'search');
   if (guest) {
     if (form) form.classList.add('hidden');
     if (settingsTab) settingsTab.classList.add('hidden');
+    if (bonusesTab) bonusesTab.classList.add('hidden');
     box.innerHTML = '<div class="garden-empty">Гильдия открывается с аккаунта.</div>';
     return;
   }
@@ -229,7 +240,8 @@ function renderMine() {
   if (!guild) {
     if (form) form.classList.remove('hidden');
     if (settingsTab) settingsTab.classList.add('hidden');
-    if (page === 'settings') showPage('mine');
+    if (bonusesTab) bonusesTab.classList.add('hidden');
+    if (page === 'settings' || page === 'bonuses') showPage('mine');
     const invites = state?.invites || [];
     const inviteBlock = invites.length ? `<div class="garden-muted mb-2">Приглашения</div><div class="grid gap-2">${invites.map((invite) => `
       <div class="garden-card flex items-center justify-between gap-2">
@@ -244,29 +256,19 @@ function renderMine() {
     return;
   }
   if (form) form.classList.add('hidden');
+  if (bonusesTab) bonusesTab.classList.remove('hidden');
   if (settingsTab) settingsTab.classList.toggle('hidden', !canManageGuild(guild));
   if (page === 'settings' && !canManageGuild(guild)) showPage('mine');
   const progress = guildLevelProgress(guild.points);
-  const bonus = guildBonusPct(progress.level);
+  const bonus = guildBonusLabel(progress.level);
   const members = guild.members || [];
   const barLabel = progress.maxed
     ? `${formatNumber(progress.points)} очков · максимум`
     : `${formatNumber(progress.points)} / ${formatNumber(progress.next)} очков`;
-  const bonusRows = Array.from({ length: GUILD_MAX_LEVEL }, (_, i) => {
-    const level = i + 1;
-    const pct = guildBonusPct(level);
-    const state = level < progress.level ? 'done' : level === progress.level ? 'current' : 'locked';
-    return `
-      <div class="guild-bonus-row ${state}">
-        <span>Ур. ${formatNumber(level)}</span>
-        <span>+${formatNumber(pct)}% к клику и заводам</span>
-      </div>
-    `;
-  }).join('');
   box.innerHTML = `
     <div class="garden-card">
       <div class="font-game text-lg">[${esc(guild.tag)}] ${esc(guild.name)}</div>
-      <div class="garden-muted mt-1">${roleName(guild.role)} · +${formatNumber(bonus)}% к клику и заводам · вход с эпохи ${formatNumber(guild.reqEpoch || 1)}</div>
+      <div class="garden-muted mt-1">${roleName(guild.role)} · ${bonus} к клику и заводам · вход с эпохи ${formatNumber(guild.reqEpoch || 1)}</div>
       <div class="guild-level mt-3">
         <div class="guild-level-head">
           <span class="font-game">Уровень ${formatNumber(progress.level)}</span>
@@ -277,14 +279,6 @@ function renderMine() {
         </div>
         ${progress.maxed ? '' : `<div class="garden-muted mt-1">До ур. ${formatNumber(progress.level + 1)} ещё ${formatNumber(Math.max(0, progress.next - progress.points))} очков</div>`}
       </div>
-    </div>
-    <div class="guild-bonuses mt-3">
-      <div class="guild-roster-head">
-        <span class="font-game">Бонусы</span>
-        <span class="garden-pill">сейчас +${formatNumber(bonus)}%</span>
-      </div>
-      <div class="garden-muted mb-2">Каждый уровень гильдии даёт +2% к клику и заводам всем участникам.</div>
-      <div class="grid gap-1.5">${bonusRows}</div>
     </div>
     <div class="guild-roster mt-3">
       <div class="guild-roster-head">
@@ -302,6 +296,45 @@ function renderMine() {
     </div>
     <div class="flex gap-2 mt-3">
       <button type="button" class="garden-pill jelly-btn" data-guild-action="leave">Выйти</button>
+    </div>
+  `;
+}
+
+function renderBonuses() {
+  const box = document.getElementById('guildBonuses');
+  if (!box) return;
+  if (!signedIn()) {
+    box.innerHTML = '<div class="garden-empty">Бонусы открываются с аккаунта.</div>';
+    return;
+  }
+  const guild = state?.guild;
+  if (!guild) {
+    box.innerHTML = '<div class="garden-empty">Сначала вступите в гильдию.</div>';
+    return;
+  }
+  const progress = guildLevelProgress(guild.points);
+  const bonus = guildBonusLabel(progress.level);
+  const jumps = new Set([5, 10, 15, 20, 25]);
+  const bonusRows = Array.from({ length: GUILD_MAX_LEVEL }, (_, i) => {
+    const level = i + 1;
+    const label = guildBonusLabel(level);
+    const rowState = level < progress.level ? 'done' : level === progress.level ? 'current' : 'locked';
+    const jumpMark = jumps.has(level) ? ' · прыжок' : '';
+    return `
+      <div class="guild-bonus-row ${rowState}">
+        <span>Ур. ${formatNumber(level)}${jumpMark}</span>
+        <span>${label} к клику и заводам</span>
+      </div>
+    `;
+  }).join('');
+  box.innerHTML = `
+    <div class="guild-bonuses">
+      <div class="guild-roster-head">
+        <span class="font-game">Бонусы</span>
+        <span class="garden-pill">сейчас ${bonus}</span>
+      </div>
+      <div class="garden-muted mb-2">Множитель к клику и заводам для всей гильдии. Мягкий рост с прыжками на ур. 5 · 10 · 15 · 20 · 25. Потолок ${guildBonusLabel(GUILD_MAX_LEVEL)}.</div>
+      <div class="grid gap-1.5">${bonusRows}</div>
     </div>
   `;
 }
@@ -442,6 +475,50 @@ function fightShell(boss) {
   `;
 }
 
+function resultTitle(result) {
+  if (result?.kind === 'win') return 'Победа!';
+  if (result?.kind === 'loss') return 'Проигрыш';
+  if (result?.kind === 'window') return 'Окно удара закрыто';
+  return 'Итоги боя';
+}
+
+function resultCard(result) {
+  const secs = Math.max(1, Math.round((Number(result.durationMs) || 0) / 1000));
+  const reward = result.kind === 'win'
+    ? (result.myPlungers > 0
+      ? `Награда вам: ${formatNumber(result.myPlungers)} вантузов · гильдии +${formatNumber(result.points)} очков`
+      : `Гильдии +${formatNumber(result.points)} очков. Вам вантузов нет — удара не было.`)
+    : result.kind === 'window'
+      ? 'Босс ещё жив. Личный удар закончился, через 3 часа можно бить снова.'
+      : 'Попытка провалена. Вантузов за проигрыш нет.';
+  return `
+    <div class="boss-result garden-card">
+      <div class="font-game text-xl">${esc(resultTitle(result))}</div>
+      <div class="garden-muted mt-1">${esc(result.bossIcon || '')} ${esc(result.bossName || 'Босс')} · круг ${formatNumber(result.circle || 1)}</div>
+      <div class="grid gap-1.5 mt-3 boss-result-stats">
+        <div class="guild-member-row flex justify-between gap-2"><span>Ваши клики</span><span>${formatNumber(result.myClicks || 0)}</span></div>
+        <div class="guild-member-row flex justify-between gap-2"><span>Ваш урон</span><span>${formatNumber(result.myDamage || 0)}</span></div>
+        <div class="guild-member-row flex justify-between gap-2"><span>Урон за клик</span><span>${formatNumber(result.perClick || 0)}</span></div>
+        ${result.kind === 'win' || result.kind === 'loss' ? `
+          <div class="guild-member-row flex justify-between gap-2"><span>Урон гильдии</span><span>${formatNumber(result.totalDamage || 0)}</span></div>
+          <div class="guild-member-row flex justify-between gap-2"><span>Участников били</span><span>${formatNumber(result.hitters || 0)}</span></div>
+          <div class="guild-member-row flex justify-between gap-2"><span>Длительность</span><span>${formatNumber(secs)}с</span></div>
+        ` : ''}
+      </div>
+      <div class="garden-muted mt-3">${esc(reward)}</div>
+      <button type="button" class="garden-pill accent jelly-btn mt-3" data-guild-action="dismissResult">Понятно</button>
+    </div>
+  `;
+}
+
+function applyFightResult(result, mailReady) {
+  if (!result) return;
+  fightResult = result;
+  stopStrike();
+  paintFight();
+  if (mailReady) pulseMail(true);
+}
+
 function paintFight() {
   const box = document.getElementById('guildFight');
   const guild = state?.guild;
@@ -454,6 +531,11 @@ function paintFight() {
   if (!guild) {
     box.innerHTML = '<div class="garden-empty">Сначала вступите в гильдию.</div>';
     box.dataset.key = '';
+    return;
+  }
+  if (fightResult) {
+    box.dataset.key = 'result';
+    box.innerHTML = resultCard(fightResult);
     return;
   }
   const boss = guild.boss;
@@ -581,6 +663,7 @@ function renderJournal() {
 
 function render() {
   renderMine();
+  renderBonuses();
   renderSearch();
   renderJournal();
   renderSettings();
@@ -599,6 +682,12 @@ function mergeFight(fight) {
 }
 
 async function act(action, button) {
+  if (action === 'dismissResult') {
+    fightResult = null;
+    shownWindowKey = '';
+    await loadGuild();
+    return;
+  }
   const username = decodeURIComponent(button?.dataset.user || '');
   let data = null;
   if (action === 'accept' || action === 'decline') {
@@ -642,8 +731,10 @@ async function act(action, button) {
   if (data.guild !== undefined || data.presence) {
     state = data;
     applyPresence(data);
+    render();
+  } else {
+    await loadGuild();
   }
-  await loadGuild();
   if (page === 'search' || action === 'apply' || action === 'cancel') {
     await loadDirectory(
       document.getElementById('guildSearchInput')?.value || '',
@@ -703,6 +794,18 @@ async function pushStrike() {
     stopStrike();
     return;
   }
+  if (data.fight?.result) {
+    applyFightResult(data.fight.result, data.mailReady);
+    if (data.fight.result.kind === 'win' || data.fight.result.kind === 'loss') {
+      await loadGuild();
+      // Keep result card on top of the refreshed roster summon list.
+      fightResult = data.fight.result;
+      paintFight();
+    } else if (data.fight.index) {
+      mergeFight(data.fight);
+    }
+    return;
+  }
   if (data.fight) mergeFight(data.fight);
   else if (data.guild !== undefined) {
     state = data;
@@ -710,9 +813,24 @@ async function pushStrike() {
     paintFight();
   }
   const phase = livePhase(state?.guild?.boss);
-  if (data.fight?.ended || phase === 'cooldown') {
+  if (phase === 'cooldown') {
+    const boss = state?.guild?.boss;
+    const key = `${boss?.index || 0}:${boss?.deadlineMs || 0}:${strikeClicks}`;
+    if (striking && strikeClicks > 0 && shownWindowKey !== key) {
+      shownWindowKey = key;
+      applyFightResult({
+        kind: 'window',
+        bossName: boss?.name || 'Босс',
+        bossIcon: boss?.icon || '💀',
+        circle: boss?.circle || 1,
+        myClicks: liveClicks(boss),
+        myDamage: liveDamage(boss),
+        perClick: Number(boss?.blow?.perClick) || 0,
+        durationMs: 15000
+      }, false);
+      return;
+    }
     stopStrike();
-    if (data.fight?.ended) await loadGuild();
     return;
   }
   if (strikeQueued && striking) {
@@ -791,6 +909,13 @@ export function initGuildView() {
     loadGuild();
     loadDirectory('', '');
   });
+  if (guildPulse) clearInterval(guildPulse);
+  guildPulse = setInterval(() => {
+    if (!signedIn()) return;
+    if (modal?.classList.contains('hidden')) return;
+    if (striking || fightResult) return;
+    loadGuild();
+  }, 2500);
   document.getElementById('guildSearchForm')?.addEventListener('submit', (event) => {
     event.preventDefault();
     loadDirectory(
@@ -846,7 +971,7 @@ export function initGuildView() {
   });
   setInterval(() => {
     if (modal?.classList.contains('hidden')) return;
-    if (page === 'fight' && state?.guild?.boss) paintFight();
+    if (page === 'fight' && (state?.guild?.boss || fightResult)) paintFight();
   }, 250);
   if (signedIn()) loadGuild();
 }

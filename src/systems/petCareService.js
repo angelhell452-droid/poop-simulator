@@ -1,5 +1,5 @@
-import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.js?v=5.0.63';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.63';
+import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.js?v=5.0.65';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.65';
 import { events } from '../core/events.js';
 
 function meterHasRoom(value) {

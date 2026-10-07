@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.63 PRO</title>
+  <title>Poop Simulator v5.0.65 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.63">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.65">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.63 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.65 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             title="Сообщить об ошибке">
@@ -1034,6 +1034,7 @@
       <h3 class="font-game text-xl mb-3">Гильдия</h3>
       <div id="guildTabs" class="guild-tabs hidden">
         <button type="button" class="garden-pill accent" data-guild-page="mine">Моя гильдия</button>
+        <button type="button" id="guildTabBonuses" class="garden-pill hidden" data-guild-page="bonuses">Бонусы</button>
         <button type="button" class="garden-pill" data-guild-page="fight">Бой</button>
         <button type="button" class="garden-pill" data-guild-page="journal">Журнал</button>
         <button type="button" id="guildTabSettings" class="garden-pill hidden" data-guild-page="settings">Настройки</button>
@@ -1047,6 +1048,9 @@
             <button type="submit" class="garden-pill accent jelly-btn">Создать</button>
           </form>
           <div id="guildMine"></div>
+        </div>
+        <div id="guildPageBonuses" class="hidden">
+          <div id="guildBonuses"></div>
         </div>
         <div id="guildPageFight" class="hidden">
           <div id="guildFight"></div>
@@ -1805,12 +1809,13 @@
           <ul class="list-disc list-inside text-stone-300 mt-1 space-y-1 text-[11px]">
             <li>Один аккаунт состоит в одной гильдии, до 20 человек. Перед ником стоит титул.</li>
             <li>Глава и офицер приглашают и вызывают босса из уже открытых. Участник только бьёт.</li>
-            <li>Окно гильдии: своя, бой, журнал, поиск. У главы и офицеров ещё «Настройки». Поиск ищет по названию и по уровню.</li>
+            <li>Окно гильдии: своя, бонусы, бой, журнал, поиск. У главы и офицеров ещё «Настройки». Поиск ищет по названию и по уровню.</li>
             <li>На странице боя видно, можно ли бить, идёт ли удар, живой урон и клики. На боссе подсказка «Нажми, чтобы начать бой». Можно включить автобой на потолке кликов. Состав гильдии там не показывается.</li>
             <li>Вкладка «Журнал» открыта даже во время боя: там книга боссов гильдии и недавние победы и проигрыши.</li>
             <li>Вкладка «Настройки» видна главе и офицерам: порог эпохи, заявки и роспуск. Состав гильдии выделен на странице «Моя гильдия».</li>
             <li>Урон за клик считает сервер: √формы × (1 + сила ножа), звёзды ножа чуть усиливают. Быстрее потолка кликов удар не идёт.</li>
-            <li>На «Моя гильдия» шкала уровня с очками и раздел «Бонусы»: каждый уровень даёт +2% к клику и заводам. Потолок — 10 уровень.</li>
+            <li>На «Моя гильдия» шкала уровня с очками. Вкладка «Бонусы» — множители до ур. 25 (прыжки на 5 / 10 / 15 / 20 / 25). Потолок x2.25 к клику и заводам.</li>
+            <li>После победы, проигрыша или конца 15 секунд удара открывается окно итогов: клики, урон и награды.</li>
             <li>Удар длится 15 секунд, потом личные 3 часа. На попытку есть 12 часов.</li>
             <li>Письмо о победе или проигрыше приходит всей гильдии. Вантузы внутри только у того, кто сам бил.</li>
           </ul>
@@ -2217,7 +2222,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.63"></script>
+  <script type="module" src="src/main.js?v=5.0.65"></script>
 </body>
 
 </html>
