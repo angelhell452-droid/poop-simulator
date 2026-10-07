@@ -264,7 +264,7 @@ export function renderCharacterInventory() {
           updateHUD();
           renderCharacterInventory();
           saveLocal();
-          showKnifeToast(`💎 Шапка "${shopName(equippedHat)}" инкрустирована до Lv.${formatNumber(res.newLevel)}! (+15% к силе шапки)`);
+          showKnifeToast(t('inv.toastInlay', { name: shopName(equippedHat), n: formatNumber(res.newLevel) }));
         } else {
           alert(res.msg);
         }
@@ -286,14 +286,14 @@ export function renderCharacterInventory() {
       const canAffordSharpen = (GAME.sparkles || 0) >= costInfo.cost;
       let sharpenBtnHtml = '';
       if (costInfo.maxReached) {
-        sharpenBtnHtml = `<button class="bg-stone-900 text-stone-500 font-black text-[11px] px-2.5 py-1.5 rounded-xl border border-stone-800 cursor-not-allowed" disabled>★ МАКС</button>`;
+        sharpenBtnHtml = `<button class="bg-stone-900 text-stone-500 font-black text-[11px] px-2.5 py-1.5 rounded-xl border border-stone-800 cursor-not-allowed" disabled>★ ${t('common.max')}</button>`;
       } else if (!canAffordSharpen) {
-        sharpenBtnHtml = `<button class="bg-stone-900 text-stone-500 font-bold text-[11px] px-2.5 py-1.5 rounded-xl border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="Недостаточно Блестяшек">
+        sharpenBtnHtml = `<button class="bg-stone-900 text-stone-500 font-bold text-[11px] px-2.5 py-1.5 rounded-xl border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="${t('inv.noSparkles')}">
           <span>🔒</span> <span>${formatNumber(costInfo.cost)} ✨</span>
         </button>`;
       } else {
-        sharpenBtnHtml = `<button id="btnSharpenEquippedKnife" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 text-stone-950 font-black text-[11px] px-2.5 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="Заточить надетый нож (+1 Lv)">
-          ⭐ Точить (${formatNumber(costInfo.cost)} ✨)
+        sharpenBtnHtml = `<button id="btnSharpenEquippedKnife" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:brightness-110 text-stone-950 font-black text-[11px] px-2.5 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="${t('inv.sharpenEquippedTitle')}">
+          ${t('inv.sharpenBtn', { n: formatNumber(costInfo.cost) })}
         </button>`;
       }
 
@@ -303,23 +303,23 @@ export function renderCharacterInventory() {
             <div class="inv-gear-icon">${getKnifeImageHtml(equippedObj, 56)}</div>
             <div class="min-w-0 flex-1">
               <div class="font-game text-sm text-white font-black leading-tight">${knifeName(equippedObj)}</div>
-              <div class="text-[10px] text-stone-400 leading-tight mt-0.5">${knifeRarity(equippedObj) || 'Нож'}</div>
+              <div class="text-[10px] text-stone-400 leading-tight mt-0.5">${knifeRarity(equippedObj) || t('inv.knifeWord')}</div>
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-1.5">
             ${sharpenBtnHtml}
-            <button id="btnEquipBestKnifeEquipped" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black text-[11px] px-2 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="Надеть нож с наибольшим уроном">
-              ⚔️ Лучший
+            <button id="btnEquipBestKnifeEquipped" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black text-[11px] px-2 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1" title="${t('inv.bestTitle')}">
+              ${t('inv.best')}
             </button>
             <button id="btnUnequipKnife" class="bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-600 text-[11px] px-2 py-1.5 rounded-xl font-bold jelly-btn">
-              Снять
+              ${t('inv.unequip')}
             </button>
           </div>
           <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
-            <span class="text-emerald-300 font-currency bg-emerald-950/70 px-1.5 py-0.5 rounded">Клик +${formatNumber(eqClickPct)}%</span>
-            <span class="text-lime-200 font-currency bg-lime-950/70 px-1.5 py-0.5 rounded">Заводы +${formatNumber(shown.passPct)}%</span>
+            <span class="text-emerald-300 font-currency bg-emerald-950/70 px-1.5 py-0.5 rounded">${t('inv.clickPct', { n: formatNumber(eqClickPct) })}</span>
+            <span class="text-lime-200 font-currency bg-lime-950/70 px-1.5 py-0.5 rounded">${t('inv.factoriesPct', { n: formatNumber(shown.passPct) })}</span>
             <span class="text-cyan-300 font-currency bg-cyan-950/70 px-1.5 py-0.5 rounded">+${formatNumber(getKnifeCpsBonus(equippedObj))} CPS</span>
-            <span class="text-amber-300 font-currency bg-amber-950/70 px-1.5 py-0.5 rounded">★ Lv.${formatNumber(eqStar)}</span>
+            <span class="text-amber-300 font-currency bg-amber-950/70 px-1.5 py-0.5 rounded">★ ${t('hud.lvl', { n: formatNumber(eqStar) })}</span>
             ${equippedObj.statTrak ? `<span class="text-orange-300 font-currency bg-orange-950/70 px-1.5 py-0.5 rounded">🔥 ${formatNumber(equippedObj.statTrak)}</span>` : ''}
           </div>
         </div>
@@ -330,7 +330,7 @@ export function renderCharacterInventory() {
           updateHUD();
           renderCharacterInventory();
           saveLocal();
-          showKnifeToast(`⭐ ${knifeName(equippedObj)} заточен до Lv.${res.newStar}! (+35% силы)`);
+          showKnifeToast(t('inv.toastSharpened', { name: knifeName(equippedObj), n: formatNumber(res.newStar) }));
         } else {
           alert(res.msg);
         }
@@ -347,10 +347,10 @@ export function renderCharacterInventory() {
         <div class="flex items-center justify-between gap-2 w-full py-1">
           <div class="flex items-center gap-2 text-stone-400 text-xs">
             <span class="text-2xl">✊</span>
-            <span>Голые руки (Без ножа)</span>
+            <span>${t('inv.bareHands')}</span>
           </div>
           <button id="btnEquipBestKnifeEmpty" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black text-[11px] px-3 py-1.5 rounded-xl transition shadow jelly-btn flex items-center gap-1 shrink-0">
-            ⚔️ Надеть лучший
+            ${t('inv.equipBest')}
           </button>
         </div>
       `;
@@ -361,7 +361,7 @@ export function renderCharacterInventory() {
   // 4. Update Tab Counters
   const unlockedKnivesCount = (GAME.unlockedKnives || []).length;
   const countBadge = document.getElementById('knivesCountBadge');
-  if (countBadge) countBadge.textContent = `${unlockedKnivesCount} / ${KNIVES.length} найдено`;
+  if (countBadge) countBadge.textContent = t('cases.found', { a: formatNumber(unlockedKnivesCount), b: formatNumber(KNIVES.length) });
 
   const invKnivesCount = document.getElementById('invKnivesCount');
   if (invKnivesCount) invKnivesCount.textContent = `${unlockedKnivesCount}/${KNIVES.length}`;
@@ -383,7 +383,7 @@ function renderKnivesGrid() {
   if (!invContainer) return;
 
   if (!GAME.unlockedKnives || GAME.unlockedKnives.length === 0) {
-    invContainer.innerHTML = '<div class="col-span-2 text-center text-stone-500 py-8 text-xs">Коллекция ножей пуста. Открывайте оружейные кейсы за Золотые Втулки (' + getRollIcon() + ') или Астральные Вантузы (' + getPlungerIcon() + ')!</div>';
+    invContainer.innerHTML = '<div class="col-span-2 text-center text-stone-500 py-8 text-xs">' + t('inv.emptyKnives', { roll: getRollIcon(), plunger: getPlungerIcon() }) + '</div>';
     return;
   }
 
@@ -397,6 +397,8 @@ function renderKnivesGrid() {
     const q = knifeSearchQuery.trim().toLowerCase();
     filteredKnives = filteredKnives.filter(k =>
       k.name.toLowerCase().includes(q) ||
+      knifeName(k).toLowerCase().includes(q) ||
+      (knifeRarity(k) && knifeRarity(k).toLowerCase().includes(q)) ||
       (k.rarityName && k.rarityName.toLowerCase().includes(q))
     );
   }
@@ -427,12 +429,12 @@ function renderKnivesGrid() {
     if (knifeSortMode === 'passive') return passB - passA;
     if (knifeSortMode === 'stattrak') return (b.statTrak || 0) - (a.statTrak || 0);
     if (knifeSortMode === 'star') return starB - starA;
-    if (knifeSortMode === 'name') return a.name.localeCompare(b.name);
+    if (knifeSortMode === 'name') return knifeName(a).localeCompare(knifeName(b));
     return (clickB * passB) - (clickA * passA);
   });
 
   if (filteredKnives.length === 0) {
-    invContainer.innerHTML = '<div class="col-span-2 text-center text-stone-500 py-6 text-xs">По вашему запросу ножи не найдены.</div>';
+    invContainer.innerHTML = '<div class="col-span-2 text-center text-stone-500 py-6 text-xs">' + t('inv.noMatch') + '</div>';
     return;
   }
 
@@ -477,11 +479,11 @@ function renderKnivesGrid() {
               <div class="font-game text-xs text-yellow-300 truncate font-bold" title="${knifeName(kn)}">${knifeName(kn)}</div>
               <div class="flex items-center gap-1.5 text-[9px] mt-0.5">
                 <span class="px-1.5 py-0.2 rounded font-bold uppercase ${rarityBadge}">${knifeRarity(kn)}</span>
-                <span class="text-amber-400 font-black font-mono">★ Lv.${star}</span>
+                <span class="text-amber-400 font-black font-mono">★ ${t('hud.lvl', { n: formatNumber(star) })}</span>
               </div>
             </div>
           </div>
-          <button class="knife-info-toggle w-5 h-5 shrink-0 rounded-full bg-stone-800 hover:bg-stone-700 text-amber-300 border border-stone-600 flex items-center justify-center font-bold text-[11px] transition shadow" data-id="${kn.id}" title="Характеристики и описание">
+          <button class="knife-info-toggle w-5 h-5 shrink-0 rounded-full bg-stone-800 hover:bg-stone-700 text-amber-300 border border-stone-600 flex items-center justify-center font-bold text-[11px] transition shadow" data-id="${kn.id}" title="${t('inv.infoTitle')}">
             !
           </button>
         </div>
@@ -490,15 +492,15 @@ function renderKnivesGrid() {
         <div class="flex items-center gap-1.5 my-1.5 text-[9px] sm:text-[10px] font-mono font-bold flex-wrap">
           <span class="bg-emerald-950/80 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30">🗡️ +${formatNumber(clickBonus)}%</span>
           <span class="bg-cyan-950/80 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/30">+${formatNumber(getKnifeCpsBonus(kn))} CPS</span>
-          ${kn.statTrak ? `<span class="bg-orange-950/80 text-orange-400 px-1.5 py-0.5 rounded border border-orange-500/30" title="Кликов StatTrak">🔥 ${formatNumber(kn.statTrak)}</span>` : ''}
+          ${kn.statTrak ? `<span class="bg-orange-950/80 text-orange-400 px-1.5 py-0.5 rounded border border-orange-500/30" title="${t('inv.statTrakTitle')}">🔥 ${formatNumber(kn.statTrak)}</span>` : ''}
         </div>
 
         <!-- Row 3: Collapsible Info Drawer -->
         <div id="knifeInfo_${kn.id}" class="${isInfoOpen ? '' : 'hidden'} p-2 my-1 rounded-xl bg-stone-900 border border-stone-700 text-[10px] text-stone-300 space-y-1">
           <p class="italic text-stone-400 text-[9px]">${knifeDesc(kn)}</p>
           <div class="pt-1 border-t border-stone-800 flex justify-between text-[9px] font-mono">
-            <span>База клика: x${kn.clickMult}</span>
-            <span class="text-amber-300">Рост Lv: +35%</span>
+            <span>${t('inv.baseClick', { n: formatNumber(kn.clickMult) })}</span>
+            <span class="text-amber-300">${t('inv.growth')}</span>
           </div>
         </div>
       </div>
@@ -507,28 +509,28 @@ function renderKnivesGrid() {
       <div class="flex items-center gap-1 pt-1.5 border-t border-stone-800/80 mt-1">
         ${isEq ? `
           <button class="flex-1 py-1 px-2 rounded-xl text-[10px] font-game bg-emerald-600 text-white font-bold border border-emerald-400 shadow cursor-default">
-            ✓ Надет
+            ${t('inv.worn')}
           </button>
         ` : `
           <button class="equip-knife-btn flex-1 py-1 px-2 rounded-xl text-[10px] font-game bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-bold border border-yellow-300 shadow jelly-btn" data-id="${kn.id}">
-            Надеть
+            ${t('inv.equip')}
           </button>
         `}
         ${starCostInfo.maxReached ? `
           <button class="py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed" disabled>
-            ★ МАКС
+            ★ ${t('common.max')}
           </button>
         ` : (!canAffordSharpen ? `
-          <button class="py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="Недостаточно Блестяшек">
+          <button class="py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="${t('inv.noSparkles')}">
             <span>🔒</span> <span>${formatNumber(starCostInfo.cost)} ✨</span>
           </button>
         ` : `
-          <button class="sharpen-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold border border-yellow-500/40 jelly-btn flex items-center gap-1" data-id="${kn.id}" title="Повысить уровень заточки (+1 Lv)">
+          <button class="sharpen-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold border border-yellow-500/40 jelly-btn flex items-center gap-1" data-id="${kn.id}" title="${t('inv.sharpenTitle')}">
             <span>⭐</span> <span>${formatNumber(starCostInfo.cost)} ✨</span>
           </button>
         `)}
         ${!isEq ? `
-          <button class="sell-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 hover:bg-red-950 text-stone-400 hover:text-red-300 border border-stone-700 jelly-btn flex items-center gap-1" data-id="${kn.id}" data-price="${recyclePrice}" data-currency="${recycleCurrency}" data-symbol="${isAstral ? '🪠' : '🧻'}" title="Утилизировать нож за +${formatNumber(recyclePrice)} ${isAstral ? '🪠' : '🧻'}">
+          <button class="sell-knife-btn py-1 px-2 rounded-xl text-[10px] font-game bg-stone-900 hover:bg-red-950 text-stone-400 hover:text-red-300 border border-stone-700 jelly-btn flex items-center gap-1" data-id="${kn.id}" data-price="${recyclePrice}" data-currency="${recycleCurrency}" data-symbol="${isAstral ? '🪠' : '🧻'}" title="${t('inv.recycleTitle', { n: formatNumber(recyclePrice), sym: isAstral ? '🪠' : '🧻' })}">
             +${formatNumber(recyclePrice)} ${recycleSymbol}
           </button>
         ` : ''}
@@ -564,7 +566,7 @@ function renderKnivesGrid() {
         updateHUD();
         renderCharacterInventory();
         saveLocal();
-        showKnifeToast(`⭐ Нож успешно заточен до Lv.${res.newStar}!`);
+        showKnifeToast(t('inv.toastSharpenOk', { n: formatNumber(res.newStar) }));
       } else {
         alert(res.msg);
       }
@@ -814,4 +816,3 @@ export function initCharacterInventoryListeners() {
     renderCharacterInventory();
   });
 }
-                               
