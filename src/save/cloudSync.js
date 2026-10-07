@@ -1,9 +1,9 @@
-import { GAME } from '../core/state.js?v=5.0.72';
+import { GAME } from '../core/state.js?v=5.0.73';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.72';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.73';
 import { setConfirmedVip } from '../economy/pace.js';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.72';
-import { cmp } from '../utils/big.js?v=5.0.72';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.73';
+import { cmp } from '../utils/big.js?v=5.0.73';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
@@ -441,7 +441,7 @@ async function socialRequestOnce(action, options = {}) {
   if (res.status === 401) askRelogin();
   if (!data || typeof data !== 'object') {
     return socialFail(res.status >= 500
-      ? `Облако перегружено (код ${res.status}). Подождите и нажмите «Проверить» в профиле.`
+      ? `Сервер друзей споткнулся (код ${res.status}). Подождите пару секунд и нажмите «Проверить».`
       : `Облако вернуло пустой ответ (код ${res.status || '—'}).`);
   }
   if (!res.ok) data.success = false;

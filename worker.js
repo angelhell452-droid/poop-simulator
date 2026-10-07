@@ -11,8 +11,11 @@ const headers = {
   "Content-Type": "application/json",
 };
 
+let mainSchemaReady = false;
+
 // Automatic self-healing schema creation if table does not exist
 async function ensureSchema(db) {
+  if (mainSchemaReady) return;
   try {
     await db.prepare(`
       CREATE TABLE IF NOT EXISTS player_saves (
@@ -49,6 +52,7 @@ async function ensureSchema(db) {
     await ensureFriendSchema(db);
     await ensureGuildSchema(db);
     await ensureAdminSchema(db);
+    mainSchemaReady = true;
   } catch (err) {
     console.warn("Schema initialization notice:", err);
   }
@@ -554,10 +558,15 @@ export default {
     }
 
     // Prefer the social Worker via service binding (works on workers.dev without a zone route).
-    // If SOCIAL is missing (local / not deployed yet), answer with the same handlers here.
+    // If SOCIAL is missing or returns 5xx (e.g. free-plan CPU kill), answer here.
     if (url.pathname === "/api/social" || url.pathname === "/api/social/") {
       if (env.SOCIAL) {
-        return env.SOCIAL.fetch(request);
+        try {
+          const res = await env.SOCIAL.fetch(request.clone());
+          if (res.status < 500) return res;
+        } catch (err) {
+          console.warn("Social binding failed, answering on main:", err);
+        }
       }
       return handleSocial(request, env);
     }

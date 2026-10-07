@@ -1,6 +1,6 @@
 {
   "name": "poop-simulator",
-  "version": "5.0.72",
+  "version": "5.0.73",
   "description": "Poop Simulator - Cloudflare Pages and Cloudflare D1 Database",
   "main": "index.html",
   "scripts": {

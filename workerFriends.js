@@ -169,7 +169,15 @@ async function requireUser(db, req, headers) {
   return { actor };
 }
 
+let friendSchemaReady = false;
+
+/** Social Worker: tables already exist — skip DDL to stay under free CPU limits. */
+export function trustFriendSchema() {
+  friendSchemaReady = true;
+}
+
 export async function ensureFriendSchema(db) {
+  if (friendSchemaReady) return;
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS friend_links (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -186,6 +194,7 @@ export async function ensureFriendSchema(db) {
   await db.prepare(`
     CREATE INDEX IF NOT EXISTS idx_friend_links_to ON friend_links(to_id, status);
   `).run();
+  friendSchemaReady = true;
 }
 
 export async function handleFriendPost(action, body, req, env, headers) {

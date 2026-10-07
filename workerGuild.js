@@ -50,7 +50,15 @@ async function actorOf(db, req, headers) {
   return { actor };
 }
 
+let guildSchemaReady = false;
+
+/** Social Worker: tables already exist — skip DDL to stay under free CPU limits. */
+export function trustGuildSchema() {
+  guildSchemaReady = true;
+}
+
 export async function ensureGuildSchema(db) {
+  if (guildSchemaReady) return;
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS guilds (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -153,6 +161,7 @@ export async function ensureGuildSchema(db) {
     const message = String(err?.message || err);
     if (!/duplicate column/i.test(message)) throw err;
   }
+  guildSchemaReady = true;
 }
 
 function epochOfForm(form) {

@@ -1,7 +1,13 @@
 // Social API Worker: friends, guild, mail. Same D1 as the main Worker.
-import { ensureAdminSchema } from "./workerAdmin.js";
-import { ensureFriendSchema, handleFriendGet, handleFriendPost } from "./workerFriends.js";
-import { ensureGuildSchema, handleGuildGet, handleGuildPost } from "./workerGuild.js";
+import { trustAdminSchema } from "./workerAdmin.js";
+import { trustFriendSchema, handleFriendGet, handleFriendPost } from "./workerFriends.js";
+import { trustGuildSchema, handleGuildGet, handleGuildPost } from "./workerGuild.js";
+
+// Free-plan Workers die on CREATE/ALTER every request ("Exceeded CPU Limit" → HTTP 500).
+// Main Worker already owns schema migrations; social only queries.
+trustFriendSchema();
+trustGuildSchema();
+trustAdminSchema();
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -20,16 +26,6 @@ function isGuildPost(action) {
   return typeof action === "string" && (action.startsWith("guild_") || action === "mail_claim");
 }
 
-async function ensureSocialSchema(db) {
-  try {
-    await ensureFriendSchema(db);
-    await ensureGuildSchema(db);
-    await ensureAdminSchema(db);
-  } catch (err) {
-    console.warn("Social schema notice:", err);
-  }
-}
-
 export async function handleSocial(req, env) {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers });
@@ -45,8 +41,6 @@ export async function handleSocial(req, env) {
   }
 
   try {
-    await ensureSocialSchema(env.DB);
-
     const url = new URL(req.url);
     const actionParam = url.searchParams.get("action");
 
@@ -105,7 +99,6 @@ export default {
     if (url.pathname === "/api/social" || url.pathname === "/api/social/") {
       return handleSocial(request, env);
     }
-    // Workers.dev root health check
     if (url.pathname === "/" || url.pathname === "") {
       return new Response(JSON.stringify({ ok: true, service: "poop-simulator-social" }), {
         status: 200,

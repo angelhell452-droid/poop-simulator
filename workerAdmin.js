@@ -4,7 +4,15 @@ const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 const RELIC_LEVELS = ["cosmicSynergy", "passiveRolls", "omniMult", "afkCap", "knifeForge", "factoryOverdrive", "plungerIncubator", "meteorStorm", "evoBlessing"];
 const RELIC_FLAGS = ["autoCare", "autoBuyer", "autoEvolution", "singularityRift"];
 
+let adminSchemaReady = false;
+
+/** Social Worker: tables already exist — skip DDL to stay under free CPU limits. */
+export function trustAdminSchema() {
+  adminSchemaReady = true;
+}
+
 export async function ensureAdminSchema(db) {
+  if (adminSchemaReady) return;
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS auth_sessions (
       token_hash TEXT PRIMARY KEY,
@@ -58,6 +66,7 @@ export async function ensureAdminSchema(db) {
       value INTEGER NOT NULL DEFAULT 0
     );
   `).run();
+  adminSchemaReady = true;
 }
 
 async function staffLevel(env, account) {
