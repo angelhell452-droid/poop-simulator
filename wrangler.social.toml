@@ -1,0 +1,18 @@
+# Separate Worker for friends / guild / mail — same D1 as the main game Worker.
+# Deploy: npx wrangler deploy -c wrangler.social.toml
+#
+# After the first deploy, attach a route on the SAME hostname as the game:
+#   pattern: <your-domain>/api/social*
+#   worker:  poop-simulator-social
+# More specific /api/social* beats the main Worker catch-all.
+# Until the route exists, the client falls back to /api/cloud-save.
+
+name = "poop-simulator-social"
+main = "workerSocial.js"
+compatibility_date = "2024-09-29"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "poop_simulator_d1"
+database_id = "a871d75b-228f-4dad-8bbb-0a9784b300b9"

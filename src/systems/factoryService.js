@@ -1,8 +1,8 @@
-import { GAME } from '../core/state.js?v=5.0.68';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.68';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.68';
+import { GAME } from '../core/state.js?v=5.0.70';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.70';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.70';
 import { events } from '../core/events.js';
-import { spendBio } from '../utils/big.js?v=5.0.68';
+import { spendBio } from '../utils/big.js?v=5.0.70';
 
 export function buyFactory(facId) {
   const fac = FACTORIES.find(f => f.id === facId);

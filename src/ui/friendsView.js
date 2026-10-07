@@ -1,16 +1,21 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.68';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.68';
-import { getPhaseForForm, phaseLabel } from '../progression/phases.data.js?v=5.0.68';
-import { KNIVES } from '../data/knives.data.js?v=5.0.68';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.68';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.68';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.68';
-import { sendGuildInvite } from './guildView.js?v=5.0.68';
-import { registerSocialPulse } from './socialPulse.js?v=5.0.68';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.70';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.70';
+import { getPhaseForForm, phaseLabel } from '../progression/phases.data.js?v=5.0.70';
+import { KNIVES } from '../data/knives.data.js?v=5.0.70';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.70';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.70';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.70';
+import { sendGuildInvite } from './guildView.js?v=5.0.70';
+import { registerSocialPulse } from './socialPulse.js?v=5.0.70';
 
 let roster = { friends: [], incoming: [], outgoing: [], canInvite: false };
 let confirmRemove = '';
 let friendsBusy = false;
+const pendingActions = new Set();
+
+function actionKey(action, username) {
+  return `${action}:${String(username || '').toLowerCase()}`;
+}
 
 function esc(value) {
   return String(value || '')
@@ -218,6 +223,7 @@ export async function loadRoster(quiet = false) {
 }
 
 async function openProfile(username) {
+  toast('Открываем профиль…');
   const data = await socialRequest('friend_profile', { query: `username=${encodeURIComponent(username)}` });
   if (!data.success || !data.profile) {
     toast(data.error || 'Профиль закрыт');
@@ -226,44 +232,155 @@ async function openProfile(username) {
   renderProfile(data.profile);
 }
 
+function optimisticOutgoing(username) {
+  const name = String(username || '').trim();
+  if (!name) return;
+  const list = Array.isArray(roster.outgoing) ? roster.outgoing.slice() : [];
+  if (!list.some((row) => String(row.username).toLowerCase() === name.toLowerCase())) {
+    list.unshift({ username: name, createdAt: null, pending: true });
+    roster = { ...roster, outgoing: list };
+  }
+  if (friendsOpen()) renderRoster();
+}
+
+function dropOptimisticOutgoing(username) {
+  const name = String(username || '').trim().toLowerCase();
+  roster = {
+    ...roster,
+    outgoing: (roster.outgoing || []).filter((row) => String(row.username).toLowerCase() !== name)
+  };
+  if (friendsOpen()) renderRoster();
+}
+
+function optimisticAccept(username) {
+  const name = String(username || '').trim();
+  const low = name.toLowerCase();
+  roster = {
+    ...roster,
+    incoming: (roster.incoming || []).filter((row) => String(row.username).toLowerCase() !== low),
+    friends: [
+      { username: name, online: false, stage: 1, peakForm: 1, guildTag: '' },
+      ...(roster.friends || []).filter((row) => String(row.username).toLowerCase() !== low)
+    ]
+  };
+  setBadge((roster.incoming || []).length);
+  if (friendsOpen()) renderRoster();
+}
+
+function optimisticDropPending(username, from) {
+  const low = String(username || '').trim().toLowerCase();
+  if (from === 'incoming') {
+    roster = {
+      ...roster,
+      incoming: (roster.incoming || []).filter((row) => String(row.username).toLowerCase() !== low)
+    };
+  } else {
+    roster = {
+      ...roster,
+      outgoing: (roster.outgoing || []).filter((row) => String(row.username).toLowerCase() !== low)
+    };
+  }
+  setBadge((roster.incoming || []).length);
+  if (friendsOpen()) renderRoster();
+}
+
+function optimisticRemove(username) {
+  const low = String(username || '').trim().toLowerCase();
+  roster = {
+    ...roster,
+    friends: (roster.friends || []).filter((row) => String(row.username).toLowerCase() !== low)
+  };
+  confirmRemove = '';
+  if (friendsOpen()) renderRoster();
+}
+
 async function runAction(action, username) {
   if (action === 'profile') return openProfile(username);
-  if (action === 'guild') {
-    const data = await sendGuildInvite(username);
-    if (!data.success) toast(data.error || 'Приглашение не ушло');
-    else toast(`Приглашение для ${data.username || username} отправлено`);
-    return;
-  }
   if (action === 'ask-remove') {
     confirmRemove = username;
     renderRoster();
     return;
   }
-  const data = await socialRequest(action === 'remove' ? 'friend_remove' : `friend_${action}`, {
-    method: 'POST',
-    body: { username }
-  });
-  if (!data.success) {
-    toast(data.error || 'Не вышло');
+
+  const key = actionKey(action, username);
+  if (pendingActions.has(key)) return;
+  pendingActions.add(key);
+
+  if (action === 'guild') {
+    toast('Приглашение уходит…');
+    sendGuildInvite(username).then((data) => {
+      if (!data.success) toast(data.error || 'Приглашение не ушло');
+      else toast(`Приглашение для ${data.username || username} отправлено`);
+    }).finally(() => pendingActions.delete(key));
     return;
   }
-  if (action === 'accept') toast(`${username} теперь в друзьях`);
-  if (action === 'remove') toast(`${username} убран из друзей`);
-  if (!applyRosterData(data, true)) await loadRoster();
-  else if (friendsOpen()) renderRoster();
+
+  if (action === 'accept') {
+    optimisticAccept(username);
+    toast('Принимаем…');
+  } else if (action === 'decline') {
+    optimisticDropPending(username, 'incoming');
+    toast('Отклоняем…');
+  } else if (action === 'cancel') {
+    optimisticDropPending(username, 'outgoing');
+    toast('Отменяем…');
+  } else if (action === 'remove') {
+    optimisticRemove(username);
+    toast('Удаляем…');
+  }
+
+  socialRequest(action === 'remove' ? 'friend_remove' : `friend_${action}`, {
+    method: 'POST',
+    body: { username }
+  }).then(async (data) => {
+    if (!data.success) {
+      toast(data.error || 'Не вышло');
+      await loadRoster(true);
+      return;
+    }
+    if (action === 'accept') toast(`${username} теперь в друзьях`);
+    if (action === 'remove') toast(`${username} убран из друзей`);
+    if (action === 'decline' || action === 'cancel') toast('Готово');
+    if (!applyRosterData(data, true)) await loadRoster(true);
+  }).finally(() => pendingActions.delete(key));
 }
 
-export async function sendFriendRequest(username) {
+export function sendFriendRequest(username) {
+  const name = String(username || '').trim();
   if (!signedIn()) {
     toast('Сначала войдите в аккаунт');
-    return { success: false };
+    return Promise.resolve({ success: false });
   }
-  const data = await socialRequest('friend_request', { method: 'POST', body: { username } });
-  if (!data.success) toast(data.error || 'Заявка не ушла');
-  else toast(data.pending ? `Заявка для ${data.username || username} отправлена` : `${data.username || username} теперь в друзьях`);
-  if (!applyRosterData(data, true)) await loadRoster();
-  else if (friendsOpen()) renderRoster();
-  return data;
+  if (name.length < 3) {
+    toast('Введите логин от 3 символов');
+    return Promise.resolve({ success: false });
+  }
+
+  const key = actionKey('request', name);
+  if (pendingActions.has(key)) {
+    toast('Эта заявка уже уходит…');
+    return Promise.resolve({ success: false, pending: true });
+  }
+  pendingActions.add(key);
+
+  // UI first: clear field, show outgoing, think in background.
+  optimisticOutgoing(name);
+  toast(`Заявка для ${name} уходит…`);
+
+  return socialRequest('friend_request', { method: 'POST', body: { username: name } })
+    .then(async (data) => {
+      if (!data.success) {
+        dropOptimisticOutgoing(name);
+        toast(data.error || 'Заявка не ушла');
+        return data;
+      }
+      toast(data.pending
+        ? `Заявка для ${data.username || name} отправлена`
+        : `${data.username || name} теперь в друзьях`);
+      if (!applyRosterData(data, true)) await loadRoster(true);
+      return data;
+    })
+    .finally(() => pendingActions.delete(key));
 }
 
 export function initFriendsView() {
@@ -277,12 +394,14 @@ export function initFriendsView() {
     loadRoster();
   });
 
-  form?.addEventListener('submit', async (event) => {
+  form?.addEventListener('submit', (event) => {
     event.preventDefault();
     const input = document.getElementById('friendsNameInput');
-    const username = input?.value || '';
-    const data = await sendFriendRequest(username);
-    if (data.success && input) input.value = '';
+    const username = (input?.value || '').trim();
+    if (!username) return;
+    if (input) input.value = '';
+    // Don't await — background send keeps the window snappy.
+    sendFriendRequest(username);
   });
 
   body?.addEventListener('click', (event) => {

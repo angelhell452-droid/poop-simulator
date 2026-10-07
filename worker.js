@@ -2,6 +2,7 @@
 import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, displayName, vipLevelOf } from "./workerAdmin.js";
 import { ensureFriendSchema, handleFriendGet, handleFriendPost } from "./workerFriends.js";
 import { ensureGuildSchema, handleGuildGet, handleGuildPost, presenceOf, tagsFor } from "./workerGuild.js";
+import { handleSocial } from "./workerSocial.js";
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -550,6 +551,12 @@ export default {
 
     if (url.pathname === "/api/cloud-save" || url.pathname === "/.netlify/functions/cloud-save") {
       return handleCloudSave(request, env);
+    }
+
+    // Same handlers as poop-simulator-social. A dedicated /api/social* route
+    // on that Worker takes over when attached; until then main answers here.
+    if (url.pathname === "/api/social" || url.pathname === "/api/social/") {
+      return handleSocial(request, env);
     }
 
     if (url.pathname === "/api/bug-report" && request.method === "POST") {

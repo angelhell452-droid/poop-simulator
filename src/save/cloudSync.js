@@ -1,15 +1,16 @@
-import { GAME } from '../core/state.js?v=5.0.68';
+import { GAME } from '../core/state.js?v=5.0.70';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.68';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.70';
 import { setConfirmedVip } from '../economy/pace.js';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.68';
-import { cmp } from '../utils/big.js?v=5.0.68';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.70';
+import { cmp } from '../utils/big.js?v=5.0.70';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
 }
 
 export const CLOUD_SAVE_ENDPOINT = '/api/cloud-save';
+export const SOCIAL_ENDPOINT = '/api/social';
 export const LEGACY_SAVE_ENDPOINT = '/.netlify/functions/cloud-save';
 export const AUTH_STORAGE_KEY = 'PoopSim_User_Account';
 
@@ -415,9 +416,23 @@ function socialFail(detail) {
   };
 }
 
+async function socialFetch(path, options = {}) {
+  const opts = { ...options, headers: authHeaders(options.headers || {}) };
+  let res = await fetch(path, opts);
+  // Older main builds without /api/social → retry on cloud-save (same actions).
+  if (res.status === 404 && path.startsWith(SOCIAL_ENDPOINT)) {
+    const cloudPath = path.replace(SOCIAL_ENDPOINT, CLOUD_SAVE_ENDPOINT);
+    res = await fetch(cloudPath, opts);
+    if (res.status === 404) {
+      res = await fetch(cloudPath.replace(CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT), opts);
+    }
+  }
+  return res;
+}
+
 async function socialRequestOnce(action, options = {}) {
   const query = options.query ? `&${options.query}` : '';
-  const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=${encodeURIComponent(action)}${query}`, {
+  const res = await socialFetch(`${SOCIAL_ENDPOINT}?action=${encodeURIComponent(action)}${query}`, {
     method: options.method || 'GET',
     body: options.body ? JSON.stringify(options.body) : undefined
   });
@@ -449,7 +464,7 @@ export async function socialRequest(action, options = {}) {
   }
 }
 
-/** Live probe for the account modal: save/session + social actions share one Worker. */
+/** Live probe: save/session on main Worker; friends/mail/guild prefer /api/social. */
 export async function probeCloudServers() {
   const out = {
     cloud: { ok: false, ms: 0, label: 'Сохранение', detail: '…' },
