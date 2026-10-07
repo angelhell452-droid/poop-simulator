@@ -1,12 +1,12 @@
-import { GAME } from '../core/state.js?v=5.0.65';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.65';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.65';
-import { saveLocal } from '../save/saveManager.js?v=5.0.65';
-import { updateHUD } from './hudView.js?v=5.0.65';
+import { GAME } from '../core/state.js?v=5.0.67';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.67';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.67';
+import { saveLocal } from '../save/saveManager.js?v=5.0.67';
+import { updateHUD } from './hudView.js?v=5.0.67';
+import { registerSocialPulse } from './socialPulse.js?v=5.0.67';
 
 let lettersCache = [];
 let mailBusy = false;
-let mailPulse = 0;
 
 function esc(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -24,12 +24,12 @@ function signedIn() {
   return !!getStoredAccount()?.username;
 }
 
-function mailOpen() {
+export function mailOpen() {
   const modal = document.getElementById('mailModal');
   return !!(modal && !modal.classList.contains('hidden'));
 }
 
-function setBadge(count) {
+export function setMailBadge(count) {
   const badge = document.getElementById('mailRewardBadge');
   if (!badge) return;
   const n = Math.max(0, Number(count) || 0);
@@ -41,7 +41,7 @@ function render(letters) {
   const box = document.getElementById('mailBody');
   if (!box) return;
   if (!signedIn()) {
-    setBadge(0);
+    setMailBadge(0);
     box.innerHTML = `<div class="garden-empty">Почта открывается с аккаунта.</div>`;
     return;
   }
@@ -62,7 +62,7 @@ function render(letters) {
   `).join('')}</div>`;
 }
 
-async function loadMail(forceRender = false) {
+export async function loadMail(forceRender = false) {
   if (!signedIn()) {
     lettersCache = [];
     render([]);
@@ -77,14 +77,14 @@ async function loadMail(forceRender = false) {
       return;
     }
     lettersCache = Array.isArray(data.letters) ? data.letters : [];
-    setBadge(data.rewardCount);
+    setMailBadge(data.rewardCount);
     if (forceRender || mailOpen()) render(lettersCache);
   } finally {
     mailBusy = false;
   }
 }
 
-/** Fast badge/list refresh — call after boss fights and while mail is open. */
+/** Immediate refresh after boss mail — not a background poll. */
 export function pulseMail(forceRender = false) {
   return loadMail(forceRender || mailOpen());
 }
@@ -115,10 +115,9 @@ export function initMailView() {
     if (!button) return;
     claim(button.dataset.mailId);
   });
-  if (mailPulse) clearInterval(mailPulse);
-  mailPulse = setInterval(() => {
-    if (!signedIn() || document.visibilityState === 'hidden') return;
-    loadMail(mailOpen());
-  }, 3500);
-  if (signedIn()) loadMail(false);
+  registerSocialPulse({
+    mailOpen,
+    setMailBadge,
+    refreshMail: loadMail
+  });
 }

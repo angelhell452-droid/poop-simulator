@@ -1,13 +1,14 @@
-import { GAME } from '../core/state.js?v=5.0.65';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.65';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.65';
-import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.65';
-import { KNIVES } from '../data/knives.data.js?v=5.0.65';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.65';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.65';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.65';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.65';
-import { pulseMail } from './mailView.js?v=5.0.65';
+import { GAME } from '../core/state.js?v=5.0.67';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.67';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.67';
+import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.67';
+import { KNIVES } from '../data/knives.data.js?v=5.0.67';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.67';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.67';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.67';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.67';
+import { pulseMail } from './mailView.js?v=5.0.67';
+import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.67';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
 
@@ -25,7 +26,6 @@ let striking = false;
 let toldAt = 0;
 let autoFight = false;
 let fightResult = null;
-let guildPulse = 0;
 let shownWindowKey = '';
 
 try {
@@ -140,21 +140,26 @@ async function loadDirectory(query, level, announce) {
   renderSearch();
 }
 
+function guildOpen() {
+  const modal = document.getElementById('guildModal');
+  return !!(modal && !modal.classList.contains('hidden'));
+}
+
 async function loadGuild() {
   if (!signedIn()) {
     state = null;
-    render();
+    applyPresence({ presence: { level: 0, tag: '' } });
+    if (guildOpen()) render();
     return;
   }
   const data = await socialRequest('guild');
   if (!data.success) {
-    toast(data.error || 'Гильдия не ответила');
-    render();
+    if (guildOpen()) toast(data.error || 'Гильдия не ответила');
     return;
   }
   state = data;
   applyPresence(data);
-  render();
+  if (guildOpen()) render();
 }
 
 function memberButtons(person, guild) {
@@ -267,8 +272,14 @@ function renderMine() {
     : `${formatNumber(progress.points)} / ${formatNumber(progress.next)} очков`;
   box.innerHTML = `
     <div class="garden-card">
-      <div class="font-game text-lg">[${esc(guild.tag)}] ${esc(guild.name)}</div>
-      <div class="garden-muted mt-1">${roleName(guild.role)} · ${bonus} к клику и заводам · вход с эпохи ${formatNumber(guild.reqEpoch || 1)}</div>
+      <div class="guild-name-block">
+        <div class="guild-name-label">Название гильдии</div>
+        <div class="guild-name-row">
+          <span class="guild-tag-chip">[${esc(guild.tag)}]</span>
+          <span class="guild-name-title font-game">${esc(guild.name)}</span>
+        </div>
+      </div>
+      <div class="garden-muted mt-2">${roleName(guild.role)} · ${bonus} к клику и заводам · вход с эпохи ${formatNumber(guild.reqEpoch || 1)}</div>
       <div class="guild-level mt-3">
         <div class="guild-level-head">
           <span class="font-game">Уровень ${formatNumber(progress.level)}</span>
@@ -516,7 +527,10 @@ function applyFightResult(result, mailReady) {
   fightResult = result;
   stopStrike();
   paintFight();
-  if (mailReady) pulseMail(true);
+  if (mailReady) {
+    pulseMail(true);
+    nudgeSocialBadges();
+  }
 }
 
 function paintFight() {
@@ -909,13 +923,13 @@ export function initGuildView() {
     loadGuild();
     loadDirectory('', '');
   });
-  if (guildPulse) clearInterval(guildPulse);
-  guildPulse = setInterval(() => {
-    if (!signedIn()) return;
-    if (modal?.classList.contains('hidden')) return;
-    if (striking || fightResult) return;
-    loadGuild();
-  }, 2500);
+  registerSocialPulse({
+    guildOpen,
+    refreshGuild: async () => {
+      if (striking || fightResult) return;
+      await loadGuild();
+    }
+  });
   document.getElementById('guildSearchForm')?.addEventListener('submit', (event) => {
     event.preventDefault();
     loadDirectory(
@@ -973,5 +987,6 @@ export function initGuildView() {
     if (modal?.classList.contains('hidden')) return;
     if (page === 'fight' && (state?.guild?.boss || fightResult)) paintFight();
   }, 250);
+  // Presence only once at boot — no background guild spam.
   if (signedIn()) loadGuild();
 }

@@ -397,6 +397,49 @@ body {
   opacity: 0.45;
 }
 
+.guild-name-block {
+  border-radius: var(--radius-md);
+  border: 2px solid rgba(228, 216, 246, 0.55);
+  background: color-mix(in srgb, rgba(18, 14, 28, 0.45) 40%, #c6b0e6);
+  padding: 10px 12px;
+}
+
+.guild-name-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f3ecff;
+  opacity: 0.78;
+  margin-bottom: 6px;
+}
+
+.guild-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.guild-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(18, 14, 28, 0.55);
+  color: #f3ecff;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.guild-name-title {
+  font-size: 20px;
+  line-height: 1.2;
+  color: #fff8ff;
+  text-shadow: 0 1px 0 rgba(20, 10, 30, 0.35);
+}
+
 .guild-level-head {
   display: flex;
   align-items: center;

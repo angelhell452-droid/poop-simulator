@@ -1,16 +1,16 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.65';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.65';
-import { getPhaseForForm, phaseLabel } from '../progression/phases.data.js?v=5.0.65';
-import { KNIVES } from '../data/knives.data.js?v=5.0.65';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.65';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.65';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.65';
-import { sendGuildInvite } from './guildView.js?v=5.0.65';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.67';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.67';
+import { getPhaseForForm, phaseLabel } from '../progression/phases.data.js?v=5.0.67';
+import { KNIVES } from '../data/knives.data.js?v=5.0.67';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.67';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.67';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.67';
+import { sendGuildInvite } from './guildView.js?v=5.0.67';
+import { registerSocialPulse } from './socialPulse.js?v=5.0.67';
 
 let roster = { friends: [], incoming: [], outgoing: [], canInvite: false };
 let confirmRemove = '';
 let friendsBusy = false;
-let friendsPulse = 0;
 
 function esc(value) {
   return String(value || '')
@@ -56,12 +56,16 @@ function toast(text) {
   setTimeout(() => node.remove(), 2800);
 }
 
-function setBadge(count) {
+export function setFriendsBadge(count) {
   const badge = document.getElementById('friendsIncomingBadge');
   if (!badge) return;
   const n = Math.max(0, Number(count) || 0);
   badge.textContent = formatNumber(n);
   badge.classList.toggle('hidden', n <= 0);
+}
+
+function setBadge(count) {
+  setFriendsBadge(count);
 }
 
 function guestWall() {
@@ -173,7 +177,7 @@ function renderRoster() {
   `;
 }
 
-function friendsOpen() {
+export function friendsOpen() {
   const modal = document.getElementById('friendsModal');
   return !!(modal && !modal.classList.contains('hidden'));
 }
@@ -193,7 +197,7 @@ function applyRosterData(data, resetConfirm = false) {
   return true;
 }
 
-async function loadRoster(quiet = false) {
+export async function loadRoster(quiet = false) {
   if (!signedIn()) {
     roster = { friends: [], incoming: [], outgoing: [], canInvite: false };
     setBadge(0);
@@ -289,10 +293,9 @@ export function initFriendsView() {
     runAction(button.dataset.friendAction, username);
   });
 
-  if (friendsPulse) clearInterval(friendsPulse);
-  friendsPulse = setInterval(() => {
-    if (!signedIn() || document.visibilityState === 'hidden') return;
-    loadRoster(true);
-  }, 3500);
-  if (signedIn()) loadRoster(true);
+  registerSocialPulse({
+    friendsOpen,
+    setFriendsBadge,
+    refreshFriends: () => loadRoster(true)
+  });
 }
