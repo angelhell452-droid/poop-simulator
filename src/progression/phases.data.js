@@ -1,5 +1,5 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.71';
-import { bigPow10, div, mul } from '../utils/big.js?v=5.0.71';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.72';
+import { bigPow10, div, mul } from '../utils/big.js?v=5.0.72';
 
 export const PHASE_COUNT = 200;
 export const PHASE_FORMS = 500;

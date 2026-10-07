@@ -1,19 +1,19 @@
-import { GAME } from '../core/state.js?v=5.0.71';
-import { getEquippedKnife } from '../economy/production.js?v=5.0.71';
+import { GAME } from '../core/state.js?v=5.0.72';
+import { getEquippedKnife } from '../economy/production.js?v=5.0.72';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.71';
-import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.71';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.71';
-import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.71';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.71';
-import { updateHUD } from './hudView.js?v=5.0.71';
-import { saveLocal } from '../save/saveManager.js?v=5.0.71';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.71';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.72';
+import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.72';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.72';
+import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.72';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.72';
+import { updateHUD } from './hudView.js?v=5.0.72';
+import { saveLocal } from '../save/saveManager.js?v=5.0.72';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.72';
 import { events } from '../core/events.js';
-import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.71';
-import { KNIVES } from '../data/knives.data.js?v=5.0.71';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.71';
+import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.72';
+import { KNIVES } from '../data/knives.data.js?v=5.0.72';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.72';
 
 let canvas = null;
 let ctx = null;

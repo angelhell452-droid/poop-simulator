@@ -1,20 +1,22 @@
-import { GAME } from '../core/state.js?v=5.0.71';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.71';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.71';
-import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.71';
-import { KNIVES } from '../data/knives.data.js?v=5.0.71';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.71';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.71';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.71';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.71';
-import { pulseMail } from './mailView.js?v=5.0.71';
-import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.71';
+import { GAME } from '../core/state.js?v=5.0.72';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.72';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.72';
+import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.72';
+import { KNIVES } from '../data/knives.data.js?v=5.0.72';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.72';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.72';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.72';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.72';
+import { pulseMail } from './mailView.js?v=5.0.72';
+import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.72';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
 
 let state = null;
+let guildLoaded = false;
 let directory = [];
 let directoryError = '';
+let directoryFetched = false;
 let page = 'mine';
 let strikeClicks = 0;
 let strikeTimer = 0;
@@ -116,6 +118,15 @@ function showPage(next) {
   if (page === 'journal') renderJournal();
   if (page === 'settings') renderSettings();
   if (page === 'bonuses') renderBonuses();
+  if (page === 'search') {
+    renderSearch();
+    if (signedIn() && !directoryFetched) {
+      loadDirectory(
+        document.getElementById('guildSearchInput')?.value || '',
+        document.getElementById('guildLevelInput')?.value || ''
+      );
+    }
+  }
 }
 
 async function loadDirectory(query, level, announce) {
@@ -137,6 +148,7 @@ async function loadDirectory(query, level, announce) {
   }
   directoryError = '';
   directory = data.guilds || [];
+  directoryFetched = true;
   renderSearch();
 }
 
@@ -148,16 +160,22 @@ function guildOpen() {
 async function loadGuild() {
   if (!signedIn()) {
     state = null;
+    guildLoaded = true;
     applyPresence({ presence: { level: 0, tag: '' } });
     if (guildOpen()) render();
     return;
   }
   const data = await socialRequest('guild');
   if (!data.success) {
-    if (guildOpen()) toast(data.error || 'Гильдия не ответила');
+    guildLoaded = true;
+    if (guildOpen()) {
+      toast(data.error || 'Гильдия не ответила');
+      render();
+    }
     return;
   }
   state = data;
+  guildLoaded = true;
   applyPresence(data);
   if (guildOpen()) render();
 }
@@ -241,6 +259,13 @@ function renderMine() {
     box.innerHTML = '<div class="garden-empty">Гильдия открывается с аккаунта.</div>';
     return;
   }
+  if (!guildLoaded && !state) {
+    if (form) form.classList.add('hidden');
+    if (settingsTab) settingsTab.classList.add('hidden');
+    if (bonusesTab) bonusesTab.classList.add('hidden');
+    box.innerHTML = '<div class="garden-empty">Загружаем гильдию…</div>';
+    return;
+  }
   const guild = state?.guild;
   if (!guild) {
     if (form) form.classList.remove('hidden');
@@ -298,9 +323,9 @@ function renderMine() {
       </div>
       <div class="grid gap-2">
         ${members.map((person) => `
-          <div class="guild-member-row flex items-center justify-between gap-2">
-            <span class="truncate">${esc(person.username)} · ${roleName(person.role)}</span>
-            <span class="flex gap-1.5 shrink-0">${memberButtons(person, guild)}</span>
+          <div class="guild-member-row">
+            <span class="guild-member-name truncate">${esc(person.username)} · ${roleName(person.role)}</span>
+            <span class="guild-member-actions">${memberButtons(person, guild)}</span>
           </div>
         `).join('')}
       </div>
@@ -919,9 +944,10 @@ export function initGuildView() {
   const modal = document.getElementById('guildModal');
   document.getElementById('btnGuildModal')?.addEventListener('click', () => {
     modal?.classList.remove('hidden');
-    showPage('mine');
+    page = 'mine';
+    // Instant paint from cache; search list loads only on the Search tab.
+    render();
     loadGuild();
-    loadDirectory('', '');
   });
   registerSocialPulse({
     guildOpen,

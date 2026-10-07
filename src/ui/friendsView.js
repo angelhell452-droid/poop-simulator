@@ -1,16 +1,17 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.71';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.71';
-import { getPhaseForForm, phaseLabel } from '../progression/phases.data.js?v=5.0.71';
-import { KNIVES } from '../data/knives.data.js?v=5.0.71';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.71';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.71';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.71';
-import { sendGuildInvite } from './guildView.js?v=5.0.71';
-import { registerSocialPulse } from './socialPulse.js?v=5.0.71';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.72';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.72';
+import { getPhaseForForm, phaseLabel } from '../progression/phases.data.js?v=5.0.72';
+import { KNIVES } from '../data/knives.data.js?v=5.0.72';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.72';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.72';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.72';
+import { sendGuildInvite } from './guildView.js?v=5.0.72';
+import { registerSocialPulse } from './socialPulse.js?v=5.0.72';
 
 let roster = { friends: [], incoming: [], outgoing: [], canInvite: false };
 let confirmRemove = '';
 let friendsBusy = false;
+let friendsLoaded = false;
 const pendingActions = new Set();
 
 function actionKey(action, username) {
@@ -132,9 +133,9 @@ function renderProfile(profile) {
 function peopleBlock(title, rows, buttons) {
   if (!rows.length) return '';
   const items = rows.map((row) => `
-    <div class="garden-card flex items-center justify-between gap-2">
-      <span class="truncate">${esc(row.username)}</span>
-      <span class="flex items-center gap-1.5 shrink-0">
+    <div class="garden-card flex items-center justify-between gap-2 flex-wrap">
+      <span class="truncate min-w-0">${esc(row.username)}</span>
+      <span class="flex items-center gap-1.5 flex-wrap justify-end">
         ${buttons.map((button) => `<button type="button" class="garden-pill jelly-btn" data-friend-action="${button.action}" data-user="${attr(row.username)}">${esc(button.label)}</button>`).join('')}
       </span>
     </div>
@@ -156,16 +157,20 @@ function renderRoster() {
   const incoming = roster.incoming || [];
   const outgoing = roster.outgoing || [];
   setBadge(incoming.length);
+  if (!friendsLoaded && !friends.length && !incoming.length && !outgoing.length) {
+    box.innerHTML = '<div class="garden-empty">Загружаем друзей…</div>';
+    return;
+  }
   const friendRows = friends.length
     ? friends.map((person) => {
       const removing = confirmRemove === person.username;
       return `
-        <div class="garden-card flex items-center justify-between gap-2">
-          <button type="button" class="min-w-0 text-left" data-friend-action="profile" data-user="${attr(person.username)}">
+        <div class="garden-card flex items-center justify-between gap-2 flex-wrap">
+          <button type="button" class="min-w-0 text-left flex-1" data-friend-action="profile" data-user="${attr(person.username)}">
             <div class="truncate">${person.online ? '<span class="friend-online"></span>' : ''}${esc(formatTaggedName(person.username, person.guildTag))}</div>
             <div class="garden-muted truncate">${esc(progressLine(person))} · ${esc(seenLabel(person))}</div>
           </button>
-          <span class="flex items-center gap-1.5 shrink-0">
+          <span class="flex items-center gap-1.5 flex-wrap justify-end">
             ${roster.canInvite ? `<button type="button" class="garden-pill accent jelly-btn" data-friend-action="guild" data-user="${attr(person.username)}">В гильдию</button>` : ''}
             <button type="button" class="garden-pill jelly-btn" data-friend-action="${removing ? 'remove' : 'ask-remove'}" data-user="${attr(person.username)}">${removing ? 'Точно' : 'Удалить'}</button>
           </span>
@@ -189,6 +194,7 @@ export function friendsOpen() {
 
 function applyRosterData(data, resetConfirm = false) {
   if (!data?.success) return false;
+  friendsLoaded = true;
   roster = {
     friends: Array.isArray(data.friends) ? data.friends : roster.friends,
     incoming: Array.isArray(data.incoming) ? data.incoming : roster.incoming,
@@ -198,7 +204,6 @@ function applyRosterData(data, resetConfirm = false) {
   if (resetConfirm) confirmRemove = '';
   setBadge((roster.incoming || []).length);
   if (friendsOpen()) renderRoster();
-  else setBadge((roster.incoming || []).length);
   return true;
 }
 
@@ -391,7 +396,9 @@ export function initFriendsView() {
 
   openBtn?.addEventListener('click', () => {
     modal?.classList.remove('hidden');
-    loadRoster();
+    // Paint cache (or «Загружаем…») instantly — network refresh stays in background.
+    renderRoster();
+    loadRoster(true);
   });
 
   form?.addEventListener('submit', (event) => {
@@ -415,6 +422,7 @@ export function initFriendsView() {
   registerSocialPulse({
     friendsOpen,
     setFriendsBadge,
+    warmFriends: (data) => applyRosterData(data, false),
     refreshFriends: () => loadRoster(true)
   });
 }
