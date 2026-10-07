@@ -1,13 +1,36 @@
-export const GUILD_BOSSES = [
-  { index: 1, id: 'broth', name: 'Капля Бульона', icon: '💧', points: 10, plungers: 1 },
-  { index: 2, id: 'soot', name: 'Сажевый Жук', icon: '🪲', points: 15, plungers: 1 },
-  { index: 3, id: 'mold', name: 'Кислотный Плесневик', icon: '🫧', points: 25, plungers: 1 },
-  { index: 4, id: 'crystal', name: 'Кристальный Осколыш', icon: '💎', points: 40, plungers: 2 },
-  { index: 5, id: 'neon', name: 'Неоновый Рой', icon: '🔮', points: 60, plungers: 2 },
-  { index: 6, id: 'magma', name: 'Магмовый Ком', icon: '🔥', points: 80, plungers: 3 },
-  { index: 7, id: 'void', name: 'Дыра-Страж', icon: '🕳️', points: 110, plungers: 3 },
-  { index: 8, id: 'crown', name: 'Венец Вечности', icon: '👑', points: 150, plungers: 4 }
-];
+import { BOSS_ROSTER_PLAN, flatBossRoster } from './bosses.roster.plan.js';
+
+/**
+ * Live guild boss ladder: 13 themes × junior + senior = 26.
+ * Art: assets/poop/bosses/<id>.png
+ */
+function buildGuildBosses() {
+  return flatBossRoster().map((boss) => {
+    const i = boss.index;
+    const themeStep = Math.ceil(i / 2);
+    const senior = boss.tier === 'senior';
+    // Soft climb: early ~10 pts / 1 plunger, finale ~200 pts / 7 plungers.
+    const points = senior
+      ? Math.round(14 + (themeStep - 1) * 14)
+      : Math.round(10 + (themeStep - 1) * 12);
+    const plungers = Math.min(7, senior
+      ? 1 + Math.floor((themeStep + 1) / 2)
+      : 1 + Math.floor(themeStep / 3));
+    return {
+      index: i,
+      id: boss.id,
+      name: boss.name,
+      icon: boss.icon,
+      theme: boss.theme,
+      tier: boss.tier,
+      points,
+      plungers
+    };
+  });
+}
+
+export const GUILD_BOSSES = buildGuildBosses();
+export { BOSS_ROSTER_PLAN };
 
 /** Points required to reach each level (index = level - 1). */
 const LEVEL_POINTS = [

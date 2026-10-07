@@ -68,5 +68,6 @@ export function bossMaxHp(index, circle, members) {
   const n = Math.max(1, Math.floor(Number(index) || 1));
   const round = Math.max(1, Math.floor(Number(circle) || 1));
   const people = Math.max(1, Math.floor(Number(members) || 1));
-  return Math.round(6000 * n * n * round * people);
+  // Soft curve for 26 bosses: ~5.5k → ~0.7M before circle/people (was n² and exploded at 26).
+  return Math.round(5500 * n * Math.sqrt(n) * round * people);
 }

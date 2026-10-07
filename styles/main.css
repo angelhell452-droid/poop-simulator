@@ -586,11 +586,71 @@ body {
   pointer-events: none;
 }
 
+.boss-sprite img.broken {
+  display: none;
+}
+
 .boss-fallback {
-  display: block;
+  display: none;
   font-size: 64px;
   line-height: 1;
   margin-bottom: 8px;
+}
+
+.boss-sprite.no-art .boss-fallback {
+  display: block;
+}
+
+.boss-theme {
+  font-size: 12px;
+}
+
+.boss-summon-card,
+.boss-book-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.boss-summon-info {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.boss-thumb-wrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+}
+
+.boss-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex: 0 0 56px;
+  background: transparent;
+}
+
+.boss-thumb-fallback {
+  display: none;
+  font-size: 28px;
+  line-height: 56px;
+  text-align: center;
+}
+
+.boss-thumb-wrap.no-art .boss-thumb {
+  display: none;
+}
+
+.boss-thumb-wrap.no-art .boss-thumb-fallback {
+  display: block;
+}
+
+.boss-summon-card .boss-thumb {
+  border-radius: var(--radius-md);
 }
 
 .boss-hint {

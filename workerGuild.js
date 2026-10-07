@@ -384,6 +384,8 @@ function publicBoss(guild, me) {
     id: boss.id,
     name: boss.name,
     icon: boss.icon,
+    theme: boss.theme || "",
+    tier: boss.tier || "",
     circle: Number(guild.boss_circle) || 1,
     hp: Math.max(0, Number(guild.boss_hp) || 0),
     maxHp: Math.max(1, Number(guild.boss_max_hp) || 1),
@@ -400,7 +402,27 @@ async function damageOf(db, guild, playerId) {
   return Number(row?.damage) || 0;
 }
 
+async function ensureBossUnlockChain(db, guildId) {
+  await db.prepare(`
+    INSERT OR IGNORE INTO guild_unlocks (guild_id, boss_index, clears) VALUES (?, 1, 0)
+  `).bind(guildId).run();
+  const { results } = await db.prepare(`
+    SELECT boss_index as bossIndex, clears FROM guild_unlocks WHERE guild_id = ?
+  `).bind(guildId).all();
+  const known = new Map((results || []).map((row) => [Number(row.bossIndex), Number(row.clears) || 0]));
+  // Old guilds that cleared boss 8 before the 26-boss ladder need the next door opened.
+  for (let i = 1; i < GUILD_BOSSES.length; i++) {
+    if ((known.get(i) || 0) > 0 && !known.has(i + 1)) {
+      await db.prepare(`
+        INSERT OR IGNORE INTO guild_unlocks (guild_id, boss_index, clears) VALUES (?, ?, 0)
+      `).bind(guildId, i + 1).run();
+      known.set(i + 1, 0);
+    }
+  }
+}
+
 async function rosterOf(db, guildId) {
+  await ensureBossUnlockChain(db, guildId);
   const { results } = await db.prepare(`
     SELECT boss_index as bossIndex, clears FROM guild_unlocks WHERE guild_id = ?
   `).bind(guildId).all();
@@ -415,6 +437,8 @@ async function rosterOf(db, guildId) {
       id: boss.id,
       name: boss.name,
       icon: boss.icon,
+      theme: boss.theme || "",
+      tier: boss.tier || "",
       unlocked,
       clears,
       circle,

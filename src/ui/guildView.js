@@ -1,14 +1,14 @@
-import { GAME } from '../core/state.js?v=5.0.74';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.74';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.74';
-import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.74';
-import { KNIVES } from '../data/knives.data.js?v=5.0.74';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.74';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.74';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.74';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.74';
-import { pulseMail } from './mailView.js?v=5.0.74';
-import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.74';
+import { GAME } from '../core/state.js?v=5.0.75';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.75';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.75';
+import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.75';
+import { KNIVES } from '../data/knives.data.js?v=5.0.75';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.75';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.75';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.75';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.75';
+import { pulseMail } from './mailView.js?v=5.0.75';
+import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.75';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
 
@@ -487,13 +487,17 @@ function whyLine(blow) {
 }
 
 function fightShell(boss) {
+  const themeLine = boss.theme
+    ? `<div class="garden-muted boss-theme">${esc(boss.theme)}${boss.tier === 'senior' ? ' · старший' : (boss.tier === 'junior' ? ' · младший' : '')}</div>`
+    : '';
   return `
     <div class="boss-fight">
       <div id="bossFigure" class="boss-sprite">
-        <img src="assets/poop/bosses/${esc(boss.id)}.png" alt="" onerror="this.remove()">
+        <img src="assets/poop/bosses/${esc(boss.id)}.png" alt="" onerror="this.classList.add('broken');this.parentNode.classList.add('no-art')">
         <span class="boss-fallback">${esc(boss.icon)}</span>
         <div id="bossHint" class="boss-hint">Нажми, чтобы начать бой</div>
       </div>
+      ${themeLine}
       <div id="bossTitle" class="font-game text-lg"></div>
       <div class="boss-hp"><div id="bossHpFill"></div></div>
       <div id="bossHpText" class="garden-muted"></div>
@@ -584,15 +588,28 @@ function paintFight() {
       box.innerHTML = '<div class="garden-empty">Босса вызывает глава или офицер.</div>';
       return;
     }
-    const rows = (guild.roster || []).map((row) => `
-      <div class="garden-card flex items-center justify-between gap-2">
-        <span class="truncate">${esc(row.icon)} ${esc(row.name)} · круг ${formatNumber(row.circle)} · ${formatNumber(row.points)} очков · ${formatNumber(row.plungers)} вантузов</span>
-        ${row.unlocked
-          ? `<button type="button" class="garden-pill accent jelly-btn shrink-0" data-guild-action="summon" data-boss="${row.index}">Вызвать</button>`
-          : '<span class="garden-pill">Закрыт</span>'}
-      </div>
-    `).join('');
-    box.innerHTML = `<div class="garden-muted mb-2">Кого вызвать</div><div class="grid gap-2">${rows}</div>`;
+    let lastTheme = '';
+    const rows = (guild.roster || []).map((row) => {
+      const themeHead = row.theme && row.theme !== lastTheme
+        ? `<div class="garden-muted mt-2 mb-1">${esc(row.theme)}</div>`
+        : '';
+      lastTheme = row.theme || lastTheme;
+      const tier = row.tier === 'senior' ? 'Старший' : (row.tier === 'junior' ? 'Младший' : '');
+      return `
+        ${themeHead}
+        <div class="garden-card boss-summon-card">
+          <img class="boss-thumb" src="assets/poop/bosses/${esc(row.id)}.png" alt="" onerror="this.remove()">
+          <div class="boss-summon-info min-w-0">
+            <div class="font-game">${esc(row.icon)} ${esc(row.name)}</div>
+            <div class="garden-muted">${tier ? `${esc(tier)} · ` : ''}круг ${formatNumber(row.circle)} · ${formatNumber(row.points)} очков · ${formatNumber(row.plungers)} вантузов</div>
+          </div>
+          ${row.unlocked
+            ? `<button type="button" class="garden-pill accent jelly-btn shrink-0" data-guild-action="summon" data-boss="${row.index}">Вызвать</button>`
+            : '<span class="garden-pill shrink-0">Закрыт</span>'}
+        </div>
+      `;
+    }).join('');
+    box.innerHTML = `<div class="garden-muted mb-2">Кого вызвать · ${formatNumber((guild.roster || []).length)} боссов</div><div class="grid gap-2">${rows}</div>`;
     return;
   }
   const key = `${boss.index}:${boss.deadlineMs}`;
@@ -656,7 +673,12 @@ function renderJournal() {
   const live = guild.boss
     ? `<div class="garden-pill accent mb-3">Сейчас бой: ${esc(guild.boss.icon)} ${esc(guild.boss.name)} · круг ${formatNumber(guild.boss.circle)}</div>`
     : '<div class="garden-muted mb-3">Сейчас босса нет. Журнал можно смотреть в любой момент.</div>';
+  let bookTheme = '';
   const book = (guild.roster || []).map((row) => {
+    const themeHead = row.theme && row.theme !== bookTheme
+      ? `<div class="garden-muted mt-2 mb-1">${esc(row.theme)}</div>`
+      : '';
+    bookTheme = row.theme || bookTheme;
     const status = row.unlocked
       ? `открыт · побед ${formatNumber(row.clears || 0)} · след. круг ${formatNumber(row.circle)}`
       : 'ещё закрыт';
@@ -664,10 +686,14 @@ function renderJournal() {
       ? ` · награда круга: ${formatNumber(row.points)} очков, ${formatNumber(row.plungers)} вантузов`
       : '';
     return `
-      <div class="garden-card flex items-center gap-2">
-        <span class="text-2xl shrink-0">${esc(row.icon)}</span>
+      ${themeHead}
+      <div class="garden-card boss-book-card">
+        <div class="boss-thumb-wrap">
+          <img class="boss-thumb" src="assets/poop/bosses/${esc(row.id)}.png" alt="" onerror="this.parentNode.classList.add('no-art')">
+          <span class="boss-thumb-fallback">${esc(row.icon)}</span>
+        </div>
         <div class="min-w-0 text-left">
-          <div class="truncate font-game">${esc(row.name)}</div>
+          <div class="font-game">${esc(row.name)}</div>
           <div class="garden-muted">${status}${prize}</div>
         </div>
       </div>

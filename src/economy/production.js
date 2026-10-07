@@ -1,19 +1,19 @@
-import { GAME } from '../core/state.js?v=5.0.74';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.74';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.74';
+import { GAME } from '../core/state.js?v=5.0.75';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.75';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.75';
 import { TALENTS } from '../data/talents.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.0.74';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.74';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.74';
-import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.74';
-import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.74';
+import { KNIVES } from '../data/knives.data.js?v=5.0.75';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.75';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.75';
+import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.75';
+import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.75';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.74';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.75';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.74';
-import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.74';
-import { horizonIncomeMult } from './horizon.js?v=5.0.74';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.74';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.75';
+import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.75';
+import { horizonIncomeMult } from './horizon.js?v=5.0.75';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.75';
 
 /** Max share of factory income that a full click-cap stream may add. */
 const CLICK_INCOME_SHARE_CAP = 0.30;
