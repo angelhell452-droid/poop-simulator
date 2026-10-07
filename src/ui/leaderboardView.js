@@ -4,6 +4,7 @@ import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToClou
 import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.78';
 import { saveLocal } from '../save/saveManager.js?v=5.0.78';
 import { updateHUD } from './hudView.js?v=5.0.78';
+import { t, onLocaleChange } from '../i18n/t.js';
 
 let cachedLeaderboard = null;
 let cachedYou = null;
@@ -51,10 +52,10 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
 
   if (!leaderboard || leaderboard.length === 0) {
     const note = boardOffline
-      ? 'Нет связи с сервером. Рейтинг один на всех и появится, когда база ответит.'
+      ? t('lb.offline')
       : (!getStoredAccount()?.username
-        ? 'Зал славы только для аккаунтов. Гости в топ не попадают.'
-        : 'В Зале Славы пока нет записей. Сыграй и сохранись в облако.');
+        ? t('lb.guestOnly')
+        : t('lb.empty'));
     containerEl.innerHTML = `<div class="text-stone-400 text-center py-4 text-xs font-game">${note}</div>`;
     return;
   }
@@ -83,7 +84,7 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
       if (!isCurrent) cardBorder = 'border-amber-700/50 bg-stone-900/90';
     }
 
-    const safeName = formatTaggedName(player.playerName || 'Анонимный Какашич', player.guildTag)
+    const safeName = formatTaggedName(player.playerName || t('lb.anon'), player.guildTag)
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
@@ -98,13 +99,13 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
             <div class="flex items-center gap-1.5 truncate">
               <span class="font-bold text-xs ${isCurrent ? 'text-yellow-300' : 'text-stone-200'} truncate">${safeName}</span>
               ${player.vipLevel > 0 ? `<span class="vip-badge shrink-0">VIP ${formatNumber(player.vipLevel)}</span>` : ''}
-              ${isCurrent ? '<span class="text-[9px] bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 px-1.5 py-0.2 rounded font-black uppercase tracking-wider shrink-0 shadow">ВЫ</span>' : ''}
+              ${isCurrent ? '<span class="text-[9px] bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 px-1.5 py-0.2 rounded font-black uppercase tracking-wider shrink-0 shadow">' + t('lb.you') + '</span>' : ''}
             </div>
             <div class="text-[10px] text-stone-400 flex items-center gap-2 mt-0.5">
-              <span>🧬 Форма #${formatNumber(player.stage || 1)}</span>
+              <span>🧬 ${t('lb.form', { n: formatNumber(player.stage || 1) })}</span>
               <span class="text-stone-600">•</span>
-              <span class="text-purple-300 font-mono">🧻 ${formatNumber(player.prestiges || 0)} см</span>
-              ${player.transcends ? `<span class="text-stone-600">•</span><span class="text-cyan-300 font-mono">🌌 ${formatNumber(player.transcends)} пр</span>` : ''}
+              <span class="text-purple-300 font-mono">🧻 ${t('lb.flushesShort', { n: formatNumber(player.prestiges || 0) })}</span>
+              ${player.transcends ? `<span class="text-stone-600">•</span><span class="text-cyan-300 font-mono">🌌 ${t('lb.breaksShort', { n: formatNumber(player.transcends) })}</span>` : ''}
             </div>
           </div>
         </div>
@@ -118,7 +119,7 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
     `;
   }).join('') + (cachedYou && Number(cachedYou.rank) > leaderboard.length ? `
       <div class="text-center text-[10px] text-amber-200/80 py-2 font-game">
-        Ваше место на сервере: #${formatNumber(cachedYou.rank)} из ${formatNumber(cachedTotal)} · очки ${formatNumber(cachedYou.score || 0)}
+        ${t('lb.yourPlace', { rank: formatNumber(cachedYou.rank), total: formatNumber(cachedTotal), score: formatNumber(cachedYou.score || 0) })}
       </div>` : '');
 }
 
@@ -134,10 +135,10 @@ function updateDailyRewardCard(leaderboard) {
   const localGuest = !getStoredAccount()?.username;
   const viewerIsUnlistedGuest = !boardOffline && !playerRank && (cachedYou?.guest || localGuest);
   if (badgeEl) {
-    if (boardOffline) badgeEl.textContent = 'НЕТ СВЯЗИ';
-    else if (viewerIsUnlistedGuest) badgeEl.textContent = 'ГОСТЬ';
-    else if (playerRank > 0) badgeEl.textContent = `#${formatNumber(playerRank)} В РЕЙТИНГЕ`;
-    else badgeEl.textContent = 'ЕЩЁ НЕ В БАЗЕ';
+    if (boardOffline) badgeEl.textContent = t('lb.badgeOffline');
+    else if (viewerIsUnlistedGuest) badgeEl.textContent = t('lb.badgeGuest');
+    else if (playerRank > 0) badgeEl.textContent = t('lb.badgeRanked', { rank: formatNumber(playerRank) });
+    else badgeEl.textContent = t('lb.badgeNotInDb');
     badgeEl.className = playerRank > 0 && playerRank <= 10
       ? 'text-[9px] bg-emerald-500 text-stone-950 px-1.5 py-0.5 rounded font-black'
       : 'text-[9px] bg-stone-700 text-stone-300 px-1.5 py-0.5 rounded font-black';
@@ -159,17 +160,17 @@ function updateDailyRewardCard(leaderboard) {
     const remainingMs = cooldownMs - elapsed;
     const hours = Math.floor(remainingMs / (1000 * 60 * 60));
     const mins = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-    if (infoEl) infoEl.textContent = `⏳ Награда получена! Следующая будет доступна через ${hours}ч ${mins}м.`;
+    if (infoEl) infoEl.textContent = t('lb.claimedInfo', { h: hours, m: mins });
     if (btnClaim) {
       btnClaim.disabled = true;
-      btnClaim.textContent = `⏳ Через ${hours}ч ${mins}м`;
+      btnClaim.textContent = t('lb.claimIn', { h: hours, m: mins });
       btnClaim.className = 'w-full sm:w-auto shrink-0 bg-stone-800 text-stone-500 font-game font-bold text-xs px-3.5 py-2 rounded-xl cursor-not-allowed';
     }
   } else if (playerRank <= 10 && rewardAmount > 0) {
-    if (infoEl) infoEl.innerHTML = `<span class="text-emerald-300 font-bold">🎉 Вы в Топ-${playerRank}!</span> Ваша награда: <strong class="text-yellow-300">+${formatNumber(rewardAmount)} ✨ Блестяшек</strong>`;
+    if (infoEl) infoEl.innerHTML = `<span class="text-emerald-300 font-bold">${t('lb.inTop', { rank: formatNumber(playerRank) })}</span> ${t('lb.yourReward')} <strong class="text-yellow-300">+${formatNumber(rewardAmount)} ✨ ${t('lb.sparklesWord')}</strong>`;
     if (btnClaim) {
       btnClaim.disabled = false;
-      btnClaim.innerHTML = `🎁 Забрать +${formatNumber(rewardAmount)} ✨`;
+      btnClaim.innerHTML = t('lb.claimBtn', { n: formatNumber(rewardAmount) });
       btnClaim.className = 'w-full sm:w-auto shrink-0 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game font-bold text-xs px-3.5 py-2 rounded-xl transition shadow jelly-btn';
       btnClaim.onclick = () => {
         GAME.sparkles = (Number(GAME.sparkles) || 0) + rewardAmount;
@@ -181,7 +182,7 @@ function updateDailyRewardCard(leaderboard) {
         // Flash message
         const notif = document.createElement('div');
         notif.className = 'fixed top-16 left-1/2 -translate-x-1/2 z-[9999] bg-gradient-to-r from-emerald-500 to-yellow-500 text-stone-950 font-game font-bold text-xs px-4 py-2 rounded-2xl shadow-2xl border-2 border-yellow-200 animate-bounce flex items-center gap-2';
-        notif.innerHTML = `<span>👑 Получена ежедневная награда Топ-${playerRank}: +${formatNumber(rewardAmount)} ✨ Блестяшек!</span>`;
+        notif.innerHTML = `<span>${t('lb.toastClaimed', { rank: formatNumber(playerRank), n: formatNumber(rewardAmount) })}</span>`;
         document.body.appendChild(notif);
         setTimeout(() => notif.remove(), 3500);
       };
@@ -189,16 +190,16 @@ function updateDailyRewardCard(leaderboard) {
   } else {
     if (infoEl) {
       infoEl.textContent = boardOffline
-        ? 'Награда считается только по месту с сервера. Сейчас базы нет, забрать нельзя.'
+        ? t('lb.rewardOffline')
         : (viewerIsUnlistedGuest
-          ? 'Зал славы только для аккаунтов. Гости в топ не попадают.'
+          ? t('lb.guestOnly')
           : (playerRank > 0
-          ? `Вы на #${formatNumber(playerRank)} месте. Поднимитесь в Топ-10 по Очкам Славы, чтобы получать до ${formatNumber(50000)} ✨ в день!`
-          : `Сначала появись в облачном сохранении. Топ-10 получает до ${formatNumber(50000)} ✨ в день.`));
+          ? t('lb.climb', { rank: formatNumber(playerRank), n: formatNumber(50000) })
+          : t('lb.needCloud', { n: formatNumber(50000) })));
     }
     if (btnClaim) {
       btnClaim.disabled = true;
-      btnClaim.textContent = '🔒 Нужен Топ-10';
+      btnClaim.textContent = t('lb.needTop10');
       btnClaim.className = 'w-full sm:w-auto shrink-0 bg-stone-800 text-stone-500 font-game font-bold text-xs px-3.5 py-2 rounded-xl cursor-not-allowed';
     }
   }
@@ -211,7 +212,7 @@ export async function refreshAndRenderAllLeaderboards(force = false) {
   const loadingPlaceholder = `
     <div class="flex flex-col items-center justify-center py-6 text-stone-400 gap-2">
       <span class="text-2xl animate-spin">🌀</span>
-      <span class="text-xs font-game">Расчет Очков Славы и связь с БД...</span>
+      <span class="text-xs font-game">${t('lb.loading')}</span>
     </div>
   `;
 
@@ -250,4 +251,12 @@ export function initLeaderboardView() {
     });
   }
 
+  onLocaleChange(() => {
+    if (!cachedLeaderboard) return;
+    const modalList = document.getElementById('leaderboardFullList');
+    const accountList = document.getElementById('leaderboardList');
+    if (modalList) renderLeaderboardRows(modalList, cachedLeaderboard);
+    if (accountList) renderLeaderboardRows(accountList, cachedLeaderboard);
+    updateDailyRewardCard(cachedLeaderboard);
+  });
 }
