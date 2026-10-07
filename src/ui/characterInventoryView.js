@@ -580,8 +580,8 @@ function renderKnivesGrid() {
       const price = parseInt(btn.dataset.price) || 25;
       const curr = btn.dataset.currency || 'rolls';
       const sym = btn.dataset.symbol || '🧻';
-      const currName = curr === 'plungers' ? 'Астральных Вантузов' : 'Втулок Судьбы';
-      if (confirm(`Утилизировать нож "${kn ? knifeName(kn) : kid}" и получить +${formatNumber(price)} ${sym} ${currName}?`)) {
+      const currName = curr === 'plungers' ? t('inv.currPlungers') : t('inv.currRolls');
+      if (confirm(t('inv.recycleConfirm', { name: kn ? knifeName(kn) : kid, n: formatNumber(price), sym, cur: currName }))) {
         const idx = GAME.unlockedKnives.indexOf(kid);
         if (idx !== -1) {
           GAME.unlockedKnives.splice(idx, 1);
@@ -624,12 +624,12 @@ function renderHatsGrid() {
             <div class="truncate">
               <div class="font-game text-xs text-yellow-300 truncate font-bold flex items-center gap-1.5">
                 <span>${shopName(hat)}</span>
-                ${hat.owned ? `<span class="text-pink-400 font-mono text-[10px]">💎 Lv.${hatLvl}</span>` : ''}
+                ${hat.owned ? `<span class="text-pink-400 font-mono text-[10px]">💎 ${t('hud.lvl', { n: formatNumber(hatLvl) })}</span>` : ''}
               </div>
               <div class="text-[9px] text-pink-300 mt-0.5 font-currency">${hatClickLabel(hat, hat.owned ? hatLvl : 1)}</div>
             </div>
           </div>
-          <button class="hat-info-toggle w-5 h-5 shrink-0 rounded-full bg-stone-800 hover:bg-stone-700 text-pink-300 border border-stone-600 flex items-center justify-center font-bold text-[11px] transition shadow" data-id="${hat.id}" title="Подробности">
+          <button class="hat-info-toggle w-5 h-5 shrink-0 rounded-full bg-stone-800 hover:bg-stone-700 text-pink-300 border border-stone-600 flex items-center justify-center font-bold text-[11px] transition shadow" data-id="${hat.id}" title="${t('inv.details')}">
             !
           </button>
         </div>
@@ -637,9 +637,9 @@ function renderHatsGrid() {
         <!-- Row 2: Collapsible Info Drawer -->
         <div id="hatInfo_${hat.id}" class="${isInfoOpen ? '' : 'hidden'} p-2 my-1.5 rounded-xl bg-stone-900 border border-stone-700 text-[10px] text-stone-300 space-y-1">
           <p class="text-stone-300 font-bold">${shopDesc(hat)}</p>
-          <div class="text-[9px] text-stone-400">Сейчас: ${hatClickLabel(hat, hat.owned ? hatLvl : 1)}</div>
-          ${hat.owned ? `<div class="text-[9px] text-pink-300 font-bold">Инкрустация 💎 Lv.${formatNumber(hatLvl)}</div>` : ''}
-          <div class="text-[9px] text-amber-300">${hat.owned ? '✓ Куплено в Бутике' : `Стоимость: ${formatNumber(hat.cost)} ✨ Блестяшек`}</div>
+          <div class="text-[9px] text-stone-400">${t('inv.hatNow', { label: hatClickLabel(hat, hat.owned ? hatLvl : 1) })}</div>
+          ${hat.owned ? `<div class="text-[9px] text-pink-300 font-bold">${t('inv.inlay', { n: formatNumber(hatLvl) })}</div>` : ''}
+          <div class="text-[9px] text-amber-300">${hat.owned ? t('inv.boughtBoutique') : t('inv.cost', { n: formatNumber(hat.cost) })}</div>
         </div>
       </div>
 
@@ -649,14 +649,14 @@ function renderHatsGrid() {
           <div class="flex items-center gap-1.5 w-full">
             ${isEquipped ? `
               <button class="unequip-hat-btn flex-1 py-1 px-2 rounded-xl text-[10px] font-game bg-emerald-600 text-white font-bold border border-emerald-400 shadow jelly-btn">
-                ✓ Надет (Снять)
+                ${t('inv.wornUnequip')}
               </button>
             ` : `
               <button class="equip-hat-btn flex-1 py-1 px-2 rounded-xl text-[10px] font-game bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 text-white font-bold border border-pink-400 shadow jelly-btn" data-id="${hat.id}">
-                Надеть
+                ${t('inv.equip')}
               </button>
             `}
-            <button class="inlay-hat-btn py-1 px-2 rounded-xl text-[10px] font-game ${costInfo.maxReached ? 'bg-stone-800 text-stone-500 cursor-not-allowed' : 'bg-stone-800 hover:bg-stone-700 text-pink-300 border border-pink-500/50'} font-bold shadow jelly-btn shrink-0" data-id="${hat.id}" title="Инкрустировать драгоценностями (+1 Lv)">
+            <button class="inlay-hat-btn py-1 px-2 rounded-xl text-[10px] font-game ${costInfo.maxReached ? 'bg-stone-800 text-stone-500 cursor-not-allowed' : 'bg-stone-800 hover:bg-stone-700 text-pink-300 border border-pink-500/50'} font-bold shadow jelly-btn shrink-0" data-id="${hat.id}" title="${t('inv.inlayTitle')}">
               💎 ${costInfo.maxReached ? 'MAX' : `+1 (${formatNumber(costInfo.cost)} ✨)`}
             </button>
           </div>
@@ -664,7 +664,7 @@ function renderHatsGrid() {
           <div class="flex items-center justify-between w-full">
             <span class="text-[10px] text-yellow-400 font-mono font-bold">${formatNumber(hat.cost)} ✨</span>
             <button class="buy-hat-inv-btn py-1 px-2.5 rounded-xl text-[10px] font-game ${isBoutiqueUnlocked() && GAME.sparkles >= hat.cost ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'} font-bold border shadow" data-id="${hat.id}" ${isBoutiqueUnlocked() && GAME.sparkles >= hat.cost ? '' : 'disabled'}>
-              ${isBoutiqueUnlocked() ? 'Купить 🎩' : 'С формы 100'}
+              ${isBoutiqueUnlocked() ? t('inv.buyHat') : t('inv.fromFormCap', { n: formatNumber(100) })}
             </button>
           </div>
         `}
@@ -715,7 +715,7 @@ function renderHatsGrid() {
         updateHUD();
         renderCharacterInventory();
         saveLocal();
-        showKnifeToast(`🎩 Куплена и надета: ${shopName(hat)}!`);
+        showKnifeToast(t('inv.toastBoughtHat', { name: shopName(hat) }));
       }
     });
   });
@@ -730,7 +730,7 @@ function renderHatsGrid() {
         renderShop();
         saveLocal();
         const hatObj = SHOP_ITEMS.find(i => i.id === hid);
-        showKnifeToast(`💎 Шапка "${hatObj ? shopName(hatObj) : hid}" инкрустирована до Lv.${formatNumber(res.newLevel)}! (+15% к силе шапки)`);
+        showKnifeToast(t('inv.toastInlay', { name: hatObj ? shopName(hatObj) : hid, n: formatNumber(res.newLevel) }));
       } else {
         alert(res.msg);
       }
@@ -816,3 +816,7 @@ export function initCharacterInventoryListeners() {
     renderCharacterInventory();
   });
 }
+
+onLocaleChange(() => {
+  renderCharacterInventory();
+});
