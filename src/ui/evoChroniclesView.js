@@ -1,6 +1,6 @@
-import { GAME } from '../core/state.js?v=5.0.70';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.70';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.70';
+import { GAME } from '../core/state.js?v=5.0.71';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.71';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.71';
 
 export function renderEvoChronicles() {
   const container = document.getElementById('evoListContainer');

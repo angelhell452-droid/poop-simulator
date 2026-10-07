@@ -1,11 +1,7 @@
 # Separate Worker for friends / guild / mail — same D1 as the main game Worker.
-# Deploy: npx wrangler deploy -c wrangler.social.toml
-#
-# After the first deploy, attach a route on the SAME hostname as the game:
-#   pattern: <your-domain>/api/social*
-#   worker:  poop-simulator-social
-# More specific /api/social* beats the main Worker catch-all.
-# Until the route exists, the client falls back to /api/cloud-save.
+# Deploy first: npm run deploy:social
+# Main Worker (wrangler.toml) binds SOCIAL → this script and forwards /api/social.
+# No custom domain / zone route required on workers.dev.
 
 name = "poop-simulator-social"
 main = "workerSocial.js"

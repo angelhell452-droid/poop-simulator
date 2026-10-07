@@ -553,9 +553,12 @@ export default {
       return handleCloudSave(request, env);
     }
 
-    // Same handlers as poop-simulator-social. A dedicated /api/social* route
-    // on that Worker takes over when attached; until then main answers here.
+    // Prefer the social Worker via service binding (works on workers.dev without a zone route).
+    // If SOCIAL is missing (local / not deployed yet), answer with the same handlers here.
     if (url.pathname === "/api/social" || url.pathname === "/api/social/") {
+      if (env.SOCIAL) {
+        return env.SOCIAL.fetch(request);
+      }
       return handleSocial(request, env);
     }
 

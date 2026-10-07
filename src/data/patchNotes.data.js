@@ -1,5 +1,15 @@
 export const PATCH_NOTES = [
   {
+    version: 'v5.0.71 PRO',
+    date: '7 Октября 2026',
+    title: 'Друзья на отдельном Worker без своего домена',
+    badge: 'Патч 5.0',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      { type: 'feature', icon: '📡', text: 'Основной сервер пересылает /api/social во второй Worker через service binding — свой домен и Route в Dashboard не нужны. Если social ещё не подключён, отвечает сам основной.' }
+    ]
+  },
+  {
     version: 'v5.0.70 PRO',
     date: '7 Октября 2026',
     title: 'Отдельный сервер для друзей и гильдий',

@@ -12,3 +12,8 @@ binding = "ASSETS"
 binding = "DB"
 database_name = "poop_simulator_d1"
 database_id = "a871d75b-228f-4dad-8bbb-0a9784b300b9"
+
+# Friends / guild / mail run on the social Worker (no custom domain route needed).
+[[services]]
+binding = "SOCIAL"
+service = "poop-simulator-social"
