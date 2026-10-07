@@ -1,11 +1,12 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { EVOLUTIONS, calcEvolutionCost } from '../data/evolutions.data.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { EVOLUTIONS, calcEvolutionCost } from '../data/evolutions.data.js?v=5.0.79';
 import { TALENTS } from '../data/talents.data.js';
-import { getAsymptoticDiscountFactor } from '../economy/costs.js?v=5.0.78';
+import { getAsymptoticDiscountFactor } from '../economy/costs.js?v=5.0.79';
 import { events } from '../core/events.js';
 import { notePeakForm } from './unlocks.js';
-import { maxUnlockedStage } from './phases.data.js?v=5.0.78';
-import { gte, isBig, mulFloor } from '../utils/big.js?v=5.0.78';
+import { maxUnlockedStage } from './phases.data.js?v=5.0.79';
+import { gte, isBig, mulFloor } from '../utils/big.js?v=5.0.79';
+import { evolutionDisplayName, poopSkinDesc, poopSkinName, poopSkinRank } from '../i18n/localize.js';
 
 export function effectiveFormCost(stage) {
   const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');
@@ -46,7 +47,7 @@ export function syncEvolutionToBiomass() {
     const target = EVOLUTIONS[next] || EVOLUTIONS[EVOLUTIONS.length - 1];
     events.emit('evolution:success', {
       count: next - before,
-      targetName: target.name,
+      targetName: evolutionDisplayName(target),
       evoStage: next
     });
   }
@@ -83,7 +84,8 @@ export function getPoopSkinInfo(stage, isGirly) {
       { id: 'girl_love_goddess', name: 'Богиня Вселенской Любви', tier: 9, rank: 'Богиня', icon: '💖', desc: 'Радужные крылья бабочки и бесконечные сердца', nextAt: 18000 },
       { id: 'girl_omega_queen', name: 'Омега-Королева Омниверса', tier: 10, rank: 'Абсолют', icon: '🌟', desc: 'Священная корона бесконечности и сверхсветовая аура', nextAt: 100000 }
     ];
-    return girlyTiers[tier - 1];
+    const raw = girlyTiers[tier - 1];
+    return { ...raw, name: poopSkinName(raw), rank: poopSkinRank(raw), desc: poopSkinDesc(raw) };
   } else {
     const boysTiers = [
       { id: 'boy_rookie', name: 'Какашич-Новичок', tier: 1, rank: 'Новичок', icon: '💩', desc: 'Глянцевый классический завиток с выразительными глазами', nextAt: 150 },
@@ -97,6 +99,7 @@ export function getPoopSkinInfo(stage, isGirly) {
       { id: 'boy_thunder_god', name: 'Титан Грома и Бури', tier: 9, rank: 'Бог Молний', icon: '⚡', desc: 'Корона из молний, электрические искры и синий разряд', nextAt: 18000 },
       { id: 'boy_omega_god', name: 'Абсолютный Бог Омниверса', tier: 10, rank: 'Создатель Миров', icon: '🌌', desc: 'Вращающийся золотой нимб, 6 крыльев и вихрь творения', nextAt: 100000 }
     ];
-    return boysTiers[tier - 1];
+    const raw = boysTiers[tier - 1];
+    return { ...raw, name: poopSkinName(raw), rank: poopSkinRank(raw), desc: poopSkinDesc(raw) };
   }
 }

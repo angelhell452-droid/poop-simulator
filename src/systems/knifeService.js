@@ -1,9 +1,11 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { KNIVES } from '../data/knives.data.js?v=5.0.78';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.78';
-import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { KNIVES } from '../data/knives.data.js?v=5.0.79';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.79';
+import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.79';
 import { events } from '../core/events.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { t } from '../i18n/t.js';
+import { knifeName } from '../i18n/localize.js';
 
 // Bases ~10× below the old table. Power no longer scales with raw clickMult
 // (godly knives sit at 1e5+ and used to make sharpening/sell impossible or broken).
@@ -78,15 +80,15 @@ export function getKnifeRecycleReward(knifeOrId, explicitStar = null) {
 
 export function sharpenKnife(knifeId) {
   const knife = KNIVES.find(k => k.id === knifeId);
-  if (!knife) return { success: false, msg: 'Нож не найден' };
+  if (!knife) return { success: false, msg: t('knife.err.notFound') };
 
   const costInfo = getKnifeSharpenCost(knife);
   if (costInfo.maxReached) {
-    return { success: false, msg: 'Этот нож уже имеет максимальный уровень заточки (★ Lv.25)!' };
+    return { success: false, msg: t('knife.err.maxSharpen') };
   }
 
   if ((GAME.sparkles || 0) < costInfo.cost) {
-    return { success: false, msg: `Недостаточно Блестяшек (✨)! Требуется: ${formatNumber(costInfo.cost)} ✨` };
+    return { success: false, msg: t('knife.err.needSparkles', { n: formatNumber(costInfo.cost) }) };
   }
   GAME.sparkles -= costInfo.cost;
 
@@ -139,9 +141,14 @@ export function getBestKnife() {
 
 export function equipBestKnife() {
   const best = getBestKnife();
-  if (!best) return { success: false, msg: 'У вас пока нет разблокированных ножей!' };
+  if (!best) return { success: false, msg: t('knife.err.noUnlocked') };
   if (GAME.equippedKnife === best.id) {
-    return { success: false, msg: `Уже экипирован самый мощный нож: ${best.name}!`, knife: best, alreadyEquipped: true };
+    return {
+      success: false,
+      msg: t('knife.err.alreadyBest', { name: knifeName(best) }),
+      knife: best,
+      alreadyEquipped: true
+    };
   }
   GAME.equippedKnife = best.id;
   events.emit('knife:equipped', { knife: best });
@@ -161,15 +168,15 @@ export function getHatInlayCost(hat) {
 
 export function inlayHat(hatId) {
   const hat = SHOP_ITEMS.find(i => i.id === hatId && i.type === 'hat');
-  if (!hat) return { success: false, msg: 'Шапка не найдена!' };
+  if (!hat) return { success: false, msg: t('hat.err.notFound') };
 
   const costInfo = getHatInlayCost(hat);
   if (costInfo.maxReached) {
-    return { success: false, msg: 'Эта шапка уже инкрустирована до максимума (💎 Lv.15)!' };
+    return { success: false, msg: t('hat.err.maxInlay') };
   }
 
   if ((GAME.sparkles || 0) < costInfo.cost) {
-    return { success: false, msg: `Недостаточно Блестяшек (✨)! Требуется: ${formatNumber(costInfo.cost)} ✨` };
+    return { success: false, msg: t('knife.err.needSparkles', { n: formatNumber(costInfo.cost) }) };
   }
 
   GAME.sparkles -= costInfo.cost;

@@ -1,7 +1,24 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { t } from '../i18n/t.js';
 
-const GAME_VERSION = 'v5.0.70 PRO';
+const GAME_VERSION = 'v5.0.79 PRO';
+
+const DISCORD_CATEGORY_LABELS = {
+  visual: 'Visual bug',
+  crash: 'Crash / freeze',
+  balance: 'Balance / economy',
+  sound: 'Sound',
+  other: 'Other'
+};
+
+const CATEGORY_COLORS = {
+  visual: 0x6366f1,
+  crash: 0xef4444,
+  balance: 0xf59e0b,
+  sound: 0x06b6d4,
+  other: 0x6b7280
+};
 
 // Cooldown: один репорт в 60 секунд чтобы не флудили
 let lastReportTime = 0;
@@ -58,43 +75,35 @@ async function sendBugReport(textarea, categoryBtns, statusEl, btnSend) {
 
   // Валидация
   if (!text || text.length < 10) {
-    showStatus(statusEl, '❌ Описание слишком короткое (минимум 10 символов)', 'error');
+    showStatus(statusEl, t('bug.tooShort', { n: formatNumber(10) }), 'error');
     return;
   }
   if (text.length > 1000) {
-    showStatus(statusEl, '❌ Описание слишком длинное (максимум 1000 символов)', 'error');
+    showStatus(statusEl, t('bug.tooLong', { n: formatNumber(1000) }), 'error');
     return;
   }
 
   // Cooldown
   if (now - lastReportTime < REPORT_COOLDOWN_MS) {
     const secLeft = Math.ceil((REPORT_COOLDOWN_MS - (now - lastReportTime)) / 1000);
-    showStatus(statusEl, `⏳ Подождите ещё ${secLeft} сек перед следующим репортом`, 'error');
+    showStatus(statusEl, t('bug.cooldown', { n: secLeft }), 'error');
     return;
   }
 
   // Получаем выбранную категорию
   const activeCategory = [...categoryBtns].find(b => b.classList.contains('bg-red-600'));
-  const category = activeCategory ? activeCategory.dataset.category : 'Не указана';
+  const categoryId = activeCategory?.dataset.category || 'other';
+  const categoryLabel = DISCORD_CATEGORY_LABELS[categoryId] || DISCORD_CATEGORY_LABELS.other;
+  const embedColor = CATEGORY_COLORS[categoryId] || CATEGORY_COLORS.other;
 
   // Сбор данных об игроке
-  const playerName = GAME.playerName || GAME.cloudPlayerName || 'Гость';
+  const playerName = GAME.playerName || GAME.cloudPlayerName || t('common.guest');
   const stage = GAME.evoStage || 0;
   const biomass = formatNumber(GAME.biomass || 0);
   const sparkles = formatNumber(GAME.sparkles || 0);
   const prestigeLvl = GAME.totalPrestiges || 0;
   const transcendLvl = GAME.totalTranscend || 0;
   const knivesCount = (GAME.unlockedKnives || []).length;
-
-  // Цвет embed по категории
-  const categoryColors = {
-    'Визуальный баг': 0x6366f1,
-    'Краш / зависание': 0xef4444,
-    'Баланс / экономика': 0xf59e0b,
-    'Звук': 0x06b6d4,
-    'Другое': 0x6b7280
-  };
-  const embedColor = categoryColors[category] || 0xef4444;
 
   const timestamp = new Date().toISOString();
 
@@ -103,58 +112,58 @@ async function sendBugReport(textarea, categoryBtns, statusEl, btnSend) {
     avatar_url: 'https://cdn.discordapp.com/attachments/0/0/poop.png',
     embeds: [
       {
-        title: `🐛 Новый Баг-Репорт | ${GAME_VERSION}`,
+        title: `🐛 New Bug Report | ${GAME_VERSION}`,
         description: `\`\`\`\n${text}\n\`\`\``,
         color: embedColor,
         fields: [
           {
-            name: '📂 Категория',
-            value: category,
+            name: '📂 Category',
+            value: categoryLabel,
             inline: true
           },
           {
-            name: '👤 Игрок',
+            name: '👤 Player',
             value: playerName,
             inline: true
           },
           {
-            name: '🎮 Версия',
+            name: '🎮 Version',
             value: GAME_VERSION,
             inline: true
           },
           {
-            name: '🧬 Форма',
+            name: '🧬 Form',
             value: `#${stage}`,
             inline: true
           },
           {
-            name: '💨 Биомасса',
+            name: '💨 Biomass',
             value: biomass,
             inline: true
           },
           {
-            name: '✨ Блестяшки',
+            name: '✨ Sparkles',
             value: sparkles,
             inline: true
           },
           {
-            name: '🔄 Смыв / Прорыв',
-            value: `Ур.${prestigeLvl} / Ур.${transcendLvl}`,
+            name: '🔄 Flush / Breakthrough',
+            value: `Lv.${prestigeLvl} / Lv.${transcendLvl}`,
             inline: true
           },
           {
-            name: '🗡️ Ножей',
+            name: '🗡️ Knives',
             value: `${knivesCount}/200`,
             inline: true
           },
           {
-            name: '🌐 Браузер',
+            name: '🌐 Browser',
             value: navigator.userAgent.substring(0, 80),
             inline: false
           }
         ],
         footer: {
-          text: `Poop Simulator Bug Tracker • ${new Date().toLocaleString('ru-RU')}`
+          text: `Poop Simulator Bug Tracker • ${new Date().toLocaleString('en-US')}`
         },
         timestamp
       }
@@ -163,8 +172,8 @@ async function sendBugReport(textarea, categoryBtns, statusEl, btnSend) {
 
   // UI: отправляем
   btnSend.disabled = true;
-  btnSend.textContent = '📡 Отправка...';
-  showStatus(statusEl, '📡 Отправляем репорт в Discord...', 'info');
+  btnSend.textContent = t('bug.sendingBtn');
+  showStatus(statusEl, t('bug.sending'), 'info');
 
   try {
     const res = await fetch('/api/bug-report', {
@@ -174,23 +183,23 @@ async function sendBugReport(textarea, categoryBtns, statusEl, btnSend) {
     });
 
     if (res.status === 503) {
-      showStatus(statusEl, 'Репорты сейчас не подключены на сервере.', 'error');
+      showStatus(statusEl, t('bug.notConnected'), 'error');
     } else if (res.ok) {
       lastReportTime = Date.now();
-      showStatus(statusEl, '✅ Репорт отправлен! Спасибо, мы разберёмся!', 'success');
+      showStatus(statusEl, t('bug.sent'), 'success');
       if (textarea) textarea.value = '';
       // Закрыть модалку через 2 секунды
       setTimeout(() => {
         document.getElementById('bugReportModal')?.classList.add('hidden');
       }, 2000);
     } else {
-      showStatus(statusEl, `❌ Ошибка отправки (${res.status}). Попробуйте позже.`, 'error');
+      showStatus(statusEl, t('bug.sendFail', { code: res.status }), 'error');
     }
   } catch (err) {
-    showStatus(statusEl, '❌ Нет соединения. Проверьте интернет.', 'error');
+    showStatus(statusEl, t('bug.noConnection'), 'error');
   } finally {
     btnSend.disabled = false;
-    btnSend.textContent = '🚀 Отправить репорт';
+    btnSend.textContent = t('bug.sendBtn');
   }
 }
 

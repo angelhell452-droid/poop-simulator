@@ -1,19 +1,20 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.78';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.79';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.79';
 import { TALENTS } from '../data/talents.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.0.78';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.78';
-import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.78';
+import { KNIVES } from '../data/knives.data.js?v=5.0.79';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.79';
+import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.79';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.78';
+import { archetypeName } from '../i18n/localize.js';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.79';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.78';
-import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.78';
-import { horizonIncomeMult } from './horizon.js?v=5.0.78';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.78';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.79';
+import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.79';
+import { horizonIncomeMult } from './horizon.js?v=5.0.79';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.79';
 
 /** Max share of factory income that a full click-cap stream may add. */
 const CLICK_INCOME_SHARE_CAP = 0.30;
@@ -180,7 +181,7 @@ function pushArchetype(lines, mult) {
   const arch = ARCHETYPES[GAME.archetype];
   if (!arch || !(mult > 1.001)) return;
   const pct = Math.round((mult - 1) * 100);
-  pushAboveOne(lines, arch.name, mult, `+${formatNumber(pct)}%`);
+  pushAboveOne(lines, archetypeName(arch), mult, `+${formatNumber(pct)}%`);
 }
 
 function milestoneMult(count) {

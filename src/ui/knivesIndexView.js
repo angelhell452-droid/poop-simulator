@@ -1,19 +1,21 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { KNIVES } from '../data/knives.data.js?v=5.0.78';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.78';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.78';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { KNIVES } from '../data/knives.data.js?v=5.0.79';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.79';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.79';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.79';
 import { TALENTS } from '../data/talents.data.js';
 import { getKnifeStar, getKnifeSharpenCost, sharpenKnife, getHatLevel } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.78';
-import { updateHUD } from './hudView.js?v=5.0.78';
-import { renderCasesSystem } from './casesView.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { drawPlunger } from '../utils/icons.js?v=5.0.78';
+import { saveLocal } from '../save/saveManager.js?v=5.0.79';
+import { updateHUD } from './hudView.js?v=5.0.79';
+import { renderCasesSystem } from './casesView.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { drawPlunger } from '../utils/icons.js?v=5.0.79';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.78';
-import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.78';
+import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.79';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.79';
+import { t, td, onLocaleChange } from '../i18n/t.js';
+import { knifeName, knifeRarity, caseName, shopName, shopDesc, factoryName, talentName, talentDesc } from '../i18n/localize.js';
 
 // Быстрый поиск кейса для ножа
 const KNIFE_CASE_MAP = new Map();
@@ -21,7 +23,7 @@ const KNIFE_CASE_MAP = new Map();
   const teased = new Set(Object.keys(c.fixedChances || {}));
   (c.pool || []).forEach(kid => {
     if (teased.has(kid) || KNIFE_CASE_MAP.has(kid)) return;
-    KNIFE_CASE_MAP.set(kid, { id: c.id, name: c.name, icon: c.icon, cost: c.cost, currency: c.currency });
+    KNIFE_CASE_MAP.set(kid, { id: c.id, name: c.name, icon: c.icon, cost: c.cost, currency: c.currency, source: c });
   });
 });
 
@@ -89,7 +91,7 @@ export function renderKnivesIndexBook() {
   const pct = ((totalUnlocked / totalKnives) * 100).toFixed(1);
 
   const pCount = document.getElementById('indexBookProgressCount');
-  if (pCount) pCount.textContent = `${totalUnlocked} / ${totalKnives} Открыто`;
+  if (pCount) pCount.textContent = t('knives.openedCount', { a: formatNumber(totalUnlocked), b: formatNumber(totalKnives) });
 
   const pPct = document.getElementById('indexBookProgressPercent');
   if (pPct) pPct.textContent = `${pct}%`;
@@ -128,7 +130,7 @@ export function renderKnivesIndexBook() {
     if (indexFilterRarity !== 'all' && k.rarity !== indexFilterRarity) return false;
     if (indexSearchQuery.trim()) {
       const q = indexSearchQuery.toLowerCase().trim();
-      return k.name.toLowerCase().includes(q) || (k.caseName && k.caseName.toLowerCase().includes(q));
+      return k.name.toLowerCase().includes(q) || knifeName(k).toLowerCase().includes(q) || (k.caseName && k.caseName.toLowerCase().includes(q));
     }
     return true;
   });
@@ -138,7 +140,9 @@ export function renderKnivesIndexBook() {
     const isEquipped = GAME.equippedKnife === knife.id;
     const star = getKnifeStar(knife.id);
     const costInfo = getKnifeSharpenCost(knife);
-    const caseInfo = KNIFE_CASE_MAP.get(knife.id) || { name: 'Коллекция', icon: '📦' };
+    const rawCaseInfo = KNIFE_CASE_MAP.get(knife.id);
+    const caseInfo = rawCaseInfo || { icon: '📦' };
+    const caseLabel = rawCaseInfo ? caseName(rawCaseInfo.source) : t('knives.collection');
 
     const rarityColors = {
       common: 'border-stone-600 bg-stone-900/60 text-stone-400',
@@ -159,49 +163,49 @@ export function renderKnivesIndexBook() {
 
     return `
       <div class="p-2 sm:p-2.5 rounded-2xl border-2 flex flex-col justify-between relative transition duration-200 min-h-[195px] overflow-hidden ${isUnlocked ? colorClass : 'border-stone-800 bg-stone-950/80 opacity-65 grayscale'} ${isEquipped ? 'ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]' : ''}">
-        ${isEquipped ? '<span class="absolute top-1.5 right-1.5 text-[8.5px] bg-yellow-400 text-stone-950 font-black px-1.5 py-0.5 rounded-full shadow z-10">НАДЕТ</span>' : ''}
+        ${isEquipped ? '<span class="absolute top-1.5 right-1.5 text-[8.5px] bg-yellow-400 text-stone-950 font-black px-1.5 py-0.5 rounded-full shadow z-10">' + t('knives.equippedBadge') + '</span>' : ''}
         ${!isUnlocked ? '<span class="absolute top-1.5 right-1.5 text-xs text-stone-500 z-10">🔒</span>' : ''}
         
         <div class="flex flex-col items-center text-center w-full">
           <div class="my-0.5 flex justify-center items-center select-none h-14">${getKnifeImageHtml(knife, 50)}</div>
-          <div class="font-game text-xs font-bold text-yellow-100 line-clamp-1 w-full text-center px-0.5" title="${knife.name}">${knife.name}</div>
-          <div class="mt-1 text-[8.5px] font-bold text-amber-300/90 bg-stone-950/80 px-2 py-0.5 rounded-full border border-amber-500/30 truncate max-w-full inline-flex items-center gap-1 shadow-sm" title="Выпадает из: ${caseInfo.name}">
-            <span>${caseInfo.icon}</span> <span class="truncate">${caseInfo.name}</span>
+          <div class="font-game text-xs font-bold text-yellow-100 line-clamp-1 w-full text-center px-0.5" title="${knifeName(knife)}">${knifeName(knife)}</div>
+          <div class="mt-1 text-[8.5px] font-bold text-amber-300/90 bg-stone-950/80 px-2 py-0.5 rounded-full border border-amber-500/30 truncate max-w-full inline-flex items-center gap-1 shadow-sm" title="${t('knives.dropsFromTitle', { name: caseLabel })}">
+            <span>${caseInfo.icon}</span> <span class="truncate">${caseLabel}</span>
           </div>
         </div>
 
         <div class="mt-2 pt-1.5 border-t border-stone-800/80 w-full">
           ${isUnlocked ? `
             <div class="flex justify-between items-center text-[10px] font-bold mb-1">
-              <span class="text-amber-400">★ Lv.${star}</span>
-              <span class="text-emerald-400">+${formatNumber(clickPct)}% Клик</span>
+              <span class="text-amber-400">★ ${t('hud.lvl', { n: formatNumber(star) })}</span>
+              <span class="text-emerald-400">+${formatNumber(clickPct)}${t('hud.buffClick')}</span>
             </div>
             <div class="text-[9px] text-cyan-300 font-mono text-center mb-1.5">+${formatNumber(getKnifeCpsBonus(knife))} CPS</div>
             <div class="flex gap-1">
               ${!isEquipped ? `
                 <button class="index-equip-btn flex-1 py-1 rounded-xl text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold transition shadow" data-id="${knife.id}">
-                  Надеть
+                  ${t('inv.equip')}
                 </button>
               ` : `
-                <span class="flex-1 py-1 text-center text-[10px] font-game text-yellow-300 font-bold">✓ В руке</span>
+                <span class="flex-1 py-1 text-center text-[10px] font-game text-yellow-300 font-bold">${t('knives.inHand')}</span>
               `}
               ${costInfo.maxReached ? `
                 <button class="px-2 py-1 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed" disabled>
-                  ★ МАКС
+                  ★ ${t('common.max')}
                 </button>
               ` : ((GAME.sparkles || 0) < costInfo.cost ? `
-                <button class="px-2 py-1 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="Недостаточно Блестяшек">
+                <button class="px-2 py-1 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="${t('inv.noSparkles')}">
                   <span>🔒</span> <span>${formatNumber(costInfo.cost)} ✨</span>
                 </button>
               ` : `
-                <button class="index-sharpen-btn px-2 py-1 rounded-xl text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 border border-yellow-500/40 font-bold shadow jelly-btn flex items-center gap-1" data-id="${knife.id}" title="Заточить нож (+1 Lv)">
+                <button class="index-sharpen-btn px-2 py-1 rounded-xl text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 border border-yellow-500/40 font-bold shadow jelly-btn flex items-center gap-1" data-id="${knife.id}" title="${t('knives.sharpenTitle')}">
                   ⭐ +1 (${formatNumber(costInfo.cost)} ✨)
                 </button>
               `)}
             </div>
           ` : `
             <div class="text-[9px] text-stone-400 text-center py-1 bg-stone-900/60 rounded-lg border border-stone-800/60">
-              Выпадает из <b class="text-yellow-400 font-bold">${caseInfo.name}</b>
+              ${t('knives.dropsFrom')} <b class="text-yellow-400 font-bold">${caseLabel}</b>
             </div>
           `}
         </div>
@@ -246,18 +250,18 @@ export function renderFactoriesIndex() {
         <span class="text-3xl shrink-0 p-2 bg-stone-800/80 rounded-xl border border-stone-700">${drawPlunger(fac.icon)}</span>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between gap-1">
-            <span class="font-game text-xs font-bold ${isActive ? 'text-yellow-300' : 'text-stone-200'} truncate">#${idx + 1} ${fac.name}</span>
+            <span class="font-game text-xs font-bold ${isActive ? 'text-yellow-300' : 'text-stone-200'} truncate">#${idx + 1} ${factoryName(fac)}</span>
             <span class="text-[9px] px-1.5 py-0.5 rounded font-black uppercase ${isActive ? 'bg-emerald-500 text-stone-950' : 'bg-stone-800 text-stone-400'} shrink-0">
-              ${isActive ? `${count} шт` : (isUnlocked ? '0 шт' : '🔒 Заблокировано')}
+              ${isActive ? t('knives.pcs', { n: formatNumber(count) }) : (isUnlocked ? t('knives.pcs', { n: formatNumber(0) }) : t('knives.locked'))}
             </span>
           </div>
           <div class="flex items-center gap-2 text-[10px] text-stone-400 mt-1">
-            <span class="text-emerald-400 font-bold">+${formatNumber(fac.baseCps)}/сек</span>
+            <span class="text-emerald-400 font-bold">+${formatNumber(fac.baseCps)}${t('knives.perSec')}</span>
             <span>•</span>
-            <span class="text-yellow-400 font-mono">База: ${formatNumber(fac.cost)} 💨</span>
+            <span class="text-yellow-400 font-mono">${t('knives.base', { n: formatNumber(fac.cost) })}</span>
           </div>
           <div class="text-[9px] text-stone-500 mt-0.5">
-            Тир: <b class="text-stone-300 uppercase">${fac.tier || 'early'}</b> (Требуется форма: #${formatNumber((fac.reqStage || 0) + 1)})
+            ${t('knives.tierLine', { tier: td(`knives.tier.${fac.tier || 'early'}`, fac.tier || 'early'), n: formatNumber((fac.reqStage || 0) + 1) })}
           </div>
         </div>
       </div>
@@ -282,15 +286,15 @@ export function renderHatsIndex() {
           <div class="flex items-center justify-between">
             <span>${hatArtHtml(hat, 40)}</span>
             <span class="text-[9px] font-black px-1.5 py-0.5 rounded ${isEquipped ? 'bg-pink-500 text-white' : (isOwned ? 'bg-stone-800 text-pink-300' : 'bg-stone-900 text-stone-500')}">
-              ${isEquipped ? 'НАДЕТО' : (isOwned ? `💎 Lv.${hatLvl}` : 'В БУТИКЕ')}
+              ${isEquipped ? t('knives.hatWorn') : (isOwned ? `💎 ${t('hud.lvl', { n: formatNumber(hatLvl) })}` : t('knives.inBoutique'))}
             </span>
           </div>
-          <div class="font-game text-xs font-bold text-yellow-200 mt-1 truncate">${hat.name}</div>
-          <div class="text-[9px] text-pink-300 font-currency mt-0.5">x${formatNumber(liveBoost)} к силе клика</div>
+          <div class="font-game text-xs font-bold text-yellow-200 mt-1 truncate">${shopName(hat)}</div>
+          <div class="text-[9px] text-pink-300 font-currency mt-0.5">${t('inv.hatClick', { n: formatNumber(liveBoost) })}</div>
         </div>
         <div class="mt-2 pt-1 border-t border-stone-800/80 text-[10px] flex justify-between items-center">
           <span class="text-yellow-400 font-mono font-bold">${formatNumber(hat.cost)} ✨</span>
-          <span class="text-emerald-400 font-bold">x${formatNumber(liveBoost)} Клик</span>
+          <span class="text-emerald-400 font-bold">x${formatNumber(liveBoost)} ${t('knives.clickWord')}</span>
         </div>
       </div>
     `;
@@ -305,7 +309,7 @@ export function renderPerksIndex() {
 
   let html = `
     <div class="col-span-1 sm:col-span-2 text-left mb-1">
-      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">🌟 Перки Бутика и Улучшения</h4>
+      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">${t('knives.perksHeader')}</h4>
     </div>
   `;
 
@@ -316,12 +320,12 @@ export function renderPerksIndex() {
         <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${p.icon}</span>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between">
-            <span class="font-game text-xs font-bold ${isOwned ? 'text-yellow-300' : 'text-stone-300'} truncate">${p.name}</span>
+            <span class="font-game text-xs font-bold ${isOwned ? 'text-yellow-300' : 'text-stone-300'} truncate">${shopName(p)}</span>
             <span class="text-[9px] px-1.5 py-0.5 rounded font-black ${isOwned ? 'bg-emerald-500 text-stone-950' : 'bg-stone-800 text-stone-400'}">
-              ${isOwned ? '✓ КУПЛЕНО' : `${formatNumber(p.cost)} ✨`}
+              ${isOwned ? t('knives.bought') : `${formatNumber(p.cost)} ✨`}
             </span>
           </div>
-          <div class="text-[10px] text-stone-400 mt-0.5">${p.desc}</div>
+          <div class="text-[10px] text-stone-400 mt-0.5">${shopDesc(p)}</div>
         </div>
       </div>
     `;
@@ -329,7 +333,7 @@ export function renderPerksIndex() {
 
   html += `
     <div class="col-span-1 sm:col-span-2 text-left mt-3 mb-1">
-      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">🔮 Усиления Бутика</h4>
+      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">${t('knives.upgradesHeader')}</h4>
     </div>
   `;
 
@@ -340,12 +344,12 @@ export function renderPerksIndex() {
         <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${b.icon}</span>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between">
-            <span class="font-game text-xs font-bold text-yellow-300 truncate">${b.name}</span>
+            <span class="font-game text-xs font-bold text-yellow-300 truncate">${shopName(b)}</span>
             <span class="text-[9px] px-1.5 py-0.5 rounded font-black bg-purple-900 text-purple-200">
-              Lv.${curLvl}
+              ${t('hud.lvl', { n: formatNumber(curLvl) })}
             </span>
           </div>
-          <div class="text-[10px] text-stone-400 mt-0.5">${b.desc}</div>
+          <div class="text-[10px] text-stone-400 mt-0.5">${shopDesc(b)}</div>
         </div>
       </div>
     `;
@@ -353,23 +357,23 @@ export function renderPerksIndex() {
 
   html += `
     <div class="col-span-1 sm:col-span-2 text-left mt-3 mb-1">
-      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">📜 Священные Таланты Смыва</h4>
+      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">${t('knives.talentsHeader')}</h4>
     </div>
   `;
 
-  html += TALENTS.map(t => {
-    const curLvl = t.level || 0;
+  html += TALENTS.map(tl => {
+    const curLvl = tl.level || 0;
     return `
       <div class="p-2.5 rounded-2xl border border-stone-800 bg-stone-950/80 flex items-start gap-2.5 text-left">
-        <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${drawPlunger(t.icon)}</span>
+        <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${drawPlunger(tl.icon)}</span>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between">
-            <span class="font-game text-xs font-bold text-yellow-300 truncate">${t.name}</span>
+            <span class="font-game text-xs font-bold text-yellow-300 truncate">${talentName(tl)}</span>
             <span class="text-[9px] px-1.5 py-0.5 rounded font-black bg-amber-950 text-amber-300 border border-amber-800/50">
-              Lv.${curLvl} / ${t.max}
+              ${t('hud.lvl', { n: formatNumber(curLvl) })} / ${formatNumber(tl.max)}
             </span>
           </div>
-          <div class="text-[10px] text-stone-400 mt-0.5">${t.desc}</div>
+          <div class="text-[10px] text-stone-400 mt-0.5">${talentDesc(tl)}</div>
         </div>
       </div>
     `;
@@ -422,5 +426,11 @@ export function initKnivesIndexListeners() {
       indexFilterRarity = btn.dataset.rarity;
       renderKnivesIndexBook();
     });
+  });
+
+  onLocaleChange(() => {
+    const modal = document.getElementById('knivesIndexModal');
+    if (modal && !modal.classList.contains('hidden')) switchIndexCategory(currentCategory);
+    else renderKnivesIndexBook();
   });
 }

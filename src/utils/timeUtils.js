@@ -1,4 +1,6 @@
-﻿export function formatTimeSeconds(seconds) {
+﻿import { t } from '../i18n/t.js';
+
+export function formatTimeSeconds(seconds) {
   if (seconds < 60) return `${Math.ceil(seconds)}с`;
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
@@ -11,8 +13,8 @@
 export function formatDurationAway(seconds) {
   if (seconds >= 3600) {
     const hours = (seconds / 3600).toFixed(1);
-    return `${hours} ч.`;
+    return t('common.durHours', { n: hours });
   }
   const mins = Math.floor(seconds / 60);
-  return `${mins} мин.`;
+  return t('common.durMins', { n: mins });
 }

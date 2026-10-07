@@ -1,12 +1,12 @@
-﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.78';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.78';
-import { KNIVES } from '../data/knives.data.js?v=5.0.78';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.78';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.78';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.78';
-import { sendGuildInvite } from './guildView.js?v=5.0.78';
-import { registerSocialPulse } from './socialPulse.js?v=5.0.78';
+﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.79';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.79';
+import { KNIVES } from '../data/knives.data.js?v=5.0.79';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.79';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.79';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.79';
+import { sendGuildInvite } from './guildView.js?v=5.0.79';
+import { registerSocialPulse } from './socialPulse.js?v=5.0.79';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 let roster = { friends: [], incoming: [], outgoing: [], canInvite: false };
@@ -95,7 +95,7 @@ function knifeLabel(knife) {
   if (!knife?.id) return '';
   const found = KNIVES.find((item) => item.id === knife.id);
   const name = found?.name || knife.id;
-  return `${name} · звёзды ${formatNumber(knife.stars || 0)}`;
+  return t('friends.knifeStars', { name, n: formatNumber(knife.stars || 0) });
 }
 
 function hatLabel(hat) {

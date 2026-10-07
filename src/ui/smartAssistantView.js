@@ -1,18 +1,20 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.78';
-import { buyFactory } from '../systems/factoryService.js?v=5.0.78';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.79';
+import { buyFactory } from '../systems/factoryService.js?v=5.0.79';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.79';
 import { getBestKnife, equipBestKnife } from '../systems/knifeService.js';
 import { feedPet, washPet } from '../systems/petCareService.js';
-import { getPrestigeRollsReward } from '../prestige/prestigeService.js?v=5.0.78';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.78';
-import { peakForm } from '../progression/unlocks.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { gte } from '../utils/big.js?v=5.0.78';
-import { updateHUD } from './hudView.js?v=5.0.78';
-import { renderCasesSystem } from './casesView.js?v=5.0.78';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.78';
-import { addVisualParticle } from './petCanvasView.js?v=5.0.78';
+import { getPrestigeRollsReward } from '../prestige/prestigeService.js?v=5.0.79';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.79';
+import { peakForm } from '../progression/unlocks.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { gte } from '../utils/big.js?v=5.0.79';
+import { updateHUD } from './hudView.js?v=5.0.79';
+import { renderCasesSystem } from './casesView.js?v=5.0.79';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.79';
+import { addVisualParticle } from './petCanvasView.js?v=5.0.79';
+import { t, onLocaleChange } from '../i18n/t.js';
+import { factoryName, knifeName, caseName } from '../i18n/localize.js';
 
 let lastHintAction = null;
 
@@ -40,6 +42,7 @@ export function updateSmartAssistant() {
 }
 
 export function initSmartAssistantListeners() {
+  onLocaleChange(() => updateSmartAssistant());
   const btnEl = document.getElementById('smartHintBtn');
   if (btnEl) {
     btnEl.addEventListener('click', () => {
@@ -55,12 +58,12 @@ function determineBestHint() {
   if (GAME.hunger < 35) {
     return {
       icon: '🍕',
-      text: 'Какашич очень голоден! Покормите его, чтобы вернуть <b>+50% к клику</b>!',
-      btnText: 'Покормить 🍕',
+      text: t('assist.hungry', { n: formatNumber(50) }),
+      btnText: t('assist.feedBtn'),
       action: () => {
         feedPet();
         updateHUD();
-        addVisualParticle('🍕 ВКУСНО! +Сытость', '#f97316');
+        addVisualParticle(t('assist.fedParticle'), '#f97316');
       }
     };
   }
@@ -69,12 +72,12 @@ function determineBestHint() {
   if (GAME.clean < 35) {
     return {
       icon: '🧼',
-      text: 'Какашич испачкался! Помойте его для возврата <b>+40% к доходу заводов</b>!',
-      btnText: 'Помыть 🧼',
+      text: t('assist.dirty', { n: formatNumber(40) }),
+      btnText: t('assist.washBtn'),
       action: () => {
         washPet();
         updateHUD();
-        addVisualParticle('🧼 СВЕЖЕСТЬ! +Чистота', '#38bdf8');
+        addVisualParticle(t('assist.washedParticle'), '#38bdf8');
       }
     };
   }
@@ -88,12 +91,12 @@ function determineBestHint() {
       if (info.canBuy && info.count > 0) {
         return {
           icon: '🏭',
-          text: `Откройте новый завод <b>«${fac.name}»</b> (+${formatNumber(fac.baseCps)}/сек)!`,
-          btnText: 'Купить 🏭',
+          text: t('assist.newFactory', { name: factoryName(fac), n: formatNumber(fac.baseCps) }),
+          btnText: t('assist.buyBtn'),
           action: () => {
             if (buyFactory(fac.id)) {
               updateHUD();
-              addVisualParticle(`🏭 Завод «${fac.name}» открыт!`, '#22c55e');
+              addVisualParticle(t('assist.factoryOpened', { name: factoryName(fac) }), '#22c55e');
             }
           }
         };
@@ -106,15 +109,15 @@ function determineBestHint() {
   if (bestKnife && bestKnife.id !== GAME.equippedKnife) {
     return {
       icon: '⚔️',
-      text: `В инвентаре найден мощный нож: <b>«${bestKnife.name}»</b>!`,
-      btnText: 'Надеть ⚔️',
+      text: t('assist.bestKnife', { name: knifeName(bestKnife) }),
+      btnText: t('assist.equipBtn'),
       action: () => {
         const res = equipBestKnife();
         if (res.success) {
           updateHUD();
           renderCasesSystem();
           renderCharacterInventory();
-          addVisualParticle(`⚔️ Экипирован: ${bestKnife.name}!`, '#facc15');
+          addVisualParticle(t('assist.equipped', { name: knifeName(bestKnife) }), '#facc15');
         }
       }
     };
@@ -125,8 +128,8 @@ function determineBestHint() {
   if (rollsGain >= 25 && gte(GAME.cycleBiomass || 0, 300000)) {
     return {
       icon: '🌀',
-      text: `За Смыв Судьбы доступно <b>+${formatNumber(rollsGain)} 🧻 Втулок</b>! Пора совершить Смыв!`,
-      btnText: 'Смыв 🌀',
+      text: t('assist.flushReady', { n: formatNumber(rollsGain) }),
+      btnText: t('assist.flushBtn'),
       action: () => {
         document.getElementById('btnCanvasPrestige')?.click();
       }
@@ -141,8 +144,8 @@ function determineBestHint() {
       if (hasCur) {
         return {
           icon: '📦',
-          text: `Хватает валюты на <b>«${c.name}»</b>! Испытайте удачу и выбейте редкий клинок!`,
-          btnText: 'К кейсам 🎰',
+          text: t('assist.caseAffordable', { name: caseName(c) }),
+          btnText: t('assist.casesBtn'),
           action: () => {
             const tabBtn = document.querySelector('.dash-tab[data-target="panelCases"]');
             if (tabBtn) tabBtn.click();
@@ -155,8 +158,8 @@ function determineBestHint() {
   // 8. General Encouraging Hint
   return {
     icon: '💡',
-    text: 'Кликайте по персонажу, заполняйте Комбо-шкалу до 100% для <b>Турбо x10</b>!',
-    btnText: 'Гид 📖',
+    text: t('assist.generalTip', { n: formatNumber(100), x: formatNumber(10) }),
+    btnText: t('assist.guideBtn'),
     action: () => {
       document.getElementById('btnGuideModal')?.click();
     }

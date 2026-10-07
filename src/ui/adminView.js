@@ -1,40 +1,41 @@
-﻿import { applySaveDataSafely, saveLocal } from '../save/saveManager.js?v=5.0.78';
-import { AUTH_STORAGE_KEY, adminRequest, fetchAdminSession, getStoredAccount, wipeAllCloudSaves, wipeCloudPlayer } from '../save/cloudSync.js?v=5.0.78';
-import { STORAGE_KEY, BACKUP_KEY } from '../save/saveManager.js?v=5.0.78';
-import { updateHUD } from './hudView.js?v=5.0.78';
-import { renderFactories } from './factoryView.js?v=5.0.78';
-import { renderTalents } from './talentView.js?v=5.0.78';
+﻿import { applySaveDataSafely, saveLocal } from '../save/saveManager.js?v=5.0.79';
+import { AUTH_STORAGE_KEY, adminRequest, fetchAdminSession, getStoredAccount, wipeAllCloudSaves, wipeCloudPlayer } from '../save/cloudSync.js?v=5.0.79';
+import { STORAGE_KEY, BACKUP_KEY } from '../save/saveManager.js?v=5.0.79';
+import { updateHUD } from './hudView.js?v=5.0.79';
+import { renderFactories } from './factoryView.js?v=5.0.79';
+import { renderTalents } from './talentView.js?v=5.0.79';
 import { renderShop } from './shopView.js';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.78';
-import { formatNumber, parseShorthand } from '../utils/numberFormatter.js?v=5.0.78';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.78';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.79';
+import { formatNumber, parseShorthand } from '../utils/numberFormatter.js?v=5.0.79';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.79';
 import { TALENTS } from '../data/talents.data.js';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.78';
-import { KNIVES } from '../data/knives.data.js?v=5.0.78';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.78';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.79';
+import { KNIVES } from '../data/knives.data.js?v=5.0.79';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.79';
 import { setConfirmedVip } from '../economy/pace.js';
+import { t, onLocaleChange } from '../i18n/t.js';
 
 let adminRole = null;
 let adminPlayerId = '';
 
 const CURRENCIES = [
-  ['biomass', '💨 Биомасса'],
-  ['sparkles', '✨ Блестяшки'],
-  ['rolls', '🧻 Втулки'],
-  ['plungers', '🪠 Вантузы'],
-  ['form', '🧬 Форма'],
-  ['flushes', '🌀 Смывы'],
-  ['transcends', '👑 Прорывы']
+  ['biomass', 'admin.curr.biomass'],
+  ['sparkles', 'admin.curr.sparkles'],
+  ['rolls', 'admin.curr.rolls'],
+  ['plungers', 'admin.curr.plungers'],
+  ['form', 'admin.curr.form'],
+  ['flushes', 'admin.curr.flushes'],
+  ['transcends', 'admin.curr.transcends']
 ];
 
 const KINDS = [
-  { id: 'hat', label: 'Шапки', needsAmount: false, equip: true },
-  { id: 'perk', label: 'Перки', needsAmount: false, equip: false },
-  { id: 'talent', label: 'Таланты', needsAmount: true, equip: false, amountHint: 'уровень, например 10' },
-  { id: 'factory', label: 'Заводы', needsAmount: true, equip: false, amountHint: 'сколько штук: 10 или 10k' },
-  { id: 'knife', label: 'Ножи', needsAmount: false, equip: true },
-  { id: 'boutique', label: 'Бутик', needsAmount: true, equip: false, amountHint: 'уровень, до 20' },
-  { id: 'relic', label: 'Реликвии прорыва', needsAmount: true, equip: false, amountHint: 'уровень' }
+  { id: 'hat', labelKey: 'admin.kind.hat', needsAmount: false, equip: true },
+  { id: 'perk', labelKey: 'admin.kind.perk', needsAmount: false, equip: false },
+  { id: 'talent', labelKey: 'admin.kind.talent', needsAmount: true, equip: false, amountHintKey: 'admin.hint.level' },
+  { id: 'factory', labelKey: 'admin.kind.factory', needsAmount: true, equip: false, amountHintKey: 'admin.hint.factoryCount' },
+  { id: 'knife', labelKey: 'admin.kind.knife', needsAmount: false, equip: true },
+  { id: 'boutique', labelKey: 'admin.kind.boutique', needsAmount: true, equip: false, amountHintKey: 'admin.hint.boutiqueLevel' },
+  { id: 'relic', labelKey: 'admin.kind.relic', needsAmount: true, equip: false, amountHintKey: 'admin.hint.relicLevel' }
 ];
 
 function catalog(kind) {
@@ -65,6 +66,11 @@ function setAdminStatus(message, ok) {
     : 'text-[11px] p-2 rounded-xl bg-red-950/80 border border-red-500 text-red-200';
 }
 
+function paintCurrencyHint() {
+  const el = document.getElementById('adminCurrencyHint');
+  if (el) el.textContent = t('admin.currencyHint', { a: '10M', b: '1.5B', c: '1e12' });
+}
+
 function paintRole() {
   const button = document.getElementById('btnAdminPanel');
   if (button) button.classList.toggle('hidden', !adminRole);
@@ -73,7 +79,9 @@ function paintRole() {
   const vipBox = document.getElementById('adminVipBox');
   if (vipBox) vipBox.classList.toggle('hidden', adminRole !== 'creator' && adminRole !== 'admin');
   const roleLabel = document.getElementById('adminRoleLabel');
-  if (roleLabel) roleLabel.textContent = adminRole === 'creator' ? 'Создатель' : 'Админ';
+  if (roleLabel) {
+    roleLabel.textContent = adminRole === 'creator' ? t('admin.role.creator') : t('admin.role.admin');
+  }
 }
 
 function showPane(name) {
@@ -99,18 +107,21 @@ function paintAmountPreview(input, preview) {
     return;
   }
   const n = parseShorthand(raw);
-  preview.textContent = n === null ? 'Не разобрал сумму' : `= ${formatNumber(n)}`;
+  preview.textContent = n === null ? t('admin.preview.unparsed') : t('admin.preview.eq', { n: formatNumber(n) });
 }
 
 function fillKindSelect() {
   const select = document.getElementById('adminKind');
-  if (!select || select.options.length) return;
+  if (!select) return;
+  const prev = select.value;
+  select.replaceChildren();
   KINDS.forEach((kind) => {
     const option = document.createElement('option');
     option.value = kind.id;
-    option.textContent = kind.label;
+    option.textContent = t(kind.labelKey);
     select.appendChild(option);
   });
+  if (prev && [...select.options].some((o) => o.value === prev)) select.value = prev;
 }
 
 function fillPickList() {
@@ -123,7 +134,7 @@ function fillPickList() {
   if (!rows.length) {
     const empty = document.createElement('option');
     empty.value = '';
-    empty.textContent = 'Ничего не нашлось';
+    empty.textContent = t('admin.pickEmpty');
     select.appendChild(empty);
     return;
   }
@@ -140,21 +151,22 @@ function fillPickList() {
   const flag = selected?.dataset.flag === '1';
   if (amountRow) amountRow.classList.toggle('hidden', !kind.needsAmount || flag);
   const amount = document.getElementById('adminAmount');
-  if (amount) amount.placeholder = kind.amountHint || 'сколько';
+  if (amount) amount.placeholder = kind.amountHintKey ? t(kind.amountHintKey) : t('admin.ph.amountShort');
   document.getElementById('adminEquipRow')?.classList.toggle('hidden', !kind.equip);
 }
 
 function buildCurrencyFields() {
   const box = document.getElementById('adminCurrencyFields');
   if (!box || box.childElementCount) return;
-  CURRENCIES.forEach(([key, label]) => {
+  CURRENCIES.forEach(([key, labelKey]) => {
     const wrap = document.createElement('label');
     wrap.className = 'block';
-    wrap.append(document.createTextNode(label));
+    wrap.dataset.adminCurLabel = labelKey;
+    wrap.append(document.createTextNode(t(labelKey)));
     const input = document.createElement('input');
     input.id = `adminCur_${key}`;
     input.className = 'mt-1 w-full bg-stone-950 border border-stone-700 rounded-xl px-2 py-1.5';
-    input.placeholder = key === 'form' ? 'номер 1–100000' : '10M';
+    input.placeholder = key === 'form' ? t('admin.ph.form') : t('admin.ph.amount');
     input.autocomplete = 'off';
     const preview = document.createElement('div');
     preview.className = 'text-amber-200 min-h-[1rem]';
@@ -179,7 +191,7 @@ function itemGrant() {
   const kind = currentKind();
   const pick = document.getElementById('adminPick');
   const id = pick?.value;
-  if (!id) return { error: 'Выберите предмет из списка.' };
+  if (!id) return { error: t('admin.selectItem') };
   const selected = pick.selectedOptions[0];
   const label = selected?.textContent || id;
   const equip = !!document.getElementById('adminEquip')?.checked;
@@ -189,7 +201,7 @@ function itemGrant() {
   if (kind.id === 'knife') return { grant: { knifeId: id, equipKnife: equip }, label };
   if (flag) return { grant: { relicKey: id, relicOn: true }, label };
   const amount = parseShorthand(document.getElementById('adminAmount')?.value);
-  if (amount === null) return { error: 'Напишите количество: 10 или 10M.' };
+  if (amount === null) return { error: t('admin.amountInvalid') };
   if (kind.id === 'talent') return { grant: { talentId: id, talentLevel: amount }, label };
   if (kind.id === 'factory') return { grant: { factoryId: id, factoryCount: amount }, label };
   if (kind.id === 'boutique') return { grant: { boutiqueId: id, boutiqueLevel: amount }, label };
@@ -199,7 +211,7 @@ function itemGrant() {
 async function sendGrant(grant, label) {
   const target = textOrEmpty('adminTarget');
   if (!target) {
-    setAdminStatus('Сначала выберите игрока.', false);
+    setAdminStatus(t('admin.pickPlayerFirst'), false);
     return;
   }
   const result = await adminRequest('admin_grant', {
@@ -208,10 +220,10 @@ async function sendGrant(grant, label) {
   });
   if (result.success) {
     applyLocalGrant(result.saveData);
-    setAdminStatus(`Выдано ${result.username}: ${label}.`, true);
+    setAdminStatus(t('admin.granted', { user: result.username, label }), true);
     loadAudit();
   } else {
-    setAdminStatus(result.error || 'Выдача не прошла', false);
+    setAdminStatus(result.error || t('admin.grantFailed'), false);
   }
 }
 
@@ -220,7 +232,7 @@ export async function refreshAdminAccess() {
   adminRole = session?.role || null;
   adminPlayerId = session?.playerId || '';
   const ownId = document.getElementById('adminOwnId');
-  if (ownId) ownId.textContent = adminPlayerId || 'войдите заново';
+  if (ownId) ownId.textContent = adminPlayerId || t('admin.relogin');
   paintRole();
   if (adminRole === 'creator') loadAdminList();
   if (adminRole) loadAudit();
@@ -246,7 +258,7 @@ async function loadAdminList() {
   if (!admins.length) {
     const empty = document.createElement('div');
     empty.className = 'text-stone-500';
-    empty.textContent = 'Админов пока нет. Вставьте Cloud ID существующего аккаунта.';
+    empty.textContent = t('admin.adminsEmpty');
     box.appendChild(empty);
     return;
   }
@@ -256,16 +268,23 @@ async function loadAdminList() {
     const name = document.createElement('span');
     name.className = 'text-amber-100';
     const level = Number(row.level) === 1 ? 1 : 2;
-    name.textContent = `ур.${level} · ${row.username}${row.playerId ? ` · ${row.playerId}` : ''}`;
+    name.textContent = t('admin.levelLine', {
+      level,
+      name: row.username,
+      id: row.playerId ? ` · ${row.playerId}` : ''
+    });
     line.append(name);
     if (level === 2) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'text-[10px] px-2 py-1 rounded-lg bg-stone-800 border border-stone-600 text-stone-300';
-      btn.textContent = 'Снять';
+      btn.textContent = t('admin.removeBtn');
       btn.addEventListener('click', async () => {
         const result = await adminRequest('admin_remove', { method: 'POST', body: { playerId: row.playerId || row.username } });
-        setAdminStatus(result.success ? `${row.username} больше не админ.` : (result.error || 'Не снялось'), !!result.success);
+        setAdminStatus(
+          result.success ? t('admin.removedOk', { user: row.username }) : (result.error || t('admin.removedFail')),
+          !!result.success
+        );
         if (result.success) loadAdminList();
       });
       line.append(btn);
@@ -281,7 +300,7 @@ async function loadAudit() {
   const rows = data.audit || [];
   box.replaceChildren();
   if (!rows.length) {
-    box.textContent = 'Журнал пуст.';
+    box.textContent = t('admin.auditEmpty');
     return;
   }
   rows.forEach((row) => {
@@ -294,6 +313,7 @@ async function loadAudit() {
 
 export function initAdminPanel() {
   buildCurrencyFields();
+  paintCurrencyHint();
   fillKindSelect();
   fillPickList();
 
@@ -335,7 +355,7 @@ export function initAdminPanel() {
     const grant = currencyGrant();
     const keys = Object.keys(grant);
     if (!keys.length) {
-      setAdminStatus('Заполните хотя бы одну валюту.', false);
+      setAdminStatus(t('admin.fillCurrency'), false);
       return;
     }
     const broken = CURRENCIES.some(([key]) => {
@@ -343,11 +363,12 @@ export function initAdminPanel() {
       return raw && parseShorthand(raw) === null;
     });
     if (broken) {
-      setAdminStatus('Есть сумма, которую не разобрать. Пример: 10M или 1e12.', false);
+      setAdminStatus(t('admin.parseError'), false);
       return;
     }
     const label = keys.map((key) => {
-      const title = CURRENCIES.find((row) => row[0] === key)?.[1] || key;
+      const labelKey = CURRENCIES.find((row) => row[0] === key)?.[1];
+      const title = labelKey ? t(labelKey) : key;
       return `${title} +${formatNumber(grant[key])}`;
     }).join(', ');
     await sendGrant(grant, label);
@@ -365,7 +386,10 @@ export function initAdminPanel() {
   document.getElementById('btnAdminAdd')?.addEventListener('click', async () => {
     const playerId = textOrEmpty('adminNewName');
     const result = await adminRequest('admin_add', { method: 'POST', body: { playerId } });
-    setAdminStatus(result.success ? `${result.username} теперь админ.` : (result.error || 'Не добавилось'), !!result.success);
+    setAdminStatus(
+      result.success ? t('admin.addOk', { user: result.username }) : (result.error || t('admin.addFail')),
+      !!result.success
+    );
     if (result.success) {
       const input = document.getElementById('adminNewName');
       if (input) input.value = '';
@@ -377,34 +401,34 @@ export function initAdminPanel() {
   document.getElementById('btnAdminSetVip')?.addEventListener('click', async () => {
     const target = textOrEmpty('adminTarget');
     if (!target) {
-      setAdminStatus('Сначала выберите игрока сверху.', false);
+      setAdminStatus(t('admin.pickPlayerTop'), false);
       return;
     }
     const level = Math.max(0, Math.min(5, Math.floor(Number(document.getElementById('adminVipLevel')?.value) || 0)));
     const result = await adminRequest('admin_set_vip', { method: 'POST', body: { targetPlayerId: target, level } });
     if (!result.success) {
-      setAdminStatus(result.error || 'VIP не выдался', false);
+      setAdminStatus(result.error || t('admin.vipFail'), false);
       return;
     }
     if (result.playerId && result.playerId === (adminPlayerId || getStoredAccount()?.playerId)) {
       setConfirmedVip(result.vipLevel);
       updateHUD();
     }
-    const label = level > 0 ? `VIP ${level}` : 'без VIP';
-    setAdminStatus(`${result.username}: ${label}.`, true);
+    const label = level > 0 ? `VIP ${formatNumber(level)}` : t('admin.vip.none');
+    setAdminStatus(t('admin.vipSet', { user: result.username, label }), true);
     loadAudit();
   });
 
   document.getElementById('btnWipePlayer')?.addEventListener('click', async () => {
     const playerId = textOrEmpty('adminTarget');
     if (!playerId) {
-      setAdminStatus('Сначала выберите игрока сверху.', false);
+      setAdminStatus(t('admin.pickPlayerTop'), false);
       return;
     }
-    if (!window.confirm('Сбросить прогресс этого игрока? Аккаунт останется.')) return;
+    if (!window.confirm(t('admin.wipePlayerConfirm'))) return;
     const result = await wipeCloudPlayer(playerId);
     if (!result.success) {
-      setAdminStatus(result.error || 'Не сбросилось', false);
+      setAdminStatus(result.error || t('admin.wipeFail'), false);
       return;
     }
     if (playerId === (adminPlayerId || getStoredAccount()?.playerId) || result.wiped === (adminPlayerId || getStoredAccount()?.playerId)) {
@@ -413,20 +437,20 @@ export function initAdminPanel() {
       location.reload();
       return;
     }
-    setAdminStatus('Прогресс игрока сброшен. При входе он начнёт заново.', true);
+    setAdminStatus(t('admin.wipePlayerOk'), true);
     loadAudit();
   });
 
   document.getElementById('btnWipeAll')?.addEventListener('click', async () => {
     const word = String(document.getElementById('adminWipeWord')?.value || '').trim().toUpperCase();
-    if (word !== 'ВАЙП') {
-      setAdminStatus('Чтобы сбросить всех, впишите ВАЙП.', false);
+    if (word !== t('admin.wipeWordToken').toUpperCase()) {
+      setAdminStatus(t('admin.wipeWordRequired'), false);
       return;
     }
-    if (!window.confirm('Сбросить прогресс всех игроков? Аккаунты останутся.')) return;
+    if (!window.confirm(t('admin.wipeAllConfirm'))) return;
     const result = await wipeAllCloudSaves();
     if (!result.success) {
-      setAdminStatus(result.error || 'Не сбросилось', false);
+      setAdminStatus(result.error || t('admin.wipeFail'), false);
       return;
     }
     localStorage.removeItem(STORAGE_KEY);
@@ -437,6 +461,20 @@ export function initAdminPanel() {
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(account));
     }
     location.reload();
+  });
+
+  onLocaleChange(() => {
+    paintCurrencyHint();
+    paintRole();
+    fillKindSelect();
+    fillPickList();
+    document.querySelectorAll('#adminCurrencyFields label[data-admin-cur-label]').forEach((wrap) => {
+      const key = wrap.dataset.adminCurLabel;
+      if (wrap.firstChild?.nodeType === Node.TEXT_NODE && key) wrap.firstChild.textContent = t(key);
+      const keyId = wrap.querySelector('input')?.id?.replace('adminCur_', '');
+      const input = wrap.querySelector('input');
+      if (input && keyId) input.placeholder = keyId === 'form' ? t('admin.ph.form') : t('admin.ph.amount');
+    });
   });
 
   document.getElementById('adminTarget')?.addEventListener('input', async (event) => {

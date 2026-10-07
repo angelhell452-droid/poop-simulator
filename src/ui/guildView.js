@@ -1,15 +1,16 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.78';
-import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.78';
-import { KNIVES } from '../data/knives.data.js?v=5.0.78';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.78';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.78';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.78';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.78';
-import { pulseMail } from './mailView.js?v=5.0.78';
-import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.78';
-import { t, onLocaleChange } from '../i18n/t.js';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.79';
+import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.79';
+import { KNIVES } from '../data/knives.data.js?v=5.0.79';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.79';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.79';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.79';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.79';
+import { pulseMail } from './mailView.js?v=5.0.79';
+import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.79';
+import { t, onLocaleChange, getLocale } from '../i18n/t.js';
+import { bossName } from '../i18n/localize.js';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
 
@@ -79,9 +80,13 @@ function clock(ms) {
   const hours = Math.floor(total / 3600);
   const mins = Math.floor((total % 3600) / 60);
   const secs = total % 60;
-  if (hours > 0) return `${formatNumber(hours)}ч ${formatNumber(mins)}м`;
-  if (mins > 0) return `${formatNumber(mins)}м ${formatNumber(secs)}с`;
-  return `${formatNumber(secs)}с`;
+  if (hours > 0) {
+    return t('time.hm', { h: formatNumber(hours), m: formatNumber(mins) });
+  }
+  if (mins > 0) {
+    return t('time.ms', { m: formatNumber(mins), s: formatNumber(secs) });
+  }
+  return t('time.s', { s: formatNumber(secs) });
 }
 
 function setText(id, text) {
@@ -142,7 +147,7 @@ async function loadDirectory(query, level, announce) {
   });
   if (!data.success) {
     directory = [];
-    directoryError = data.error || 'Список гильдий не ответил';
+    directoryError = data.error || t('guild.listNoReply');
     if (announce) toast(directoryError);
     renderSearch();
     return;
@@ -205,7 +210,7 @@ function renderSearch() {
     return;
   }
   const note = state?.guild
-    ? '<div class="garden-muted mb-3">В гильдии можно состоять только в одной. Здесь её ищут, отсюда не переходят.</div>'
+    ? `<div class="garden-muted mb-3">${esc(t('guild.searchOneGuildNote'))}</div>`
     : '';
   if (directoryError) {
     box.innerHTML = `${note}<div class="garden-empty">${esc(directoryError)}</div>`;
@@ -214,7 +219,7 @@ function renderSearch() {
   if (!directory.length) {
     const query = (document.getElementById('guildSearchInput')?.value || '').trim();
     const level = (document.getElementById('guildLevelInput')?.value || '').trim();
-    const empty = query || level ? 'Ничего не нашлось.' : 'Гильдий пока нет.';
+    const empty = query || level ? t('guild.searchEmpty') : t('guild.searchNoGuilds');
     box.innerHTML = `${note}<div class="garden-empty">${empty}</div>`;
     return;
   }
@@ -223,17 +228,22 @@ function renderSearch() {
   const epoch = myEpoch();
   const rows = directory.map((row) => {
     let action = '';
-    if (mine === row.id) action = '<span class="garden-pill shrink-0">Ваша</span>';
+    if (mine === row.id) action = `<span class="garden-pill shrink-0">${esc(t('guild.yours'))}</span>`;
     else if (!free) action = '';
-    else if (row.applied) action = `<button type="button" class="garden-pill jelly-btn shrink-0" data-guild-action="cancel" data-guild="${row.id}">Отозвать</button>`;
-    else if (row.members >= row.cap) action = '<span class="garden-pill shrink-0">Мест нет</span>';
-    else if ((row.reqEpoch || 1) > epoch) action = `<span class="garden-pill shrink-0">Нужна эпоха ${formatNumber(row.reqEpoch || 1)}</span>`;
-    else action = `<button type="button" class="garden-pill accent jelly-btn shrink-0" data-guild-action="apply" data-guild="${row.id}">Подать заявку</button>`;
+    else if (row.applied) action = `<button type="button" class="garden-pill jelly-btn shrink-0" data-guild-action="cancel" data-guild="${row.id}">${esc(t('guild.withdraw'))}</button>`;
+    else if (row.members >= row.cap) action = `<span class="garden-pill shrink-0">${esc(t('guild.noSeats'))}</span>`;
+    else if ((row.reqEpoch || 1) > epoch) action = `<span class="garden-pill shrink-0">${esc(t('guild.needEpoch', { n: formatNumber(row.reqEpoch || 1) }))}</span>`;
+    else action = `<button type="button" class="garden-pill accent jelly-btn shrink-0" data-guild-action="apply" data-guild="${row.id}">${esc(t('guild.applyBtn'))}</button>`;
     return `
       <div class="garden-card flex items-center justify-between gap-2">
         <div class="min-w-0">
           <div class="truncate">[${esc(row.tag)}] ${esc(bossName(row) || row.name)}</div>
-          <div class="garden-muted">Уровень ${formatNumber(row.level)} · ${formatNumber(row.members)}/${formatNumber(row.cap)} · с эпохи ${formatNumber(row.reqEpoch || 1)}</div>
+          <div class="garden-muted">${esc(t('guild.searchRowMeta', {
+    level: formatNumber(row.level),
+    members: formatNumber(row.members),
+    cap: formatNumber(row.cap),
+    epoch: formatNumber(row.reqEpoch || 1)
+  }))}</div>
         </div>
         ${action}
       </div>
@@ -276,7 +286,7 @@ function renderMine() {
     const invites = state?.invites || [];
     const inviteBlock = invites.length ? `<div class="garden-muted mb-2">${esc(t('guild.invites'))}</div><div class="grid gap-2">${invites.map((invite) => `
       <div class="garden-card flex items-center justify-between gap-2">
-        <span class="truncate">[${esc(invite.tag)}] ${esc(invite.name)} · от ${esc(invite.fromName)}</span>
+        <span class="truncate">[${esc(invite.tag)}] ${esc(invite.name)} · ${esc(t('guild.inviteFrom', { name: invite.fromName }))}</span>
         <span class="flex gap-1.5 shrink-0">
           <button type="button" class="garden-pill accent jelly-btn" data-guild-action="accept" data-guild="${invite.guildId}">${esc(t('guild.accept'))}</button>
           <button type="button" class="garden-pill jelly-btn" data-guild-action="decline" data-guild="${invite.guildId}">${esc(t('guild.decline'))}</button>
@@ -294,8 +304,8 @@ function renderMine() {
   const bonus = guildBonusLabel(progress.level);
   const members = guild.members || [];
   const barLabel = progress.maxed
-    ? `${formatNumber(progress.points)} очков · максимум`
-    : `${formatNumber(progress.points)} / ${formatNumber(progress.next)} очков`;
+    ? t('guild.pointsMaxed', { n: formatNumber(progress.points) })
+    : t('guild.pointsProgress', { cur: formatNumber(progress.points), next: formatNumber(progress.next) });
   box.innerHTML = `
     <div class="garden-card">
       <div class="guild-name-block">
@@ -305,16 +315,16 @@ function renderMine() {
           <span class="guild-name-title font-game">${esc(guild.name)}</span>
         </div>
       </div>
-      <div class="garden-muted mt-2">${roleName(guild.role)} · ${bonus} к клику и заводам · вход с эпохи ${formatNumber(guild.reqEpoch || 1)}</div>
+      <div class="garden-muted mt-2">${esc(t('guild.myGuildLine', { role: roleName(guild.role), bonus, epoch: formatNumber(guild.reqEpoch || 1) }))}</div>
       <div class="guild-level mt-3">
         <div class="guild-level-head">
-          <span class="font-game">Уровень ${formatNumber(progress.level)}</span>
-          <span class="garden-pill">${barLabel}</span>
+          <span class="font-game">${esc(t('guild.levelN', { n: formatNumber(progress.level) }))}</span>
+          <span class="garden-pill">${esc(barLabel)}</span>
         </div>
         <div class="guild-level-bar" role="progressbar" aria-valuenow="${progress.pct}" aria-valuemin="0" aria-valuemax="100">
           <div style="width:${progress.pct}%"></div>
         </div>
-        ${progress.maxed ? '' : `<div class="garden-muted mt-1">До ур. ${formatNumber(progress.level + 1)} ещё ${formatNumber(Math.max(0, progress.next - progress.points))} очков</div>`}
+        ${progress.maxed ? '' : `<div class="garden-muted mt-1">${esc(t('guild.pointsToNext', { level: formatNumber(progress.level + 1), n: formatNumber(Math.max(0, progress.next - progress.points)) }))}</div>`}
       </div>
     </div>
     <div class="guild-roster mt-3">
@@ -341,12 +351,12 @@ function renderBonuses() {
   const box = document.getElementById('guildBonuses');
   if (!box) return;
   if (!signedIn()) {
-    box.innerHTML = '<div class="garden-empty">Бонусы открываются с аккаунта.</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.needAccountBonuses'))}</div>`;
     return;
   }
   const guild = state?.guild;
   if (!guild) {
-    box.innerHTML = '<div class="garden-empty">Сначала вступите в гильдию.</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.needJoinGuild'))}</div>`;
     return;
   }
   const progress = guildLevelProgress(guild.points);
@@ -356,21 +366,21 @@ function renderBonuses() {
     const level = i + 1;
     const label = guildBonusLabel(level);
     const rowState = level < progress.level ? 'done' : level === progress.level ? 'current' : 'locked';
-    const jumpMark = jumps.has(level) ? ' · прыжок' : '';
+    const jumpMark = jumps.has(level) ? t('guild.jumpMark') : '';
     return `
       <div class="guild-bonus-row ${rowState}">
-        <span>Ур. ${formatNumber(level)}${jumpMark}</span>
-        <span>${label} к клику и заводам</span>
+        <span>${esc(t('guild.lvShort', { n: formatNumber(level) }))}${esc(jumpMark)}</span>
+        <span>${esc(t('guild.bonusRow', { label }))}</span>
       </div>
     `;
   }).join('');
   box.innerHTML = `
     <div class="guild-bonuses">
       <div class="guild-roster-head">
-        <span class="font-game">Бонусы</span>
-        <span class="garden-pill">сейчас ${bonus}</span>
+        <span class="font-game">${esc(t('guild.tabBonuses'))}</span>
+        <span class="garden-pill">${esc(t('guild.nowBonus', { bonus }))}</span>
       </div>
-      <div class="garden-muted mb-2">Множитель к клику и заводам для всей гильдии. Мягкий рост с прыжками на ур. 5 · 10 · 15 · 20 · 25. Потолок ${guildBonusLabel(GUILD_MAX_LEVEL)}.</div>
+      <div class="garden-muted mb-2">${esc(t('guild.bonusesDesc', { cap: guildBonusLabel(GUILD_MAX_LEVEL) }))}</div>
       <div class="grid gap-1.5">${bonusRows}</div>
     </div>
   `;
@@ -380,25 +390,25 @@ function renderSettings() {
   const box = document.getElementById('guildSettings');
   if (!box) return;
   if (!signedIn()) {
-    box.innerHTML = '<div class="garden-empty">Настройки открываются с аккаунта.</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.needAccountSettings'))}</div>`;
     return;
   }
   const guild = state?.guild;
   if (!guild) {
-    box.innerHTML = '<div class="garden-empty">Сначала вступите в гильдию.</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.needJoinGuild'))}</div>`;
     return;
   }
   if (!canManageGuild(guild)) {
-    box.innerHTML = '<div class="garden-empty">Настройки видят глава и офицеры.</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.settingsOfficersOnly'))}</div>`;
     return;
   }
   const gate = guild.canLead
     ? `<form id="guildGateForm" class="flex gap-2 mt-2">
-        <input id="guildEpochInput" class="garden-input" inputmode="numeric" maxlength="3" placeholder="Эпоха для входа" value="${Number(guild.reqEpoch) || 1}">
-        <button type="submit" class="garden-pill accent jelly-btn shrink-0">Поставить</button>
+        <input id="guildEpochInput" class="garden-input" inputmode="numeric" maxlength="3" placeholder="${esc(t('guild.epochPh'))}" value="${Number(guild.reqEpoch) || 1}">
+        <button type="submit" class="garden-pill accent jelly-btn shrink-0">${esc(t('guild.setEpoch'))}</button>
       </form>
-      <div class="garden-muted mt-2">С аккаунта ниже этой эпохи в гильдию не пускают.</div>`
-    : `<div class="garden-muted mt-2">Порог эпохи ставит только глава. Сейчас эпоха ${formatNumber(guild.reqEpoch || 1)}.</div>`;
+      <div class="garden-muted mt-2">${esc(t('guild.epochGateLeader'))}</div>`
+    : `<div class="garden-muted mt-2">${esc(t('guild.epochGateOfficer', { n: formatNumber(guild.reqEpoch || 1) }))}</div>`;
   const apps = guild.applications || [];
   const applications = guild.canInvite
     ? (apps.length
@@ -406,24 +416,24 @@ function renderSettings() {
           <div class="garden-card flex items-center justify-between gap-2">
             <span class="truncate">${esc(row.username)}</span>
             <span class="flex gap-1.5 shrink-0">
-              <button type="button" class="garden-pill accent jelly-btn" data-guild-action="applyAccept" data-user="${attr(row.username)}">Принять</button>
-              <button type="button" class="garden-pill jelly-btn" data-guild-action="applyDecline" data-user="${attr(row.username)}">Отклонить</button>
+              <button type="button" class="garden-pill accent jelly-btn" data-guild-action="applyAccept" data-user="${attr(row.username)}">${esc(t('guild.accept'))}</button>
+              <button type="button" class="garden-pill jelly-btn" data-guild-action="applyDecline" data-user="${attr(row.username)}">${esc(t('guild.decline'))}</button>
             </span>
           </div>
         `).join('')}</div>`
-      : '<div class="garden-empty">Заявок пока нет.</div>')
+      : `<div class="garden-empty">${esc(t('guild.noApplications'))}</div>`)
     : '';
   box.innerHTML = `
     <div class="garden-card">
-      <div class="font-game">Порог входа</div>
+      <div class="font-game">${esc(t('guild.entryThreshold'))}</div>
       ${gate}
     </div>
-    ${guild.canInvite ? `<div class="garden-muted mt-3 mb-2">Заявки · ${formatNumber(apps.length)}</div>${applications}` : ''}
+    ${guild.canInvite ? `<div class="garden-muted mt-3 mb-2">${esc(t('guild.applications'))} · ${formatNumber(apps.length)}</div>${applications}` : ''}
     ${guild.canLead ? `
       <div class="garden-card mt-3">
-        <div class="font-game">Опасная зона</div>
-        <div class="garden-muted mt-1 mb-2">Роспуск удаляет гильдию у всех участников.</div>
-        <button type="button" class="garden-pill jelly-btn" data-guild-action="disband">Распустить гильдию</button>
+        <div class="font-game">${esc(t('guild.dangerZone'))}</div>
+        <div class="garden-muted mt-1 mb-2">${esc(t('guild.disbandDesc'))}</div>
+        <button type="button" class="garden-pill jelly-btn" data-guild-action="disband">${esc(t('guild.disbandBtn'))}</button>
       </div>
     ` : ''}
   `;
@@ -442,12 +452,11 @@ function phaseLabel(boss) {
   const phase = livePhase(boss);
   if (phase === 'hitting') {
     const left = Math.max(0, Math.ceil(((boss.windowUntilMs || 0) - Date.now()) / 1000));
-    return autoFight
-      ? `Автобой · осталось ${formatNumber(left)}с`
-      : `Бой идёт · осталось ${formatNumber(left)}с`;
+    const n = formatNumber(left);
+    return autoFight ? t('guild.autoFightLeft', { n }) : t('guild.fightLeft', { n });
   }
-  if (phase === 'cooldown') return `Перерыв · следующий бой через ${clock(boss.cdUntilMs)}`;
-  return 'Готов к бою · 15 секунд удара, потом 3 часа';
+  if (phase === 'cooldown') return t('guild.breakNext', { time: clock(boss.cdUntilMs) });
+  return t('guild.readyFight');
 }
 
 function liveClicks(boss) {
@@ -471,32 +480,32 @@ function liveDamage(boss) {
 function damageLine(boss) {
   const clicks = liveClicks(boss);
   const dealt = liveDamage(boss);
-  if (!dealt && !clicks) return 'Урон: 0 · Клики: 0';
-  return `Урон: ${formatNumber(dealt)} · Клики: ${formatNumber(clicks)}`;
+  if (!dealt && !clicks) return t('guild.damageClicksZero');
+  return t('guild.damageClicks', { dmg: formatNumber(dealt), clicks: formatNumber(clicks) });
 }
 
 function whyLine(blow) {
   const cap = Number(blow?.cap) || getClickCapCps();
   if (!blow?.perClick) {
-    return `Как считается урон за клик: √формы × (1 + сила ножа). Звёзды ножа чуть усиливают. Точная цифра придёт с первым ударом. Потолок ${formatNumber(cap)} клик/сек.`;
+    return t('guild.whyNoClick', { cap: formatNumber(cap) });
   }
   const name = knifeName(blow.knifeId);
   const gear = name
-    ? `форма ${formatNumber(blow.form || 1)}, нож «${name}», ★${formatNumber(blow.stars || 1)}`
-    : `форма ${formatNumber(blow.form || 1)}, без ножа`;
-  return `Урон за клик: ${formatNumber(blow.perClick)} (${gear}). Считается как √формы × (1 + сила ножа). Потолок ${formatNumber(cap)} клик/сек.`;
+    ? t('guild.gearKnife', { form: formatNumber(blow.form || 1), name, stars: formatNumber(blow.stars || 1) })
+    : t('guild.gearNoKnife', { form: formatNumber(blow.form || 1) });
+  return t('guild.whyPerClick', { dmg: formatNumber(blow.perClick), gear, cap: formatNumber(cap) });
 }
 
 function fightShell(boss) {
   const themeLine = boss.theme
-    ? `<div class="garden-muted boss-theme">${esc(boss.theme)}${boss.tier === 'senior' ? ' · старший' : (boss.tier === 'junior' ? ' · младший' : '')}</div>`
+    ? `<div class="garden-muted boss-theme">${esc(boss.theme)}${boss.tier === 'senior' ? ` · ${esc(t('guild.senior'))}` : (boss.tier === 'junior' ? ` · ${esc(t('guild.junior'))}` : '')}</div>`
     : '';
   return `
     <div class="boss-fight">
       <div id="bossFigure" class="boss-sprite">
         <img src="assets/poop/bosses/${esc(boss.id)}.png" alt="" onerror="this.classList.add('broken');this.parentNode.classList.add('no-art')">
         <span class="boss-fallback">${esc(boss.icon)}</span>
-        <div id="bossHint" class="boss-hint">Нажми, чтобы начать бой</div>
+        <div id="bossHint" class="boss-hint">${esc(t('guild.tapToFight'))}</div>
       </div>
       ${themeLine}
       <div id="bossTitle" class="font-game text-lg"></div>
@@ -509,45 +518,45 @@ function fightShell(boss) {
       <div id="bossWhy" class="garden-muted boss-why"></div>
       <label class="garden-pill boss-auto" for="bossAutoFight">
         <input id="bossAutoFight" type="checkbox"${autoFight ? ' checked' : ''}>
-        <span>Автобой на потолке кликов</span>
+        <span>${esc(t('guild.autoFightCap'))}</span>
       </label>
-      <button type="button" id="btnBossHit" class="garden-pill accent jelly-btn">Начать бой</button>
+      <button type="button" id="btnBossHit" class="garden-pill accent jelly-btn">${esc(t('guild.startFight'))}</button>
     </div>
   `;
 }
 
 function resultTitle(result) {
-  if (result?.kind === 'win') return 'Победа!';
-  if (result?.kind === 'loss') return 'Проигрыш';
-  if (result?.kind === 'window') return 'Окно удара закрыто';
-  return 'Итоги боя';
+  if (result?.kind === 'win') return t('guild.win');
+  if (result?.kind === 'loss') return t('guild.loss');
+  if (result?.kind === 'window') return t('guild.windowClosed');
+  return t('guild.fightSummary');
 }
 
 function resultCard(result) {
   const secs = Math.max(1, Math.round((Number(result.durationMs) || 0) / 1000));
   const reward = result.kind === 'win'
     ? (result.myPlungers > 0
-      ? `Награда вам: ${formatNumber(result.myPlungers)} вантузов · гильдии +${formatNumber(result.points)} очков`
-      : `Гильдии +${formatNumber(result.points)} очков. Вам вантузов нет — удара не было.`)
+      ? t('guild.rewardYou', { plungers: formatNumber(result.myPlungers), points: formatNumber(result.points) })
+      : t('guild.rewardGuildNoHit', { points: formatNumber(result.points) }))
     : result.kind === 'window'
-      ? 'Босс ещё жив. Личный удар закончился, через 3 часа можно бить снова.'
-      : 'Попытка провалена. Вантузов за проигрыш нет.';
+      ? t('guild.bossAliveWindow')
+      : t('guild.lossNoReward');
   return `
     <div class="boss-result garden-card">
       <div class="font-game text-xl">${esc(resultTitle(result))}</div>
-      <div class="garden-muted mt-1">${esc(result.bossIcon || '')} ${esc(result.bossName || 'Босс')} · круг ${formatNumber(result.circle || 1)}</div>
+      <div class="garden-muted mt-1">${esc(result.bossIcon || '')} ${esc(result.bossName || t('guild.bossDefault'))} · ${esc(t('guild.circle', { n: formatNumber(result.circle || 1) }))}</div>
       <div class="grid gap-1.5 mt-3 boss-result-stats">
-        <div class="guild-member-row flex justify-between gap-2"><span>Ваши клики</span><span>${formatNumber(result.myClicks || 0)}</span></div>
-        <div class="guild-member-row flex justify-between gap-2"><span>Ваш урон</span><span>${formatNumber(result.myDamage || 0)}</span></div>
-        <div class="guild-member-row flex justify-between gap-2"><span>Урон за клик</span><span>${formatNumber(result.perClick || 0)}</span></div>
+        <div class="guild-member-row flex justify-between gap-2"><span>${esc(t('guild.yourClicks'))}</span><span>${formatNumber(result.myClicks || 0)}</span></div>
+        <div class="guild-member-row flex justify-between gap-2"><span>${esc(t('guild.yourDamage'))}</span><span>${formatNumber(result.myDamage || 0)}</span></div>
+        <div class="guild-member-row flex justify-between gap-2"><span>${esc(t('guild.perClick'))}</span><span>${formatNumber(result.perClick || 0)}</span></div>
         ${result.kind === 'win' || result.kind === 'loss' ? `
-          <div class="guild-member-row flex justify-between gap-2"><span>Урон гильдии</span><span>${formatNumber(result.totalDamage || 0)}</span></div>
-          <div class="guild-member-row flex justify-between gap-2"><span>Участников били</span><span>${formatNumber(result.hitters || 0)}</span></div>
-          <div class="guild-member-row flex justify-between gap-2"><span>Длительность</span><span>${formatNumber(secs)}с</span></div>
+          <div class="guild-member-row flex justify-between gap-2"><span>${esc(t('guild.guildDamage'))}</span><span>${formatNumber(result.totalDamage || 0)}</span></div>
+          <div class="guild-member-row flex justify-between gap-2"><span>${esc(t('guild.hitters'))}</span><span>${formatNumber(result.hitters || 0)}</span></div>
+          <div class="guild-member-row flex justify-between gap-2"><span>${esc(t('guild.duration'))}</span><span>${esc(t('guild.durationSec', { n: formatNumber(secs) }))}</span></div>
         ` : ''}
       </div>
       <div class="garden-muted mt-3">${esc(reward)}</div>
-      <button type="button" class="garden-pill accent jelly-btn mt-3" data-guild-action="dismissResult">Понятно</button>
+      <button type="button" class="garden-pill accent jelly-btn mt-3" data-guild-action="dismissResult">${esc(t('guild.gotIt'))}</button>
     </div>
   `;
 }
@@ -623,8 +632,8 @@ function paintFight() {
   const fill = document.getElementById('bossHpFill');
   if (fill) fill.style.width = `${Math.max(0, Math.min(100, (hp / max) * 100))}%`;
   const phase = livePhase(boss);
-  setText('bossTitle', `${bossName(boss) || boss.name} · круг ${formatNumber(boss.circle)}`);
-  setText('bossHpText', `Здоровье ${formatNumber(hp)} / ${formatNumber(max)} · попытка ${clock(boss.deadlineMs)}`);
+  setText('bossTitle', t('guild.bossCircleLine', { name: bossName(boss) || boss.name, n: formatNumber(boss.circle) }));
+  setText('bossHpText', t('guild.hpLine', { hp: formatNumber(hp), max: formatNumber(max), time: clock(boss.deadlineMs) }));
   setText('bossPhase', phaseLabel(boss));
   setText('bossDamage', damageLine(boss));
   setText('bossWhy', whyLine(boss.blow));
@@ -636,10 +645,10 @@ function paintFight() {
   if (button) {
     button.disabled = phase === 'cooldown';
     const label = phase === 'hitting'
-      ? (autoFight ? 'Автобой' : 'Бьёте')
+      ? (autoFight ? t('guild.autoFightShort') : t('guild.hittingYou'))
       : phase === 'cooldown'
-        ? 'Ждите'
-        : (autoFight ? 'Начать автобой' : 'Начать бой');
+        ? t('guild.wait')
+        : (autoFight ? t('guild.startAuto') : t('guild.startFight'));
     if (button.textContent !== label) button.textContent = label;
   }
 }
@@ -648,7 +657,8 @@ function whenText(ms) {
   const at = Number(ms) || 0;
   if (!at) return '';
   try {
-    return new Date(at).toLocaleString('ru-RU', {
+    const loc = getLocale() === 'en' ? 'en-US' : 'ru-RU';
+    return new Date(at).toLocaleString(loc, {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',
@@ -663,17 +673,17 @@ function renderJournal() {
   const box = document.getElementById('guildJournal');
   if (!box) return;
   if (!signedIn()) {
-    box.innerHTML = '<div class="garden-empty">Журнал открывается с аккаунта.</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.needAccountJournal'))}</div>`;
     return;
   }
   const guild = state?.guild;
   if (!guild) {
-    box.innerHTML = '<div class="garden-empty">Сначала вступите в гильдию.</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.needJoinGuild'))}</div>`;
     return;
   }
   const live = guild.boss
-    ? `<div class="garden-pill accent mb-3">Сейчас бой: ${esc(guild.boss.icon)} ${esc(bossName(guild.boss) || guild.boss.name)} · круг ${formatNumber(guild.boss.circle)}</div>`
-    : '<div class="garden-muted mb-3">Сейчас босса нет. Журнал можно смотреть в любой момент.</div>';
+    ? `<div class="garden-pill accent mb-3">${esc(t('guild.liveFight', { icon: guild.boss.icon, name: bossName(guild.boss) || guild.boss.name, n: formatNumber(guild.boss.circle) }))}</div>`
+    : `<div class="garden-muted mb-3">${esc(t('guild.noBossJournal'))}</div>`;
   let bookTheme = '';
   const book = (guild.roster || []).map((row) => {
     const themeHead = row.theme && row.theme !== bookTheme
@@ -681,10 +691,10 @@ function renderJournal() {
       : '';
     bookTheme = row.theme || bookTheme;
     const status = row.unlocked
-      ? `открыт · побед ${formatNumber(row.clears || 0)} · след. круг ${formatNumber(row.circle)}`
-      : 'ещё закрыт';
+      ? t('guild.openBook', { clears: formatNumber(row.clears || 0), circle: formatNumber(row.circle) })
+      : t('guild.stillLocked');
     const prize = row.unlocked
-      ? ` · награда: ${formatNumber(row.points)} очков, ${formatNumber(row.plungers)} вантузов`
+      ? ` · ${t('guild.reward', { points: formatNumber(row.points), plungers: formatNumber(row.plungers) })}`
       : '';
     return `
       ${themeHead}
@@ -703,26 +713,31 @@ function renderJournal() {
   const log = guild.journal || [];
   const history = log.length
     ? log.map((row) => {
-      const mark = row.win ? 'Победа' : 'Проигрыш';
+      const mark = row.win ? t('guild.winMark') : t('guild.lossMark');
       const reward = row.win
-        ? ` · +${formatNumber(row.points)} очков · ${formatNumber(row.plungers)} вантузов бойцу`
+        ? t('guild.historyReward', { points: formatNumber(row.points), plungers: formatNumber(row.plungers) })
         : '';
       return `
         <div class="garden-card flex items-center gap-2">
           <span class="text-2xl shrink-0">${esc(row.icon)}</span>
           <div class="min-w-0 text-left">
-            <div class="truncate">${esc(mark)} · ${esc(bossName(row) || row.name)} · круг ${formatNumber(row.circle)}</div>
-            <div class="garden-muted">${whenText(row.endedMs)} · урон ${formatNumber(row.damage)} · били ${formatNumber(row.hitters)}${reward}</div>
+            <div class="truncate">${esc(mark)} · ${esc(bossName(row) || row.name)} · ${esc(t('guild.circle', { n: formatNumber(row.circle) }))}</div>
+            <div class="garden-muted">${esc(t('guild.historyLine', {
+    when: whenText(row.endedMs),
+    damage: formatNumber(row.damage),
+    hitters: formatNumber(row.hitters),
+    reward
+  }))}</div>
           </div>
         </div>
       `;
     }).join('')
-    : '<div class="garden-empty">Пока пусто. Записи появятся после победы или проигрыша.</div>';
+    : `<div class="garden-empty">${esc(t('guild.journalEmpty'))}</div>`;
   box.innerHTML = `
     ${live}
-    <div class="garden-muted mb-2">Книга боссов</div>
+    <div class="garden-muted mb-2">${esc(t('guild.bossBook'))}</div>
     <div class="grid gap-2 mb-4">${book}</div>
-    <div class="garden-muted mb-2">Недавние бои</div>
+    <div class="garden-muted mb-2">${esc(t('guild.recentFights'))}</div>
     <div class="grid gap-2">${history}</div>
   `;
 }
@@ -788,12 +803,12 @@ async function act(action, button) {
     });
   }
   if (!data?.success) {
-    toast(data?.error || 'Не вышло');
+    toast(data?.error || t('guild.fail'));
     return;
   }
-  if (action === 'apply') toast('Заявка отправлена');
-  if (action === 'cancel') toast('Заявка отозвана');
-  if (action === 'gate') toast('Порог эпохи поставлен');
+  if (action === 'apply') toast(t('guild.applySent'));
+  if (action === 'cancel') toast(t('guild.applyWithdrawn'));
+  if (action === 'gate') toast(t('guild.epochSet'));
   if (data.guild !== undefined || data.presence) {
     state = data;
     applyPresence(data);
@@ -856,7 +871,7 @@ async function pushStrike() {
     strikeBusy = false;
   }
   if (!data?.success) {
-    toast(data?.error || 'Удар не прошёл');
+    toast(data?.error || t('guild.strikeFail'));
     stopStrike();
     return;
   }
@@ -886,7 +901,7 @@ async function pushStrike() {
       shownWindowKey = key;
       applyFightResult({
         kind: 'window',
-        bossName: boss?.name || 'Босс',
+        bossName: boss?.name || t('guild.bossDefault'),
         bossIcon: boss?.icon || '💀',
         circle: boss?.circle || 1,
         myClicks: liveClicks(boss),
@@ -943,7 +958,7 @@ function pokeBoss() {
   if (phase === 'cooldown') {
     if (Date.now() - toldAt > 1500) {
       toldAt = Date.now();
-      toast('Сейчас бить нельзя');
+      toast(t('guild.cantHitNow'));
     }
     paintFight();
     return;
@@ -1001,7 +1016,7 @@ export function initGuildView() {
       }
     });
     if (!data.success) {
-      toast(data.error || 'Гильдия не создана');
+      toast(data.error || t('guild.createFail'));
       return;
     }
     state = data;

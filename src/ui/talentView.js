@@ -1,12 +1,12 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
 import { TALENTS } from '../data/talents.data.js';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { drawPlunger } from '../utils/icons.js?v=5.0.78';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { drawPlunger } from '../utils/icons.js?v=5.0.79';
 import { getAffordableTalentInfo, buyTalent } from '../systems/talentService.js';
-import { buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.78';
-import { updateHUD } from './hudView.js?v=5.0.78';
-import { saveLocal } from '../save/saveManager.js?v=5.0.78';
+import { buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.79';
+import { updateHUD } from './hudView.js?v=5.0.79';
+import { saveLocal } from '../save/saveManager.js?v=5.0.79';
 import { getRollIcon } from '../utils/icons.js';
 import { isRelicSectionUnlocked, isTalentVisible } from '../progression/unlocks.js';
 import { t, td, onLocaleChange } from '../i18n/t.js';
@@ -155,7 +155,7 @@ export function renderFlushTalents() {
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="font-bold text-xs text-purple-200">${talentName(tl)}</span>
-              <span class="text-[9px] px-1.5 py-0.2 rounded-full border font-bold ${tierBadgeClass}">${td(`talent.tierName.${tl.tier}`, tl.tierName || 'Базовый')}</span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded-full border font-bold ${tierBadgeClass}">${td(`talent.tierName.${tl.tier}`, tl.tierName || 'Basic')}</span>
               <span class="text-yellow-400 font-game text-[11px]">(${formatNumber(tl.level)}/${formatNumber(tl.max)})</span>
             </div>
             <div class="text-[10px] text-stone-400 mt-0.5 leading-snug">
@@ -172,8 +172,8 @@ export function renderFlushTalents() {
       row.querySelector('.buy-talent-btn').addEventListener('click', async () => {
         if (buyTalent(tl.id)) {
           renderTalents();
-          const inventory = await import('./characterInventoryView.js?v=5.0.78');
-          const index = await import('./knivesIndexView.js?v=5.0.78');
+          const inventory = await import('./characterInventoryView.js?v=5.0.79');
+          const index = await import('./knivesIndexView.js?v=5.0.79');
           inventory.renderCharacterInventory();
           index.renderKnivesIndexBook();
           updateHUD();

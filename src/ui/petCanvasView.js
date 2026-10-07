@@ -1,19 +1,20 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { getEquippedKnife } from '../economy/production.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { getEquippedKnife } from '../economy/production.js?v=5.0.79';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.78';
-import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.78';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.78';
-import { updateHUD } from './hudView.js?v=5.0.78';
-import { saveLocal } from '../save/saveManager.js?v=5.0.78';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.78';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.79';
+import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.79';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.79';
+import { updateHUD } from './hudView.js?v=5.0.79';
+import { saveLocal } from '../save/saveManager.js?v=5.0.79';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.79';
 import { events } from '../core/events.js';
-import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.78';
-import { KNIVES } from '../data/knives.data.js?v=5.0.78';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.78';
+import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.79';
+import { KNIVES } from '../data/knives.data.js?v=5.0.79';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.79';
+import { t } from '../i18n/t.js';
 
 let canvas = null;
 let ctx = null;
@@ -999,7 +1000,7 @@ export function initPetCanvas() {
             y: clickY,
             vx: (Math.random() - 0.5) * 1.4,
             vy: -2.2,
-            text: `💥 КРИТ! +${formatNumber(totalEarned)} 💨`,
+            text: t('canvas.critEarn', { n: formatNumber(totalEarned) }),
             color: '#facc15',
             scale: 1.35,
             life: 0.85
@@ -1010,7 +1011,7 @@ export function initPetCanvas() {
             y: clickY,
             vx: (Math.random() - 0.5) * 1.0,
             vy: -1.9,
-            text: `+${formatNumber(totalEarned)} 💨`,
+            text: t('canvas.earn', { n: formatNumber(totalEarned) }),
             color: '#4ade80',
             scale: 1.15,
             life: 0.80
@@ -1023,7 +1024,7 @@ export function initPetCanvas() {
             y: clickY - 14,
             vx: (Math.random() - 0.5) * 1.2,
             vy: -2.4,
-            text: `+${formatNumber(sparklesEarned)} ✨`,
+            text: t('canvas.sparkles', { n: formatNumber(sparklesEarned) }),
             color: '#fde047',
             scale: 1.2,
             life: 0.85
@@ -1045,7 +1046,7 @@ export function initPetCanvas() {
               y: spawnY,
               vx: (Math.random() - 0.5) * 1.2,
               vy: -2.3,
-              text: `💥 КРИТ! +${formatNumber(pendingAutoEarned)} 💨`,
+              text: t('canvas.critEarn', { n: formatNumber(pendingAutoEarned) }),
               color: '#facc15',
               scale: 1.35,
               life: 0.85
@@ -1056,7 +1057,7 @@ export function initPetCanvas() {
               y: spawnY,
               vx: (Math.random() - 0.5) * 0.9,
               vy: -1.8,
-              text: `+${formatNumber(pendingAutoEarned)} 💨`,
+              text: t('canvas.earn', { n: formatNumber(pendingAutoEarned) }),
               color: '#38bdf8',
               scale: 1.15,
               life: 0.80
@@ -1069,7 +1070,7 @@ export function initPetCanvas() {
               y: spawnY - 12,
               vx: (Math.random() - 0.5) * 1.0,
               vy: -2.4,
-              text: `+${formatNumber(pendingAutoSparkles)} ✨`,
+              text: t('canvas.sparkles', { n: formatNumber(pendingAutoSparkles) }),
               color: '#fde047',
               scale: 1.2,
               life: 0.85
@@ -1085,7 +1086,7 @@ export function initPetCanvas() {
     });
 
     events.on('turbo:activated', () => {
-      addVisualParticle('🔥 ТУРБО-РЕЖИМ x10! 🔥', '#ef4444', 1.5, 1.2, -2.5);
+      addVisualParticle(t('canvas.turboActivated', { x: formatNumber(10) }), '#ef4444', 1.5, 1.2, -2.5);
     });
   }
 
@@ -1361,24 +1362,24 @@ export function catchGoldenMeteor() {
       GAME.comboHeat = 100;
       GAME.turboRushTime = 12;
     }
-    label = `⚡ ЗВЕЗДА: Турбо x${formatNumber(getTurboClickMult())} на 12с!`;
+    label = t('canvas.meteorStarTurbo', { n: formatNumber(getTurboClickMult()) });
   } else if (roll < 0.70) {
     const burst = mul(cmp(mul(2500, getClickPower()), mul(getPassiveIncome(), 1200)) >= 0 ? mul(2500, getClickPower()) : mul(getPassiveIncome(), 1200), lootMult);
     GAME.biomass = gainBio(GAME.biomass, burst);
     GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, burst);
     GAME.cycleBiomass = gainBio(GAME.cycleBiomass, burst);
-    label = `💰 ЗОЛОТОЙ ВЗРЫВ: +${formatNumber(burst)} 💨!`;
+    label = t('canvas.meteorGoldBurst', { n: formatNumber(burst) });
   } else if (roll < 0.90) {
     const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
     const raw = profile.purse * (0.10 + Math.random() * 0.08) * profile.localMult * profile.flushBonus * lootMult;
     const spGain = Math.max(20, Math.round(Math.min(profile.purse * 0.45, raw)));
     GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
-    label = `✨ ЗВЕЗДНЫЙ ДОЖДЬ: +${formatNumber(spGain)} Блестяшек!`;
+    label = t('canvas.meteorSparkleRain', { n: formatNumber(spGain) });
   } else {
     const rollMultiplier = 1 + Math.min(1.5, (GAME.totalPrestiges || 0) * 0.02) + Math.min(1.5, (GAME.totalTranscend || 0) * 0.12);
     const rollGain = Math.max(1, Math.min(3, Math.round((1 + Math.random()) * rollMultiplier * Math.min(1.5, lootMult))));
     GAME.prestigeRolls = (GAME.prestigeRolls || 0) + rollGain;
-    label = `🧻 СВЯЩЕННЫЙ РУЛОН: +${formatNumber(rollGain)} Втулок Судьбы!`;
+    label = t('canvas.meteorSacredRoll', { n: formatNumber(rollGain) });
   }
 
   addVisualParticle(label, '#facc15', 1.6, 2.2, -2.5);
@@ -1428,7 +1429,7 @@ export function checkMeteorClick(clientX, clientY) {
 function startMeteorShower() {
   showerUntil = Date.now() + SHOWER_MS;
   showerNextSpawn = Date.now();
-  addVisualParticle('🌠 ЗВЁЗДНЫЙ РОЙ! Лови звёзды 12с', '#67e8f9', 1.5, 2.2, -2.2);
+  addVisualParticle(t('canvas.meteorShowerStart'), '#67e8f9', 1.5, 2.2, -2.2);
 }
 
 function tickMeteorShower(drawCtx, w, h) {
@@ -1475,7 +1476,7 @@ function catchShowerMeteor(index) {
   const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
   const sparkGain = Math.max(8, Math.round(profile.purse * (0.012 + Math.random() * 0.010) * profile.localMult * profile.flushBonus * meteorTalentSparkle()));
   GAME.sparkles = (Number(GAME.sparkles) || 0) + sparkGain;
-  addVisualParticle(`⭐ +${formatNumber(sparkGain)} ✨`, '#fde68a', 1.05);
+  addVisualParticle(t('canvas.meteorShowerCatch', { n: formatNumber(sparkGain) }), '#fde68a', 1.05);
   checkAchievements();
   updateHUD();
   saveLocal();

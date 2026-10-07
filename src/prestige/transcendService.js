@@ -1,10 +1,10 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
 import { TALENTS } from '../data/talents.data.js';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.78';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.79';
 import { events } from '../core/events.js';
-import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.78';
-import { gte, mul } from '../utils/big.js?v=5.0.78';
-import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.78';
+import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.79';
+import { gte, mul } from '../utils/big.js?v=5.0.79';
+import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.79';
 
 export const BRIDGE_FLUSHES_NEEDED = 2;
 

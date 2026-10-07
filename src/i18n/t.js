@@ -86,6 +86,10 @@ export function applyDomI18n(root = document) {
     const key = node.getAttribute('data-i18n-title');
     if (key) node.setAttribute('title', t(key));
   });
+  root.querySelectorAll('[data-i18n-aria-label]').forEach((node) => {
+    const key = node.getAttribute('data-i18n-aria-label');
+    if (key) node.setAttribute('aria-label', t(key));
+  });
 }
 
 export function setLocale(code, { persist = true, applyDom = true } = {}) {

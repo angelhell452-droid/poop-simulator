@@ -1,19 +1,21 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.78';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.78';
-import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.78';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.79';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.79';
+import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.79';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.79';
 
-import { updateHUD } from './hudView.js?v=5.0.78';
-import { renderCasesSystem } from './casesView.js?v=5.0.78';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.78';
-import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.78';
-import { renderFactories } from './factoryView.js?v=5.0.78';
+import { updateHUD } from './hudView.js?v=5.0.79';
+import { renderCasesSystem } from './casesView.js?v=5.0.79';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.79';
+import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.79';
+import { renderFactories } from './factoryView.js?v=5.0.79';
 import { renderShop } from './shopView.js';
 import { events } from '../core/events.js';
 import { isRelicSectionUnlocked } from '../progression/unlocks.js';
 import { t, onLocaleChange } from '../i18n/t.js';
+import { ARCHETYPES } from '../progression/archetypes.js';
+import { archetypeName } from '../i18n/localize.js';
 
 let pendingPrestigeArchetype = 'balanced';
 function notesAreOpen(modalId) {
@@ -397,16 +399,25 @@ export function initModals() {
   onLocaleChange(() => {
     updatePrestigeModalRealtime();
     updateTranscendModalRealtime();
+    renderArchetypeButtons();
   });
+
+  renderArchetypeButtons();
 }
 
 function renderArchetypeButtons() {
   document.querySelectorAll('.arch-select-btn').forEach(btn => {
-    const isSelected = btn.dataset.arch === pendingPrestigeArchetype;
+    const id = btn.dataset.arch;
+    const arch = ARCHETYPES[id];
+    const isSelected = id === pendingPrestigeArchetype;
     if (isSelected) {
       btn.className = 'arch-select-btn p-1.5 rounded-xl border text-center transition bg-purple-900/90 border-yellow-400 text-yellow-200 shadow-[0_0_10px_rgba(250,204,21,0.5)]';
     } else {
       btn.className = 'arch-select-btn p-1.5 rounded-xl border text-center transition bg-stone-900 border-stone-700 text-stone-300 hover:border-amber-500';
+    }
+    if (arch) {
+      const subClass = isSelected ? 'text-purple-300' : 'text-stone-400';
+      btn.innerHTML = `${archetypeName(arch)}<div class="text-[8px] ${subClass} font-normal">${t(`archetype.${id}.short`)}</div>`;
     }
   });
 }

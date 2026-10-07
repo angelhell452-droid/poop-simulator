@@ -1,39 +1,39 @@
-﻿import { GAME } from './core/state.js?v=5.0.78';
-import { startGameLoop } from './core/gameLoop.js?v=5.0.78';
-import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.0.78';
-import { saveLocal } from './save/saveManager.js?v=5.0.78';
-import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.0.78';
-import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.0.78';
-import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.0.78';
+﻿import { GAME } from './core/state.js?v=5.0.79';
+import { startGameLoop } from './core/gameLoop.js?v=5.0.79';
+import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.0.79';
+import { saveLocal } from './save/saveManager.js?v=5.0.79';
+import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.0.79';
+import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.0.79';
+import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.0.79';
 import { renderShop, initShopI18n } from './ui/shopView.js';
 import { renderAchievements } from './ui/achievementsView.js';
-import { renderCasesSystem, initCasesListeners } from './ui/casesView.js?v=5.0.78';
-import { initKnivesIndexListeners } from './ui/knivesIndexView.js?v=5.0.78';
-import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.0.78';
-import { initModals } from './ui/modalManager.js?v=5.0.78';
-import { initAuthModal, refreshServerStatus } from './ui/authModalView.js?v=5.0.78';
-import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js?v=5.0.78';
-import { initLeaderboardView } from './ui/leaderboardView.js?v=5.0.78';
-import { initFriendsView } from './ui/friendsView.js?v=5.0.78';
-import { initGuildView } from './ui/guildView.js?v=5.0.78';
-import { initMailView } from './ui/mailView.js?v=5.0.78';
-import { startSocialPulse } from './ui/socialPulse.js?v=5.0.78';
-import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.0.78';
+import { renderCasesSystem, initCasesListeners } from './ui/casesView.js?v=5.0.79';
+import { initKnivesIndexListeners } from './ui/knivesIndexView.js?v=5.0.79';
+import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.0.79';
+import { initModals } from './ui/modalManager.js?v=5.0.79';
+import { initAuthModal, refreshServerStatus } from './ui/authModalView.js?v=5.0.79';
+import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js?v=5.0.79';
+import { initLeaderboardView } from './ui/leaderboardView.js?v=5.0.79';
+import { initFriendsView } from './ui/friendsView.js?v=5.0.79';
+import { initGuildView } from './ui/guildView.js?v=5.0.79';
+import { initMailView } from './ui/mailView.js?v=5.0.79';
+import { startSocialPulse } from './ui/socialPulse.js?v=5.0.79';
+import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.0.79';
 import { initVipShop } from './ui/vipShopView.js';
-import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.78';
-import { initBugReportListeners } from './ui/bugReportView.js?v=5.0.78';
-import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.0.78';
+import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.79';
+import { initBugReportListeners } from './ui/bugReportView.js?v=5.0.79';
+import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.0.79';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
-import { addPendingClicks, processBatchedClicks } from './systems/clickService.js?v=5.0.78';
-import { checkAchievements } from './systems/achievementsService.js?v=5.0.78';
-import { getPassiveIncome } from './economy/production.js?v=5.0.78';
+import { addPendingClicks, processBatchedClicks } from './systems/clickService.js?v=5.0.79';
+import { checkAchievements } from './systems/achievementsService.js?v=5.0.79';
+import { getPassiveIncome } from './economy/production.js?v=5.0.79';
 import { TALENTS } from './data/talents.data.js';
-import { ACHIEVEMENTS } from './data/achievements.data.js?v=5.0.78';
-import { SHOP_ITEMS } from './data/shop.data.js?v=5.0.78';
-import { formatNumber } from './utils/numberFormatter.js?v=5.0.78';
-import { gainBio, isBig, mul } from './utils/big.js?v=5.0.78';
+import { ACHIEVEMENTS } from './data/achievements.data.js?v=5.0.79';
+import { SHOP_ITEMS } from './data/shop.data.js?v=5.0.79';
+import { formatNumber } from './utils/numberFormatter.js?v=5.0.79';
+import { gainBio, isBig, mul } from './utils/big.js?v=5.0.79';
 import { formatDurationAway } from './utils/timeUtils.js';
-import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap } from './systems/autoclickService.js?v=5.0.78';
+import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap } from './systems/autoclickService.js?v=5.0.79';
 import { events } from './core/events.js';
 import { initI18n, t, onLocaleChange } from './i18n/t.js';
 
@@ -157,7 +157,7 @@ export async function bootstrap() {
     if (ach && !ach.done) {
       ach.done = true;
       GAME.sparkles += ach.reward;
-      addVisualParticle('🤫 Секрет найден! +25✨', '#facc15', 1.5);
+      addVisualParticle(t('main.secretFound', { n: formatNumber(25) }), '#facc15', 1.5);
       checkAchievements();
       updateHUD();
       renderAchievements();
@@ -234,7 +234,7 @@ export async function bootstrap() {
   // 6. Pet Care Buttons
   document.getElementById('btnFeed')?.addEventListener('click', () => {
     if (feedPet()) {
-      addVisualParticle('🍔 Покушал! +50% к Клику! (+1✨)', '#f97316', 1.25);
+      addVisualParticle(t('main.fed', { n: formatNumber(50) }), '#f97316', 1.25);
       checkAchievements();
       updateHUD();
       saveLocal();
@@ -243,7 +243,7 @@ export async function bootstrap() {
 
   document.getElementById('btnWash')?.addEventListener('click', () => {
     if (washPet()) {
-      addVisualParticle('🧼 Отмылся! +40% к Заводам! (+1✨)', '#38bdf8', 1.25);
+      addVisualParticle(t('main.washed', { n: formatNumber(40) }), '#38bdf8', 1.25);
       checkAchievements();
       updateHUD();
       saveLocal();
@@ -251,7 +251,7 @@ export async function bootstrap() {
     }
     if (Math.round(GAME.clean) >= 100) return;
     if (polishPet()) {
-      addVisualParticle('✨ Идеальный блеск! +4 ✨', '#facc15', 1.35);
+      addVisualParticle(t('main.polished', { n: formatNumber(4) }), '#facc15', 1.35);
       checkAchievements();
       updateHUD();
       saveLocal();
@@ -260,7 +260,7 @@ export async function bootstrap() {
 
   document.getElementById('btnTickle')?.addEventListener('click', () => {
     if (ticklePet()) {
-      addVisualParticle('🪶 Щекотно! Комбо растет!', '#ec4899', 1.25);
+      addVisualParticle(t('main.tickled'), '#ec4899', 1.25);
       updateHUD();
     }
   });
@@ -313,7 +313,7 @@ export async function bootstrap() {
   });
 
   document.getElementById('btnResetData')?.addEventListener('click', async () => {
-    if (confirm('ВНИМАНИЕ! Это полностью сотрет весь прогресс и перерождения как на устройстве, так и на сервере. Продолжить?')) {
+    if (confirm(t('main.wipeConfirm'))) {
       await wipePlayerData();
     }
   });
@@ -394,7 +394,7 @@ function checkOfflineProgress() {
       GAME.sparkles += offlineSparkles;
 
       const offTimeEl = document.getElementById('offlineTimeText');
-      if (offTimeEl) offTimeEl.textContent = `Вы отсутствовали ${formatDurationAway(effectiveSeconds)} (эффективность ${Math.round(efficiency * 100)}%)`;
+      if (offTimeEl) offTimeEl.textContent = t('main.offlineAway', { time: formatDurationAway(effectiveSeconds), pct: formatNumber(Math.round(efficiency * 100)) });
       const bioEl = document.getElementById('offlineBioGain');
       if (bioEl) bioEl.textContent = `+${formatNumber(offlineBiomass)} 💨`;
       const spEl = document.getElementById('offlineSparkleGain');

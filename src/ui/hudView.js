@@ -1,27 +1,28 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { drawPlunger } from '../utils/icons.js?v=5.0.78';
-import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.78';
-import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.78';
-import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { drawPlunger } from '../utils/icons.js?v=5.0.79';
+import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.79';
+import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.79';
+import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.79';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
-import { liveCps } from '../core/gameLoop.js?v=5.0.78';
-import { saveLocal } from '../save/saveManager.js?v=5.0.78';
-import { updateFactoryButtons } from './factoryView.js?v=5.0.78';
-import { updateTalentButtons } from './talentView.js?v=5.0.78';
+import { liveCps } from '../core/gameLoop.js?v=5.0.79';
+import { saveLocal } from '../save/saveManager.js?v=5.0.79';
+import { updateFactoryButtons } from './factoryView.js?v=5.0.79';
+import { updateTalentButtons } from './talentView.js?v=5.0.79';
 import { updateShopButtons } from './shopView.js';
-import { updateCasesButtons } from './casesView.js?v=5.0.78';
-import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.78';
+import { updateCasesButtons } from './casesView.js?v=5.0.79';
+import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.79';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.78';
+import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.79';
 import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
-import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.78';
-import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.78';
-import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.0.78';
-import { showKnifeToast } from './characterInventoryView.js?v=5.0.78';
+import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.79';
+import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.79';
+import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.0.79';
+import { showKnifeToast } from './characterInventoryView.js?v=5.0.79';
 import { getConfirmedVip } from '../economy/pace.js';
 import { t, onLocaleChange } from '../i18n/t.js';
+import { archetypeBadge, archetypeDesc, archetypeName, evolutionDisplayDesc, evolutionDisplayName } from '../i18n/localize.js';
 
 const FLUSH_COOLDOWN = 35000;
 
@@ -152,18 +153,18 @@ export function updateHUD() {
   if (topArchBadge) {
     const arch = ARCHETYPES[GAME.archetype] || ARCHETYPES.balanced;
     topArchBadge.classList.remove('hidden');
-    topArchBadge.textContent = arch.badge;
-    topArchBadge.title = t('hud.archTitle', { name: arch.name, desc: arch.desc });
+    topArchBadge.textContent = archetypeBadge(arch);
+    topArchBadge.title = t('hud.archTitle', { name: archetypeName(arch), desc: archetypeDesc(arch) });
   }
   const nameEvo = document.getElementById('evoStageName');
   if (nameEvo) {
     nameEvo.textContent = t('hud.formName', {
       n: formatNumber(currEvo.id + 1),
-      name: currEvo.name
+      name: evolutionDisplayName(currEvo)
     });
   }
   const descEvo = document.getElementById('evoStageDesc');
-  if (descEvo) descEvo.textContent = currEvo.desc;
+  if (descEvo) descEvo.textContent = evolutionDisplayDesc(currEvo);
 
   const evoInfo = getAffordableEvoInfo();
   const evoFill = document.getElementById('evoXpFill');

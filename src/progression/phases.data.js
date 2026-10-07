@@ -1,5 +1,5 @@
-﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { bigPow10, div, mul } from '../utils/big.js?v=5.0.78';
+﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { bigPow10, div, mul } from '../utils/big.js?v=5.0.79';
 import { t } from '../i18n/t.js';
 import { epochName } from '../i18n/localize.js';
 

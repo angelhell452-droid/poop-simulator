@@ -1,7 +1,9 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
 import { ARCHETYPES } from './archetypes.js';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { t } from '../i18n/t.js';
+import { archetypeBadge, milestoneRewardText, milestoneTitle } from '../i18n/localize.js';
 
 export const MILESTONES = [
   { form: 5, icon: '🏭', title: 'Форма 5: Мушиная Ферма', reward: 'Разблокировка фабрик' },
@@ -27,16 +29,34 @@ export function getNextMilestoneGoal() {
   let hideTarget = false;
 
   if (!nextM && currentStage >= lastForm) {
-    nextM = { form: currentStage, icon: '🌫️', title: 'Горизонт закрыт', reward: 'Эпоха без подписи' };
+    nextM = {
+      key: 'horizonClosed',
+      form: currentStage,
+      icon: '🌫️',
+      title: 'Горизонт закрыт',
+      reward: 'Эпоха без подписи'
+    };
     hideTarget = true;
   } else if (!nextM) {
     const step = currentStage < 12000 ? 150 : 250;
     const horizon = Math.ceil((currentStage + step) / 50) * 50;
     if (horizon >= lastForm) {
-      nextM = { form: currentStage, icon: '🌫️', title: 'Дальше без карты', reward: 'Эпоха не подписана' };
+      nextM = {
+        key: 'unmapped',
+        form: currentStage,
+        icon: '🌫️',
+        title: 'Дальше без карты',
+        reward: 'Эпоха не подписана'
+      };
       hideTarget = true;
     } else {
-      nextM = { form: horizon, icon: '🌫️', title: 'Ближний горизонт', reward: 'Эпоха не подписана' };
+      nextM = {
+        key: 'nearHorizon',
+        form: horizon,
+        icon: '🌫️',
+        title: 'Ближний горизонт',
+        reward: 'Эпоха не подписана'
+      };
     }
   }
 
@@ -48,13 +68,16 @@ export function getNextMilestoneGoal() {
   return {
     currentStage,
     targetStage: hideTarget ? currentStage : nextM.form,
-    title: nextM.title,
+    title: milestoneTitle(nextM),
     icon: nextM.icon,
-    reward: nextM.reward,
+    reward: milestoneRewardText(nextM),
     percent: pct,
     progressText: hideTarget
-      ? `${formatNumber(currentStage)} • без карты`
-      : `${formatNumber(currentStage)} / ${formatNumber(nextM.form)}`,
-    archetypeBadge: arch.badge
+      ? t('milestone.progressNoMap', { n: formatNumber(currentStage) })
+      : t('milestone.progress', {
+        current: formatNumber(currentStage),
+        target: formatNumber(nextM.form)
+      }),
+    archetypeBadge: archetypeBadge(arch)
   };
 }

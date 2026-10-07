@@ -1,5 +1,6 @@
-﻿import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.0.78';
-import { NEWS } from '../data/news.data.js?v=5.0.78';
+﻿import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.0.79';
+import { NEWS } from '../data/news.data.js?v=5.0.79';
+import { t, onLocaleChange } from '../i18n/t.js';
 
 function escapeText(value) {
   return String(value || '')
@@ -51,7 +52,7 @@ export function renderNews() {
   if (!container) return;
 
   if (!NEWS.length) {
-    container.innerHTML = '<div class="text-stone-400 text-center text-xs py-6">Новостей пока нет.</div>';
+    container.innerHTML = `<div class="text-stone-400 text-center text-xs py-6">${t('journal.noNews')}</div>`;
     return;
   }
 
@@ -63,7 +64,7 @@ export function renderNews() {
       <article class="p-3.5 rounded-2xl bg-stone-900/90 border-2 border-amber-500/40 space-y-2">
         ${image}
         <div class="flex items-center justify-between flex-wrap gap-1">
-          <span class="text-[10px] px-2 py-0.5 rounded-full border font-bold bg-amber-500/20 text-amber-200 border-amber-400/40">${escapeText(item.tag || 'Новость')}</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full border font-bold bg-amber-500/20 text-amber-200 border-amber-400/40">${escapeText(item.tag || t('journal.newsTag'))}</span>
           <span class="text-[10px] text-stone-400 font-mono">${escapeText(item.date)}</span>
         </div>
         <div class="font-bold text-xs text-stone-100">${escapeText(item.title)}</div>
@@ -100,12 +101,20 @@ export function initPatchNotesListeners() {
   const vTag = document.getElementById('versionTag');
   if (vTag) {
     vTag.style.cursor = 'pointer';
-    vTag.title = 'Нажмите, чтобы открыть журнал обновлений';
+    vTag.title = t('journal.versionTitle');
     vTag.addEventListener('click', openPatchNotesModal);
   }
   document.getElementById('btnJournalPatches')?.addEventListener('click', () => showJournalTab('patches'));
   document.getElementById('btnJournalNews')?.addEventListener('click', () => {
     renderNews();
     showJournalTab('news');
+  });
+  onLocaleChange(() => {
+    const modal = document.getElementById('patchNotesModal');
+    if (modal && !modal.classList.contains('hidden')) {
+      renderNews();
+    }
+    const vTag = document.getElementById('versionTag');
+    if (vTag) vTag.title = t('journal.versionTitle');
   });
 }

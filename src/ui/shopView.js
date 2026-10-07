@@ -1,11 +1,11 @@
-﻿import { GAME } from '../core/state.js?v=5.0.78';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.78';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
-import { saveLocal } from '../save/saveManager.js?v=5.0.78';
-import { updateHUD } from './hudView.js?v=5.0.78';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.78';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.78';
-import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.0.78';
+﻿import { GAME } from '../core/state.js?v=5.0.79';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { saveLocal } from '../save/saveManager.js?v=5.0.79';
+import { updateHUD } from './hudView.js?v=5.0.79';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.79';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.79';
+import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.0.79';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
 import { isBoutiqueUnlocked, isShopOfferUnlocked, peakForm } from '../progression/unlocks.js';
 import { t, onLocaleChange } from '../i18n/t.js';
@@ -54,12 +54,12 @@ export function renderShop() {
     <div class="flex items-center gap-2.5">
       <span>${hatArtHtml({ id: 'hat_crown', icon: '👑' }, 40)}</span>
       <div class="text-left">
-        <div class="font-game text-xs text-pink-300">Гардероб и Головные Уборы</div>
-        <div class="text-[10px] text-pink-200/80">Покупка, примерка и управление шапками находятся в Инвентаре</div>
+        <div class="font-game text-xs text-pink-300">${t('shop.wardrobeTitle')}</div>
+        <div class="text-[10px] text-pink-200/80">${t('shop.wardrobeBody')}</div>
       </div>
     </div>
     <button id="btnShopGoToWardrobe" class="font-game text-xs px-3 py-1.5 rounded-xl border transition bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 text-white font-bold border-pink-300 jelly-btn shadow shrink-0">
-      В гардероб 🎒
+      ${t('shop.goWardrobe')}
     </button>
   `;
   container.appendChild(wardrobeBanner);
