@@ -1,8 +1,8 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.49';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.49';
-import { guildBonusMult } from '../data/bosses.data.js?v=5.0.49';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.49';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.49';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.50';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.50';
+import { guildBonusMult } from '../data/bosses.data.js?v=5.0.50';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.50';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.50';
 
 let state = null;
 let directory = [];

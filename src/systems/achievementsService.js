@@ -1,9 +1,9 @@
-import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.49';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.49';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.49';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.49';
+import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.50';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.50';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.50';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.50';
 import { events } from '../core/events.js';
-import { gte } from '../utils/big.js?v=5.0.49';
+import { gte } from '../utils/big.js?v=5.0.50';
 
 export function checkAchievements() {
   const completed = [];

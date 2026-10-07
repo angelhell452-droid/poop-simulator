@@ -1,25 +1,25 @@
-import { GAME } from '../core/state.js?v=5.0.49';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.49';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.49';
-import { drawPlunger } from '../utils/icons.js?v=5.0.49';
-import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.49';
-import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.49';
-import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.49';
+import { GAME } from '../core/state.js?v=5.0.50';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.50';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.50';
+import { drawPlunger } from '../utils/icons.js?v=5.0.50';
+import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.50';
+import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.50';
+import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.50';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
-import { liveCps } from '../core/gameLoop.js?v=5.0.49';
-import { saveLocal } from '../save/saveManager.js?v=5.0.49';
-import { updateFactoryButtons } from './factoryView.js?v=5.0.49';
-import { updateTalentButtons } from './talentView.js?v=5.0.49';
+import { liveCps } from '../core/gameLoop.js?v=5.0.50';
+import { saveLocal } from '../save/saveManager.js?v=5.0.50';
+import { updateFactoryButtons } from './factoryView.js?v=5.0.50';
+import { updateTalentButtons } from './talentView.js?v=5.0.50';
 import { updateShopButtons } from './shopView.js';
-import { updateCasesButtons } from './casesView.js?v=5.0.49';
-import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.49';
+import { updateCasesButtons } from './casesView.js?v=5.0.50';
+import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.50';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.49';
+import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.50';
 import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
-import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.49';
-import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.49';
-import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.0.49';
-import { showKnifeToast } from './characterInventoryView.js?v=5.0.49';
+import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.50';
+import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.50';
+import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.0.50';
+import { showKnifeToast } from './characterInventoryView.js?v=5.0.50';
 import { getConfirmedVip } from '../economy/pace.js';
 
 const FLUSH_COOLDOWN = 35000;
@@ -161,13 +161,15 @@ export function updateHUD() {
   if (evoFill && evoLabel) {
     const stage = GAME.evoStage || 0;
     const earned = formBiomassCredit();
+    const needsBreak = !evoInfo.maxReached && evoInfo.phaseLocked;
+    evoLabel.classList.toggle('evo-xp-gate', needsBreak);
     if (evoInfo.maxReached) {
       evoFill.style.width = '100%';
       evoLabel.textContent = 'Максимум';
       if (evoLeft) evoLeft.textContent = '';
-    } else if (evoInfo.phaseLocked) {
+    } else if (needsBreak) {
       evoFill.style.width = '100%';
-      evoLabel.textContent = 'Дальше откроет Прорыв';
+      evoLabel.textContent = 'Для продвижения требуется прорыв';
       if (evoLeft) evoLeft.textContent = '';
     } else {
       const floorCost = stage <= 0 ? 0 : effectiveFormCost(stage);

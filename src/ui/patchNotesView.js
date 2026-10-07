@@ -1,5 +1,5 @@
-import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.0.49';
-import { NEWS } from '../data/news.data.js?v=5.0.49';
+import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.0.50';
+import { NEWS } from '../data/news.data.js?v=5.0.50';
 
 function escapeText(value) {
   return String(value || '')

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.49 PRO</title>
+  <title>Poop Simulator v5.0.50 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.49">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.50">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.49 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.50 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             title="Сообщить об ошибке">
@@ -705,9 +705,11 @@
     <div class="w-full bg-stone-950/95 border-t-2 border-amber-700 px-2 sm:px-4 py-2">
       <div class="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3">
         <div id="evoStageName" class="shrink-0 font-game text-[11px] sm:text-xs text-yellow-300 truncate max-w-[42%] sm:max-w-[280px]">Форма №1 — Владыка</div>
-        <div class="relative flex-1 h-6 bg-stone-800 rounded-full overflow-hidden border border-amber-500/70">
-          <div id="evoXpFill" class="h-full bg-gradient-to-r from-amber-600 via-yellow-400 to-emerald-400 transition-all duration-300" style="width:0%"></div>
-          <div id="evoXpLabel" class="absolute inset-0 flex items-center justify-center font-currency text-[11px] sm:text-xs text-white font-bold tabular-nums drop-shadow">0 / 1.43k</div>
+        <div id="evoXpTrack" class="relative flex-1 min-h-6">
+          <div class="absolute inset-0 bg-stone-800 rounded-full overflow-hidden border border-amber-500/70">
+            <div id="evoXpFill" class="h-full bg-gradient-to-r from-amber-600 via-yellow-400 to-emerald-400 transition-all duration-300" style="width:0%"></div>
+          </div>
+          <div id="evoXpLabel" class="relative z-10 flex items-center justify-center font-currency text-[11px] sm:text-xs text-white font-bold tabular-nums drop-shadow px-2 py-0.5 text-center leading-tight">0 / 1.43k</div>
         </div>
         <div id="evoXpLeft" class="shrink-0 font-currency text-[11px] sm:text-xs text-amber-100 tabular-nums">ещё 1.43k</div>
       </div>
@@ -2190,7 +2192,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.49"></script>
+  <script type="module" src="src/main.js?v=5.0.50"></script>
 </body>
 
 </html>
