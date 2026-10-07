@@ -1,5 +1,7 @@
 // Cloudflare Worker with Static Assets & D1 Database
 import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, displayName, vipLevelOf } from "./workerAdmin.js";
+import { ensureFriendSchema, handleFriendGet, handleFriendPost } from "./workerFriends.js";
+import { ensureGuildSchema, handleGuildGet, handleGuildPost, presenceOf, tagsFor } from "./workerGuild.js";
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -43,6 +45,8 @@ async function ensureSchema(db) {
     await db.prepare(`
       CREATE INDEX IF NOT EXISTS idx_user_accounts_username ON user_accounts(username);
     `).run();
+    await ensureFriendSchema(db);
+    await ensureGuildSchema(db);
     await ensureAdminSchema(db);
   } catch (err) {
     console.warn("Schema initialization notice:", err);
@@ -234,6 +238,14 @@ async function handleCloudSave(req, env) {
         }), { status: 200, headers });
       }
 
+      const friendAction = action || body.action;
+      if (typeof friendAction === "string" && friendAction.startsWith("friend_")) {
+        return handleFriendPost(friendAction, body, req, env, headers);
+      }
+      if (typeof friendAction === "string" && (friendAction.startsWith("guild_") || friendAction === "mail_claim")) {
+        return handleGuildPost(friendAction, body, req, env, headers);
+      }
+
       const { playerId, playerName, saveData } = body;
 
       if (!playerId || !saveData) {
@@ -310,12 +322,21 @@ async function handleCloudSave(req, env) {
           online: true,
           username: user.username,
           playerId: user.playerId,
-          vipLevel: await vipLevelOf(env.DB, user.playerId)
+          vipLevel: await vipLevelOf(env.DB, user.playerId),
+          guild: await presenceOf(env.DB, user.playerId)
         }), { status: 200, headers });
       }
 
       if (action === "leaderboard") {
         return handleLeaderboard(url, env, headers);
+      }
+
+      if (action === "friends" || action === "friend_profile") {
+        return handleFriendGet(action, url, req, env, headers);
+      }
+
+      if (action === "guild" || action === "mail") {
+        return handleGuildGet(action, req, env, headers);
       }
 
       // Handle account lookup
@@ -488,6 +509,8 @@ async function handleLeaderboard(url, env, headers) {
 
   const board = accountLadder(ranked);
   const top = board.slice(0, 50).map((entry, index) => ({ ...publicLadderEntry(entry), rank: index + 1 }));
+  const tagMap = await tagsFor(env.DB, top.map((entry) => entry.playerId));
+  for (const entry of top) entry.guildTag = tagMap.get(entry.playerId) || "";
   const viewerId = url.searchParams.get("playerId");
   const youIndex = viewerId ? board.findIndex((entry) => entry.playerId === viewerId) : -1;
   const viewer = viewerId ? ranked.find((entry) => entry.playerId === viewerId) : null;

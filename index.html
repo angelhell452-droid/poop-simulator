@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.41 PRO</title>
+  <title>Poop Simulator v5.0.44 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.41">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.44">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.41 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.44 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             title="Сообщить об ошибке">
@@ -93,6 +93,23 @@
         class="jelly-btn font-game px-2.5 sm:px-3 py-1 text-xs flex items-center gap-1.5 font-bold"
         title="VIP-статус. Покупка пока недоступна">
         <span>👑</span> <span>VIP</span>
+      </button>
+      <button id="btnFriendsModal"
+        class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
+        title="Друзья">
+        <span>🤝</span> <span>Друзья</span>
+        <span id="friendsIncomingBadge" class="friends-badge hidden">0</span>
+      </button>
+      <button id="btnMailModal"
+        class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
+        title="Почта">
+        <span>✉️</span> <span>Почта</span>
+        <span id="mailRewardBadge" class="friends-badge hidden">0</span>
+      </button>
+      <button id="btnGuildModal"
+        class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
+        title="Гильдия">
+        <span>🛡️</span> <span>Гильдия</span>
       </button>
       <button id="btnLeaderboardModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
@@ -994,6 +1011,42 @@
     </div>
   </div>
 
+  <div id="friendsModal"
+    class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="garden-sheet">
+      <button class="modal-close garden-close" type="button" aria-label="Закрыть">&times;</button>
+      <h3 class="font-game text-xl mb-1">Друзья</h3>
+      <p class="garden-muted mb-3">Заявка по точному логину. Профиль открывается, когда игрок принял дружбу.</p>
+      <form id="friendsAddForm" class="flex gap-2 mb-3">
+        <input id="friendsNameInput" class="garden-input" maxlength="32" placeholder="Логин друга" autocomplete="off">
+        <button type="submit" class="garden-pill accent jelly-btn shrink-0">Добавить</button>
+      </form>
+      <div id="friendsBody" class="overflow-y-auto custom-scroll min-h-0 flex-1 pr-1"></div>
+    </div>
+  </div>
+
+  <div id="guildModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="garden-sheet">
+      <button class="modal-close garden-close" type="button" aria-label="Закрыть">&times;</button>
+      <h3 class="font-game text-xl mb-3">Гильдия</h3>
+      <form id="guildCreateForm" class="grid gap-2 mb-3">
+        <input id="guildNameInput" class="garden-input" maxlength="24" placeholder="Название" autocomplete="off">
+        <input id="guildTagInput" class="garden-input" maxlength="5" placeholder="Титул, 2–5 букв" autocomplete="off">
+        <button type="submit" class="garden-pill accent jelly-btn">Создать</button>
+      </form>
+      <div id="guildBody" class="overflow-y-auto custom-scroll min-h-0 flex-1 pr-1"></div>
+    </div>
+  </div>
+
+  <div id="mailModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="garden-sheet">
+      <button class="modal-close garden-close" type="button" aria-label="Закрыть">&times;</button>
+      <h3 class="font-game text-xl mb-1">Почта</h3>
+      <p class="garden-muted mb-3">Письмо приходит всей гильдии. Вантузы внутри только у того, кто бил босса.</p>
+      <div id="mailBody" class="overflow-y-auto custom-scroll min-h-0 flex-1 pr-1"></div>
+    </div>
+  </div>
+
   <!-- PRESTIGE MODAL -->
   <div id="prestigeModal"
     class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
@@ -1711,6 +1764,20 @@
           </div>
         </div>
 
+        <div class="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-400/40 shadow">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-2xl">🛡️</span>
+            <span class="font-game text-sm text-emerald-300">Гильдия и боссы</span>
+          </div>
+          <ul class="list-disc list-inside text-stone-300 mt-1 space-y-1 text-[11px]">
+            <li>Один аккаунт состоит в одной гильдии, до 20 человек. Перед ником стоит титул.</li>
+            <li>Глава и офицер приглашают и вызывают босса из уже открытых. Участник только бьёт.</li>
+            <li>Уровень гильдии даёт бонус к клику и заводам всем, кто сейчас в ней. Потолок — 10 уровень.</li>
+            <li>Удар длится 15 секунд, потом личные 3 часа. На попытку есть 12 часов.</li>
+            <li>Письмо о победе или проигрыше приходит всей гильдии. Вантузы внутри только у того, кто сам бил.</li>
+          </ul>
+        </div>
+
         <!-- 6. PRO TIPS -->
         <div class="p-3.5 rounded-2xl bg-stone-900/90 border border-stone-700 shadow">
           <div class="flex items-center gap-2 mb-1">
@@ -2112,11 +2179,12 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.41"></script>
+  <script type="module" src="src/main.js?v=5.0.44"></script>
 </body>
 
 </html>
 </html>
+
 
 
 

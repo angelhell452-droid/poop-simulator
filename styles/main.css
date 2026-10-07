@@ -167,6 +167,151 @@ body {
   transform: scale(0.93);
 }
 
+.garden-sheet {
+  background: var(--surface-card);
+  color: var(--ink);
+  border: 3px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  width: min(520px, 100%);
+  max-height: min(85vh, 760px);
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  position: relative;
+  font-family: var(--font-main);
+  font-weight: 700;
+}
+
+.garden-card {
+  background: var(--surface);
+  border: 3px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+.garden-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
+  background: rgba(243, 247, 244, 0.08);
+  color: var(--ink);
+  font-family: var(--font-main);
+  font-weight: 700;
+  padding: 6px 12px;
+}
+
+.garden-pill.accent {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: transparent;
+}
+
+.garden-input {
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
+  background: var(--bg-primary);
+  color: var(--ink);
+  font-family: var(--font-main);
+  font-weight: 700;
+  padding: 8px 14px;
+  width: 100%;
+  outline: none;
+}
+
+.garden-muted {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.garden-empty {
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-align: center;
+  padding: 10px 14px;
+  font-family: var(--font-main);
+  font-weight: 700;
+}
+
+.garden-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  color: var(--text-muted);
+  font-size: 28px;
+  line-height: 1;
+  background: transparent;
+  border: 0;
+}
+
+.garden-toast {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 80;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-main);
+  font-weight: 700;
+  padding: 8px 14px;
+}
+
+.friend-online {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: var(--radius-full);
+  background: var(--text-currency);
+}
+
+.boss-sprite {
+  text-align: center;
+  cursor: pointer;
+}
+
+.boss-sprite img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  margin: 0 auto 8px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.boss-fallback {
+  display: block;
+  font-size: 64px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.boss-sprite.hit {
+  animation: boss-hit 150ms ease;
+}
+
+@keyframes boss-hit {
+  40% { transform: scale(0.92, 1.06) translateX(8px); }
+}
+
+.friends-badge {
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 10px;
+  line-height: 16px;
+}
+
 @keyframes cosmicAura {
   0% { transform: rotate(0deg) scale(1); }
   50% { transform: rotate(180deg) scale(1.08); }

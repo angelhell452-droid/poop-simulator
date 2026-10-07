@@ -1,8 +1,10 @@
-import { GAME } from '../core/state.js?v=5.0.41';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.41';
-import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.0.41';
-import { saveLocal } from '../save/saveManager.js?v=5.0.41';
-import { updateHUD } from './hudView.js?v=5.0.41';
+import { GAME } from '../core/state.js?v=5.0.44';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.44';
+import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.0.44';
+import { sendFriendRequest } from './friendsView.js?v=5.0.44';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.44';
+import { saveLocal } from '../save/saveManager.js?v=5.0.44';
+import { updateHUD } from './hudView.js?v=5.0.44';
 
 let cachedLeaderboard = null;
 let cachedYou = null;
@@ -82,7 +84,7 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
       if (!isCurrent) cardBorder = 'border-amber-700/50 bg-stone-900/90';
     }
 
-    const safeName = String(player.playerName || 'Анонимный Какашич')
+    const safeName = formatTaggedName(player.playerName || 'Анонимный Какашич', player.guildTag)
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
@@ -99,6 +101,7 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
               ${player.vipLevel > 0 ? `<span class="vip-badge shrink-0">VIP ${formatNumber(player.vipLevel)}</span>` : ''}
               ${isCurrent ? '<span class="text-[9px] bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 px-1.5 py-0.2 rounded font-black uppercase tracking-wider shrink-0 shadow">ВЫ</span>' : ''}
             </div>
+            ${containerEl.id === 'leaderboardFullList' && !isCurrent && getStoredAccount()?.username ? `<button type="button" class="garden-pill jelly-btn mt-1" data-friend-add="${encodeURIComponent(String(player.playerName || ''))}">В друзья</button>` : ''}
             <div class="text-[10px] text-stone-400 flex items-center gap-2 mt-0.5">
               <span>🧬 Форма #${formatNumber(player.stage || 1)}</span>
               <span class="text-stone-600">•</span>
@@ -248,4 +251,12 @@ export function initLeaderboardView() {
       refreshAndRenderAllLeaderboards(true);
     });
   }
+
+  document.getElementById('leaderboardFullList')?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-friend-add]');
+    if (!button) return;
+    event.preventDefault();
+    const username = decodeURIComponent(button.dataset.friendAdd || '');
+    if (username) sendFriendRequest(username);
+  });
 }

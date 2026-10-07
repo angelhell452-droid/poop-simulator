@@ -1,8 +1,9 @@
-import { GAME } from '../core/state.js?v=5.0.41';
+import { GAME } from '../core/state.js?v=5.0.44';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.41';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.44';
 import { setConfirmedVip } from '../economy/pace.js';
-import { cmp } from '../utils/big.js?v=5.0.41';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.44';
+import { cmp } from '../utils/big.js?v=5.0.44';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
@@ -69,6 +70,7 @@ export async function confirmLiveSession() {
       return false;
     }
     if (data.vipLevel != null) setConfirmedVip(data.vipLevel);
+    if (data.guild) setGuildPresence(data.guild);
     return true;
   } catch (err) {
     return true;
@@ -400,6 +402,27 @@ export async function adminRequest(action, options = {}) {
   const data = await res.json().catch(() => ({ success: false, error: 'Пустой ответ сервера' }));
   if (!res.ok && !data.error) data.error = 'Запрос отклонён';
   return data;
+}
+
+export async function socialRequest(action, options = {}) {
+  const query = options.query ? `&${options.query}` : '';
+  try {
+    const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=${encodeURIComponent(action)}${query}`, {
+      method: options.method || 'GET',
+      body: options.body ? JSON.stringify(options.body) : undefined
+    });
+    let data = null;
+    try { data = await res.json(); } catch (err) { data = null; }
+    if (res.status === 401) askRelogin();
+    if (!data || typeof data !== 'object') {
+      return { success: false, error: 'Сервер друзей ещё не отвечает' };
+    }
+    if (!res.ok) data.success = false;
+    if (!res.ok && !data.error) data.error = 'Запрос отклонён';
+    return data;
+  } catch (err) {
+    return { success: false, error: 'Сервер друзей ещё не отвечает' };
+  }
 }
 
 export async function wipeCloudPlayer(playerId) {

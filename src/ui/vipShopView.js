@@ -1,5 +1,5 @@
 import { getConfirmedVip } from '../economy/pace.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.41';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.44';
 
 const VIP_OFFERS = [
   { level: 1, mult: 2 },
