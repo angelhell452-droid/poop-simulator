@@ -1,8 +1,8 @@
-import { GAME } from '../core/state.js?v=5.0.44';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.44';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.44';
-import { saveLocal } from '../save/saveManager.js?v=5.0.44';
-import { updateHUD } from './hudView.js?v=5.0.44';
+import { GAME } from '../core/state.js?v=5.0.49';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.49';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.49';
+import { saveLocal } from '../save/saveManager.js?v=5.0.49';
+import { updateHUD } from './hudView.js?v=5.0.49';
 
 function esc(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

@@ -1,11 +1,11 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.44';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.44';
-import { getPhaseForForm, phaseLabel } from '../progression/phases.data.js?v=5.0.44';
-import { KNIVES } from '../data/knives.data.js?v=5.0.44';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.44';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.44';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.44';
-import { sendGuildInvite } from './guildView.js?v=5.0.44';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.49';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.49';
+import { getPhaseForForm, phaseLabel } from '../progression/phases.data.js?v=5.0.49';
+import { KNIVES } from '../data/knives.data.js?v=5.0.49';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.49';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.49';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.49';
+import { sendGuildInvite } from './guildView.js?v=5.0.49';
 
 let roster = { friends: [], incoming: [], outgoing: [], canInvite: false };
 let confirmRemove = '';

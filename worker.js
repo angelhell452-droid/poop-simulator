@@ -335,7 +335,7 @@ async function handleCloudSave(req, env) {
         return handleFriendGet(action, url, req, env, headers);
       }
 
-      if (action === "guild" || action === "mail") {
+      if (action === "guild" || action === "mail" || action === "guild_list") {
         return handleGuildGet(action, req, env, headers);
       }
 

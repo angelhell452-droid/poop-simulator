@@ -1,10 +1,12 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.44';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.44';
-import { guildBonusMult } from '../data/bosses.data.js?v=5.0.44';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.44';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.44';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.49';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.49';
+import { guildBonusMult } from '../data/bosses.data.js?v=5.0.49';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.49';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.49';
 
 let state = null;
+let directory = [];
+let directoryError = '';
 let strikeClicks = 0;
 let strikeTimer = 0;
 let striking = false;
@@ -50,6 +52,26 @@ function applyPresence(data) {
   updateAccountHeaderUI();
 }
 
+async function loadDirectory(query, announce) {
+  if (!signedIn()) {
+    directory = [];
+    directoryError = '';
+    render();
+    return;
+  }
+  const data = await socialRequest('guild_list', { query: `q=${encodeURIComponent(query || '')}` });
+  if (!data.success) {
+    directory = [];
+    directoryError = data.error || 'Список гильдий не ответил';
+    if (announce) toast(directoryError);
+    render();
+    return;
+  }
+  directoryError = '';
+  directory = data.guilds || [];
+  render();
+}
+
 async function loadGuild() {
   if (!signedIn()) {
     state = null;
@@ -83,6 +105,49 @@ function memberButtons(person, guild) {
   return buttons.join('');
 }
 
+function directoryBlock() {
+  const mine = state?.guild?.id;
+  const free = !state?.guild;
+  if (directoryError) return `<div class="garden-empty mt-3">${esc(directoryError)}</div>`;
+  if (!directory.length) {
+    const query = (document.getElementById('guildSearchInput')?.value || '').trim();
+    const empty = query ? 'Ничего не нашлось.' : 'Гильдий пока нет.';
+    return `<div class="garden-empty mt-3">${empty}</div>`;
+  }
+  const rows = directory.map((row) => {
+    let action = '';
+    if (mine === row.id) action = `<span class="garden-pill shrink-0">Ваша</span>`;
+    else if (!free) action = '';
+    else if (row.applied) action = `<button type="button" class="garden-pill jelly-btn shrink-0" data-guild-action="cancel" data-guild="${row.id}">Отозвать</button>`;
+    else if (row.members >= row.cap) action = `<span class="garden-pill shrink-0">Мест нет</span>`;
+    else action = `<button type="button" class="garden-pill accent jelly-btn shrink-0" data-guild-action="apply" data-guild="${row.id}">Подать заявку</button>`;
+    return `
+      <div class="garden-card flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <div class="truncate">[${esc(row.tag)}] ${esc(row.name)}</div>
+          <div class="garden-muted">Уровень ${formatNumber(row.level)} · ${formatNumber(row.members)}/${formatNumber(row.cap)}</div>
+        </div>
+        ${action}
+      </div>
+    `;
+  }).join('');
+  return `<div class="garden-muted mt-3 mb-2">Гильдии</div><div class="grid gap-2">${rows}</div>`;
+}
+
+function applicationBlock(guild) {
+  const rows = guild.applications || [];
+  if (!guild.canInvite || !rows.length) return '';
+  return `<div class="garden-muted mt-3 mb-2">Заявки</div><div class="grid gap-2">${rows.map((row) => `
+    <div class="garden-card flex items-center justify-between gap-2">
+      <span class="truncate">${esc(row.username)}</span>
+      <span class="flex gap-1.5 shrink-0">
+        <button type="button" class="garden-pill accent jelly-btn" data-guild-action="applyAccept" data-user="${attr(row.username)}">Принять</button>
+        <button type="button" class="garden-pill jelly-btn" data-guild-action="applyDecline" data-user="${attr(row.username)}">Отклонить</button>
+      </span>
+    </div>
+  `).join('')}</div>`;
+}
+
 function bossBlock(guild) {
   const boss = guild.boss;
   if (!boss) {
@@ -112,7 +177,9 @@ function bossBlock(guild) {
 function render() {
   const box = document.getElementById('guildBody');
   const form = document.getElementById('guildCreateForm');
+  const search = document.getElementById('guildSearchForm');
   if (!box) return;
+  if (search) search.classList.toggle('hidden', !signedIn());
   if (!signedIn()) {
     if (form) form.classList.add('hidden');
     box.innerHTML = `<div class="garden-empty">Гильдия открывается с аккаунта.</div>`;
@@ -122,7 +189,7 @@ function render() {
   if (!guild) {
     if (form) form.classList.remove('hidden');
     const invites = state?.invites || [];
-    box.innerHTML = invites.length ? `<div class="garden-muted mb-2">Приглашения</div><div class="grid gap-2">${invites.map((invite) => `
+    const inviteBlock = invites.length ? `<div class="garden-muted mb-2">Приглашения</div><div class="grid gap-2">${invites.map((invite) => `
       <div class="garden-card flex items-center justify-between gap-2">
         <span class="truncate">[${esc(invite.tag)}] ${esc(invite.name)} · от ${esc(invite.fromName)}</span>
         <span class="flex gap-1.5 shrink-0">
@@ -130,7 +197,8 @@ function render() {
           <button type="button" class="garden-pill jelly-btn" data-guild-action="decline" data-guild="${invite.guildId}">Отклонить</button>
         </span>
       </div>
-    `).join('')}</div>` : `<div class="garden-empty">Приглашений нет. Создайте гильдию или дождитесь зову.</div>`;
+    `).join('')}</div>` : '';
+    box.innerHTML = `${directoryBlock()}${inviteBlock}`;
     return;
   }
   if (form) form.classList.add('hidden');
@@ -141,6 +209,7 @@ function render() {
       <div class="garden-muted mt-1">${roleName(guild.role)} · уровень ${formatNumber(guild.level)} · ${formatNumber(guild.points)} очков · +${formatNumber(bonus)}% к клику и заводам</div>
     </div>
     ${bossBlock(guild)}
+    ${applicationBlock(guild)}
     <div class="garden-muted mt-3 mb-2">Состав · ${formatNumber((guild.members || []).length)}</div>
     <div class="grid gap-2">
       ${(guild.members || []).map((person) => `
@@ -154,6 +223,7 @@ function render() {
       <button type="button" class="garden-pill jelly-btn" data-guild-action="leave">Выйти</button>
       ${guild.canLead ? `<button type="button" class="garden-pill jelly-btn" data-guild-action="disband">Распустить</button>` : ''}
     </div>
+    ${directoryBlock()}
   `;
 }
 
@@ -171,6 +241,16 @@ async function act(action, button) {
     data = await socialRequest('guild_role', { method: 'POST', body: { username, role: button.dataset.role } });
   } else if (action === 'summon') {
     data = await socialRequest('guild_summon', { method: 'POST', body: { bossIndex: Number(button.dataset.boss) } });
+  } else if (action === 'apply' || action === 'cancel') {
+    data = await socialRequest(action === 'apply' ? 'guild_apply' : 'guild_apply_cancel', {
+      method: 'POST',
+      body: { guildId: Number(button.dataset.guild) }
+    });
+  } else if (action === 'applyAccept' || action === 'applyDecline') {
+    data = await socialRequest(action === 'applyAccept' ? 'guild_apply_accept' : 'guild_apply_decline', {
+      method: 'POST',
+      body: { username }
+    });
   } else if (action === 'leave') {
     data = await socialRequest('guild_leave', { method: 'POST', body: {} });
   } else if (action === 'disband') {
@@ -180,11 +260,14 @@ async function act(action, button) {
     toast(data?.error || 'Не вышло');
     return;
   }
+  if (action === 'apply') toast('Заявка отправлена');
+  if (action === 'cancel') toast('Заявка отозвана');
   if (data.guild !== undefined || data.presence) {
     state = data;
     applyPresence(data);
   }
   await loadGuild();
+  await loadDirectory(document.getElementById('guildSearchInput')?.value || '');
 }
 
 function stopStrike() {
@@ -231,6 +314,11 @@ export function initGuildView() {
   document.getElementById('btnGuildModal')?.addEventListener('click', () => {
     modal?.classList.remove('hidden');
     loadGuild();
+    loadDirectory(document.getElementById('guildSearchInput')?.value || '');
+  });
+  document.getElementById('guildSearchForm')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    loadDirectory(document.getElementById('guildSearchInput')?.value || '', true);
   });
   document.getElementById('guildCreateForm')?.addEventListener('submit', async (event) => {
     event.preventDefault();

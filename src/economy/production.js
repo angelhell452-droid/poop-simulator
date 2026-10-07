@@ -1,18 +1,18 @@
-import { GAME } from '../core/state.js?v=5.0.44';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.44';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.44';
+import { GAME } from '../core/state.js?v=5.0.49';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.49';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.49';
 import { TALENTS } from '../data/talents.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.0.44';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.44';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.44';
-import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.44';
-import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.44';
+import { KNIVES } from '../data/knives.data.js?v=5.0.49';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.49';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.49';
+import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.49';
+import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.49';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.44';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.49';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.44';
-import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.44';
-import { horizonIncomeMult } from './horizon.js?v=5.0.44';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.49';
+import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.49';
+import { horizonIncomeMult } from './horizon.js?v=5.0.49';
 
 export function getEquippedBodySkin() {
   const skin = findBodySkin(GAME.equippedSkin);

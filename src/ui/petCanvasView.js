@@ -1,19 +1,19 @@
-import { GAME } from '../core/state.js?v=5.0.44';
-import { getEquippedKnife } from '../economy/production.js?v=5.0.44';
+import { GAME } from '../core/state.js?v=5.0.49';
+import { getEquippedKnife } from '../economy/production.js?v=5.0.49';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.44';
-import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.44';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.44';
-import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.44';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.44';
-import { updateHUD } from './hudView.js?v=5.0.44';
-import { saveLocal } from '../save/saveManager.js?v=5.0.44';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.44';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.49';
+import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.49';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.49';
+import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.49';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.49';
+import { updateHUD } from './hudView.js?v=5.0.49';
+import { saveLocal } from '../save/saveManager.js?v=5.0.49';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.49';
 import { events } from '../core/events.js';
-import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.44';
-import { KNIVES } from '../data/knives.data.js?v=5.0.44';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.44';
+import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.49';
+import { KNIVES } from '../data/knives.data.js?v=5.0.49';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.49';
 
 let canvas = null;
 let ctx = null;
@@ -120,7 +120,7 @@ const clayHats = {
   hat_chef: { key: 'chef', x: 4, h: 64, overlap: 28 },
   hat_cap: { key: 'cap', x: 0, h: 62, overlap: 50 },
   hat_party: { key: 'party', x: 4, h: 74, overlap: 32 },
-  hat_shades: { key: 'shades', x: 0, h: 32, face: 0.52 },
+  hat_shades: { key: 'shades', x: 0, h: 32, face: 0.52, faceSkin: 0.38 },
   hat_cowboy: { key: 'cowboy', x: 0, h: 78, overlap: 74 },
   hat_viking: { key: 'viking', x: 0, h: 92, overlap: 60 },
   hat_crown: { key: 'crown', x: 0, h: 92, overlap: 55 }
@@ -1200,8 +1200,10 @@ function renderPetLoop(time) {
   const placed = characterFrame ? characterDest(characterFrame) : null;
   const clayHat = characterFrame ? clayHats[GAME.equippedHat] : null;
   if (clayHat && propLooks[clayHat.key]) {
-    const hatTop = clayHat.face != null
-      ? placed.y + placed.destH * clayHat.face
+    const skinOn = !!(body && body.look.open);
+    const face = skinOn && clayHat.faceSkin != null ? clayHat.faceSkin : clayHat.face;
+    const hatTop = face != null
+      ? placed.y + placed.destH * face
       : placed.y - clayHat.h + clayHat.overlap;
     drawProp(ctx, propLooks[clayHat.key], clayHat.x, hatTop, clayHat.h);
   } else if (characterFrame && GAME.equippedHat && !clayHats[GAME.equippedHat]) {

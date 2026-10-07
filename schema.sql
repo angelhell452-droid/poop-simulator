@@ -66,6 +66,16 @@ CREATE TABLE IF NOT EXISTS guild_hits (
   PRIMARY KEY (guild_id, player_id, started_ms)
 );
 
+CREATE TABLE IF NOT EXISTS guild_applications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guild_id INTEGER NOT NULL,
+  player_id TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  UNIQUE (guild_id, player_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_guild_applications_guild ON guild_applications(guild_id);
+
 CREATE TABLE IF NOT EXISTS guild_invites (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   guild_id INTEGER NOT NULL,

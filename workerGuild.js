@@ -3,6 +3,7 @@ import { GUILD_BOSSES, bossByIndex, bossReward, guildLevelFromPoints } from "./s
 import { bossClickCap, bossClickPower, bossMaxHp } from "./src/data/bossCombat.js";
 
 const MEMBER_CAP = 20;
+const APPLICATION_CAP = 10;
 const STRIKE_MS = 15000;
 const STRIKE_CD_MS = 3 * 60 * 60 * 1000;
 const ATTEMPT_MS = 12 * 60 * 60 * 1000;
@@ -96,6 +97,16 @@ export async function ensureGuildSchema(db) {
       PRIMARY KEY (guild_id, player_id, started_ms)
     );
   `).run();
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS guild_applications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      guild_id INTEGER NOT NULL,
+      player_id TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE (guild_id, player_id)
+    );
+  `).run();
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_guild_applications_guild ON guild_applications(guild_id);`).run();
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS guild_invites (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -308,6 +319,7 @@ async function viewOf(db, playerId) {
   `).bind(guild.id).all();
   const canLead = member.role === "leader";
   const canInvite = canLead || member.role === "officer";
+  const applications = canInvite ? await applicationsOf(db, guild.id) : [];
   return {
     presence: { level: guildLevelFromPoints(guild.points), tag: String(guild.tag || "") },
     invites,
@@ -321,11 +333,57 @@ async function viewOf(db, playerId) {
       canInvite,
       canSummon: canInvite,
       canLead,
+      applications,
       boss: publicBoss(guild, member),
       roster: await rosterOf(db, guild.id),
       members: (people || []).map((row) => ({ username: row.username, role: row.role }))
     }
   };
+}
+
+async function applicationsOf(db, guildId) {
+  const { results } = await db.prepare(`
+    SELECT accounts.username as username
+    FROM guild_applications apps
+    JOIN user_accounts accounts ON accounts.player_id = apps.player_id
+    WHERE apps.guild_id = ?
+    ORDER BY apps.id
+  `).bind(guildId).all();
+  return (results || []).map((row) => ({ username: row.username }));
+}
+
+async function clearJoinQueue(db, playerId) {
+  await db.prepare(`DELETE FROM guild_invites WHERE to_id = ?`).bind(playerId).run();
+  await db.prepare(`DELETE FROM guild_applications WHERE player_id = ?`).bind(playerId).run();
+}
+
+async function listGuilds(db, headers, playerId, query) {
+  const needle = clean(query, 24).toLocaleLowerCase("ru");
+  const { results } = await db.prepare(`
+    SELECT guilds.id as id, guilds.name as name, guilds.tag as tag, guilds.points as points,
+      (SELECT COUNT(*) FROM guild_members members WHERE members.guild_id = guilds.id) as members
+    FROM guilds
+    ORDER BY guilds.points DESC, members DESC, guilds.name
+    LIMIT 200
+  `).all();
+  const { results: mine } = await db.prepare(`
+    SELECT guild_id as guildId FROM guild_applications WHERE player_id = ?
+  `).bind(playerId).all();
+  const applied = new Set((mine || []).map((row) => Number(row.guildId)));
+  const guilds = (results || []).filter((row) => {
+    if (!needle) return true;
+    return String(row.name || "").toLocaleLowerCase("ru").includes(needle)
+      || String(row.tag || "").toLocaleLowerCase("ru").includes(needle);
+  }).slice(0, 40).map((row) => ({
+    id: row.id,
+    name: row.name,
+    tag: row.tag,
+    level: guildLevelFromPoints(row.points),
+    members: Number(row.members) || 0,
+    cap: MEMBER_CAP,
+    applied: applied.has(Number(row.id))
+  }));
+  return json(headers, { success: true, guilds });
 }
 
 async function incomingInvites(db, playerId) {
@@ -352,6 +410,10 @@ export async function handleGuildPost(action, body, req, env, headers) {
   const me = gate.actor.playerId;
   if (action === "guild_create") return createGuild(env.DB, headers, me, body);
   if (action === "guild_invite") return invite(env.DB, headers, me, clean(body?.username, 32));
+  if (action === "guild_apply") return applyGuild(env.DB, headers, me, Number(body?.guildId));
+  if (action === "guild_apply_cancel") return cancelApply(env.DB, headers, me, Number(body?.guildId));
+  if (action === "guild_apply_accept") return acceptApply(env.DB, headers, me, clean(body?.username, 32));
+  if (action === "guild_apply_decline") return declineApply(env.DB, headers, me, clean(body?.username, 32));
   if (action === "guild_accept") return acceptInvite(env.DB, headers, me, Number(body?.guildId));
   if (action === "guild_decline") return declineInvite(env.DB, headers, me, Number(body?.guildId));
   if (action === "guild_kick") return kick(env.DB, headers, me, clean(body?.username, 32));
@@ -372,6 +434,10 @@ export async function handleGuildGet(action, req, env, headers) {
   if (action === "guild") {
     const view = await viewOf(env.DB, gate.actor.playerId);
     return json(headers, { success: true, ...view });
+  }
+  if (action === "guild_list") {
+    const query = new URL(req.url).searchParams.get("q") || "";
+    return listGuilds(env.DB, headers, gate.actor.playerId, query);
   }
   if (action === "mail") return listMail(env.DB, headers, gate.actor.playerId);
   return json(headers, { success: false, error: "Неизвестное действие" }, 400);
@@ -398,6 +464,7 @@ async function createGuild(db, headers, me, body) {
   await db.prepare(`
     INSERT INTO guild_unlocks (guild_id, boss_index, clears) VALUES (?, 1, 0)
   `).bind(created.id).run();
+  await clearJoinQueue(db, me);
   return json(headers, { success: true, ...(await viewOf(db, me)) });
 }
 
@@ -431,7 +498,72 @@ async function acceptInvite(db, headers, me, guildId) {
     return json(headers, { success: false, error: "В гильдии нет места" }, 409);
   }
   await db.prepare(`INSERT INTO guild_members (player_id, guild_id, role) VALUES (?, ?, 'member')`).bind(me, guildId).run();
-  await db.prepare(`DELETE FROM guild_invites WHERE to_id = ?`).bind(me).run();
+  await clearJoinQueue(db, me);
+  return json(headers, { success: true, ...(await viewOf(db, me)) });
+}
+
+async function applyGuild(db, headers, me, guildId) {
+  if (await membership(db, me)) return json(headers, { success: false, error: "Вы уже в гильдии" }, 409);
+  const guild = await guildRow(db, guildId);
+  if (!guild) return json(headers, { success: false, error: "Гильдия не найдена" }, 404);
+  if ((await memberCount(db, guildId)) >= MEMBER_CAP) {
+    return json(headers, { success: false, error: "В гильдии нет места" }, 409);
+  }
+  const pending = await db.prepare(`
+    SELECT COUNT(*) as n FROM guild_applications WHERE player_id = ?
+  `).bind(me).first();
+  const already = await db.prepare(`
+    SELECT id FROM guild_applications WHERE guild_id = ? AND player_id = ? LIMIT 1
+  `).bind(guildId, me).first();
+  if (!already && (Number(pending?.n) || 0) >= APPLICATION_CAP) {
+    return json(headers, { success: false, error: "Слишком много заявок" }, 409);
+  }
+  await db.prepare(`
+    INSERT INTO guild_applications (guild_id, player_id, created_at)
+    VALUES (?, ?, datetime('now'))
+    ON CONFLICT(guild_id, player_id) DO NOTHING
+  `).bind(guildId, me).run();
+  return json(headers, { success: true });
+}
+
+async function cancelApply(db, headers, me, guildId) {
+  await db.prepare(`DELETE FROM guild_applications WHERE guild_id = ? AND player_id = ?`).bind(guildId, me).run();
+  return json(headers, { success: true });
+}
+
+async function acceptApply(db, headers, me, username) {
+  const mine = await membership(db, me);
+  if (!mine || (mine.role !== "leader" && mine.role !== "officer")) {
+    return json(headers, { success: false, error: "Заявки принимают глава и офицер" }, 403);
+  }
+  const other = await accountByName(db, username);
+  if (!other) return json(headers, { success: false, error: "Игрок не найден" }, 404);
+  const application = await db.prepare(`
+    SELECT id FROM guild_applications WHERE guild_id = ? AND player_id = ? LIMIT 1
+  `).bind(mine.guildId, other.playerId).first();
+  if (!application) return json(headers, { success: false, error: "Заявки нет" }, 404);
+  if (await membership(db, other.playerId)) {
+    await db.prepare(`DELETE FROM guild_applications WHERE player_id = ?`).bind(other.playerId).run();
+    return json(headers, { success: false, error: "Игрок уже в гильдии" }, 409);
+  }
+  if ((await memberCount(db, mine.guildId)) >= MEMBER_CAP) {
+    return json(headers, { success: false, error: "В гильдии нет места" }, 409);
+  }
+  await db.prepare(`INSERT INTO guild_members (player_id, guild_id, role) VALUES (?, ?, 'member')`).bind(other.playerId, mine.guildId).run();
+  await clearJoinQueue(db, other.playerId);
+  return json(headers, { success: true, ...(await viewOf(db, me)) });
+}
+
+async function declineApply(db, headers, me, username) {
+  const mine = await membership(db, me);
+  if (!mine || (mine.role !== "leader" && mine.role !== "officer")) {
+    return json(headers, { success: false, error: "Заявки принимают глава и офицер" }, 403);
+  }
+  const other = await accountByName(db, username);
+  if (!other) return json(headers, { success: false, error: "Игрок не найден" }, 404);
+  await db.prepare(`
+    DELETE FROM guild_applications WHERE guild_id = ? AND player_id = ?
+  `).bind(mine.guildId, other.playerId).run();
   return json(headers, { success: true, ...(await viewOf(db, me)) });
 }
 
@@ -495,6 +627,7 @@ async function disband(db, headers, me) {
   const id = mine.guildId;
   await db.prepare(`DELETE FROM guild_members WHERE guild_id = ?`).bind(id).run();
   await db.prepare(`DELETE FROM guild_invites WHERE guild_id = ?`).bind(id).run();
+  await db.prepare(`DELETE FROM guild_applications WHERE guild_id = ?`).bind(id).run();
   await db.prepare(`DELETE FROM guild_unlocks WHERE guild_id = ?`).bind(id).run();
   await db.prepare(`DELETE FROM guild_hits WHERE guild_id = ?`).bind(id).run();
   await db.prepare(`DELETE FROM guilds WHERE id = ?`).bind(id).run();
