@@ -342,9 +342,9 @@ export const WEAPON_CASES = [
     "currencySymbol": "🪠",
     "borderClass": "border-yellow-400 shadow-[0_0_20px_#facc15]",
     "bgClass": "from-yellow-950 via-amber-950 to-stone-950",
-    "desc": "Керамбит — самый сильный нож кейса, катана идёт следом. С шансом 1% — ★ Karambit | Dragon Lore (Золотое пламя дракона).",
+    "desc": "Керамбит — самый сильный нож кейса, катана идёт следом. С шансом 1% — ✨ Katana | Небесный Клинок Архангела (Archangel Katana).",
     "fixedChances": {
-      "knife_karambit_lore": 0.01
+      "knife_celestial_katana": 0.01
     },
     "pool": [
       "knife_butterfly_ruby",
@@ -364,7 +364,7 @@ export const WEAPON_CASES = [
       "knife_rainbow_classic",
       "knife_rainbow_katana",
       "knife_karambit_bluegem",
-      "knife_karambit_lore"
+      "knife_celestial_katana"
     ]
   },
   {
@@ -379,9 +379,9 @@ export const WEAPON_CASES = [
     "currencySymbol": "🪠",
     "borderClass": "border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.6)]",
     "bgClass": "from-amber-950 via-yellow-950 to-black",
-    "desc": "Керамбит — самый сильный нож кейса, катана идёт следом. С шансом 1% — 👑 Karambit | Точка Омега: Абсолютный Бог (Omega Absolute).",
+    "desc": "Катана — самый сильный обычный нож кейса. С шансом 1% — ★ Karambit | Dragon Lore (Золотое пламя дракона).",
     "fixedChances": {
-      "knife_godly_omega": 0.01
+      "knife_karambit_lore": 0.01
     },
     "pool": [
       "knife_rainbow_bayonet",
@@ -400,8 +400,7 @@ export const WEAPON_CASES = [
       "knife_celestial_talon",
       "knife_celestial_daggers",
       "knife_celestial_katana",
-      "knife_karambit_lore",
-      "knife_godly_omega"
+      "knife_karambit_lore"
     ]
   },
   {
@@ -416,7 +415,7 @@ export const WEAPON_CASES = [
     "currencySymbol": "🪠",
     "borderClass": "border-fuchsia-400 shadow-[0_0_25px_rgba(217,70,239,0.6)]",
     "bgClass": "from-fuchsia-950 via-purple-950 to-black",
-    "desc": "Точка Омега — самый сильный нож. Катана этого кейса идёт сразу за ней.",
+    "desc": "Дракон лор — самый сильный нож. Точка Омега идёт сразу за ним.",
     "pool": [
       "knife_celestial_skeleton",
       "knife_celestial_butterfly",
@@ -434,7 +433,8 @@ export const WEAPON_CASES = [
       "knife_godly_eclipse",
       "knife_godly_dawn",
       "knife_godly_katana",
-      "knife_godly_omega"
+      "knife_godly_omega",
+      "knife_karambit_lore"
     ]
   }
 ];

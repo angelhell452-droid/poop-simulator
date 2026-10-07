@@ -131,6 +131,55 @@ export async function ensureGuildSchema(db) {
     );
   `).run();
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_mail_player ON mail(player_id, id DESC);`).run();
+  try {
+    await db.prepare(`ALTER TABLE guilds ADD COLUMN req_epoch INTEGER NOT NULL DEFAULT 1`).run();
+  } catch (err) {
+    const message = String(err?.message || err);
+    if (!/duplicate column/i.test(message)) throw err;
+  }
+}
+
+function epochOfForm(form) {
+  const clamped = Math.min(200 * 500, Math.max(1, Math.floor(Number(form) || 1)));
+  return Math.floor((clamped - 1) / 500) + 1;
+}
+
+async function accountEpoch(db, playerId) {
+  const row = await db.prepare(`
+    SELECT stage, json_extract(save_data, '$.game.peakForm') as peak
+    FROM player_saves WHERE player_id = ? LIMIT 1
+  `).bind(playerId).first();
+  const form = Math.max(Number(row?.stage) || 1, Number(row?.peak) || 1);
+  return epochOfForm(form);
+}
+
+async function epochBlock(db, playerId, guild) {
+  const need = Math.max(1, Math.min(200, Number(guild?.req_epoch) || 1));
+  const have = await accountEpoch(db, playerId);
+  if (have >= need) return "";
+  return `Нужна эпоха ${need}. На аккаунте эпоха ${have}.`;
+}
+
+function strikePhase(guild, me, now = Date.now()) {
+  const open = Number(me?.strikeOpenMs) || 0;
+  const same = open > 0 && Number(me?.strikeStartedMs) === Number(guild?.boss_started_ms);
+  if (same && now < open + STRIKE_MS) {
+    return { phase: "hitting", windowUntilMs: open + STRIKE_MS, cdUntilMs: 0 };
+  }
+  const cd = Number(me?.nextStrikeMs) || 0;
+  if (cd > now) return { phase: "cooldown", windowUntilMs: 0, cdUntilMs: cd };
+  return { phase: "ready", windowUntilMs: 0, cdUntilMs: 0 };
+}
+
+function blowOf(gear, extra = {}) {
+  return {
+    perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars),
+    cap: bossClickCap(gear.knifeId, gear.stars),
+    form: gear.stage,
+    knifeId: gear.knifeId || "",
+    stars: gear.stars,
+    ...extra
+  };
 }
 
 async function membership(db, playerId) {
@@ -275,8 +324,16 @@ function publicBoss(guild, me) {
     hp: Math.max(0, Number(guild.boss_hp) || 0),
     maxHp: Math.max(1, Number(guild.boss_max_hp) || 1),
     deadlineMs: Number(guild.boss_deadline_ms) || 0,
-    cdUntilMs: Number(me?.nextStrikeMs) || 0
+    ...strikePhase(guild, me)
   };
+}
+
+async function damageOf(db, guild, playerId) {
+  const row = await db.prepare(`
+    SELECT damage FROM guild_hits
+    WHERE guild_id = ? AND player_id = ? AND started_ms = ? LIMIT 1
+  `).bind(guild.id, playerId, guild.boss_started_ms).first();
+  return Number(row?.damage) || 0;
 }
 
 async function rosterOf(db, guildId) {
@@ -333,11 +390,25 @@ async function viewOf(db, playerId) {
       canInvite,
       canSummon: canInvite,
       canLead,
+      reqEpoch: Math.max(1, Number(guild.req_epoch) || 1),
       applications,
-      boss: publicBoss(guild, member),
+      boss: await bossView(db, guild, member, playerId),
       roster: await rosterOf(db, guild.id),
       members: (people || []).map((row) => ({ username: row.username, role: row.role }))
     }
+  };
+}
+
+async function bossView(db, guild, member, playerId) {
+  const boss = publicBoss(guild, member);
+  if (!boss) return null;
+  const gear = await gearOf(db, playerId);
+  return {
+    ...boss,
+    blow: blowOf(gear, {
+      myDamage: await damageOf(db, guild, playerId),
+      clicks: Number(member?.strikeClicks) || 0
+    })
   };
 }
 
@@ -357,10 +428,13 @@ async function clearJoinQueue(db, playerId) {
   await db.prepare(`DELETE FROM guild_applications WHERE player_id = ?`).bind(playerId).run();
 }
 
-async function listGuilds(db, headers, playerId, query) {
+async function listGuilds(db, headers, playerId, query, levelRaw) {
   const needle = clean(query, 24).toLocaleLowerCase("ru");
+  const level = Math.floor(Number(levelRaw));
+  const wantLevel = Number.isFinite(level) && level >= 1 && level <= 10 ? level : 0;
   const { results } = await db.prepare(`
     SELECT guilds.id as id, guilds.name as name, guilds.tag as tag, guilds.points as points,
+      guilds.req_epoch as reqEpoch,
       (SELECT COUNT(*) FROM guild_members members WHERE members.guild_id = guilds.id) as members
     FROM guilds
     ORDER BY guilds.points DESC, members DESC, guilds.name
@@ -371,14 +445,17 @@ async function listGuilds(db, headers, playerId, query) {
   `).bind(playerId).all();
   const applied = new Set((mine || []).map((row) => Number(row.guildId)));
   const guilds = (results || []).filter((row) => {
-    if (!needle) return true;
-    return String(row.name || "").toLocaleLowerCase("ru").includes(needle)
+    const named = !needle
+      || String(row.name || "").toLocaleLowerCase("ru").includes(needle)
       || String(row.tag || "").toLocaleLowerCase("ru").includes(needle);
+    const leveled = !wantLevel || guildLevelFromPoints(row.points) === wantLevel;
+    return named && leveled;
   }).slice(0, 40).map((row) => ({
     id: row.id,
     name: row.name,
     tag: row.tag,
     level: guildLevelFromPoints(row.points),
+    reqEpoch: Math.max(1, Number(row.reqEpoch) || 1),
     members: Number(row.members) || 0,
     cap: MEMBER_CAP,
     applied: applied.has(Number(row.id))
@@ -421,6 +498,7 @@ export async function handleGuildPost(action, body, req, env, headers) {
   if (action === "guild_leave") return leave(env.DB, headers, me);
   if (action === "guild_disband") return disband(env.DB, headers, me);
   if (action === "guild_tag") return renameTag(env.DB, headers, me, clean(body?.tag, 5));
+  if (action === "guild_gate") return setGate(env.DB, headers, me, body?.epoch);
   if (action === "guild_summon") return summon(env.DB, headers, me, Number(body?.bossIndex));
   if (action === "guild_strike") return strike(env.DB, headers, me, Number(body?.clicks));
   if (action === "mail_claim") return claimMail(env.DB, headers, me, Number(body?.id));
@@ -436,8 +514,8 @@ export async function handleGuildGet(action, req, env, headers) {
     return json(headers, { success: true, ...view });
   }
   if (action === "guild_list") {
-    const query = new URL(req.url).searchParams.get("q") || "";
-    return listGuilds(env.DB, headers, gate.actor.playerId, query);
+    const url = new URL(req.url);
+    return listGuilds(env.DB, headers, gate.actor.playerId, url.searchParams.get("q") || "", url.searchParams.get("level") || "");
   }
   if (action === "mail") return listMail(env.DB, headers, gate.actor.playerId);
   return json(headers, { success: false, error: "Неизвестное действие" }, 400);
@@ -494,6 +572,9 @@ async function acceptInvite(db, headers, me, guildId) {
     SELECT id FROM guild_invites WHERE guild_id = ? AND to_id = ? LIMIT 1
   `).bind(guildId, me).first();
   if (!invite) return json(headers, { success: false, error: "Приглашения нет" }, 404);
+  const guild = await guildRow(db, guildId);
+  const blocked = await epochBlock(db, me, guild);
+  if (blocked) return json(headers, { success: false, error: blocked }, 403);
   if ((await memberCount(db, guildId)) >= MEMBER_CAP) {
     return json(headers, { success: false, error: "В гильдии нет места" }, 409);
   }
@@ -509,6 +590,8 @@ async function applyGuild(db, headers, me, guildId) {
   if ((await memberCount(db, guildId)) >= MEMBER_CAP) {
     return json(headers, { success: false, error: "В гильдии нет места" }, 409);
   }
+  const blocked = await epochBlock(db, me, guild);
+  if (blocked) return json(headers, { success: false, error: blocked }, 403);
   const pending = await db.prepare(`
     SELECT COUNT(*) as n FROM guild_applications WHERE player_id = ?
   `).bind(me).first();
@@ -549,6 +632,9 @@ async function acceptApply(db, headers, me, username) {
   if ((await memberCount(db, mine.guildId)) >= MEMBER_CAP) {
     return json(headers, { success: false, error: "В гильдии нет места" }, 409);
   }
+  const guild = await guildRow(db, mine.guildId);
+  const blocked = await epochBlock(db, other.playerId, guild);
+  if (blocked) return json(headers, { success: false, error: blocked }, 403);
   await db.prepare(`INSERT INTO guild_members (player_id, guild_id, role) VALUES (?, ?, 'member')`).bind(other.playerId, mine.guildId).run();
   await clearJoinQueue(db, other.playerId);
   return json(headers, { success: true, ...(await viewOf(db, me)) });
@@ -683,7 +769,18 @@ async function strike(db, headers, me, reported) {
   let clicks = Number(fresh.strikeClicks) || 0;
   if (!openMs || fresh.strikeStartedMs !== guild.boss_started_ms || now > openMs + STRIKE_MS) {
     if (now < Number(fresh.nextStrikeMs || 0)) {
-      return json(headers, { success: true, waiting: true, cdUntilMs: Number(fresh.nextStrikeMs), ...(await viewOf(db, me)) });
+      const gear = await gearOf(db, me);
+      const boss = publicBoss(guild, fresh);
+      return json(headers, {
+        success: true,
+        fight: {
+          ...boss,
+          blow: blowOf(gear, {
+            myDamage: await damageOf(db, guild, me),
+            clicks: Number(fresh.strikeClicks) || 0
+          })
+        }
+      });
     }
     openMs = now;
     clicks = 0;
@@ -699,18 +796,50 @@ async function strike(db, headers, me, reported) {
   const allowed = Math.floor(cap * elapsed);
   const want = Math.max(0, Math.min(Math.floor(reported) || 0, allowed));
   const add = want - clicks;
+  let ended = "";
   if (add > 0) {
-    const damage = add * bossClickPower(gear.stage, gear.knifeId, gear.stars);
-    const hp = Math.max(0, (Number(guild.boss_hp) || 0) - damage);
+    const tick = add * bossClickPower(gear.stage, gear.knifeId, gear.stars);
+    const hp = Math.max(0, (Number(guild.boss_hp) || 0) - tick);
     await db.prepare(`UPDATE guilds SET boss_hp = ? WHERE id = ?`).bind(hp, guild.id).run();
     await db.prepare(`UPDATE guild_members SET strike_clicks = ? WHERE player_id = ?`).bind(want, me).run();
     await db.prepare(`
       INSERT INTO guild_hits (guild_id, player_id, started_ms, damage) VALUES (?, ?, ?, ?)
       ON CONFLICT(guild_id, player_id, started_ms) DO UPDATE SET damage = damage + excluded.damage
-    `).bind(guild.id, me, guild.boss_started_ms, damage).run();
+    `).bind(guild.id, me, guild.boss_started_ms, tick).run();
     guild = await guildRow(db, guild.id);
-    if (hp <= 0) await finishAttempt(db, guild, true);
+    if (hp <= 0) {
+      await finishAttempt(db, guild, true);
+      ended = "win";
+    }
   }
+  const freshMember = await membership(db, me);
+  const current = ended ? null : await guildRow(db, guild.id);
+  if (!current || !Number(current.boss_index)) {
+    return json(headers, { success: true, fight: { ended: ended || "end" } });
+  }
+  const boss = publicBoss(current, freshMember);
+  return json(headers, {
+    success: true,
+    fight: {
+      ...boss,
+      ended,
+      blow: blowOf(gear, {
+        added: add,
+        myDamage: await damageOf(db, current, me),
+        clicks: want
+      })
+    }
+  });
+}
+
+async function setGate(db, headers, me, epochRaw) {
+  const mine = await membership(db, me);
+  if (!mine || mine.role !== "leader") return json(headers, { success: false, error: "Порог ставит глава" }, 403);
+  const epoch = Math.floor(Number(epochRaw));
+  if (!Number.isFinite(epoch) || epoch < 1 || epoch > 200) {
+    return json(headers, { success: false, error: "Эпоха от 1 до 200" }, 400);
+  }
+  await db.prepare(`UPDATE guilds SET req_epoch = ? WHERE id = ?`).bind(epoch, mine.guildId).run();
   return json(headers, { success: true, ...(await viewOf(db, me)) });
 }
 

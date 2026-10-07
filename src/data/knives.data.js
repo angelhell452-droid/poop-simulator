@@ -2552,13 +2552,13 @@ export const KNIVES = [
     "name": "★ Karambit | Dragon Lore (Золотое пламя дракона)",
     "rarity": "godly",
     "rarityName": "★ БОЖЕСТВЕННЫЙ",
-    "clickMult": 6000,
-    "passiveMult": 1200,
+    "clickMult": 180000,
+    "passiveMult": 36000,
     "icon": "🦅",
     "bladeColor": "lore",
     "handleColor": "#451a03",
     "style": "karambit",
-    "desc": "Абсолютный священный грааль CS:GO с золотым драконом и огненным дыханием!"
+    "desc": "Золотой дракон. Самый сильный нож в игре: выше Точки Омеги и по клику, и по CPS."
   },
   {
     "id": "knife_godly_katana",
@@ -2623,6 +2623,6 @@ export const KNIVES = [
     "bladeColor": "godly",
     "handleColor": "#000000",
     "style": "karambit",
-    "desc": "Высший венец существования. Рассекает само понятие предела. x150,000 к клику!"
+    "desc": "Второй нож Вечности, сразу за Дракон лором. Рассекает само понятие предела."
   }
 ];

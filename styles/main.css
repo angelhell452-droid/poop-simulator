@@ -337,9 +337,43 @@ body {
   background: var(--text-currency);
 }
 
+.guild-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.guild-tabs .garden-pill {
+  cursor: pointer;
+}
+
+.boss-fight {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.boss-hp {
+  width: min(100%, 280px);
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.boss-hp > div {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: #e6c27a;
+}
+
 .boss-sprite {
   text-align: center;
   cursor: pointer;
+  min-height: 168px;
 }
 
 .boss-sprite img {
@@ -984,6 +1018,11 @@ button.dash-tab.bg-amber-700,
 .garden-sheet.theme-guild form.flex .garden-input {
   flex: 1 1 8rem;
   width: auto;
+}
+
+#guildLevelInput {
+  flex: 0 0 6.5rem;
+  width: 6.5rem;
 }
 
 .garden-sheet.theme-friends .garden-card,

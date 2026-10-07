@@ -1,8 +1,8 @@
-import { GAME } from '../core/state.js?v=5.0.50';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.50';
+import { GAME } from '../core/state.js?v=5.0.54';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.54';
 import { TALENTS } from '../data/talents.data.js';
-import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.50';
-import { add, div, gte, isBig, log10Of, mul, sub } from '../utils/big.js?v=5.0.50';
+import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.54';
+import { add, div, gte, isBig, log10Of, mul, sub } from '../utils/big.js?v=5.0.54';
 
 /**
  * Asymptotic discount model with soft-cap guarantee.
@@ -74,11 +74,11 @@ export function getAffordableEvoInfo() {
     if (nextStage >= 5000 && unbreakRaw > 0) nextDiscs.push(unbreakRaw);
     const rawNext = mul(EVOLUTIONS[nextStage].cost, getAsymptoticDiscountFactor(nextDiscs, 0.90));
     const nextCost = isBig(rawNext) ? rawNext : Math.max(1, Math.floor(rawNext));
-    return { count: 1, totalCost: nextCost, canBuy: false, maxReached: false };
+    return { count: 1, totalCost: nextCost, canBuy: false, maxReached: false, phaseLocked: false };
   }
 
   const canBuy = count > 0 && gte(GAME.biomass, totalCost);
-  return { count, totalCost, canBuy: canBuy && count > 0, maxReached: false };
+  return { count, totalCost, canBuy: canBuy && count > 0, maxReached: false, phaseLocked: false };
 }
 
 export function getAffordableFactoryInfo(fac) {

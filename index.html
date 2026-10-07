@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.50 PRO</title>
+  <title>Poop Simulator v5.0.54 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.50">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.54">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.50 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.54 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             title="Сообщить об ошибке">
@@ -1033,17 +1033,31 @@
     <div class="garden-sheet theme-guild">
       <button class="modal-close garden-close" type="button" aria-label="Закрыть">&times;</button>
       <h3 class="font-game text-xl mb-3">Гильдия</h3>
+      <div id="guildTabs" class="guild-tabs hidden">
+        <button type="button" class="garden-pill accent" data-guild-page="mine">Моя гильдия</button>
+        <button type="button" class="garden-pill" data-guild-page="fight">Бой</button>
+        <button type="button" class="garden-pill" data-guild-page="search">Поиск</button>
+      </div>
       <div class="garden-scroll custom-scroll">
-        <form id="guildSearchForm" class="flex gap-2 mb-3 hidden">
-          <input id="guildSearchInput" class="garden-input" maxlength="24" placeholder="Название или титул" autocomplete="off">
-          <button type="submit" class="garden-pill accent jelly-btn shrink-0">Найти</button>
-        </form>
-        <form id="guildCreateForm" class="grid gap-2 mb-3">
-          <input id="guildNameInput" class="garden-input" maxlength="24" placeholder="Название" autocomplete="off">
-          <input id="guildTagInput" class="garden-input" maxlength="5" placeholder="Титул, 2–5 букв" autocomplete="off">
-          <button type="submit" class="garden-pill accent jelly-btn">Создать</button>
-        </form>
-        <div id="guildBody"></div>
+        <div id="guildPageMine">
+          <form id="guildCreateForm" class="grid gap-2 mb-3 hidden">
+            <input id="guildNameInput" class="garden-input" maxlength="24" placeholder="Название" autocomplete="off">
+            <input id="guildTagInput" class="garden-input" maxlength="5" placeholder="Титул, 2–5 букв" autocomplete="off">
+            <button type="submit" class="garden-pill accent jelly-btn">Создать</button>
+          </form>
+          <div id="guildMine"></div>
+        </div>
+        <div id="guildPageFight" class="hidden">
+          <div id="guildFight"></div>
+        </div>
+        <div id="guildPageSearch" class="hidden">
+          <form id="guildSearchForm" class="flex gap-2 mb-3 hidden">
+            <input id="guildSearchInput" class="garden-input" maxlength="24" placeholder="Название или титул" autocomplete="off">
+            <input id="guildLevelInput" class="garden-input" inputmode="numeric" maxlength="2" placeholder="Уровень" autocomplete="off">
+            <button type="submit" class="garden-pill accent jelly-btn shrink-0">Найти</button>
+          </form>
+          <div id="guildSearchBody"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1784,7 +1798,8 @@
           <ul class="list-disc list-inside text-stone-300 mt-1 space-y-1 text-[11px]">
             <li>Один аккаунт состоит в одной гильдии, до 20 человек. Перед ником стоит титул.</li>
             <li>Глава и офицер приглашают и вызывают босса из уже открытых. Участник только бьёт.</li>
-            <li>Игрок без гильдии ищет её по названию или титулу и подаёт заявку. Принимают глава и офицер.</li>
+            <li>Окно гильдии — три страницы: своя гильдия, бой и поиск. Поиск ищет по названию и по уровню. Глава ставит эпоху, с которой пускают на аккаунт.</li>
+            <li>На странице боя видно, можно ли бить, идёт ли удар, сколько урона засчитано и почему клик столько снимает. Состав гильдии там не показывается.</li>
             <li>Уровень гильдии даёт бонус к клику и заводам всем, кто сейчас в ней. Потолок — 10 уровень.</li>
             <li>Удар длится 15 секунд, потом личные 3 часа. На попытку есть 12 часов.</li>
             <li>Письмо о победе или проигрыше приходит всей гильдии. Вантузы внутри только у того, кто сам бил.</li>
@@ -2192,7 +2207,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.50"></script>
+  <script type="module" src="src/main.js?v=5.0.54"></script>
 </body>
 
 </html>

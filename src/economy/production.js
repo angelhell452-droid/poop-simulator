@@ -1,18 +1,44 @@
-import { GAME } from '../core/state.js?v=5.0.50';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.50';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.50';
+import { GAME } from '../core/state.js?v=5.0.54';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.54';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.54';
 import { TALENTS } from '../data/talents.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.0.50';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.50';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.50';
-import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.50';
-import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.50';
+import { KNIVES } from '../data/knives.data.js?v=5.0.54';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.54';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.54';
+import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.54';
+import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.54';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.50';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.54';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.50';
-import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.50';
-import { horizonIncomeMult } from './horizon.js?v=5.0.50';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.54';
+import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.54';
+import { horizonIncomeMult } from './horizon.js?v=5.0.54';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.54';
+
+/** Max share of factory income that a full click-cap stream may add. */
+const CLICK_INCOME_SHARE_CAP = 0.30;
+
+/**
+ * How much of factory income the whole click stream should add at click-cap CPS.
+ * Epoch gives a floor so mid-game is never stuck at 0. Talent and perk fill up to 30%.
+ */
+export function getClickIncomeShare() {
+  const phase = getPhaseForStage(GAME.evoStage).id;
+  const floor = Math.min(0.10, 0.02 * Math.max(1, phase));
+  const talent = talentLevel('quantum_mastery') * 0.03;
+  const perk = SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned ? 0.05 : 0;
+  return Math.min(CLICK_INCOME_SHARE_CAP, floor + talent + perk);
+}
+
+/**
+ * Per-click slice of passive income. At click-cap CPS the stream ≈ getClickIncomeShare().
+ * So 30% means thirty percent of factory /sec from all clicks together, not from one click.
+ */
+export function getClickSyncRate() {
+  const share = getClickIncomeShare();
+  if (share <= 0) return 0;
+  return share / Math.max(1, getClickCapCps());
+}
 
 export function getEquippedBodySkin() {
   const skin = findBodySkin(GAME.equippedSkin);
@@ -323,7 +349,9 @@ function clickParts() {
   const gearMult = dampenGearMult(gearRaw, getPhaseForStage(GAME.evoStage).id);
   const late = getLateComboMult();
   const product = evo.mult * gearMult * hatClickBoost * skinClickMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late * getIncomePace() * horizonIncomeMult() * guildPresenceMult();
-  const syncRate = talentLevel('quantum_mastery') * 0.004 + (SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned ? 0.02 : 0);
+  const syncShare = getClickIncomeShare();
+  const syncCap = Math.max(1, getClickCapCps());
+  const syncRate = syncShare > 0 ? syncShare / syncCap : 0;
 
   const gearBits = [];
   pushAboveOne(gearBits, 'Эхо смыва', rollsMult);
@@ -355,7 +383,7 @@ function clickParts() {
   pushAboveOne(lines, 'VIP', getVipIncomeMult());
   pushAboveOne(lines, 'Горизонт', horizonIncomeMult());
   pushAboveOne(lines, 'Гильдия', guildPresenceMult());
-  return { lines, gearBits, product, syncRate, gearRaw, gearMult };
+  return { lines, gearBits, product, syncRate, syncShare, syncCap, gearRaw, gearMult };
 }
 
 function multRows(parts) {
@@ -386,7 +414,10 @@ export function getClickBreakdown() {
   const parts = clickParts();
   const rows = [{ name: 'База клика', text: '1' }, ...multRows(parts)];
   if (parts.syncRate > 0) {
-    rows.push({ name: 'Доля дохода заводов', text: `+${formatNumber(mul(getPassiveIncome(), parts.syncRate))}` });
+    rows.push({
+      name: 'От заводов в поток кликов',
+      text: `+${formatNumber(mul(getPassiveIncome(), parts.syncRate))} · ${formatNumber(parts.syncShare * 100)}% / ${formatNumber(parts.syncCap)} CPS`
+    });
   }
   const critTalent = TALENTS.find(t => t.id === 'crit_master');
   const luckLvl = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);

@@ -1,11 +1,11 @@
-import { GAME } from '../core/state.js?v=5.0.50';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.50';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.50';
-import { saveLocal } from '../save/saveManager.js?v=5.0.50';
-import { updateHUD } from './hudView.js?v=5.0.50';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.50';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.50';
-import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.0.50';
+import { GAME } from '../core/state.js?v=5.0.54';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.54';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.54';
+import { saveLocal } from '../save/saveManager.js?v=5.0.54';
+import { updateHUD } from './hudView.js?v=5.0.54';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.54';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.54';
+import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.0.54';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
 import { isBoutiqueUnlocked, isShopOfferUnlocked, peakForm } from '../progression/unlocks.js';
 

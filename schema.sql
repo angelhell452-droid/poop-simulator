@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS guilds (
   boss_started_ms INTEGER NOT NULL DEFAULT 0,
   boss_deadline_ms INTEGER NOT NULL DEFAULT 0,
   tag_changed_ms INTEGER NOT NULL DEFAULT 0,
+  req_epoch INTEGER NOT NULL DEFAULT 1,
   created_at TEXT DEFAULT (datetime('now'))
 );
 

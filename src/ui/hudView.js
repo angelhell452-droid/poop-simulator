@@ -1,25 +1,25 @@
-import { GAME } from '../core/state.js?v=5.0.50';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.50';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.50';
-import { drawPlunger } from '../utils/icons.js?v=5.0.50';
-import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.50';
-import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.50';
-import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.50';
+import { GAME } from '../core/state.js?v=5.0.54';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.54';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.54';
+import { drawPlunger } from '../utils/icons.js?v=5.0.54';
+import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.54';
+import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.54';
+import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.54';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
-import { liveCps } from '../core/gameLoop.js?v=5.0.50';
-import { saveLocal } from '../save/saveManager.js?v=5.0.50';
-import { updateFactoryButtons } from './factoryView.js?v=5.0.50';
-import { updateTalentButtons } from './talentView.js?v=5.0.50';
+import { liveCps } from '../core/gameLoop.js?v=5.0.54';
+import { saveLocal } from '../save/saveManager.js?v=5.0.54';
+import { updateFactoryButtons } from './factoryView.js?v=5.0.54';
+import { updateTalentButtons } from './talentView.js?v=5.0.54';
 import { updateShopButtons } from './shopView.js';
-import { updateCasesButtons } from './casesView.js?v=5.0.50';
-import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.50';
+import { updateCasesButtons } from './casesView.js?v=5.0.54';
+import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.54';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.50';
+import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.54';
 import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
-import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.50';
-import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.50';
-import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.0.50';
-import { showKnifeToast } from './characterInventoryView.js?v=5.0.50';
+import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.54';
+import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.54';
+import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.0.54';
+import { showKnifeToast } from './characterInventoryView.js?v=5.0.54';
 import { getConfirmedVip } from '../economy/pace.js';
 
 const FLUSH_COOLDOWN = 35000;
@@ -161,7 +161,7 @@ export function updateHUD() {
   if (evoFill && evoLabel) {
     const stage = GAME.evoStage || 0;
     const earned = formBiomassCredit();
-    const needsBreak = !evoInfo.maxReached && evoInfo.phaseLocked;
+    const needsBreak = evoInfo.phaseLocked === true;
     evoLabel.classList.toggle('evo-xp-gate', needsBreak);
     if (evoInfo.maxReached) {
       evoFill.style.width = '100%';
