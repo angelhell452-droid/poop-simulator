@@ -1,15 +1,15 @@
-import { GAME } from '../core/state.js?v=5.0.73';
+import { GAME } from '../core/state.js?v=5.0.74';
 import { events } from '../core/events.js';
-import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase, probeCloudServers } from '../save/cloudSync.js?v=5.0.73';
-import { updateHUD } from './hudView.js?v=5.0.73';
-import { renderFactories } from './factoryView.js?v=5.0.73';
-import { renderTalents } from './talentView.js?v=5.0.73';
+import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase, probeCloudServers } from '../save/cloudSync.js?v=5.0.74';
+import { updateHUD } from './hudView.js?v=5.0.74';
+import { renderFactories } from './factoryView.js?v=5.0.74';
+import { renderTalents } from './talentView.js?v=5.0.74';
 import { renderShop } from './shopView.js';
 import { renderAchievements } from './achievementsView.js';
 import { renderEvoChronicles } from './evoChroniclesView.js';
-import { renderCasesSystem } from './casesView.js?v=5.0.73';
-import { refreshAdminAccess } from './adminView.js?v=5.0.73';
-import { currentGuildTag, formatTaggedName } from '../guild/guildPresence.js?v=5.0.73';
+import { renderCasesSystem } from './casesView.js?v=5.0.74';
+import { refreshAdminAccess } from './adminView.js?v=5.0.74';
+import { currentGuildTag, formatTaggedName } from '../guild/guildPresence.js?v=5.0.74';
 
 function paintServerLine(id, row) {
   const node = document.getElementById(id);

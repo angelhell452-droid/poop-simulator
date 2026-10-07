@@ -1,12 +1,12 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.73';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.73';
-import { getPhaseForForm, phaseLabel } from '../progression/phases.data.js?v=5.0.73';
-import { KNIVES } from '../data/knives.data.js?v=5.0.73';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.73';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.73';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.73';
-import { sendGuildInvite } from './guildView.js?v=5.0.73';
-import { registerSocialPulse } from './socialPulse.js?v=5.0.73';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.74';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.74';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.74';
+import { KNIVES } from '../data/knives.data.js?v=5.0.74';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.74';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.74';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.74';
+import { sendGuildInvite } from './guildView.js?v=5.0.74';
+import { registerSocialPulse } from './socialPulse.js?v=5.0.74';
 
 let roster = { friends: [], incoming: [], outgoing: [], canInvite: false };
 let confirmRemove = '';
@@ -49,9 +49,10 @@ function seenLabel(person) {
 function progressLine(person) {
   const form = Math.max(1, Number(person.stage) || 1);
   const peak = Math.max(form, Number(person.peakForm) || 1);
-  const epoch = phaseLabel(getPhaseForForm(peak));
+  // List/profile rows only need the epoch id — full phaseLabel can dump a huge band ceiling.
+  const epoch = getPhaseForForm(peak).id;
   const peakBit = peak > form ? ` · пик ${formatNumber(peak)}` : '';
-  return `Форма ${formatNumber(form)}${peakBit} · ${epoch}`;
+  return `Форма ${formatNumber(form)}${peakBit} · эпоха ${formatNumber(epoch)}`;
 }
 
 function toast(text) {
@@ -133,9 +134,9 @@ function renderProfile(profile) {
 function peopleBlock(title, rows, buttons) {
   if (!rows.length) return '';
   const items = rows.map((row) => `
-    <div class="garden-card flex items-center justify-between gap-2 flex-wrap">
-      <span class="truncate min-w-0">${esc(row.username)}</span>
-      <span class="flex items-center gap-1.5 flex-wrap justify-end">
+    <div class="garden-card friend-row">
+      <span class="friend-row-name">${esc(row.username)}</span>
+      <span class="friend-row-actions">
         ${buttons.map((button) => `<button type="button" class="garden-pill jelly-btn" data-friend-action="${button.action}" data-user="${attr(row.username)}">${esc(button.label)}</button>`).join('')}
       </span>
     </div>
@@ -165,12 +166,13 @@ function renderRoster() {
     ? friends.map((person) => {
       const removing = confirmRemove === person.username;
       return `
-        <div class="garden-card flex items-center justify-between gap-2 flex-wrap">
-          <button type="button" class="min-w-0 text-left flex-1" data-friend-action="profile" data-user="${attr(person.username)}">
-            <div class="truncate">${person.online ? '<span class="friend-online"></span>' : ''}${esc(formatTaggedName(person.username, person.guildTag))}</div>
-            <div class="garden-muted truncate">${esc(progressLine(person))} · ${esc(seenLabel(person))}</div>
+        <div class="garden-card friend-row">
+          <button type="button" class="friend-row-main" data-friend-action="profile" data-user="${attr(person.username)}">
+            <div class="friend-row-name">${person.online ? '<span class="friend-online"></span>' : ''}${esc(formatTaggedName(person.username, person.guildTag))}</div>
+            <div class="garden-muted friend-row-meta">${esc(progressLine(person))}</div>
+            <div class="garden-muted friend-row-meta">${esc(seenLabel(person))}</div>
           </button>
-          <span class="flex items-center gap-1.5 flex-wrap justify-end">
+          <span class="friend-row-actions">
             ${roster.canInvite ? `<button type="button" class="garden-pill accent jelly-btn" data-friend-action="guild" data-user="${attr(person.username)}">В гильдию</button>` : ''}
             <button type="button" class="garden-pill jelly-btn" data-friend-action="${removing ? 'remove' : 'ask-remove'}" data-user="${attr(person.username)}">${removing ? 'Точно' : 'Удалить'}</button>
           </span>

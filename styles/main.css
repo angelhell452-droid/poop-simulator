@@ -328,6 +328,45 @@ body {
   padding: 8px 14px;
 }
 
+.friend-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+}
+
+.friend-row-main {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.friend-row-name {
+  font-weight: 800;
+  word-break: break-word;
+}
+
+.friend-row-meta {
+  margin-top: 2px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.friend-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
 .friend-online {
   display: inline-block;
   width: 8px;

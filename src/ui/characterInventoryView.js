@@ -1,23 +1,23 @@
-import { GAME } from '../core/state.js?v=5.0.73';
-import { KNIVES } from '../data/knives.data.js?v=5.0.73';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.73';
+import { GAME } from '../core/state.js?v=5.0.74';
+import { KNIVES } from '../data/knives.data.js?v=5.0.74';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.74';
 import {
   getKnifeStar, getKnifeSharpenCost, getKnifeRecycleReward, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.73';
-import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.73';
-import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.73';
-import { saveLocal } from '../save/saveManager.js?v=5.0.73';
-import { updateHUD } from './hudView.js?v=5.0.73';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.74';
+import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.74';
+import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.74';
+import { saveLocal } from '../save/saveManager.js?v=5.0.74';
+import { updateHUD } from './hudView.js?v=5.0.74';
 import { renderShop } from './shopView.js';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.73';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.73';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.74';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.74';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.73';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.74';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'

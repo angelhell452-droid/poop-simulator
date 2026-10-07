@@ -1,15 +1,15 @@
-import { GAME } from '../core/state.js?v=5.0.73';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.73';
-import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.73';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.73';
-import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.73';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.73';
+import { GAME } from '../core/state.js?v=5.0.74';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.74';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.74';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.74';
+import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.74';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.74';
 
-import { updateHUD } from './hudView.js?v=5.0.73';
-import { renderCasesSystem } from './casesView.js?v=5.0.73';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.73';
-import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.73';
-import { renderFactories } from './factoryView.js?v=5.0.73';
+import { updateHUD } from './hudView.js?v=5.0.74';
+import { renderCasesSystem } from './casesView.js?v=5.0.74';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.74';
+import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.74';
+import { renderFactories } from './factoryView.js?v=5.0.74';
 import { renderShop } from './shopView.js';
 import { events } from '../core/events.js';
 import { isRelicSectionUnlocked } from '../progression/unlocks.js';

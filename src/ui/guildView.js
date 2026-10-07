@@ -1,14 +1,14 @@
-import { GAME } from '../core/state.js?v=5.0.73';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.73';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.73';
-import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.73';
-import { KNIVES } from '../data/knives.data.js?v=5.0.73';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.73';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.73';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.73';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.73';
-import { pulseMail } from './mailView.js?v=5.0.73';
-import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.73';
+import { GAME } from '../core/state.js?v=5.0.74';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.74';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.74';
+import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.74';
+import { KNIVES } from '../data/knives.data.js?v=5.0.74';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.74';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.74';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.74';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.74';
+import { pulseMail } from './mailView.js?v=5.0.74';
+import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.74';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
 
