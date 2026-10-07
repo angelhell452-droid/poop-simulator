@@ -1,4 +1,4 @@
-export const BODY_SKINS = [
+﻿export const BODY_SKINS = [
   {
     id: 'skin_robe',
     name: 'Халат',

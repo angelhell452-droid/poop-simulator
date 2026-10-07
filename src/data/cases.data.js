@@ -1,4 +1,4 @@
-export const WEAPON_CASES = [
+﻿export const WEAPON_CASES = [
   {
     "id": "case_classic",
     "name": "Оружейный Контейнер #1",

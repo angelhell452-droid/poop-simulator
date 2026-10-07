@@ -1,4 +1,4 @@
-export const ARCHETYPES = {
+﻿export const ARCHETYPES = {
   balanced: {
     id: 'balanced',
     name: '⚖️ Универсал',

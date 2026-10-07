@@ -1,4 +1,4 @@
-export const SHOP_ITEMS = [
+﻿export const SHOP_ITEMS = [
   // --- STARTER TIER (5,000 - 250,000 ✨) ---
   { id: 'hat_cap', name: 'Кепка Новичка', type: 'hat', cost: 5000, clickBoost: 4, icon: '🧢', desc: 'x4 к силе клика' },
   { id: 'hat_party', name: 'Праздничный Колпак', type: 'hat', cost: 25200, clickBoost: 10, icon: '🥳', desc: 'x10 к силе клика' },

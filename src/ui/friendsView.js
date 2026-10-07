@@ -1,12 +1,13 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.76';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.76';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.76';
-import { KNIVES } from '../data/knives.data.js?v=5.0.76';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.76';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.76';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.76';
-import { sendGuildInvite } from './guildView.js?v=5.0.76';
-import { registerSocialPulse } from './socialPulse.js?v=5.0.76';
+﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.77';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.77';
+import { KNIVES } from '../data/knives.data.js?v=5.0.77';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.77';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.77';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.77';
+import { sendGuildInvite } from './guildView.js?v=5.0.77';
+import { registerSocialPulse } from './socialPulse.js?v=5.0.77';
+import { t, onLocaleChange } from '../i18n/t.js';
 
 let roster = { friends: [], incoming: [], outgoing: [], canInvite: false };
 let confirmRemove = '';
@@ -35,15 +36,15 @@ function signedIn() {
 }
 
 function seenLabel(person) {
-  if (person.online) return 'в игре';
+  if (person.online) return t('friends.inGame');
   const ts = Date.parse(String(person.updatedAt || '').replace(' ', 'T') + 'Z');
-  if (!Number.isFinite(ts)) return 'ещё не сохранялся';
+  if (!Number.isFinite(ts)) return t('friends.neverSaved');
   const mins = Math.max(0, Math.floor((Date.now() - ts) / 60000));
-  if (mins < 1) return 'только что';
-  if (mins < 60) return `${formatNumber(mins)} мин назад`;
+  if (mins < 1) return t('friends.justNow');
+  if (mins < 60) return t('friends.minAgo', { n: formatNumber(mins) });
   const hours = Math.floor(mins / 60);
-  if (hours < 48) return `${formatNumber(hours)} ч назад`;
-  return `${formatNumber(Math.floor(hours / 24))} д назад`;
+  if (hours < 48) return t('friends.hrAgo', { n: formatNumber(hours) });
+  return t('friends.dayAgo', { n: formatNumber(Math.floor(hours / 24)) });
 }
 
 function progressLine(person) {
@@ -51,8 +52,12 @@ function progressLine(person) {
   const peak = Math.max(form, Number(person.peakForm) || 1);
   // List/profile rows only need the epoch id — full phaseLabel can dump a huge band ceiling.
   const epoch = getPhaseForForm(peak).id;
-  const peakBit = peak > form ? ` · пик ${formatNumber(peak)}` : '';
-  return `Форма ${formatNumber(form)}${peakBit} · эпоха ${formatNumber(epoch)}`;
+  const peakBit = peak > form ? t('friends.peakBit', { peak: formatNumber(peak) }) : '';
+  return t('friends.formLine', {
+    form: formatNumber(form),
+    peak: peakBit,
+    epoch: formatNumber(epoch)
+  });
 }
 
 function toast(text) {
@@ -76,13 +81,13 @@ function setBadge(count) {
 }
 
 function guestWall() {
-  return `<div class="garden-empty">Друзья открываются с аккаунта. Гость не может отправить заявку.</div>`;
+  return `<div class="garden-empty">${esc(t('friends.guest'))}</div>`;
 }
 
 function slotLine(label, value) {
   const body = value
     ? `<span>${esc(value)}</span>`
-    : `<span class="garden-pill">Пусто</span>`;
+    : `<span class="garden-pill">${esc(t('friends.emptySlot'))}</span>`;
   return `<div class="garden-card flex items-center justify-between gap-2"><span class="garden-muted">${esc(label)}</span>${body}</div>`;
 }
 
@@ -109,23 +114,23 @@ function renderProfile(profile) {
   const box = document.getElementById('friendsBody');
   if (!box || !profile) return;
   box.innerHTML = `
-    <button type="button" id="btnFriendsBack" class="garden-pill jelly-btn mb-3">К списку</button>
+    <button type="button" id="btnFriendsBack" class="garden-pill jelly-btn mb-3">${esc(t('friends.back'))}</button>
     <div class="garden-card mb-3">
       <div class="font-game text-lg">${esc(formatTaggedName(profile.username, profile.guildTag))}</div>
-      ${roster.canInvite ? `<button type="button" class="garden-pill accent jelly-btn mt-2" data-friend-action="guild" data-user="${attr(profile.username)}">В гильдию</button>` : ''}
+      ${roster.canInvite ? `<button type="button" class="garden-pill accent jelly-btn mt-2" data-friend-action="guild" data-user="${attr(profile.username)}">${esc(t('friends.toGuild'))}</button>` : ''}
       <div class="garden-muted mt-1">${esc(progressLine(profile))}</div>
-      <div class="garden-muted mt-1">${profile.online ? 'в игре' : esc(seenLabel(profile))}</div>
+      <div class="garden-muted mt-1">${profile.online ? esc(t('friends.inGame')) : esc(seenLabel(profile))}</div>
     </div>
     <div class="grid gap-2 mb-3">
-      <div class="garden-card flex items-center justify-between gap-2"><span class="garden-muted">Смывы</span><span>${formatNumber(profile.prestiges || 0)}</span></div>
-      <div class="garden-card flex items-center justify-between gap-2"><span class="garden-muted">Прорывы</span><span>${formatNumber(profile.transcends || 0)}</span></div>
-      <div class="garden-card flex items-center justify-between gap-2"><span class="garden-muted">Очки славы</span><span>${formatNumber(profile.score || 0)}</span></div>
+      <div class="garden-card flex items-center justify-between gap-2"><span class="garden-muted">${esc(t('friends.prestiges'))}</span><span>${formatNumber(profile.prestiges || 0)}</span></div>
+      <div class="garden-card flex items-center justify-between gap-2"><span class="garden-muted">${esc(t('friends.transcends'))}</span><span>${formatNumber(profile.transcends || 0)}</span></div>
+      <div class="garden-card flex items-center justify-between gap-2"><span class="garden-muted">${esc(t('friends.score'))}</span><span>${formatNumber(profile.score || 0)}</span></div>
     </div>
-    <div class="garden-muted mb-2">Слоты</div>
+    <div class="garden-muted mb-2">${esc(t('friends.slots'))}</div>
     <div class="grid gap-2">
-      ${slotLine('Нож', knifeLabel(profile.knife))}
-      ${slotLine('Шапка', hatLabel(profile.hat))}
-      ${slotLine('Скин', skinLabel(profile.skin))}
+      ${slotLine(t('friends.slotKnife'), knifeLabel(profile.knife))}
+      ${slotLine(t('friends.slotHat'), hatLabel(profile.hat))}
+      ${slotLine(t('friends.slotSkin'), skinLabel(profile.skin))}
     </div>
   `;
   document.getElementById('btnFriendsBack')?.addEventListener('click', () => renderRoster());
@@ -159,7 +164,7 @@ function renderRoster() {
   const outgoing = roster.outgoing || [];
   setBadge(incoming.length);
   if (!friendsLoaded && !friends.length && !incoming.length && !outgoing.length) {
-    box.innerHTML = '<div class="garden-empty">Загружаем друзей…</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('friends.loading'))}</div>`;
     return;
   }
   const friendRows = friends.length
@@ -173,18 +178,18 @@ function renderRoster() {
             <div class="garden-muted friend-row-meta">${esc(seenLabel(person))}</div>
           </button>
           <span class="friend-row-actions">
-            ${roster.canInvite ? `<button type="button" class="garden-pill accent jelly-btn" data-friend-action="guild" data-user="${attr(person.username)}">В гильдию</button>` : ''}
-            <button type="button" class="garden-pill jelly-btn" data-friend-action="${removing ? 'remove' : 'ask-remove'}" data-user="${attr(person.username)}">${removing ? 'Точно' : 'Удалить'}</button>
+            ${roster.canInvite ? `<button type="button" class="garden-pill accent jelly-btn" data-friend-action="guild" data-user="${attr(person.username)}">${esc(t('friends.toGuild'))}</button>` : ''}
+            <button type="button" class="garden-pill jelly-btn" data-friend-action="${removing ? 'remove' : 'ask-remove'}" data-user="${attr(person.username)}">${esc(removing ? t('friends.confirmRemove') : t('friends.remove'))}</button>
           </span>
         </div>
       `;
     }).join('')
-    : `<div class="garden-empty mt-2">Пока тихо. Друзей ещё нет.</div>`;
+    : `<div class="garden-empty mt-2">${esc(t('friends.empty'))}</div>`;
 
   box.innerHTML = `
-    ${peopleBlock('Входящие', incoming, [{ action: 'accept', label: 'Принять' }, { action: 'decline', label: 'Отклонить' }])}
-    ${peopleBlock('Исходящие', outgoing, [{ action: 'cancel', label: 'Отменить' }])}
-    <div class="garden-muted mb-2 mt-3">Друзья · ${formatNumber(friends.length)}</div>
+    ${peopleBlock(t('friends.incoming'), incoming, [{ action: 'accept', label: t('friends.accept') }, { action: 'decline', label: t('friends.decline') }])}
+    ${peopleBlock(t('friends.outgoing'), outgoing, [{ action: 'cancel', label: t('friends.cancel') }])}
+    <div class="garden-muted mb-2 mt-3">${esc(t('friends.list', { n: formatNumber(friends.length) }))}</div>
     <div class="grid gap-2">${friendRows}</div>
   `;
 }
@@ -221,7 +226,7 @@ export async function loadRoster(quiet = false) {
   try {
     const data = await socialRequest('friends');
     if (!applyRosterData(data, true) && friendsOpen() && !quiet) {
-      toast(data.error || 'Список не загрузился');
+      toast(data.error || t('friends.loadFail'));
       renderRoster();
     }
   } finally {
@@ -230,10 +235,10 @@ export async function loadRoster(quiet = false) {
 }
 
 async function openProfile(username) {
-  toast('Открываем профиль…');
+  toast(t('friends.profileOpen'));
   const data = await socialRequest('friend_profile', { query: `username=${encodeURIComponent(username)}` });
   if (!data.success || !data.profile) {
-    toast(data.error || 'Профиль закрыт');
+    toast(data.error || t('friends.profileClosed'));
     return;
   }
   renderProfile(data.profile);
@@ -314,26 +319,26 @@ async function runAction(action, username) {
   pendingActions.add(key);
 
   if (action === 'guild') {
-    toast('Приглашение уходит…');
+    toast(t('friends.inviteSending'));
     sendGuildInvite(username).then((data) => {
-      if (!data.success) toast(data.error || 'Приглашение не ушло');
-      else toast(`Приглашение для ${data.username || username} отправлено`);
+      if (!data.success) toast(data.error || t('friends.inviteFail'));
+      else toast(t('friends.inviteSent', { name: data.username || username }));
     }).finally(() => pendingActions.delete(key));
     return;
   }
 
   if (action === 'accept') {
     optimisticAccept(username);
-    toast('Принимаем…');
+    toast(t('friends.accepting'));
   } else if (action === 'decline') {
     optimisticDropPending(username, 'incoming');
-    toast('Отклоняем…');
+    toast(t('friends.declining'));
   } else if (action === 'cancel') {
     optimisticDropPending(username, 'outgoing');
-    toast('Отменяем…');
+    toast(t('friends.canceling'));
   } else if (action === 'remove') {
     optimisticRemove(username);
-    toast('Удаляем…');
+    toast(t('friends.removing'));
   }
 
   socialRequest(action === 'remove' ? 'friend_remove' : `friend_${action}`, {
@@ -341,13 +346,13 @@ async function runAction(action, username) {
     body: { username }
   }).then(async (data) => {
     if (!data.success) {
-      toast(data.error || 'Не вышло');
+      toast(data.error || t('friends.fail'));
       await loadRoster(true);
       return;
     }
-    if (action === 'accept') toast(`${username} теперь в друзьях`);
-    if (action === 'remove') toast(`${username} убран из друзей`);
-    if (action === 'decline' || action === 'cancel') toast('Готово');
+    if (action === 'accept') toast(t('friends.nowFriends', { name: username }));
+    if (action === 'remove') toast(t('friends.removed', { name: username }));
+    if (action === 'decline' || action === 'cancel') toast(t('friends.done'));
     if (!applyRosterData(data, true)) await loadRoster(true);
   }).finally(() => pendingActions.delete(key));
 }
@@ -355,35 +360,35 @@ async function runAction(action, username) {
 export function sendFriendRequest(username) {
   const name = String(username || '').trim();
   if (!signedIn()) {
-    toast('Сначала войдите в аккаунт');
+    toast(t('friends.needLogin'));
     return Promise.resolve({ success: false });
   }
   if (name.length < 3) {
-    toast('Введите логин от 3 символов');
+    toast(t('friends.loginShort'));
     return Promise.resolve({ success: false });
   }
 
   const key = actionKey('request', name);
   if (pendingActions.has(key)) {
-    toast('Эта заявка уже уходит…');
+    toast(t('friends.requestBusy'));
     return Promise.resolve({ success: false, pending: true });
   }
   pendingActions.add(key);
 
   // UI first: clear field, show outgoing, think in background.
   optimisticOutgoing(name);
-  toast(`Заявка для ${name} уходит…`);
+  toast(t('friends.requestSending', { name }));
 
   return socialRequest('friend_request', { method: 'POST', body: { username: name } })
     .then(async (data) => {
       if (!data.success) {
         dropOptimisticOutgoing(name);
-        toast(data.error || 'Заявка не ушла');
+        toast(data.error || t('friends.requestFail'));
         return data;
       }
       toast(data.pending
-        ? `Заявка для ${data.username || name} отправлена`
-        : `${data.username || name} теперь в друзьях`);
+        ? t('friends.requestSent', { name: data.username || name })
+        : t('friends.nowFriends', { name: data.username || name }));
       if (!applyRosterData(data, true)) await loadRoster(true);
       return data;
     })
@@ -426,5 +431,9 @@ export function initFriendsView() {
     setFriendsBadge,
     warmFriends: (data) => applyRosterData(data, false),
     refreshFriends: () => loadRoster(true)
+  });
+
+  onLocaleChange(() => {
+    if (friendsOpen()) renderRoster();
   });
 }

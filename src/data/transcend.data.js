@@ -1,4 +1,4 @@
-export const TRANSCEND_UPGRADES = [
+﻿export const TRANSCEND_UPGRADES = [
   {
     id: 'art_auto_care',
     key: 'autoCare',

@@ -1,4 +1,4 @@
-export const KNIVES = [
+﻿export const KNIVES = [
   {
     "id": "knife_navaja_safari",
     "name": "★ Navaja | Африканская сетка (Safari Mesh)",

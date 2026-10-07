@@ -1,4 +1,4 @@
-export const TALENTS = [
+﻿export const TALENTS = [
   // TIER 1 — один ранний смыв покупает один уровень, тир закрывается к 8–10 эпохе
   { id: 'soft_rolls', name: 'Мягкость 4-х слоев', desc: '+4% ко всему доходу за уровень (макс. 6)', cost: 14, costMult: 1.28, level: 0, max: 6, icon: '🧻', tier: 1, tierName: 'Базовый', reqFlushes: 0 },
   { id: 'royal_gold', name: 'Стартовый Золотой Трон', desc: '+200 💨 стартовой биомассы после смыва за уровень', cost: 16, costMult: 1.28, level: 0, max: 5, icon: '🚽', tier: 1, tierName: 'Базовый', reqFlushes: 0 },

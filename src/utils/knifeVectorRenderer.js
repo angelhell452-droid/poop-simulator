@@ -1,4 +1,4 @@
-/**
+﻿/**
  * knifeVectorRenderer.js
  * Универсальный векторный рендерер для 19 типов ножей и их скинов:
  * karambit, butterfly, m9, bayonet, flip, gut, falchion, huntsman, bowie, stiletto,

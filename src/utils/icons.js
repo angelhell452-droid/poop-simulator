@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Universal SVG Plunger & Golden Roll Icons
  * Guarantees crisp, high-res rendering across all OS versions (avoiding Windows tofu □ boxes).
  */

@@ -1,4 +1,4 @@
-// Lightweight pub-sub event bus to decouple systems and UI
+﻿// Lightweight pub-sub event bus to decouple systems and UI
 
 class EventBus {
   constructor() {

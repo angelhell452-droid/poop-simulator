@@ -1,4 +1,4 @@
-// Values that fit in a JS number stay numbers, so epochs 1–40 match the old math.
+﻿// Values that fit in a JS number stay numbers, so epochs 1–40 match the old math.
 // Past ~1e308 the value is { __big, m, e } meaning m * 10^e, with 1 <= m < 10.
 
 const EXP_LIMIT = 1e15;

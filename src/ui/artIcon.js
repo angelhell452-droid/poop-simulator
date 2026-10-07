@@ -1,4 +1,4 @@
-const HAT_ART = {
+﻿const HAT_ART = {
   hat_cap: 'assets/poop/props/hat-cap.png',
   hat_party: 'assets/poop/props/hat-party.png',
   hat_shades: 'assets/poop/props/hat-shades.png',

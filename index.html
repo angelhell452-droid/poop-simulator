@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.76 PRO</title>
+  <title>Poop Simulator v5.0.77 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.76">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.77">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,11 +36,11 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.76 PRO</span>
+            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.0.77 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
-            title="Сообщить об ошибке">
-            <span>🐛</span> <span>Баг</span>
+            data-i18n-title="header.bugTitle" title="Сообщить об ошибке">
+            <span>🐛</span> <span data-i18n="header.bug">Баг</span>
           </button>
         </div>
 
@@ -57,8 +57,8 @@
 
       <button id="btnTopKnivesIndex"
         class="jelly-btn font-game px-2.5 sm:px-3 py-1 text-xs flex items-center gap-1.5"
-        title="Книга индекса ножей">
-        <span>📖</span> <span class="hidden sm:inline">Индекс:</span> <span id="topKnivesIndexCount"
+        data-i18n-title="header.indexTitle" title="Книга индекса ножей">
+        <span>📖</span> <span class="hidden sm:inline" data-i18n="header.index">Индекс:</span> <span id="topKnivesIndexCount"
           class="font-bold">0/202</span>
       </button>
 
@@ -66,50 +66,50 @@
       <div class="flex items-center bg-stone-900/90 rounded-2xl p-0.5 border border-stone-700 shadow-md">
         <button id="btnModeBoys"
           class="font-game text-[11px] px-2.5 py-1 rounded-xl transition flex items-center gap-1 shadow jelly-btn bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white border border-cyan-400 font-bold"
-          title="Режим для мальчиков (Стандартный геймерский режим)">
-          <span>🎮</span> <span class="hidden sm:inline">Мальчики</span>
+          data-i18n-title="header.boysTitle" title="Режим для мальчиков (Стандартный геймерский режим)">
+          <span>🎮</span> <span class="hidden sm:inline" data-i18n="header.boys">Мальчики</span>
         </button>
         <button id="btnModeGirls"
           class="font-game text-[11px] px-2.5 py-1 rounded-xl transition flex items-center gap-1 text-stone-400 hover:text-pink-300 jelly-btn"
-          title="Режим для девочек (Кавайный милый стиль)">
-          <span>🎀</span> <span class="hidden sm:inline">Девочки</span>
+          data-i18n-title="header.girlsTitle" title="Режим для девочек (Кавайный милый стиль)">
+          <span>🎀</span> <span class="hidden sm:inline" data-i18n="header.girls">Девочки</span>
         </button>
       </div>
 
       <div id="cloudIndicator"
         class="hidden sm:flex items-center justify-center text-[10px] bg-stone-900/70 px-2 py-1 rounded-full border border-stone-700/80 shrink-0 flex-none select-none relative"
         data-mode="save"
-        title="Сохранение…">
+        data-i18n-title="header.saving" title="Сохранение…">
         <span id="cloudLed" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-        <span id="cloudStatusText" aria-live="polite">Сохранение…</span>
+        <span id="cloudStatusText" aria-live="polite" data-i18n="header.saving">Сохранение…</span>
       </div>
 
       <button id="btnAdminPanel"
         class="hidden bg-gradient-to-r from-rose-700 via-red-700 to-orange-700 hover:brightness-110 text-white font-game px-2.5 sm:px-3 py-1 rounded-xl border border-rose-300 text-xs jelly-btn flex items-center gap-1.5 shadow font-bold"
-        title="Админка создателя">
-        <span>🛡️</span> <span class="hidden sm:inline">Админ</span>
+        data-i18n-title="header.adminTitle" title="Админка создателя">
+        <span>🛡️</span> <span class="hidden sm:inline" data-i18n="header.admin">Админ</span>
       </button>
       <button id="btnVipShop" type="button"
         class="jelly-btn font-game px-2.5 sm:px-3 py-1 text-xs flex items-center gap-1.5 font-bold"
-        title="VIP-статус. Покупка пока недоступна">
+        data-i18n-title="header.vipTitle" title="VIP-статус. Покупка пока недоступна">
         <span>👑</span> <span>VIP</span>
       </button>
       <button id="btnFriendsModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
-        title="Друзья">
-        <span>🤝</span> <span>Друзья</span>
+        data-i18n-title="header.friendsTitle" title="Друзья">
+        <span>🤝</span> <span data-i18n="header.friends">Друзья</span>
         <span id="friendsIncomingBadge" class="friends-badge hidden">0</span>
       </button>
       <button id="btnMailModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
-        title="Почта">
-        <span>✉️</span> <span>Почта</span>
+        data-i18n-title="header.mailTitle" title="Почта">
+        <span>✉️</span> <span data-i18n="header.mail">Почта</span>
         <span id="mailRewardBadge" class="friends-badge hidden">0</span>
       </button>
       <button id="btnGuildModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
-        title="Гильдия">
-        <span>🛡️</span> <span>Гильдия</span>
+        data-i18n-title="header.guildTitle" title="Гильдия">
+        <span>🛡️</span> <span data-i18n="header.guild">Гильдия</span>
       </button>
       <button id="btnLeaderboardModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
@@ -123,12 +123,12 @@
       </button>
       <button id="btnPatchNotesModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
-        title="Журнал обновлений">
-        <span>📜</span> <span>Патчи</span>
+        data-i18n-title="header.patchesTitle" title="Журнал обновлений">
+        <span>📜</span> <span data-i18n="header.patches">Патчи</span>
       </button>
       <button id="btnAccountModal"
         class="bg-stone-900 hover:bg-stone-800 text-amber-200 px-2 sm:px-2.5 py-1 rounded-xl border border-amber-600/70 text-xs font-bold flex items-center gap-1.5 shadow jelly-btn"
-        title="Облачный аккаунт и база данных Cloudflare D1">
+        data-i18n-title="header.accountTitle" title="Облачный аккаунт и база данных Cloudflare D1">
         <span class="text-sm">👤</span>
         <span id="headerAccountName" class="max-w-[70px] sm:max-w-[110px] truncate text-[11px]">Гость</span>
         <span id="headerVipBadge" class="vip-badge hidden">VIP 1</span>
@@ -885,14 +885,14 @@
       <button
         class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-xl font-bold">&times;</button>
       <div class="text-3xl text-center mb-1">🗄️</div>
-      <h3 class="font-game text-lg text-yellow-300 text-center">Cloudflare D1 Database</h3>
-      <p class="text-[11px] text-stone-400 text-center mt-1">Прогресс каждого игрока автоматически и надёжно сохраняется
+      <h3 class="font-game text-lg text-yellow-300 text-center" data-i18n="auth.title">Cloudflare D1 Database</h3>
+      <p class="text-[11px] text-stone-400 text-center mt-1" data-i18n="auth.blurb">Прогресс каждого игрока автоматически и надёжно сохраняется
         в глобальной базе данных Cloudflare D1.</p>
 
       <!-- Current Account Status Card -->
       <div class="bg-stone-950 p-3 rounded-2xl border border-stone-800 my-3 space-y-2 text-xs">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Текущий статус:</span>
+          <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider" data-i18n="auth.currentStatus">Текущий статус:</span>
           <span id="accountStatusBadge" class="text-[11px] text-emerald-400 font-medium">⚪ Гостевой режим</span>
         </div>
         <button id="btnAuthAction"
@@ -901,29 +901,40 @@
         </button>
       </div>
 
+      <div class="bg-stone-950 p-3 rounded-2xl border border-stone-800 my-3 space-y-2 text-xs" id="langSelectCard">
+        <div class="flex items-center justify-between gap-2">
+          <label for="localeSelect" class="text-[10px] text-stone-400 font-bold uppercase tracking-wider" data-i18n="lang.label">Язык</label>
+          <select id="localeSelect"
+            class="text-[11px] bg-stone-800 hover:bg-stone-700 text-stone-100 px-3 py-1.5 rounded-full border border-stone-600 font-bold font-game focus:outline-none focus:border-emerald-500">
+            <option value="ru">Русский</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+
       <div class="bg-stone-950 p-3 rounded-2xl border border-stone-800 my-3 space-y-2 text-xs" id="serverStatusCard">
         <div class="flex items-center justify-between gap-2">
-          <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Статус серверов</span>
-          <button type="button" id="btnProbeServers"
+          <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider" data-i18n="auth.statusTitle">Статус серверов</span>
+          <button type="button" id="btnProbeServers" data-i18n="common.check"
             class="text-[10px] bg-stone-800 hover:bg-stone-700 text-stone-200 px-2 py-1 rounded-full border border-stone-600 font-bold">
             Проверить
           </button>
         </div>
         <div id="serverStatusList" class="space-y-1.5">
           <div class="flex items-center justify-between gap-2 text-[11px]">
-            <span class="text-stone-300">Сохранение</span>
+            <span class="text-stone-300" data-i18n="cloud.labelSave">Сохранение</span>
             <span id="serverStatusCloud" class="text-stone-500">—</span>
           </div>
           <div class="flex items-center justify-between gap-2 text-[11px]">
-            <span class="text-stone-300">Друзья / почта / гильдия</span>
+            <span class="text-stone-300" data-i18n="cloud.labelSocial">Друзья / почта / гильдия</span>
             <span id="serverStatusSocial" class="text-stone-500">—</span>
           </div>
           <div class="flex items-center justify-between gap-2 text-[11px]">
-            <span class="text-stone-300">Сессия</span>
+            <span class="text-stone-300" data-i18n="cloud.labelSession">Сессия</span>
             <span id="serverStatusSession" class="text-stone-500">—</span>
           </div>
         </div>
-        <p id="serverStatusHint" class="text-[10px] text-stone-500 leading-snug">Нажмите «Проверить», если видите ошибку про облако или друзей.</p>
+        <p id="serverStatusHint" class="text-[10px] text-stone-500 leading-snug" data-i18n="auth.probeHint">Нажмите «Проверить», если видите ошибку про облако или друзей.</p>
       </div>
 
       <div class="bg-stone-950 p-3 rounded-xl border border-stone-700 my-3 space-y-2.5 text-xs">
@@ -1042,11 +1053,12 @@
     class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="garden-sheet theme-friends">
       <button class="modal-close garden-close" type="button" aria-label="Закрыть">&times;</button>
-      <h3 class="font-game text-xl mb-3">Друзья</h3>
+      <h3 class="font-game text-xl mb-3" data-i18n="friends.title">Друзья</h3>
       <div class="garden-scroll custom-scroll">
         <form id="friendsAddForm" class="flex gap-2 mb-3">
-          <input id="friendsNameInput" class="garden-input" maxlength="32" placeholder="Логин друга" autocomplete="off">
-          <button type="submit" class="garden-pill accent jelly-btn shrink-0">Добавить</button>
+          <input id="friendsNameInput" class="garden-input" maxlength="32" placeholder="Логин друга" autocomplete="off"
+            data-i18n="friends.loginPh" data-i18n-attr="placeholder">
+          <button type="submit" class="garden-pill accent jelly-btn shrink-0" data-i18n="friends.add">Добавить</button>
         </form>
         <div id="friendsBody"></div>
       </div>
@@ -1056,14 +1068,14 @@
   <div id="guildModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="garden-sheet theme-guild">
       <button class="modal-close garden-close" type="button" aria-label="Закрыть">&times;</button>
-      <h3 class="font-game text-xl mb-3">Гильдия</h3>
+      <h3 class="font-game text-xl mb-3" data-i18n="guild.title">Гильдия</h3>
       <div id="guildTabs" class="guild-tabs hidden">
-        <button type="button" class="garden-pill accent" data-guild-page="mine">Моя гильдия</button>
-        <button type="button" id="guildTabBonuses" class="garden-pill hidden" data-guild-page="bonuses">Бонусы</button>
-        <button type="button" class="garden-pill" data-guild-page="fight">Бой</button>
-        <button type="button" class="garden-pill" data-guild-page="journal">Журнал</button>
-        <button type="button" id="guildTabSettings" class="garden-pill hidden" data-guild-page="settings">Настройки</button>
-        <button type="button" class="garden-pill" data-guild-page="search">Поиск</button>
+        <button type="button" class="garden-pill accent" data-guild-page="mine" data-i18n="guild.tabMine">Моя гильдия</button>
+        <button type="button" id="guildTabBonuses" class="garden-pill hidden" data-guild-page="bonuses" data-i18n="guild.tabBonuses">Бонусы</button>
+        <button type="button" class="garden-pill" data-guild-page="fight" data-i18n="guild.tabFight">Бой</button>
+        <button type="button" class="garden-pill" data-guild-page="journal" data-i18n="guild.tabJournal">Журнал</button>
+        <button type="button" id="guildTabSettings" class="garden-pill hidden" data-guild-page="settings" data-i18n="guild.tabSettings">Настройки</button>
+        <button type="button" class="garden-pill" data-guild-page="search" data-i18n="guild.tabSearch">Поиск</button>
       </div>
       <div class="garden-scroll custom-scroll">
         <div id="guildPageMine">
@@ -1101,7 +1113,7 @@
   <div id="mailModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="garden-sheet theme-mail">
       <button class="modal-close garden-close" type="button" aria-label="Закрыть">&times;</button>
-      <h3 class="font-game text-xl mb-3">Почта</h3>
+      <h3 class="font-game text-xl mb-3" data-i18n="mail.title">Почта</h3>
       <div class="garden-scroll custom-scroll">
         <div id="mailBody"></div>
       </div>
@@ -2247,7 +2259,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.76"></script>
+  <script type="module" src="src/main.js?v=5.0.77"></script>
 </body>
 
 </html>

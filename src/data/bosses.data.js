@@ -1,4 +1,4 @@
-import { BOSS_ROSTER_PLAN, flatBossRoster } from './bosses.roster.plan.js';
+﻿import { BOSS_ROSTER_PLAN, flatBossRoster } from './bosses.roster.plan.js';
 
 /**
  * Live guild boss ladder: 13 themes × junior + senior = 26.

@@ -1,15 +1,16 @@
-import { GAME } from '../core/state.js?v=5.0.76';
+﻿import { GAME } from '../core/state.js?v=5.0.77';
 import { events } from '../core/events.js';
-import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase, probeCloudServers } from '../save/cloudSync.js?v=5.0.76';
-import { updateHUD } from './hudView.js?v=5.0.76';
-import { renderFactories } from './factoryView.js?v=5.0.76';
-import { renderTalents } from './talentView.js?v=5.0.76';
+import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase, probeCloudServers } from '../save/cloudSync.js?v=5.0.77';
+import { updateHUD } from './hudView.js?v=5.0.77';
+import { renderFactories } from './factoryView.js?v=5.0.77';
+import { renderTalents } from './talentView.js?v=5.0.77';
 import { renderShop } from './shopView.js';
 import { renderAchievements } from './achievementsView.js';
 import { renderEvoChronicles } from './evoChroniclesView.js';
-import { renderCasesSystem } from './casesView.js?v=5.0.76';
-import { refreshAdminAccess } from './adminView.js?v=5.0.76';
-import { currentGuildTag, formatTaggedName } from '../guild/guildPresence.js?v=5.0.76';
+import { renderCasesSystem } from './casesView.js?v=5.0.77';
+import { refreshAdminAccess } from './adminView.js?v=5.0.77';
+import { currentGuildTag, formatTaggedName } from '../guild/guildPresence.js?v=5.0.77';
+import { t, setLocale, getLocale, listLocales, onLocaleChange, applyDomI18n } from '../i18n/t.js';
 
 function paintServerLine(id, row) {
   const node = document.getElementById(id);
@@ -20,6 +21,15 @@ function paintServerLine(id, row) {
     : 'text-[11px] text-amber-300 font-bold text-right';
 }
 
+function syncLocaleSelect() {
+  const sel = document.getElementById('localeSelect');
+  if (!sel) return;
+  sel.innerHTML = listLocales()
+    .map((row) => `<option value="${row.code}">${t(row.labelKey)}</option>`)
+    .join('');
+  sel.value = getLocale();
+}
+
 export async function refreshServerStatus() {
   const hint = document.getElementById('serverStatusHint');
   const btn = document.getElementById('btnProbeServers');
@@ -27,10 +37,10 @@ export async function refreshServerStatus() {
     btn.disabled = true;
     btn.textContent = '…';
   }
-  paintServerLine('serverStatusCloud', { ok: false, detail: 'проверка…' });
-  paintServerLine('serverStatusSocial', { ok: false, detail: 'проверка…' });
-  paintServerLine('serverStatusSession', { ok: false, detail: 'проверка…' });
-  if (hint) hint.textContent = 'Стучимся в Cloudflare…';
+  paintServerLine('serverStatusCloud', { ok: false, detail: t('cloud.checking') });
+  paintServerLine('serverStatusSocial', { ok: false, detail: t('cloud.checking') });
+  paintServerLine('serverStatusSession', { ok: false, detail: t('cloud.checking') });
+  if (hint) hint.textContent = t('auth.probeHit');
   try {
     const probe = await probeCloudServers();
     paintServerLine('serverStatusCloud', probe.cloud);
@@ -38,24 +48,24 @@ export async function refreshServerStatus() {
     paintServerLine('serverStatusSession', probe.session);
     if (hint) {
       if (probe.cloud.ok && probe.social.ok && (probe.session.ok || !getStoredAccount()?.sessionToken)) {
-        hint.textContent = 'Серверы отвечают. Если окно друзей всё ещё пустое — закройте и откройте его снова.';
+        hint.textContent = t('auth.probeAllOk');
       } else if (!probe.cloud.ok && !probe.social.ok) {
-        hint.textContent = 'Облако не отвечает. Проверьте интернет или подождите минуту — Worker мог быть перегружен.';
+        hint.textContent = t('auth.probeCloudDown');
       } else if (getStoredAccount()?.sessionToken && !probe.session.ok) {
-        hint.textContent = 'Сессия закрыта. Выйдите и войдите тем же логином — иначе друзья и гильдия не откроются.';
+        hint.textContent = t('auth.probeSessionDead');
       } else {
-        hint.textContent = 'Часть сервисов хромает. Нажмите «Проверить» ещё раз через несколько секунд.';
+        hint.textContent = t('auth.probePartial');
       }
     }
   } catch (_) {
-    paintServerLine('serverStatusCloud', { ok: false, detail: 'сбой проверки' });
-    paintServerLine('serverStatusSocial', { ok: false, detail: 'сбой проверки' });
-    paintServerLine('serverStatusSession', { ok: false, detail: 'сбой проверки' });
-    if (hint) hint.textContent = 'Проверка не удалась. Попробуйте ещё раз.';
+    paintServerLine('serverStatusCloud', { ok: false, detail: t('cloud.probeFail') });
+    paintServerLine('serverStatusSocial', { ok: false, detail: t('cloud.probeFail') });
+    paintServerLine('serverStatusSession', { ok: false, detail: t('cloud.probeFail') });
+    if (hint) hint.textContent = t('auth.probeFailed');
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.textContent = 'Проверить';
+      btn.textContent = t('common.check');
     }
   }
 }
@@ -132,19 +142,19 @@ export function updateAccountHeaderUI() {
       headerName.textContent = formatTaggedName(stored.username, currentGuildTag());
     }
     if (accountStatusBadge) {
-      accountStatusBadge.innerHTML = `🟢 <span class="text-emerald-400 font-bold">${stored.username}</span> (Cloudflare D1)`;
+      accountStatusBadge.textContent = t('auth.cloudUser', { name: stored.username });
     }
     if (btnAuthAction) {
-      btnAuthAction.textContent = '🚪 Выйти из аккаунта';
+      btnAuthAction.textContent = t('auth.logout');
       btnAuthAction.className = 'w-full py-1.5 px-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-bold border border-stone-600 transition';
     }
   } else {
-    if (headerName) headerName.textContent = 'Гость';
+    if (headerName) headerName.textContent = t('common.guest');
     if (accountStatusBadge) {
-      accountStatusBadge.innerHTML = `⚪ <span class="text-amber-300 font-bold">Гостевой режим</span> (Локальное сохранение)`;
+      accountStatusBadge.textContent = t('auth.guestLocal');
     }
     if (btnAuthAction) {
-      btnAuthAction.textContent = '🔑 Войти / Создать аккаунт';
+      btnAuthAction.textContent = t('auth.loginCreate');
       btnAuthAction.className = 'w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-500 hover:brightness-110 text-stone-950 font-game text-xs font-bold border border-yellow-300 shadow jelly-btn transition';
     }
   }
@@ -197,24 +207,24 @@ export function initAuthModal() {
 
     if (btnSubmit) {
       btnSubmit.disabled = true;
-      btnSubmit.textContent = '⏳ Вход...';
+      btnSubmit.textContent = t('auth.loggingIn');
     }
 
     const res = await loginAccount(username, password);
 
     if (btnSubmit) {
       btnSubmit.disabled = false;
-      btnSubmit.textContent = '🚀 Войти в аккаунт';
+      btnSubmit.textContent = t('auth.loginTab');
     }
 
     if (res.success) {
-      showAuthStatus(`✅ Добро пожаловать, ${res.username}! Прогресс загружен.`, true);
+      showAuthStatus(t('auth.welcome', { name: res.username }), true);
       refreshAllGameUI();
       setTimeout(() => {
         closeAuthModal();
       }, 700);
     } else {
-      showAuthStatus(res.error || 'Ошибка входа');
+      showAuthStatus(res.error || t('auth.loginError'));
     }
   });
 
@@ -229,24 +239,24 @@ export function initAuthModal() {
 
     if (btnSubmit) {
       btnSubmit.disabled = true;
-      btnSubmit.textContent = '⏳ Создание...';
+      btnSubmit.textContent = t('auth.creating');
     }
 
     const res = await registerAccount(username, password);
 
     if (btnSubmit) {
       btnSubmit.disabled = false;
-      btnSubmit.textContent = '✨ Создать аккаунт';
+      btnSubmit.textContent = t('auth.createAccount');
     }
 
     if (res.success) {
-      showAuthStatus(`🎉 Аккаунт ${res.username} успешно создан в Cloudflare D1!`, true);
+      showAuthStatus(t('auth.createdOk', { name: res.username }), true);
       refreshAllGameUI();
       setTimeout(() => {
         closeAuthModal();
       }, 800);
     } else {
-      showAuthStatus(res.error || 'Ошибка регистрации');
+      showAuthStatus(res.error || t('auth.registerError'));
     }
   });
 
@@ -254,7 +264,7 @@ export function initAuthModal() {
   document.getElementById('btnAuthAction')?.addEventListener('click', () => {
     const stored = getStoredAccount();
     if (stored) {
-      if (confirm('Вы уверены, что хотите выйти из аккаунта? Текущие данные сохранены в облаке.')) {
+      if (confirm(t('auth.logoutConfirm'))) {
         logoutAccount();
         updateAccountHeaderUI();
         refreshAdminAccess();
@@ -269,11 +279,22 @@ export function initAuthModal() {
   // Force cloud save / load
   document.getElementById('btnForceCloudSave')?.addEventListener('click', async () => {
     await syncToCloudDatabase();
-    alert('✅ Прогресс успешно отправлен в Cloudflare D1!');
+    alert(t('auth.savedOk'));
   });
 
   document.getElementById('btnProbeServers')?.addEventListener('click', () => {
     refreshServerStatus();
+  });
+
+  document.getElementById('localeSelect')?.addEventListener('change', (event) => {
+    setLocale(event.target.value);
+  });
+
+  syncLocaleSelect();
+  onLocaleChange(() => {
+    applyDomI18n(document);
+    syncLocaleSelect();
+    updateAccountHeaderUI();
   });
 
   // Initialize UI
@@ -284,7 +305,7 @@ export function initAuthModal() {
     const nameInput = document.getElementById('loginUsername');
     const known = getStoredAccount()?.username;
     if (nameInput && known && !nameInput.value) nameInput.value = known;
-    showAuthStatus('Сессия на сервере закрыта. Войдите тем же логином и паролем, иначе облако не примет прогресс. На этом устройстве игра остаётся.', false);
+    showAuthStatus(t('auth.sessionDead'), false);
     const box = document.getElementById('authStatusBox');
     if (box) box.className = 'mt-3 text-[11px] text-center p-2 rounded-xl font-medium bg-amber-950/80 border border-amber-500 text-amber-200';
   });

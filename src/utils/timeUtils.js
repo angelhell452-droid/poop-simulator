@@ -1,4 +1,4 @@
-export function formatTimeSeconds(seconds) {
+﻿export function formatTimeSeconds(seconds) {
   if (seconds < 60) return `${Math.ceil(seconds)}с`;
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);

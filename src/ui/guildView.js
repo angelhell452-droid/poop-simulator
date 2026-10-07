@@ -1,14 +1,15 @@
-import { GAME } from '../core/state.js?v=5.0.76';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.76';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.76';
-import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.76';
-import { KNIVES } from '../data/knives.data.js?v=5.0.76';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.76';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.76';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.76';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.76';
-import { pulseMail } from './mailView.js?v=5.0.76';
-import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.76';
+﻿import { GAME } from '../core/state.js?v=5.0.77';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.77';
+import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.77';
+import { KNIVES } from '../data/knives.data.js?v=5.0.77';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.77';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.77';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.77';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.77';
+import { pulseMail } from './mailView.js?v=5.0.77';
+import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.77';
+import { t, onLocaleChange } from '../i18n/t.js';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
 
@@ -57,9 +58,9 @@ function toast(text) {
 }
 
 function roleName(role) {
-  if (role === 'leader') return 'Глава';
-  if (role === 'officer') return 'Офицер';
-  return 'Участник';
+  if (role === 'leader') return t('guild.roleLeader');
+  if (role === 'officer') return t('guild.roleOfficer');
+  return t('guild.roleMember');
 }
 
 function myEpoch() {
@@ -169,7 +170,7 @@ async function loadGuild() {
   if (!data.success) {
     guildLoaded = true;
     if (guildOpen()) {
-      toast(data.error || 'Гильдия не ответила');
+      toast(data.error || t('guild.noReply'));
       render();
     }
     return;
@@ -184,14 +185,14 @@ function memberButtons(person, guild) {
   if (person.username === getStoredAccount()?.username) return '';
   const buttons = [];
   if (guild.canLead && person.role !== 'leader') {
-    buttons.push(`<button type="button" class="garden-pill jelly-btn" data-guild-action="role" data-role="leader" data-user="${attr(person.username)}">Глава</button>`);
-    buttons.push(`<button type="button" class="garden-pill jelly-btn" data-guild-action="role" data-role="${person.role === 'officer' ? 'member' : 'officer'}" data-user="${attr(person.username)}">${person.role === 'officer' ? 'В участники' : 'Офицер'}</button>`);
+    buttons.push(`<button type="button" class="garden-pill jelly-btn" data-guild-action="role" data-role="leader" data-user="${attr(person.username)}">${esc(t('guild.roleLeader'))}</button>`);
+    buttons.push(`<button type="button" class="garden-pill jelly-btn" data-guild-action="role" data-role="${person.role === 'officer' ? 'member' : 'officer'}" data-user="${attr(person.username)}">${esc(person.role === 'officer' ? t('guild.toMember') : t('guild.roleOfficer'))}</button>`);
   }
   if ((guild.canLead || guild.role === 'officer') && person.role === 'member') {
-    buttons.push(`<button type="button" class="garden-pill jelly-btn" data-guild-action="kick" data-user="${attr(person.username)}">Выгнать</button>`);
+    buttons.push(`<button type="button" class="garden-pill jelly-btn" data-guild-action="kick" data-user="${attr(person.username)}">${esc(t('guild.kick'))}</button>`);
   }
   if (guild.canLead && person.role === 'officer') {
-    buttons.push(`<button type="button" class="garden-pill jelly-btn" data-guild-action="kick" data-user="${attr(person.username)}">Выгнать</button>`);
+    buttons.push(`<button type="button" class="garden-pill jelly-btn" data-guild-action="kick" data-user="${attr(person.username)}">${esc(t('guild.kick'))}</button>`);
   }
   return buttons.join('');
 }
@@ -256,14 +257,14 @@ function renderMine() {
     if (form) form.classList.add('hidden');
     if (settingsTab) settingsTab.classList.add('hidden');
     if (bonusesTab) bonusesTab.classList.add('hidden');
-    box.innerHTML = '<div class="garden-empty">Гильдия открывается с аккаунта.</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.guest'))}</div>`;
     return;
   }
   if (!guildLoaded && !state) {
     if (form) form.classList.add('hidden');
     if (settingsTab) settingsTab.classList.add('hidden');
     if (bonusesTab) bonusesTab.classList.add('hidden');
-    box.innerHTML = '<div class="garden-empty">Загружаем гильдию…</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.loading'))}</div>`;
     return;
   }
   const guild = state?.guild;
@@ -273,15 +274,15 @@ function renderMine() {
     if (bonusesTab) bonusesTab.classList.add('hidden');
     if (page === 'settings' || page === 'bonuses') showPage('mine');
     const invites = state?.invites || [];
-    const inviteBlock = invites.length ? `<div class="garden-muted mb-2">Приглашения</div><div class="grid gap-2">${invites.map((invite) => `
+    const inviteBlock = invites.length ? `<div class="garden-muted mb-2">${esc(t('guild.invites'))}</div><div class="grid gap-2">${invites.map((invite) => `
       <div class="garden-card flex items-center justify-between gap-2">
         <span class="truncate">[${esc(invite.tag)}] ${esc(invite.name)} · от ${esc(invite.fromName)}</span>
         <span class="flex gap-1.5 shrink-0">
-          <button type="button" class="garden-pill accent jelly-btn" data-guild-action="accept" data-guild="${invite.guildId}">Принять</button>
-          <button type="button" class="garden-pill jelly-btn" data-guild-action="decline" data-guild="${invite.guildId}">Отклонить</button>
+          <button type="button" class="garden-pill accent jelly-btn" data-guild-action="accept" data-guild="${invite.guildId}">${esc(t('guild.accept'))}</button>
+          <button type="button" class="garden-pill jelly-btn" data-guild-action="decline" data-guild="${invite.guildId}">${esc(t('guild.decline'))}</button>
         </span>
       </div>
-    `).join('')}</div>` : '<div class="garden-empty">Своей гильдии нет. Создайте её здесь или откройте вкладку «Поиск».</div>';
+    `).join('')}</div>` : `<div class="garden-empty">${esc(t('guild.noGuild'))}</div>`;
     box.innerHTML = inviteBlock;
     return;
   }
@@ -298,7 +299,7 @@ function renderMine() {
   box.innerHTML = `
     <div class="garden-card">
       <div class="guild-name-block">
-        <div class="guild-name-label">Название гильдии</div>
+        <div class="guild-name-label">${esc(t('guild.nameLabel'))}</div>
         <div class="guild-name-row">
           <span class="guild-tag-chip">[${esc(guild.tag)}]</span>
           <span class="guild-name-title font-game">${esc(guild.name)}</span>
@@ -318,20 +319,20 @@ function renderMine() {
     </div>
     <div class="guild-roster mt-3">
       <div class="guild-roster-head">
-        <span class="font-game">Состав</span>
+        <span class="font-game">${esc(t('guild.roster'))}</span>
         <span class="garden-pill">${formatNumber(members.length)} / 20</span>
       </div>
       <div class="grid gap-2">
         ${members.map((person) => `
           <div class="guild-member-row">
-            <span class="guild-member-name truncate">${esc(person.username)} · ${roleName(person.role)}</span>
+            <span class="guild-member-name truncate">${esc(person.username)} · ${esc(roleName(person.role))}</span>
             <span class="guild-member-actions">${memberButtons(person, guild)}</span>
           </div>
         `).join('')}
       </div>
     </div>
     <div class="flex gap-2 mt-3">
-      <button type="button" class="garden-pill jelly-btn" data-guild-action="leave">Выйти</button>
+      <button type="button" class="garden-pill jelly-btn" data-guild-action="leave">${esc(t('guild.leave'))}</button>
     </div>
   `;
 }
@@ -567,12 +568,12 @@ function paintFight() {
   const guild = state?.guild;
   if (!box) return;
   if (!signedIn()) {
-    box.innerHTML = '<div class="garden-empty">Бой открывается с аккаунта.</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.needAccountFight'))}</div>`;
     box.dataset.key = '';
     return;
   }
   if (!guild) {
-    box.innerHTML = '<div class="garden-empty">Сначала вступите в гильдию.</div>';
+    box.innerHTML = `<div class="garden-empty">${esc(t('guild.needGuildFight'))}</div>`;
     box.dataset.key = '';
     return;
   }
@@ -585,7 +586,7 @@ function paintFight() {
   if (!boss) {
     box.dataset.key = '';
     if (!guild.canSummon) {
-      box.innerHTML = '<div class="garden-empty">Босса вызывает глава или офицер.</div>';
+      box.innerHTML = `<div class="garden-empty">${esc(t('guild.needOfficer'))}</div>`;
       return;
     }
     let lastTheme = '';
@@ -594,22 +595,22 @@ function paintFight() {
         ? `<div class="garden-muted mt-2 mb-1">${esc(row.theme)}</div>`
         : '';
       lastTheme = row.theme || lastTheme;
-      const tier = row.tier === 'senior' ? 'Старший' : (row.tier === 'junior' ? 'Младший' : '');
+      const tier = row.tier === 'senior' ? t('guild.senior') : (row.tier === 'junior' ? t('guild.junior') : '');
       return `
         ${themeHead}
         <div class="garden-card boss-summon-card">
           <img class="boss-thumb" src="assets/poop/bosses/${esc(row.id)}.png" alt="" onerror="this.remove()">
           <div class="boss-summon-info min-w-0">
             <div class="font-game">${esc(row.icon)} ${esc(row.name)}</div>
-            <div class="garden-muted">${tier ? `${esc(tier)} · ` : ''}попытка ${formatNumber(row.circle)} · ${formatNumber(row.points)} очков · ${formatNumber(row.plungers)} вантузов</div>
+            <div class="garden-muted">${tier ? `${esc(tier)} · ` : ''}${esc(t('guild.attempt', { n: formatNumber(row.circle) }))} · ${esc(t('guild.reward', { points: formatNumber(row.points), plungers: formatNumber(row.plungers) }))}</div>
           </div>
           ${row.unlocked
-            ? `<button type="button" class="garden-pill accent jelly-btn shrink-0" data-guild-action="summon" data-boss="${row.index}">Вызвать</button>`
-            : '<span class="garden-pill shrink-0">Закрыт</span>'}
+            ? `<button type="button" class="garden-pill accent jelly-btn shrink-0" data-guild-action="summon" data-boss="${row.index}">${esc(t('guild.summon'))}</button>`
+            : `<span class="garden-pill shrink-0">${esc(t('guild.locked'))}</span>`}
         </div>
       `;
     }).join('');
-    box.innerHTML = `<div class="garden-muted mb-2">Кого вызвать · ${formatNumber((guild.roster || []).length)} боссов</div><div class="grid gap-2">${rows}</div>`;
+    box.innerHTML = `<div class="garden-muted mb-2">${esc(t('guild.summonWhom', { n: formatNumber((guild.roster || []).length) }))}</div><div class="grid gap-2">${rows}</div>`;
     return;
   }
   const key = `${boss.index}:${boss.deadlineMs}`;
@@ -1041,4 +1042,8 @@ export function initGuildView() {
   }, 250);
   // Presence only once at boot — no background guild spam.
   if (signedIn()) loadGuild();
+
+  onLocaleChange(() => {
+    if (guildOpen()) render();
+  });
 }

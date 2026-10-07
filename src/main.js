@@ -1,40 +1,41 @@
-import { GAME } from './core/state.js?v=5.0.76';
-import { startGameLoop } from './core/gameLoop.js?v=5.0.76';
-import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.0.76';
-import { saveLocal } from './save/saveManager.js?v=5.0.76';
-import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting } from './ui/hudView.js?v=5.0.76';
-import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.0.76';
-import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.0.76';
+﻿import { GAME } from './core/state.js?v=5.0.77';
+import { startGameLoop } from './core/gameLoop.js?v=5.0.77';
+import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.0.77';
+import { saveLocal } from './save/saveManager.js?v=5.0.77';
+import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting } from './ui/hudView.js?v=5.0.77';
+import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.0.77';
+import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.0.77';
 import { renderShop } from './ui/shopView.js';
 import { renderAchievements } from './ui/achievementsView.js';
-import { renderCasesSystem, initCasesListeners } from './ui/casesView.js?v=5.0.76';
-import { initKnivesIndexListeners } from './ui/knivesIndexView.js?v=5.0.76';
-import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.0.76';
-import { initModals } from './ui/modalManager.js?v=5.0.76';
-import { initAuthModal, refreshServerStatus } from './ui/authModalView.js?v=5.0.76';
-import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js?v=5.0.76';
-import { initLeaderboardView } from './ui/leaderboardView.js?v=5.0.76';
-import { initFriendsView } from './ui/friendsView.js?v=5.0.76';
-import { initGuildView } from './ui/guildView.js?v=5.0.76';
-import { initMailView } from './ui/mailView.js?v=5.0.76';
-import { startSocialPulse } from './ui/socialPulse.js?v=5.0.76';
-import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.0.76';
+import { renderCasesSystem, initCasesListeners } from './ui/casesView.js?v=5.0.77';
+import { initKnivesIndexListeners } from './ui/knivesIndexView.js?v=5.0.77';
+import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.0.77';
+import { initModals } from './ui/modalManager.js?v=5.0.77';
+import { initAuthModal, refreshServerStatus } from './ui/authModalView.js?v=5.0.77';
+import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js?v=5.0.77';
+import { initLeaderboardView } from './ui/leaderboardView.js?v=5.0.77';
+import { initFriendsView } from './ui/friendsView.js?v=5.0.77';
+import { initGuildView } from './ui/guildView.js?v=5.0.77';
+import { initMailView } from './ui/mailView.js?v=5.0.77';
+import { startSocialPulse } from './ui/socialPulse.js?v=5.0.77';
+import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.0.77';
 import { initVipShop } from './ui/vipShopView.js';
-import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.76';
-import { initBugReportListeners } from './ui/bugReportView.js?v=5.0.76';
-import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.0.76';
+import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.77';
+import { initBugReportListeners } from './ui/bugReportView.js?v=5.0.77';
+import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.0.77';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
-import { addPendingClicks, processBatchedClicks } from './systems/clickService.js?v=5.0.76';
-import { checkAchievements } from './systems/achievementsService.js?v=5.0.76';
-import { getPassiveIncome } from './economy/production.js?v=5.0.76';
+import { addPendingClicks, processBatchedClicks } from './systems/clickService.js?v=5.0.77';
+import { checkAchievements } from './systems/achievementsService.js?v=5.0.77';
+import { getPassiveIncome } from './economy/production.js?v=5.0.77';
 import { TALENTS } from './data/talents.data.js';
-import { ACHIEVEMENTS } from './data/achievements.data.js?v=5.0.76';
-import { SHOP_ITEMS } from './data/shop.data.js?v=5.0.76';
-import { formatNumber } from './utils/numberFormatter.js?v=5.0.76';
-import { gainBio, isBig, mul } from './utils/big.js?v=5.0.76';
+import { ACHIEVEMENTS } from './data/achievements.data.js?v=5.0.77';
+import { SHOP_ITEMS } from './data/shop.data.js?v=5.0.77';
+import { formatNumber } from './utils/numberFormatter.js?v=5.0.77';
+import { gainBio, isBig, mul } from './utils/big.js?v=5.0.77';
 import { formatDurationAway } from './utils/timeUtils.js';
-import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap } from './systems/autoclickService.js?v=5.0.76';
+import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap } from './systems/autoclickService.js?v=5.0.77';
 import { events } from './core/events.js';
+import { initI18n, t, onLocaleChange } from './i18n/t.js';
 
 export function toggleAutoclicker() {
   if (!isAutoclickUnlocked()) return;
@@ -57,17 +58,17 @@ export function updateAutoclickerUI() {
     btn.disabled = true;
     btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 border-stone-600 text-stone-500';
     led.className = 'w-2.5 h-2.5 rounded-full bg-stone-600';
-    label.textContent = 'АВТОКЛИКЕР: ПОСЛЕ 1 СМЫВА';
+    label.textContent = t('hud.autoclickLocked');
   } else if (GAME.autoclickerActive) {
     btn.disabled = false;
     btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-amber-600 hover:bg-amber-500 border-yellow-400 text-white shadow-[0_0_10px_#f59e0b]';
     led.className = 'w-2.5 h-2.5 rounded-full bg-yellow-300 shadow-[0_0_8px_#facc15] animate-ping';
-    label.textContent = `АВТОКЛИКЕР: ВКЛ (${formatNumber(spd)} CPS)`;
+    label.textContent = t('hud.autoclickOn', { n: formatNumber(spd) });
   } else {
     btn.disabled = false;
     btn.className = 'font-game px-3 py-1 rounded-xl border text-xs flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 hover:bg-stone-700 border-stone-600 text-stone-300';
     led.className = 'w-2.5 h-2.5 rounded-full bg-stone-500';
-    label.textContent = `АВТОКЛИКЕР: ВЫКЛ · ${formatNumber(cap)} CPS`;
+    label.textContent = t('hud.autoclickOff', { n: formatNumber(cap) });
   }
 
   document.querySelectorAll('.autoclick-spd-btn').forEach(b => {
@@ -122,6 +123,9 @@ export function applyGameModeUI() {
 
 export async function bootstrap() {
   console.log('🚀 Bootstrapping Poop Simulator (Modular Architecture v2)...');
+
+  initI18n();
+  onLocaleChange(() => updateAutoclickerUI());
 
   // 1. Initialize UI Canvas, Modals, Cases, Knives & Autocare Listeners
   initPetCanvas();

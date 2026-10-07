@@ -1,8 +1,8 @@
-import { getPhaseByIndex, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.76';
-import { calcEvolutionMult } from './evolutions.data.js?v=5.0.76';
-import { expectedAccountMult } from '../economy/metaMultipliers.js?v=5.0.76';
-import { div, isBig, mul } from '../utils/big.js?v=5.0.76';
-import { horizonDrag } from '../economy/horizon.js?v=5.0.76';
+﻿import { getPhaseByIndex, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.77';
+import { calcEvolutionMult } from './evolutions.data.js?v=5.0.77';
+import { expectedAccountMult } from '../economy/metaMultipliers.js?v=5.0.77';
+import { div, isBig, mul } from '../utils/big.js?v=5.0.77';
+import { horizonDrag } from '../economy/horizon.js?v=5.0.77';
 
 export const FACTORIES_PER_EPOCH = 3;
 

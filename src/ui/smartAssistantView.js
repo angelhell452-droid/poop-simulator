@@ -1,18 +1,18 @@
-import { GAME } from '../core/state.js?v=5.0.76';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.76';
-import { buyFactory } from '../systems/factoryService.js?v=5.0.76';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.76';
+﻿import { GAME } from '../core/state.js?v=5.0.77';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.77';
+import { buyFactory } from '../systems/factoryService.js?v=5.0.77';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.77';
 import { getBestKnife, equipBestKnife } from '../systems/knifeService.js';
 import { feedPet, washPet } from '../systems/petCareService.js';
-import { getPrestigeRollsReward } from '../prestige/prestigeService.js?v=5.0.76';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.76';
-import { peakForm } from '../progression/unlocks.js?v=5.0.76';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.76';
-import { gte } from '../utils/big.js?v=5.0.76';
-import { updateHUD } from './hudView.js?v=5.0.76';
-import { renderCasesSystem } from './casesView.js?v=5.0.76';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.76';
-import { addVisualParticle } from './petCanvasView.js?v=5.0.76';
+import { getPrestigeRollsReward } from '../prestige/prestigeService.js?v=5.0.77';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.77';
+import { peakForm } from '../progression/unlocks.js?v=5.0.77';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
+import { gte } from '../utils/big.js?v=5.0.77';
+import { updateHUD } from './hudView.js?v=5.0.77';
+import { renderCasesSystem } from './casesView.js?v=5.0.77';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.77';
+import { addVisualParticle } from './petCanvasView.js?v=5.0.77';
 
 let lastHintAction = null;
 

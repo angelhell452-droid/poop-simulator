@@ -1,4 +1,4 @@
-const VIP_MULT = [1, 2, 2.5, 3, 4, 5];
+﻿const VIP_MULT = [1, 2, 2.5, 3, 4, 5];
 let confirmedVip = 0;
 
 export const INCOME_PACE = 1.5;

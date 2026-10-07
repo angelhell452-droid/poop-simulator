@@ -1,9 +1,10 @@
-import { GAME } from '../core/state.js?v=5.0.76';
+﻿import { GAME } from '../core/state.js?v=5.0.77';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.76';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.77';
 import { setConfirmedVip } from '../economy/pace.js';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.76';
-import { cmp } from '../utils/big.js?v=5.0.76';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.77';
+import { cmp } from '../utils/big.js?v=5.0.77';
+import { t } from '../i18n/t.js';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
@@ -200,14 +201,14 @@ export async function syncToCloudDatabase() {
   const stored = getStoredAccount();
   if (!stored?.sessionToken) {
     if (stored?.username) {
-      setCloudStatus('Войдите', 'wait');
+      setCloudStatus(t('cloud.login'), 'wait');
       askRelogin();
     } else {
-      setCloudStatus('На устройстве', 'local');
+      setCloudStatus(t('cloud.local'), 'local');
     }
     return;
   }
-  setCloudStatus('Сохранение…', 'save');
+  setCloudStatus(t('cloud.saving'), 'save');
 
   const bodyStr = cloudBody();
 
@@ -216,7 +217,7 @@ export async function syncToCloudDatabase() {
 
     if (res.status === 401) {
       dropDeadSession();
-      setCloudStatus('Войдите', 'wait');
+      setCloudStatus(t('cloud.login'), 'wait');
       return;
     }
 
@@ -226,17 +227,17 @@ export async function syncToCloudDatabase() {
         applySaveDataSafely(data.saveData);
         saveLocal();
       }
-      setCloudStatus('Обновление…', 'save');
+      setCloudStatus(t('cloud.updating'), 'save');
       return;
     }
 
     if (res.ok) {
-      setCloudStatus('Сохранено', 'ok');
+      setCloudStatus(t('cloud.saved'), 'ok');
     } else {
-      setCloudStatus('На устройстве', 'local');
+      setCloudStatus(t('cloud.local'), 'local');
     }
   } catch (err) {
-    setCloudStatus('Нет сети', 'wait');
+    setCloudStatus(t('cloud.offline'), 'wait');
   }
 }
 
@@ -245,10 +246,10 @@ export async function registerAccount(username, password) {
   const cleanPass = (password || '').trim();
 
   if (!cleanUser || cleanUser.length < 3) {
-    return { success: false, error: 'Логин должен содержать минимум 3 символа!' };
+    return { success: false, error: t('auth.userShort') };
   }
   if (!cleanPass || cleanPass.length < 4) {
-    return { success: false, error: 'Пароль должен содержать минимум 4 символа!' };
+    return { success: false, error: t('auth.passShort') };
   }
 
   try {
@@ -282,10 +283,10 @@ export async function registerAccount(username, password) {
       saveLocal();
       return { success: true, username: data.username, playerId: data.playerId };
     } else {
-      return { success: false, error: data.error || 'Ошибка при создании аккаунта' };
+      return { success: false, error: data.error || t('auth.createFail') };
     }
   } catch (err) {
-    return { success: false, error: 'Сетевая ошибка при связи с Cloudflare D1' };
+    return { success: false, error: t('auth.netError') };
   }
 }
 
@@ -294,7 +295,7 @@ export async function loginAccount(username, password) {
   const cleanPass = (password || '').trim();
 
   if (!cleanUser || !cleanPass) {
-    return { success: false, error: 'Заполните все поля для входа!' };
+    return { success: false, error: t('auth.fillLogin') };
   }
 
   try {
@@ -330,10 +331,10 @@ export async function loginAccount(username, password) {
 
       return { success: true, username: data.username, playerId: data.playerId };
     } else {
-      return { success: false, error: data.error || 'Неверный логин или пароль' };
+      return { success: false, error: data.error || t('auth.badLogin') };
     }
   } catch (err) {
-    return { success: false, error: 'Сетевая ошибка при связи с Cloudflare D1' };
+    return { success: false, error: t('auth.netError') };
   }
 }
 
@@ -341,7 +342,7 @@ export function logoutAccount() {
   saveStoredAccount(null);
   // Reset playerId to a new guest id so they don't overwrite previous account
   GAME.playerId = 'guest_' + Math.random().toString(36).substring(2, 10);
-  GAME.playerName = 'Гость #' + GAME.playerId.substring(GAME.playerId.length - 4);
+  GAME.playerName = `${t('common.guest')} #` + GAME.playerId.substring(GAME.playerId.length - 4);
   saveLocal();
 }
 
@@ -364,7 +365,7 @@ export async function loadFromCloudDatabaseOrLocal() {
       const data = await res.json();
       const cloudPayload = data.data || data.save_data;
       if (data?.parseError) {
-        setCloudStatus('На устройстве', 'local');
+        setCloudStatus(t('cloud.local'), 'local');
       } else if (data && cloudPayload) {
         const parsed = typeof cloudPayload === 'string' ? JSON.parse(cloudPayload) : cloudPayload;
         const localParsed = readLocalSave();
@@ -403,8 +404,8 @@ export async function adminRequest(action, options = {}) {
     method: options.method || 'GET',
     body: options.body ? JSON.stringify(options.body) : undefined
   });
-  const data = await res.json().catch(() => ({ success: false, error: 'Пустой ответ сервера' }));
-  if (!res.ok && !data.error) data.error = 'Запрос отклонён';
+  const data = await res.json().catch(() => ({ success: false, error: t('cloud.emptyServer') }));
+  if (!res.ok && !data.error) data.error = t('cloud.rejected');
   return data;
 }
 
@@ -412,7 +413,7 @@ function socialFail(detail) {
   return {
     success: false,
     offline: true,
-    error: detail || 'Облако временно не отвечает. Откройте профиль → статус серверов.'
+    error: detail || t('cloud.failGeneric')
   };
 }
 
@@ -441,11 +442,11 @@ async function socialRequestOnce(action, options = {}) {
   if (res.status === 401) askRelogin();
   if (!data || typeof data !== 'object') {
     return socialFail(res.status >= 500
-      ? `Сервер друзей споткнулся (код ${res.status}). Подождите пару секунд и нажмите «Проверить».`
-      : `Облако вернуло пустой ответ (код ${res.status || '—'}).`);
+      ? t('cloud.fail500', { code: res.status })
+      : t('cloud.failEmpty', { code: res.status || '—' }));
   }
   if (!res.ok) data.success = false;
-  if (!res.ok && !data.error) data.error = `Запрос отклонён (код ${res.status})`;
+  if (!res.ok && !data.error) data.error = t('cloud.failRejected', { code: res.status });
   data.offline = false;
   return data;
 }
@@ -459,7 +460,7 @@ export async function socialRequest(action, options = {}) {
       await new Promise((resolve) => setTimeout(resolve, 450));
       return await socialRequestOnce(action, options);
     } catch (err2) {
-      return socialFail('Нет сети или облако недоступно. Проверьте интернет и статус в профиле.');
+      return socialFail(t('cloud.failNetwork'));
     }
   }
 }
@@ -467,9 +468,9 @@ export async function socialRequest(action, options = {}) {
 /** Live probe: save/session on main Worker; friends/mail/guild prefer /api/social. */
 export async function probeCloudServers() {
   const out = {
-    cloud: { ok: false, ms: 0, label: 'Сохранение', detail: '…' },
-    social: { ok: false, ms: 0, label: 'Друзья / почта / гильдия', detail: '…' },
-    session: { ok: false, ms: 0, label: 'Сессия', detail: '…' }
+    cloud: { ok: false, ms: 0, label: t('cloud.labelSave'), detail: '…' },
+    social: { ok: false, ms: 0, label: t('cloud.labelSocial'), detail: '…' },
+    session: { ok: false, ms: 0, label: t('cloud.labelSession'), detail: '…' }
   };
 
   const timed = async (fn) => {
@@ -486,40 +487,40 @@ export async function probeCloudServers() {
   out.cloud.ms = cloud.ms;
   out.session.ms = cloud.ms;
   if (!cloud.ok) {
-    out.cloud.detail = 'нет ответа';
-    out.session.detail = 'нет ответа';
+    out.cloud.detail = t('cloud.noReply');
+    out.session.detail = t('cloud.noReply');
   } else {
     const res = cloud.value;
     out.cloud.ok = res.ok || res.status === 401;
     out.cloud.detail = out.cloud.ok
-      ? (res.status === 401 ? `ок · ${cloud.ms} мс · нужен вход` : `ок · ${cloud.ms} мс`)
-      : `ошибка · код ${res.status} · ${cloud.ms} мс`;
+      ? (res.status === 401 ? t('cloud.okMsNeedLogin', { ms: cloud.ms }) : t('cloud.okMs', { ms: cloud.ms }))
+      : t('cloud.errMs', { code: res.status, ms: cloud.ms });
     if (res.status === 401) {
       out.session.ok = false;
-      out.session.detail = 'сессия закрыта — войдите снова';
+      out.session.detail = t('cloud.sessionClosed');
     } else if (res.ok) {
       out.session.ok = true;
-      out.session.detail = `в сети · ${cloud.ms} мс`;
+      out.session.detail = t('cloud.onlineMs', { ms: cloud.ms });
     } else {
-      out.session.detail = `код ${res.status}`;
+      out.session.detail = t('cloud.codeMs', { code: res.status });
     }
   }
 
   const social = await timed(() => socialRequestOnce('mail'));
   out.social.ms = social.ms;
   if (!social.ok) {
-    out.social.detail = `нет сети · ${social.ms} мс`;
+    out.social.detail = t('cloud.noNetMs', { ms: social.ms });
   } else if (social.value?.success) {
     out.social.ok = true;
-    out.social.detail = `ок · ${social.ms} мс`;
+    out.social.detail = t('cloud.okMs', { ms: social.ms });
   } else if (social.value?.offline) {
-    out.social.detail = social.value.error || `нет ответа · ${social.ms} мс`;
+    out.social.detail = social.value.error || t('cloud.noAnswerMs', { ms: social.ms });
   } else {
     // 401 on mail still means the Worker answered.
     out.social.ok = true;
     out.social.detail = social.value?.error
-      ? `${social.value.error} · ${social.ms} мс`
-      : `ответ есть · ${social.ms} мс`;
+      ? t('cloud.detailMs', { detail: social.value.error, ms: social.ms })
+      : t('cloud.replyMs', { ms: social.ms });
   }
 
   out.anyOk = !!(out.cloud.ok || out.social.ok);
@@ -529,15 +530,15 @@ export async function probeCloudServers() {
 
 export async function wipeCloudPlayer(playerId) {
   const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=wipe&playerId=${encodeURIComponent(playerId)}`, { method: 'POST' });
-  const data = await res.json().catch(() => ({ success: false, error: 'Пустой ответ сервера' }));
-  if (!res.ok && !data.error) data.error = 'Сброс отклонён';
+  const data = await res.json().catch(() => ({ success: false, error: t('cloud.emptyServer') }));
+  if (!res.ok && !data.error) data.error = t('cloud.wipeRejected');
   return data;
 }
 
 export async function wipeAllCloudSaves() {
   const res = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=wipe_all`, { method: 'POST' });
-  const data = await res.json().catch(() => ({ success: false, error: 'Пустой ответ сервера' }));
-  if (!res.ok && !data.error) data.error = 'Сброс отклонён';
+  const data = await res.json().catch(() => ({ success: false, error: t('cloud.emptyServer') }));
+  if (!res.ok && !data.error) data.error = t('cloud.wipeRejected');
   return data;
 }
 

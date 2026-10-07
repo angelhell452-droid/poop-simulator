@@ -1,4 +1,4 @@
-// Unified Reactive Game State
+﻿// Unified Reactive Game State
 
 export function getDefaultGameState() {
   let playerId = (typeof localStorage !== 'undefined') ? localStorage.getItem('PoopSim_PlayerId') : null;
