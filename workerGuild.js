@@ -98,6 +98,22 @@ export async function ensureGuildSchema(db) {
     );
   `).run();
   await db.prepare(`
+    CREATE TABLE IF NOT EXISTS guild_boss_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      guild_id INTEGER NOT NULL,
+      boss_index INTEGER NOT NULL,
+      circle INTEGER NOT NULL,
+      win INTEGER NOT NULL,
+      damage REAL NOT NULL DEFAULT 0,
+      hitters INTEGER NOT NULL DEFAULT 0,
+      points INTEGER NOT NULL DEFAULT 0,
+      plungers INTEGER NOT NULL DEFAULT 0,
+      started_ms INTEGER NOT NULL,
+      ended_ms INTEGER NOT NULL
+    );
+  `).run();
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_guild_boss_log ON guild_boss_log(guild_id, id DESC);`).run();
+  await db.prepare(`
     CREATE TABLE IF NOT EXISTS guild_applications (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       guild_id INTEGER NOT NULL,
@@ -266,6 +282,7 @@ async function finishAttempt(db, guild, win) {
   const index = Number(guild.boss_index) || 0;
   const circle = Number(guild.boss_circle) || 1;
   const started = Number(guild.boss_started_ms) || 0;
+  const ended = Date.now();
   const boss = bossByIndex(index);
   const reward = bossReward(index, circle);
   if (win && boss) {
@@ -287,7 +304,30 @@ async function finishAttempt(db, guild, win) {
     SELECT player_id as playerId FROM guild_hits
     WHERE guild_id = ? AND started_ms = ? AND damage > 0
   `).bind(guild.id, started).all();
+  const hitSum = await db.prepare(`
+    SELECT COALESCE(SUM(damage), 0) as total, COUNT(*) as n
+    FROM guild_hits
+    WHERE guild_id = ? AND started_ms = ? AND damage > 0
+  `).bind(guild.id, started).first();
   const hitters = new Set((hits || []).map((row) => row.playerId));
+  if (index > 0) {
+    await db.prepare(`
+      INSERT INTO guild_boss_log (
+        guild_id, boss_index, circle, win, damage, hitters, points, plungers, started_ms, ended_ms
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      guild.id,
+      index,
+      circle,
+      win ? 1 : 0,
+      Number(hitSum?.total) || 0,
+      Number(hitSum?.n) || 0,
+      win ? reward.points : 0,
+      win ? reward.plungers : 0,
+      started,
+      ended
+    ).run();
+  }
   const title = win ? "Победа" : "Проигрыш";
   const name = boss?.name || "Босс";
   for (const member of members || []) {
@@ -343,7 +383,8 @@ async function rosterOf(db, guildId) {
   const known = new Map((results || []).map((row) => [Number(row.bossIndex), Number(row.clears) || 0]));
   return GUILD_BOSSES.map((boss) => {
     const unlocked = known.has(boss.index);
-    const circle = (known.get(boss.index) || 0) + 1;
+    const clears = known.get(boss.index) || 0;
+    const circle = clears + 1;
     const reward = bossReward(boss.index, circle);
     return {
       index: boss.index,
@@ -351,9 +392,38 @@ async function rosterOf(db, guildId) {
       name: boss.name,
       icon: boss.icon,
       unlocked,
+      clears,
       circle,
       points: reward.points,
       plungers: reward.plungers
+    };
+  });
+}
+
+async function journalOf(db, guildId) {
+  const { results } = await db.prepare(`
+    SELECT id, boss_index as bossIndex, circle, win, damage, hitters, points, plungers,
+           started_ms as startedMs, ended_ms as endedMs
+    FROM guild_boss_log
+    WHERE guild_id = ?
+    ORDER BY id DESC
+    LIMIT 40
+  `).bind(guildId).all();
+  return (results || []).map((row) => {
+    const boss = bossByIndex(row.bossIndex);
+    return {
+      id: Number(row.id) || 0,
+      index: Number(row.bossIndex) || 0,
+      bossId: boss?.id || "",
+      name: boss?.name || "Босс",
+      icon: boss?.icon || "⚔️",
+      circle: Number(row.circle) || 1,
+      win: !!Number(row.win),
+      damage: Number(row.damage) || 0,
+      hitters: Number(row.hitters) || 0,
+      points: Number(row.points) || 0,
+      plungers: Number(row.plungers) || 0,
+      endedMs: Number(row.endedMs) || 0
     };
   });
 }
@@ -394,6 +464,7 @@ async function viewOf(db, playerId) {
       applications,
       boss: await bossView(db, guild, member, playerId),
       roster: await rosterOf(db, guild.id),
+      journal: await journalOf(db, guild.id),
       members: (people || []).map((row) => ({ username: row.username, role: row.role }))
     }
   };
@@ -716,6 +787,7 @@ async function disband(db, headers, me) {
   await db.prepare(`DELETE FROM guild_applications WHERE guild_id = ?`).bind(id).run();
   await db.prepare(`DELETE FROM guild_unlocks WHERE guild_id = ?`).bind(id).run();
   await db.prepare(`DELETE FROM guild_hits WHERE guild_id = ?`).bind(id).run();
+  await db.prepare(`DELETE FROM guild_boss_log WHERE guild_id = ?`).bind(id).run();
   await db.prepare(`DELETE FROM guilds WHERE id = ?`).bind(id).run();
   return json(headers, { success: true, guild: null, presence: { level: 0, tag: "" } });
 }

@@ -10,6 +10,7 @@ export const GUILD_BOSSES = [
 ];
 
 const LEVEL_POINTS = [0, 50, 120, 220, 360, 540, 780, 1100, 1500, 2000];
+export const GUILD_MAX_LEVEL = 10;
 
 export function bossByIndex(index) {
   return GUILD_BOSSES.find((boss) => boss.index === Number(index)) || null;
@@ -26,17 +27,39 @@ export function bossReward(index, circle) {
   };
 }
 
+export function guildPointsForLevel(level) {
+  const step = Math.max(1, Math.min(GUILD_MAX_LEVEL, Math.floor(Number(level) || 1)));
+  return LEVEL_POINTS[step - 1] || 0;
+}
+
 export function guildLevelFromPoints(points) {
   const score = Math.max(0, Math.floor(Number(points) || 0));
   let level = 1;
   for (let i = 0; i < LEVEL_POINTS.length; i++) {
     if (score >= LEVEL_POINTS[i]) level = i + 1;
   }
-  return Math.min(10, level);
+  return Math.min(GUILD_MAX_LEVEL, level);
 }
 
 export function guildBonusMult(level) {
-  const step = Math.max(0, Math.min(10, Math.floor(Number(level) || 0)));
+  const step = Math.max(0, Math.min(GUILD_MAX_LEVEL, Math.floor(Number(level) || 0)));
   if (step <= 0) return 1;
   return 1 + step * 0.02;
+}
+
+export function guildBonusPct(level) {
+  return Math.round((guildBonusMult(level) - 1) * 100);
+}
+
+/** Progress of current level: points toward the next tier. */
+export function guildLevelProgress(points) {
+  const score = Math.max(0, Math.floor(Number(points) || 0));
+  const level = guildLevelFromPoints(score);
+  const floor = guildPointsForLevel(level);
+  const maxed = level >= GUILD_MAX_LEVEL;
+  const next = maxed ? floor : guildPointsForLevel(level + 1);
+  const span = Math.max(1, next - floor);
+  const into = Math.max(0, Math.min(span, score - floor));
+  const pct = maxed ? 100 : Math.max(0, Math.min(100, Math.round((into / span) * 100)));
+  return { level, points: score, floor, next, into, need: span, pct, maxed };
 }

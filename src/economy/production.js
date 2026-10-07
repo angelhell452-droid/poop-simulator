@@ -1,19 +1,19 @@
-import { GAME } from '../core/state.js?v=5.0.54';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.54';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.54';
+import { GAME } from '../core/state.js?v=5.0.63';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.63';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.63';
 import { TALENTS } from '../data/talents.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.0.54';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.54';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.54';
-import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.54';
-import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.54';
+import { KNIVES } from '../data/knives.data.js?v=5.0.63';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.63';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.63';
+import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.63';
+import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.63';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.54';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.63';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.54';
-import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.54';
-import { horizonIncomeMult } from './horizon.js?v=5.0.54';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.54';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.63';
+import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.63';
+import { horizonIncomeMult } from './horizon.js?v=5.0.63';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.63';
 
 /** Max share of factory income that a full click-cap stream may add. */
 const CLICK_INCOME_SHARE_CAP = 0.30;
@@ -415,8 +415,8 @@ export function getClickBreakdown() {
   const rows = [{ name: 'База клика', text: '1' }, ...multRows(parts)];
   if (parts.syncRate > 0) {
     rows.push({
-      name: 'От заводов в поток кликов',
-      text: `+${formatNumber(mul(getPassiveIncome(), parts.syncRate))} · ${formatNumber(parts.syncShare * 100)}% / ${formatNumber(parts.syncCap)} CPS`
+      name: 'Бонус от заводов',
+      text: `+${formatNumber(mul(getPassiveIncome(), parts.syncRate))} к клику`
     });
   }
   const critTalent = TALENTS.find(t => t.id === 'crit_master');

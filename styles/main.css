@@ -348,6 +348,84 @@ body {
   cursor: pointer;
 }
 
+.guild-roster,
+.guild-bonuses {
+  border: 3px solid rgba(228, 216, 246, 0.72);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, #3a3350 88%, #c6b0e6);
+  padding: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.guild-roster-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: #f3ecff;
+}
+
+.guild-member-row,
+.guild-bonus-row {
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(228, 216, 246, 0.38);
+  background: rgba(18, 14, 28, 0.55);
+  padding: 8px 12px;
+  color: #f0eafb;
+}
+
+.guild-bonus-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.guild-bonus-row.done {
+  opacity: 0.72;
+}
+
+.guild-bonus-row.current {
+  border-color: rgba(167, 243, 208, 0.7);
+  background: color-mix(in srgb, rgba(18, 14, 28, 0.55) 55%, #6ee7b7);
+  color: #ecfdf5;
+}
+
+.guild-bonus-row.locked {
+  opacity: 0.45;
+}
+
+.guild-level-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.guild-level-bar {
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.guild-level-bar > div {
+  height: 100%;
+  border-radius: inherit;
+  background: #a7f3d0;
+  transition: width 0.25s ease;
+}
+
+.garden-sheet.theme-guild .guild-roster .garden-pill,
+.garden-sheet.theme-guild .guild-bonuses .garden-pill,
+.garden-sheet.theme-guild .guild-level .garden-pill {
+  background: rgba(198, 176, 230, 0.22);
+  color: #f3ecff;
+}
+
 .boss-fight {
   display: grid;
   justify-items: center;
@@ -371,9 +449,11 @@ body {
 }
 
 .boss-sprite {
+  position: relative;
   text-align: center;
   cursor: pointer;
   min-height: 168px;
+  width: min(100%, 220px);
 }
 
 .boss-sprite img {
@@ -390,6 +470,54 @@ body {
   font-size: 64px;
   line-height: 1;
   margin-bottom: 8px;
+}
+
+.boss-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 2;
+  width: max-content;
+  max-width: 100%;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
+  background: color-mix(in srgb, var(--accent) 88%, black);
+  color: var(--accent-ink);
+  font-family: var(--font-main);
+  font-weight: 800;
+  font-size: 12px;
+  padding: 8px 14px;
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.boss-hint.hidden {
+  display: none;
+}
+
+.boss-live {
+  width: min(100%, 320px);
+  text-align: center;
+  padding: 10px 14px;
+}
+
+.boss-why {
+  width: min(100%, 340px);
+  line-height: 1.35;
+  font-size: 12px;
+}
+
+.boss-auto {
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.boss-auto input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
 }
 
 .boss-sprite.hit {
@@ -543,10 +671,47 @@ header #btnAdminPanel {
   border: 3px solid #8a4e16 !important;
 }
 
+header #btnTopKnivesIndex {
+  background: color-mix(in srgb, #c4a574 55%, rgba(243, 247, 244, 0.1)) !important;
+  color: #fff6e8 !important;
+  border: 1px solid rgba(232, 204, 150, 0.55) !important;
+  box-shadow: inset 0 0 0 1px rgba(90, 58, 20, 0.2) !important;
+}
+
 header #btnVipShop {
-  background: #e8c15a !important;
-  color: #3a120e !important;
-  border: 3px solid #b4232a !important;
+  background:
+    radial-gradient(circle at 30% 25%, #fff3c4 0%, transparent 42%),
+    linear-gradient(160deg, #ffe7a3 0%, #e6c15a 42%, #b8892a 100%) !important;
+  color: #3a2810 !important;
+  border: 2px solid #f0d78a !important;
+  box-shadow:
+    0 0 0 1px rgba(90, 58, 12, 0.35),
+    0 0 14px rgba(255, 214, 120, 0.65),
+    0 0 28px rgba(230, 180, 60, 0.35) !important;
+  animation: vip-lure 2.4s ease-in-out infinite;
+}
+
+@keyframes vip-lure {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(90, 58, 12, 0.35),
+      0 0 12px rgba(255, 214, 120, 0.55),
+      0 0 22px rgba(230, 180, 60, 0.28);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(120, 80, 16, 0.4),
+      0 0 18px rgba(255, 230, 150, 0.85),
+      0 0 36px rgba(255, 200, 80, 0.45);
+    filter: brightness(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  header #btnVipShop {
+    animation: none;
+  }
 }
 
 header #btnLeaderboardModal,
@@ -557,25 +722,39 @@ header #btnPatchNotesModal {
   border: 3px solid #a16207 !important;
 }
 
+/* Save status tucked aside: LED only, words live in the title tooltip. */
 #cloudIndicator {
-  width: 132px;
-  min-width: 132px;
-  max-width: 132px;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  padding: 6px 8px !important;
+  gap: 0 !important;
   font-family: var(--font-main);
+  opacity: 0.72;
+  order: 20;
 }
 
 #cloudStatusText {
-  font-family: var(--font-main);
-  font-weight: 800;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 #cloudIndicator[data-mode="save"] #cloudLed,
 #cloudIndicator[data-mode="wait"] #cloudLed {
   background: #e8943a;
+  box-shadow: 0 0 8px rgba(232, 148, 58, 0.55);
 }
 
 #cloudIndicator[data-mode="ok"] #cloudLed {
   background: #7dcea0;
+  box-shadow: 0 0 8px rgba(125, 206, 160, 0.45);
 }
 
 #cloudIndicator[data-mode="local"] #cloudLed {
@@ -673,6 +852,25 @@ header button.jelly-btn,
   box-shadow: none !important;
   font-family: var(--font-main) !important;
   font-weight: 700 !important;
+}
+
+header #btnTopKnivesIndex.jelly-btn {
+  background: color-mix(in srgb, #c4a574 55%, rgba(243, 247, 244, 0.1)) !important;
+  color: #fff6e8 !important;
+  border: 1px solid rgba(232, 204, 150, 0.55) !important;
+  box-shadow: inset 0 0 0 1px rgba(90, 58, 20, 0.2) !important;
+}
+
+header #btnVipShop.jelly-btn {
+  background:
+    radial-gradient(circle at 30% 25%, #fff3c4 0%, transparent 42%),
+    linear-gradient(160deg, #ffe7a3 0%, #e6c15a 42%, #b8892a 100%) !important;
+  color: #3a2810 !important;
+  border: 2px solid #f0d78a !important;
+  box-shadow:
+    0 0 0 1px rgba(90, 58, 12, 0.35),
+    0 0 14px rgba(255, 214, 120, 0.65),
+    0 0 28px rgba(230, 180, 60, 0.35) !important;
 }
 
 body.boys-mode #btnModeBoys,

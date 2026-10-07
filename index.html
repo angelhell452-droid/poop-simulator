@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.54 PRO</title>
+  <title>Poop Simulator v5.0.63 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.54">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.63">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" title="Открыть журнал обновлений">v5.0.54 PRO</span>
+            id="versionTag" title="Открыть журнал обновлений">v5.0.63 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             title="Сообщить об ошибке">
@@ -77,11 +77,11 @@
       </div>
 
       <div id="cloudIndicator"
-        class="hidden sm:flex items-center justify-center gap-1.5 text-[10px] bg-stone-900/90 px-2 py-1 rounded-xl border border-stone-700 font-bold text-stone-300 shrink-0 flex-none text-center select-none overflow-hidden"
+        class="hidden sm:flex items-center justify-center text-[10px] bg-stone-900/70 px-2 py-1 rounded-full border border-stone-700/80 shrink-0 flex-none select-none relative"
         data-mode="save"
-        title="Сохранение игры">
-        <span id="cloudLed" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-        <span id="cloudStatusText" class="truncate">Сохранение…</span>
+        title="Сохранение…">
+        <span id="cloudLed" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+        <span id="cloudStatusText" aria-live="polite">Сохранение…</span>
       </div>
 
       <button id="btnAdminPanel"
@@ -1017,9 +1017,8 @@
     class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="garden-sheet theme-friends">
       <button class="modal-close garden-close" type="button" aria-label="Закрыть">&times;</button>
-      <h3 class="font-game text-xl mb-1">Друзья</h3>
+      <h3 class="font-game text-xl mb-3">Друзья</h3>
       <div class="garden-scroll custom-scroll">
-        <p class="garden-muted mb-3">Заявка по точному логину. Профиль открывается, когда игрок принял дружбу.</p>
         <form id="friendsAddForm" class="flex gap-2 mb-3">
           <input id="friendsNameInput" class="garden-input" maxlength="32" placeholder="Логин друга" autocomplete="off">
           <button type="submit" class="garden-pill accent jelly-btn shrink-0">Добавить</button>
@@ -1036,6 +1035,8 @@
       <div id="guildTabs" class="guild-tabs hidden">
         <button type="button" class="garden-pill accent" data-guild-page="mine">Моя гильдия</button>
         <button type="button" class="garden-pill" data-guild-page="fight">Бой</button>
+        <button type="button" class="garden-pill" data-guild-page="journal">Журнал</button>
+        <button type="button" id="guildTabSettings" class="garden-pill hidden" data-guild-page="settings">Настройки</button>
         <button type="button" class="garden-pill" data-guild-page="search">Поиск</button>
       </div>
       <div class="garden-scroll custom-scroll">
@@ -1049,6 +1050,12 @@
         </div>
         <div id="guildPageFight" class="hidden">
           <div id="guildFight"></div>
+        </div>
+        <div id="guildPageJournal" class="hidden">
+          <div id="guildJournal"></div>
+        </div>
+        <div id="guildPageSettings" class="hidden">
+          <div id="guildSettings"></div>
         </div>
         <div id="guildPageSearch" class="hidden">
           <form id="guildSearchForm" class="flex gap-2 mb-3 hidden">
@@ -1798,9 +1805,12 @@
           <ul class="list-disc list-inside text-stone-300 mt-1 space-y-1 text-[11px]">
             <li>Один аккаунт состоит в одной гильдии, до 20 человек. Перед ником стоит титул.</li>
             <li>Глава и офицер приглашают и вызывают босса из уже открытых. Участник только бьёт.</li>
-            <li>Окно гильдии — три страницы: своя гильдия, бой и поиск. Поиск ищет по названию и по уровню. Глава ставит эпоху, с которой пускают на аккаунт.</li>
-            <li>На странице боя видно, можно ли бить, идёт ли удар, сколько урона засчитано и почему клик столько снимает. Состав гильдии там не показывается.</li>
-            <li>Уровень гильдии даёт бонус к клику и заводам всем, кто сейчас в ней. Потолок — 10 уровень.</li>
+            <li>Окно гильдии: своя, бой, журнал, поиск. У главы и офицеров ещё «Настройки». Поиск ищет по названию и по уровню.</li>
+            <li>На странице боя видно, можно ли бить, идёт ли удар, живой урон и клики. На боссе подсказка «Нажми, чтобы начать бой». Можно включить автобой на потолке кликов. Состав гильдии там не показывается.</li>
+            <li>Вкладка «Журнал» открыта даже во время боя: там книга боссов гильдии и недавние победы и проигрыши.</li>
+            <li>Вкладка «Настройки» видна главе и офицерам: порог эпохи, заявки и роспуск. Состав гильдии выделен на странице «Моя гильдия».</li>
+            <li>Урон за клик считает сервер: √формы × (1 + сила ножа), звёзды ножа чуть усиливают. Быстрее потолка кликов удар не идёт.</li>
+            <li>На «Моя гильдия» шкала уровня с очками и раздел «Бонусы»: каждый уровень даёт +2% к клику и заводам. Потолок — 10 уровень.</li>
             <li>Удар длится 15 секунд, потом личные 3 часа. На попытку есть 12 часов.</li>
             <li>Письмо о победе или проигрыше приходит всей гильдии. Вантузы внутри только у того, кто сам бил.</li>
           </ul>
@@ -2207,7 +2217,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.54"></script>
+  <script type="module" src="src/main.js?v=5.0.63"></script>
 </body>
 
 </html>

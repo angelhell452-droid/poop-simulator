@@ -67,6 +67,22 @@ CREATE TABLE IF NOT EXISTS guild_hits (
   PRIMARY KEY (guild_id, player_id, started_ms)
 );
 
+CREATE TABLE IF NOT EXISTS guild_boss_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guild_id INTEGER NOT NULL,
+  boss_index INTEGER NOT NULL,
+  circle INTEGER NOT NULL,
+  win INTEGER NOT NULL,
+  damage REAL NOT NULL DEFAULT 0,
+  hitters INTEGER NOT NULL DEFAULT 0,
+  points INTEGER NOT NULL DEFAULT 0,
+  plungers INTEGER NOT NULL DEFAULT 0,
+  started_ms INTEGER NOT NULL,
+  ended_ms INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_guild_boss_log ON guild_boss_log(guild_id, id DESC);
+
 CREATE TABLE IF NOT EXISTS guild_applications (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   guild_id INTEGER NOT NULL,

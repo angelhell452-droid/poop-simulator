@@ -1,9 +1,9 @@
-import { GAME } from '../core/state.js?v=5.0.54';
+import { GAME } from '../core/state.js?v=5.0.63';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.54';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.63';
 import { setConfirmedVip } from '../economy/pace.js';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.54';
-import { cmp } from '../utils/big.js?v=5.0.54';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.63';
+import { cmp } from '../utils/big.js?v=5.0.63';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
@@ -187,7 +187,10 @@ function setCloudStatus(text, mode) {
   const statusIndicator = document.getElementById('cloudStatusText');
   const box = document.getElementById('cloudIndicator');
   if (statusIndicator) statusIndicator.textContent = text;
-  if (box) box.dataset.mode = mode;
+  if (box) {
+    box.dataset.mode = mode;
+    box.title = text;
+  }
 }
 
 export async function syncToCloudDatabase() {

@@ -1,7 +1,7 @@
-import { GAME } from '../core/state.js?v=5.0.54';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.54';
+import { GAME } from '../core/state.js?v=5.0.63';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.63';
 
-const GAME_VERSION = 'v5.0.54 PRO';
+const GAME_VERSION = 'v5.0.63 PRO';
 
 // Cooldown: один репорт в 60 секунд чтобы не флудили
 let lastReportTime = 0;

@@ -1,11 +1,14 @@
-import { GAME } from '../core/state.js?v=5.0.54';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.54';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.54';
-import { guildBonusMult } from '../data/bosses.data.js?v=5.0.54';
-import { KNIVES } from '../data/knives.data.js?v=5.0.54';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.54';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.54';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.54';
+import { GAME } from '../core/state.js?v=5.0.63';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.63';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.63';
+import { GUILD_MAX_LEVEL, guildBonusPct, guildLevelProgress } from '../data/bosses.data.js?v=5.0.63';
+import { KNIVES } from '../data/knives.data.js?v=5.0.63';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.63';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.63';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.63';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.63';
+
+const AUTO_KEY = 'PoopSim_BossAuto';
 
 let state = null;
 let directory = [];
@@ -13,10 +16,19 @@ let directoryError = '';
 let page = 'mine';
 let strikeClicks = 0;
 let strikeTimer = 0;
+let autoTimer = 0;
+let autoAcc = 0;
 let strikeBusy = false;
 let strikeQueued = false;
 let striking = false;
 let toldAt = 0;
+let autoFight = false;
+
+try {
+  autoFight = localStorage.getItem(AUTO_KEY) === '1';
+} catch (_) {
+  autoFight = false;
+}
 
 function esc(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -75,16 +87,26 @@ function applyPresence(data) {
   updateAccountHeaderUI();
 }
 
+function canManageGuild(guild = state?.guild) {
+  return !!(guild && (guild.canLead || guild.canInvite || guild.role === 'officer' || guild.role === 'leader'));
+}
+
 function showPage(next) {
-  page = next === 'fight' || next === 'search' ? next : 'mine';
+  let want = next === 'fight' || next === 'search' || next === 'journal' || next === 'settings' ? next : 'mine';
+  if (want === 'settings' && !canManageGuild()) want = 'mine';
+  page = want;
   document.getElementById('guildPageMine')?.classList.toggle('hidden', page !== 'mine');
   document.getElementById('guildPageFight')?.classList.toggle('hidden', page !== 'fight');
+  document.getElementById('guildPageJournal')?.classList.toggle('hidden', page !== 'journal');
+  document.getElementById('guildPageSettings')?.classList.toggle('hidden', page !== 'settings');
   document.getElementById('guildPageSearch')?.classList.toggle('hidden', page !== 'search');
   document.querySelectorAll('#guildTabs [data-guild-page]').forEach((button) => {
     button.classList.toggle('accent', button.dataset.guildPage === page);
   });
   document.getElementById('guildSearchForm')?.classList.toggle('hidden', !signedIn() || page !== 'search');
   if (page === 'fight') paintFight();
+  if (page === 'journal') renderJournal();
+  if (page === 'settings') renderSettings();
 }
 
 async function loadDirectory(query, level, announce) {
@@ -194,16 +216,20 @@ function renderMine() {
   const search = document.getElementById('guildSearchForm');
   if (!box) return;
   const guest = !signedIn();
+  const settingsTab = document.getElementById('guildTabSettings');
   if (tabs) tabs.classList.toggle('hidden', guest);
   if (search) search.classList.toggle('hidden', guest || page !== 'search');
   if (guest) {
     if (form) form.classList.add('hidden');
+    if (settingsTab) settingsTab.classList.add('hidden');
     box.innerHTML = '<div class="garden-empty">Гильдия открывается с аккаунта.</div>';
     return;
   }
   const guild = state?.guild;
   if (!guild) {
     if (form) form.classList.remove('hidden');
+    if (settingsTab) settingsTab.classList.add('hidden');
+    if (page === 'settings') showPage('mine');
     const invites = state?.invites || [];
     const inviteBlock = invites.length ? `<div class="garden-muted mb-2">Приглашения</div><div class="grid gap-2">${invites.map((invite) => `
       <div class="garden-card flex items-center justify-between gap-2">
@@ -218,43 +244,118 @@ function renderMine() {
     return;
   }
   if (form) form.classList.add('hidden');
-  const bonus = Math.round((guildBonusMult(guild.level) - 1) * 100);
-  const gate = guild.canLead
-    ? `<form id="guildGateForm" class="flex gap-2 mt-3">
-        <input id="guildEpochInput" class="garden-input" inputmode="numeric" maxlength="3" placeholder="Эпоха для входа" value="${Number(guild.reqEpoch) || 1}">
-        <button type="submit" class="garden-pill accent jelly-btn shrink-0">Поставить</button>
-      </form>
-      <div class="garden-muted mt-2">В гильдию пускают с этой эпохи на аккаунте. Сейчас стоит эпоха ${formatNumber(guild.reqEpoch || 1)}.</div>`
-    : `<div class="garden-muted mt-2">Вход с эпохи ${formatNumber(guild.reqEpoch || 1)}.</div>`;
-  const applications = (guild.applications || []).length && guild.canInvite ? `<div class="garden-muted mt-3 mb-2">Заявки</div><div class="grid gap-2">${guild.applications.map((row) => `
-    <div class="garden-card flex items-center justify-between gap-2">
-      <span class="truncate">${esc(row.username)}</span>
-      <span class="flex gap-1.5 shrink-0">
-        <button type="button" class="garden-pill accent jelly-btn" data-guild-action="applyAccept" data-user="${attr(row.username)}">Принять</button>
-        <button type="button" class="garden-pill jelly-btn" data-guild-action="applyDecline" data-user="${attr(row.username)}">Отклонить</button>
-      </span>
-    </div>
-  `).join('')}</div>` : '';
+  if (settingsTab) settingsTab.classList.toggle('hidden', !canManageGuild(guild));
+  if (page === 'settings' && !canManageGuild(guild)) showPage('mine');
+  const progress = guildLevelProgress(guild.points);
+  const bonus = guildBonusPct(progress.level);
+  const members = guild.members || [];
+  const barLabel = progress.maxed
+    ? `${formatNumber(progress.points)} очков · максимум`
+    : `${formatNumber(progress.points)} / ${formatNumber(progress.next)} очков`;
+  const bonusRows = Array.from({ length: GUILD_MAX_LEVEL }, (_, i) => {
+    const level = i + 1;
+    const pct = guildBonusPct(level);
+    const state = level < progress.level ? 'done' : level === progress.level ? 'current' : 'locked';
+    return `
+      <div class="guild-bonus-row ${state}">
+        <span>Ур. ${formatNumber(level)}</span>
+        <span>+${formatNumber(pct)}% к клику и заводам</span>
+      </div>
+    `;
+  }).join('');
   box.innerHTML = `
     <div class="garden-card">
       <div class="font-game text-lg">[${esc(guild.tag)}] ${esc(guild.name)}</div>
-      <div class="garden-muted mt-1">${roleName(guild.role)} · уровень ${formatNumber(guild.level)} · ${formatNumber(guild.points)} очков · +${formatNumber(bonus)}% к клику и заводам</div>
-      ${gate}
-    </div>
-    ${applications}
-    <div class="garden-muted mt-3 mb-2">Состав · ${formatNumber((guild.members || []).length)}</div>
-    <div class="grid gap-2">
-      ${(guild.members || []).map((person) => `
-        <div class="garden-card flex items-center justify-between gap-2">
-          <span class="truncate">${esc(person.username)} · ${roleName(person.role)}</span>
-          <span class="flex gap-1.5 shrink-0">${memberButtons(person, guild)}</span>
+      <div class="garden-muted mt-1">${roleName(guild.role)} · +${formatNumber(bonus)}% к клику и заводам · вход с эпохи ${formatNumber(guild.reqEpoch || 1)}</div>
+      <div class="guild-level mt-3">
+        <div class="guild-level-head">
+          <span class="font-game">Уровень ${formatNumber(progress.level)}</span>
+          <span class="garden-pill">${barLabel}</span>
         </div>
-      `).join('')}
+        <div class="guild-level-bar" role="progressbar" aria-valuenow="${progress.pct}" aria-valuemin="0" aria-valuemax="100">
+          <div style="width:${progress.pct}%"></div>
+        </div>
+        ${progress.maxed ? '' : `<div class="garden-muted mt-1">До ур. ${formatNumber(progress.level + 1)} ещё ${formatNumber(Math.max(0, progress.next - progress.points))} очков</div>`}
+      </div>
+    </div>
+    <div class="guild-bonuses mt-3">
+      <div class="guild-roster-head">
+        <span class="font-game">Бонусы</span>
+        <span class="garden-pill">сейчас +${formatNumber(bonus)}%</span>
+      </div>
+      <div class="garden-muted mb-2">Каждый уровень гильдии даёт +2% к клику и заводам всем участникам.</div>
+      <div class="grid gap-1.5">${bonusRows}</div>
+    </div>
+    <div class="guild-roster mt-3">
+      <div class="guild-roster-head">
+        <span class="font-game">Состав</span>
+        <span class="garden-pill">${formatNumber(members.length)} / 20</span>
+      </div>
+      <div class="grid gap-2">
+        ${members.map((person) => `
+          <div class="guild-member-row flex items-center justify-between gap-2">
+            <span class="truncate">${esc(person.username)} · ${roleName(person.role)}</span>
+            <span class="flex gap-1.5 shrink-0">${memberButtons(person, guild)}</span>
+          </div>
+        `).join('')}
+      </div>
     </div>
     <div class="flex gap-2 mt-3">
       <button type="button" class="garden-pill jelly-btn" data-guild-action="leave">Выйти</button>
-      ${guild.canLead ? '<button type="button" class="garden-pill jelly-btn" data-guild-action="disband">Распустить</button>' : ''}
     </div>
+  `;
+}
+
+function renderSettings() {
+  const box = document.getElementById('guildSettings');
+  if (!box) return;
+  if (!signedIn()) {
+    box.innerHTML = '<div class="garden-empty">Настройки открываются с аккаунта.</div>';
+    return;
+  }
+  const guild = state?.guild;
+  if (!guild) {
+    box.innerHTML = '<div class="garden-empty">Сначала вступите в гильдию.</div>';
+    return;
+  }
+  if (!canManageGuild(guild)) {
+    box.innerHTML = '<div class="garden-empty">Настройки видят глава и офицеры.</div>';
+    return;
+  }
+  const gate = guild.canLead
+    ? `<form id="guildGateForm" class="flex gap-2 mt-2">
+        <input id="guildEpochInput" class="garden-input" inputmode="numeric" maxlength="3" placeholder="Эпоха для входа" value="${Number(guild.reqEpoch) || 1}">
+        <button type="submit" class="garden-pill accent jelly-btn shrink-0">Поставить</button>
+      </form>
+      <div class="garden-muted mt-2">С аккаунта ниже этой эпохи в гильдию не пускают.</div>`
+    : `<div class="garden-muted mt-2">Порог эпохи ставит только глава. Сейчас эпоха ${formatNumber(guild.reqEpoch || 1)}.</div>`;
+  const apps = guild.applications || [];
+  const applications = guild.canInvite
+    ? (apps.length
+      ? `<div class="grid gap-2">${apps.map((row) => `
+          <div class="garden-card flex items-center justify-between gap-2">
+            <span class="truncate">${esc(row.username)}</span>
+            <span class="flex gap-1.5 shrink-0">
+              <button type="button" class="garden-pill accent jelly-btn" data-guild-action="applyAccept" data-user="${attr(row.username)}">Принять</button>
+              <button type="button" class="garden-pill jelly-btn" data-guild-action="applyDecline" data-user="${attr(row.username)}">Отклонить</button>
+            </span>
+          </div>
+        `).join('')}</div>`
+      : '<div class="garden-empty">Заявок пока нет.</div>')
+    : '';
+  box.innerHTML = `
+    <div class="garden-card">
+      <div class="font-game">Порог входа</div>
+      ${gate}
+    </div>
+    ${guild.canInvite ? `<div class="garden-muted mt-3 mb-2">Заявки · ${formatNumber(apps.length)}</div>${applications}` : ''}
+    ${guild.canLead ? `
+      <div class="garden-card mt-3">
+        <div class="font-game">Опасная зона</div>
+        <div class="garden-muted mt-1 mb-2">Роспуск удаляет гильдию у всех участников.</div>
+        <button type="button" class="garden-pill jelly-btn" data-guild-action="disband">Распустить гильдию</button>
+      </div>
+    ` : ''}
   `;
 }
 
@@ -269,27 +370,51 @@ function livePhase(boss) {
 
 function phaseLabel(boss) {
   const phase = livePhase(boss);
-  if (phase === 'hitting') return `Вы бьёте. Осталось ${formatNumber(Math.max(0, Math.ceil((boss.windowUntilMs - Date.now()) / 1000)))}с.`;
-  if (phase === 'cooldown') return `Сейчас бить нельзя. Следующий удар через ${clock(boss.cdUntilMs)}.`;
-  return 'Можно бить. Заход длится 15 секунд, потом 3 часа.';
+  if (phase === 'hitting') {
+    const left = Math.max(0, Math.ceil(((boss.windowUntilMs || 0) - Date.now()) / 1000));
+    return autoFight
+      ? `Автобой · осталось ${formatNumber(left)}с`
+      : `Бой идёт · осталось ${formatNumber(left)}с`;
+  }
+  if (phase === 'cooldown') return `Перерыв · следующий бой через ${clock(boss.cdUntilMs)}`;
+  return 'Готов к бою · 15 секунд удара, потом 3 часа';
 }
 
-function whyLine(blow) {
-  if (!blow?.perClick) return 'Сила удара придёт с сервера вместе с первым ответом.';
-  const name = knifeName(blow.knifeId);
-  const knife = name
-    ? `нож «${name}», звёзды ${formatNumber(blow.stars || 1)}`
-    : 'ножа нет, бьют голые руки';
-  return `Один клик снимает ${formatNumber(blow.perClick)}: форма ${formatNumber(blow.form || 1)} и ${knife}. Быстрее ${formatNumber(blow.cap || 40)} кликов в секунду удар не считает.`;
+function liveClicks(boss) {
+  const server = Number(boss?.blow?.clicks) || 0;
+  return striking ? Math.max(strikeClicks, server) : server;
+}
+
+function liveDamage(boss) {
+  const blow = boss?.blow || {};
+  const per = Number(blow.perClick) || 0;
+  const serverDealt = Number(blow.myDamage) || 0;
+  const serverClicks = Number(blow.clicks) || 0;
+  const clicks = liveClicks(boss);
+  if (striking && per > 0 && clicks > serverClicks) {
+    return serverDealt + (clicks - serverClicks) * per;
+  }
+  if (striking && per > 0 && !serverDealt) return clicks * per;
+  return serverDealt;
 }
 
 function damageLine(boss) {
-  const blow = boss?.blow || {};
-  const dealt = Number(blow.myDamage) || 0;
-  const counted = Number(blow.clicks) || 0;
-  const local = striking ? strikeClicks : counted;
-  if (!dealt && !local) return 'Урона ещё нет.';
-  return `Засчитано ${formatNumber(dealt)} урона за ${formatNumber(counted)} кликов. В окне сейчас ${formatNumber(local)}.`;
+  const clicks = liveClicks(boss);
+  const dealt = liveDamage(boss);
+  if (!dealt && !clicks) return 'Урон: 0 · Клики: 0';
+  return `Урон: ${formatNumber(dealt)} · Клики: ${formatNumber(clicks)}`;
+}
+
+function whyLine(blow) {
+  const cap = Number(blow?.cap) || getClickCapCps();
+  if (!blow?.perClick) {
+    return `Как считается урон за клик: √формы × (1 + сила ножа). Звёзды ножа чуть усиливают. Точная цифра придёт с первым ударом. Потолок ${formatNumber(cap)} клик/сек.`;
+  }
+  const name = knifeName(blow.knifeId);
+  const gear = name
+    ? `форма ${formatNumber(blow.form || 1)}, нож «${name}», ★${formatNumber(blow.stars || 1)}`
+    : `форма ${formatNumber(blow.form || 1)}, без ножа`;
+  return `Урон за клик: ${formatNumber(blow.perClick)} (${gear}). Считается как √формы × (1 + сила ножа). Потолок ${formatNumber(cap)} клик/сек.`;
 }
 
 function fightShell(boss) {
@@ -298,14 +423,21 @@ function fightShell(boss) {
       <div id="bossFigure" class="boss-sprite">
         <img src="assets/poop/bosses/${esc(boss.id)}.png" alt="" onerror="this.remove()">
         <span class="boss-fallback">${esc(boss.icon)}</span>
+        <div id="bossHint" class="boss-hint">Нажми, чтобы начать бой</div>
       </div>
       <div id="bossTitle" class="font-game text-lg"></div>
       <div class="boss-hp"><div id="bossHpFill"></div></div>
       <div id="bossHpText" class="garden-muted"></div>
       <div id="bossPhase" class="garden-pill"></div>
-      <div id="bossDamage" class="garden-muted"></div>
-      <div id="bossWhy" class="garden-muted"></div>
-      <button type="button" id="btnBossHit" class="garden-pill accent jelly-btn">Бить</button>
+      <div class="garden-card boss-live">
+        <div id="bossDamage" class="font-game text-base"></div>
+      </div>
+      <div id="bossWhy" class="garden-muted boss-why"></div>
+      <label class="garden-pill boss-auto" for="bossAutoFight">
+        <input id="bossAutoFight" type="checkbox"${autoFight ? ' checked' : ''}>
+        <span>Автобой на потолке кликов</span>
+      </label>
+      <button type="button" id="btnBossHit" class="garden-pill accent jelly-btn">Начать бой</button>
     </div>
   `;
 }
@@ -351,23 +483,107 @@ function paintFight() {
   const max = Math.max(1, Number(boss.maxHp) || 1);
   const fill = document.getElementById('bossHpFill');
   if (fill) fill.style.width = `${Math.max(0, Math.min(100, (hp / max) * 100))}%`;
+  const phase = livePhase(boss);
   setText('bossTitle', `${boss.name} · круг ${formatNumber(boss.circle)}`);
   setText('bossHpText', `Здоровье ${formatNumber(hp)} / ${formatNumber(max)} · попытка ${clock(boss.deadlineMs)}`);
   setText('bossPhase', phaseLabel(boss));
   setText('bossDamage', damageLine(boss));
   setText('bossWhy', whyLine(boss.blow));
+  const hint = document.getElementById('bossHint');
+  if (hint) hint.classList.toggle('hidden', phase !== 'ready');
+  const autoBox = document.getElementById('bossAutoFight');
+  if (autoBox) autoBox.checked = autoFight;
   const button = document.getElementById('btnBossHit');
   if (button) {
-    const phase = livePhase(boss);
     button.disabled = phase === 'cooldown';
-    const label = phase === 'hitting' ? 'Бьёте' : phase === 'cooldown' ? 'Нельзя' : 'Бить';
+    const label = phase === 'hitting'
+      ? (autoFight ? 'Автобой' : 'Бьёте')
+      : phase === 'cooldown'
+        ? 'Ждите'
+        : (autoFight ? 'Начать автобой' : 'Начать бой');
     if (button.textContent !== label) button.textContent = label;
   }
+}
+
+function whenText(ms) {
+  const at = Number(ms) || 0;
+  if (!at) return '';
+  try {
+    return new Date(at).toLocaleString('ru-RU', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (_) {
+    return '';
+  }
+}
+
+function renderJournal() {
+  const box = document.getElementById('guildJournal');
+  if (!box) return;
+  if (!signedIn()) {
+    box.innerHTML = '<div class="garden-empty">Журнал открывается с аккаунта.</div>';
+    return;
+  }
+  const guild = state?.guild;
+  if (!guild) {
+    box.innerHTML = '<div class="garden-empty">Сначала вступите в гильдию.</div>';
+    return;
+  }
+  const live = guild.boss
+    ? `<div class="garden-pill accent mb-3">Сейчас бой: ${esc(guild.boss.icon)} ${esc(guild.boss.name)} · круг ${formatNumber(guild.boss.circle)}</div>`
+    : '<div class="garden-muted mb-3">Сейчас босса нет. Журнал можно смотреть в любой момент.</div>';
+  const book = (guild.roster || []).map((row) => {
+    const status = row.unlocked
+      ? `открыт · побед ${formatNumber(row.clears || 0)} · след. круг ${formatNumber(row.circle)}`
+      : 'ещё закрыт';
+    const prize = row.unlocked
+      ? ` · награда круга: ${formatNumber(row.points)} очков, ${formatNumber(row.plungers)} вантузов`
+      : '';
+    return `
+      <div class="garden-card flex items-center gap-2">
+        <span class="text-2xl shrink-0">${esc(row.icon)}</span>
+        <div class="min-w-0 text-left">
+          <div class="truncate font-game">${esc(row.name)}</div>
+          <div class="garden-muted">${status}${prize}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  const log = guild.journal || [];
+  const history = log.length
+    ? log.map((row) => {
+      const mark = row.win ? 'Победа' : 'Проигрыш';
+      const reward = row.win
+        ? ` · +${formatNumber(row.points)} очков · ${formatNumber(row.plungers)} вантузов бойцу`
+        : '';
+      return `
+        <div class="garden-card flex items-center gap-2">
+          <span class="text-2xl shrink-0">${esc(row.icon)}</span>
+          <div class="min-w-0 text-left">
+            <div class="truncate">${esc(mark)} · ${esc(row.name)} · круг ${formatNumber(row.circle)}</div>
+            <div class="garden-muted">${whenText(row.endedMs)} · урон ${formatNumber(row.damage)} · били ${formatNumber(row.hitters)}${reward}</div>
+          </div>
+        </div>
+      `;
+    }).join('')
+    : '<div class="garden-empty">Пока пусто. Записи появятся после победы или проигрыша.</div>';
+  box.innerHTML = `
+    ${live}
+    <div class="garden-muted mb-2">Книга боссов</div>
+    <div class="grid gap-2 mb-4">${book}</div>
+    <div class="garden-muted mb-2">Недавние бои</div>
+    <div class="grid gap-2">${history}</div>
+  `;
 }
 
 function render() {
   renderMine();
   renderSearch();
+  renderJournal();
+  renderSettings();
   paintFight();
   showPage(page);
 }
@@ -436,12 +652,35 @@ async function act(action, button) {
   }
 }
 
+function stopAutoTick() {
+  if (autoTimer) clearInterval(autoTimer);
+  autoTimer = 0;
+  autoAcc = 0;
+}
+
+function runAutoFight(dt) {
+  if (!striking || !autoFight) return;
+  const cap = Math.max(1, Number(state?.guild?.boss?.blow?.cap) || getClickCapCps());
+  autoAcc += cap * dt;
+  const add = Math.floor(autoAcc);
+  if (add <= 0) return;
+  autoAcc -= add;
+  strikeClicks += add;
+  const figure = document.getElementById('bossFigure');
+  if (figure && Math.random() < 0.35) {
+    figure.classList.remove('hit');
+    void figure.offsetWidth;
+    figure.classList.add('hit');
+  }
+}
+
 function stopStrike() {
   striking = false;
   strikeClicks = 0;
   strikeQueued = false;
   if (strikeTimer) clearInterval(strikeTimer);
   strikeTimer = 0;
+  stopAutoTick();
   paintFight();
 }
 
@@ -485,6 +724,7 @@ async function pushStrike() {
 function startStrike() {
   if (striking) return;
   striking = true;
+  autoAcc = 0;
   const boss = state?.guild?.boss;
   if (boss && livePhase(boss) === 'ready') {
     boss.phase = 'hitting';
@@ -499,6 +739,15 @@ function startStrike() {
     }
     pushStrike();
   }, 500);
+  stopAutoTick();
+  autoTimer = setInterval(() => {
+    if (!striking || livePhase(state?.guild?.boss) !== 'hitting') {
+      stopStrike();
+      return;
+    }
+    runAutoFight(0.1);
+    paintFight();
+  }, 100);
   pushStrike();
   paintFight();
 }
@@ -572,13 +821,22 @@ export function initGuildView() {
     event.preventDefault();
     act('gate');
   });
+  modal?.addEventListener('change', (event) => {
+    if (event.target?.id !== 'bossAutoFight') return;
+    autoFight = !!event.target.checked;
+    try {
+      localStorage.setItem(AUTO_KEY, autoFight ? '1' : '0');
+    } catch (_) { /* ignore */ }
+    paintFight();
+  });
   modal?.addEventListener('click', (event) => {
     const tab = event.target.closest('[data-guild-page]');
     if (tab) {
       showPage(tab.dataset.guildPage);
       return;
     }
-    if (event.target.closest('#btnBossHit, #bossFigure')) {
+    if (event.target.closest('#bossAutoFight') || event.target.closest('label.boss-auto')) return;
+    if (event.target.closest('#btnBossHit, #bossFigure, #bossHint')) {
       pokeBoss();
       return;
     }

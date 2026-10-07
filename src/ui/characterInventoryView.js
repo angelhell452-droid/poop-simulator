@@ -1,23 +1,23 @@
-import { GAME } from '../core/state.js?v=5.0.54';
-import { KNIVES } from '../data/knives.data.js?v=5.0.54';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.54';
+import { GAME } from '../core/state.js?v=5.0.63';
+import { KNIVES } from '../data/knives.data.js?v=5.0.63';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.63';
 import {
-  getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
+  getKnifeStar, getKnifeSharpenCost, getKnifeRecycleReward, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.54';
-import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.54';
-import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.54';
-import { saveLocal } from '../save/saveManager.js?v=5.0.54';
-import { updateHUD } from './hudView.js?v=5.0.54';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.63';
+import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.63';
+import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.63';
+import { saveLocal } from '../save/saveManager.js?v=5.0.63';
+import { updateHUD } from './hudView.js?v=5.0.63';
 import { renderShop } from './shopView.js';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.54';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.54';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.63';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.63';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.54';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.63';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'
@@ -443,28 +443,11 @@ function renderKnivesGrid() {
     const shown = getKnifeShownBonuses(kn);
     const clickBonus = shown.clickPct;
 
-    // Balanced realistic recycle returns
-    const isAstral = ['godly', 'special', 'celestial'].includes(kn.rarity);
-    const recycleCurrency = isAstral ? 'plungers' : 'rolls';
+    const recycle = getKnifeRecycleReward(kn, star);
+    const isAstral = recycle.isAstral;
+    const recycleCurrency = recycle.currency;
     const recycleSymbol = isAstral ? getPlungerIcon() : getRollIcon();
-    const baseRecycleTable = {
-      common: 30,
-      rare: 90,
-      very_rare: 280,
-      restricted: 280,
-      epic: 850,
-      classified: 2600,
-      covert: 8500,
-      rainbow: 28000,
-      titanium: 75000,
-      celestial: 15,
-      godly: 85,
-      special: 85
-    };
-    const baseRecycle = baseRecycleTable[kn.rarity] || 30;
-    const powerBonus = Math.round((kn.clickMult || 1) * (isAstral ? 1 : 12));
-    const starRecycleBonus = Math.round((star - 1) * baseRecycle * 0.25);
-    const recyclePrice = Math.max(1, baseRecycle + powerBonus + starRecycleBonus);
+    const recyclePrice = recycle.amount;
     const isInfoOpen = activeInfoCardId === kn.id;
 
     let rarityBorder = 'border-stone-700 bg-stone-950';

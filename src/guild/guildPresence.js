@@ -1,4 +1,4 @@
-import { guildBonusMult } from '../data/bosses.data.js?v=5.0.54';
+import { guildBonusMult } from '../data/bosses.data.js?v=5.0.63';
 
 let level = 0;
 let tag = '';

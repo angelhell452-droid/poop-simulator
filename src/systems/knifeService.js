@@ -1,24 +1,46 @@
-import { GAME } from '../core/state.js?v=5.0.54';
-import { KNIVES } from '../data/knives.data.js?v=5.0.54';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.54';
-import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.54';
+import { GAME } from '../core/state.js?v=5.0.63';
+import { KNIVES } from '../data/knives.data.js?v=5.0.63';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.63';
+import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.63';
 import { events } from '../core/events.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.54';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.63';
 
+// Bases ~10× below the old table. Power no longer scales with raw clickMult
+// (godly knives sit at 1e5+ and used to make sharpening/sell impossible or broken).
 const BASE_RARITY_SPARKLES = {
-  common: 500,
-  rare: 1500,
-  very_rare: 5000,
-  restricted: 5000,
-  epic: 15000,
-  classified: 45000,
-  covert: 120000,
-  rainbow: 350000,
-  titanium: 800000,
-  celestial: 1800000,
-  godly: 3500000,
-  special: 3500000
+  common: 50,
+  rare: 150,
+  very_rare: 500,
+  restricted: 500,
+  epic: 1500,
+  classified: 4500,
+  covert: 12000,
+  rainbow: 35000,
+  titanium: 80000,
+  celestial: 180000,
+  godly: 350000,
+  special: 350000
 };
+
+const RECYCLE_BASE = {
+  common: 2,
+  rare: 4,
+  very_rare: 8,
+  restricted: 8,
+  epic: 15,
+  classified: 28,
+  covert: 45,
+  rainbow: 70,
+  titanium: 100,
+  celestial: 1,
+  godly: 3,
+  special: 3
+};
+
+function sharpenPowerFactor(clickMult) {
+  const mult = Math.max(1, Number(clickMult) || 1);
+  return 1 + Math.min(2.5, Math.log10(mult) * 0.4);
+}
 
 export function getKnifeSharpenCost(knifeOrId, explicitStar = null) {
   const knife = typeof knifeOrId === 'string' ? KNIVES.find(k => k.id === knifeOrId) : knifeOrId;
@@ -27,13 +49,31 @@ export function getKnifeSharpenCost(knifeOrId, explicitStar = null) {
   const currentStar = explicitStar !== null && explicitStar !== undefined ? explicitStar : getKnifeStar(knife.id);
   if (currentStar >= 25) return { maxReached: true, cost: 0, currency: 'sparkles', symbol: '✨' };
 
-  const baseCost = BASE_RARITY_SPARKLES[knife.rarity] || 500;
-  // Scaled by knife click multiplier power
-  const powerFactor = 1 + (knife.clickMult || 1) * 0.05;
-  const growth = 1.45;
-  const cost = Math.max(500, Math.floor(baseCost * powerFactor * Math.pow(growth, currentStar - 1)));
+  const baseCost = BASE_RARITY_SPARKLES[knife.rarity] || 50;
+  const powerFactor = sharpenPowerFactor(knife.clickMult);
+  const growth = 1.42;
+  const cost = Math.max(50, Math.floor(baseCost * powerFactor * Math.pow(growth, currentStar - 1)));
 
   return { maxReached: false, cost, currency: 'sparkles', symbol: '✨' };
+}
+
+/** Sleeve/plunger scrap for inventory sell. Softcap so high clickMult cannot mint currency. */
+export function getKnifeRecycleReward(knifeOrId, explicitStar = null) {
+  const knife = typeof knifeOrId === 'string' ? KNIVES.find(k => k.id === knifeOrId) : knifeOrId;
+  if (!knife) return { amount: 1, currency: 'rolls', symbol: '🧻', isAstral: false };
+
+  const isAstral = ['godly', 'special', 'celestial'].includes(knife.rarity);
+  const currency = isAstral ? 'plungers' : 'rolls';
+  const symbol = isAstral ? '🪠' : '🧻';
+  const star = explicitStar !== null && explicitStar !== undefined ? explicitStar : getKnifeStar(knife.id);
+  const base = RECYCLE_BASE[knife.rarity] || 2;
+  const mult = Math.max(1, Number(knife.clickMult) || 1);
+  const powerBonus = isAstral
+    ? Math.min(5, Math.floor(Math.log10(mult)))
+    : Math.min(base, Math.round(Math.sqrt(mult)));
+  const starBonus = Math.round(Math.max(0, star - 1) * base * 0.12);
+  const amount = Math.max(1, base + powerBonus + starBonus);
+  return { amount, currency, symbol, isAstral };
 }
 
 export function sharpenKnife(knifeId) {
