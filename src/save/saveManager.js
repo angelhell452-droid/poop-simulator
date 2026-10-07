@@ -1,17 +1,17 @@
-import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.0.75';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.75';
+import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.0.76';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.76';
 import { TALENTS } from '../data/talents.data.js';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.75';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.75';
-import { KNIVES } from '../data/knives.data.js?v=5.0.75';
-import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.0.75';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.75';
-import { migrateSaveData } from './migrations.js?v=5.0.75';
-import { clampAutoclickerState } from '../systems/autoclickService.js?v=5.0.75';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.76';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.76';
+import { KNIVES } from '../data/knives.data.js?v=5.0.76';
+import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.0.76';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.76';
+import { migrateSaveData } from './migrations.js?v=5.0.76';
+import { clampAutoclickerState } from '../systems/autoclickService.js?v=5.0.76';
 import { notePeakForm } from '../progression/unlocks.js';
-import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.75';
+import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.76';
 import { events } from '../core/events.js';
-import { isBig, rehydrateBig } from '../utils/big.js?v=5.0.75';
+import { isBig, rehydrateBig } from '../utils/big.js?v=5.0.76';
 
 function keepBio(value) {
   const n = rehydrateBig(value);

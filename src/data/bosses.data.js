@@ -7,15 +7,10 @@ import { BOSS_ROSTER_PLAN, flatBossRoster } from './bosses.roster.plan.js';
 function buildGuildBosses() {
   return flatBossRoster().map((boss) => {
     const i = boss.index;
-    const themeStep = Math.ceil(i / 2);
-    const senior = boss.tier === 'senior';
-    // Soft climb: early ~10 pts / 1 plunger, finale ~200 pts / 7 plungers.
-    const points = senior
-      ? Math.round(14 + (themeStep - 1) * 14)
-      : Math.round(10 + (themeStep - 1) * 12);
-    const plungers = Math.min(7, senior
-      ? 1 + Math.floor((themeStep + 1) / 2)
-      : 1 + Math.floor(themeStep / 3));
+    // Fixed reward by ladder position — circle does not raise plungers/points.
+    // Boss 1 → 1 plunger, boss 26 → 26 plungers. Points climb with the same index.
+    const plungers = i;
+    const points = Math.round(8 + (i - 1) * 7);
     return {
       index: i,
       id: boss.id,
@@ -63,9 +58,10 @@ export function bossReward(index, circle) {
   const boss = bossByIndex(index);
   const round = Math.max(1, Math.floor(Number(circle) || 1));
   if (!boss) return { points: 0, plungers: 0, circle: round };
+  // Circle only tracks attempts / HP; reward is locked to the boss index.
   return {
-    points: boss.points * round,
-    plungers: Math.min(8, boss.plungers + (round - 1)),
+    points: boss.points,
+    plungers: boss.plungers,
     circle: round
   };
 }

@@ -1,14 +1,14 @@
-import { GAME } from '../core/state.js?v=5.0.75';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.75';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.75';
-import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.75';
-import { KNIVES } from '../data/knives.data.js?v=5.0.75';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.75';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.75';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.75';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.75';
-import { pulseMail } from './mailView.js?v=5.0.75';
-import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.75';
+import { GAME } from '../core/state.js?v=5.0.76';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.76';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.76';
+import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.76';
+import { KNIVES } from '../data/knives.data.js?v=5.0.76';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.76';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.76';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.76';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.76';
+import { pulseMail } from './mailView.js?v=5.0.76';
+import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.76';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
 
@@ -601,7 +601,7 @@ function paintFight() {
           <img class="boss-thumb" src="assets/poop/bosses/${esc(row.id)}.png" alt="" onerror="this.remove()">
           <div class="boss-summon-info min-w-0">
             <div class="font-game">${esc(row.icon)} ${esc(row.name)}</div>
-            <div class="garden-muted">${tier ? `${esc(tier)} · ` : ''}круг ${formatNumber(row.circle)} · ${formatNumber(row.points)} очков · ${formatNumber(row.plungers)} вантузов</div>
+            <div class="garden-muted">${tier ? `${esc(tier)} · ` : ''}попытка ${formatNumber(row.circle)} · ${formatNumber(row.points)} очков · ${formatNumber(row.plungers)} вантузов</div>
           </div>
           ${row.unlocked
             ? `<button type="button" class="garden-pill accent jelly-btn shrink-0" data-guild-action="summon" data-boss="${row.index}">Вызвать</button>`
@@ -683,7 +683,7 @@ function renderJournal() {
       ? `открыт · побед ${formatNumber(row.clears || 0)} · след. круг ${formatNumber(row.circle)}`
       : 'ещё закрыт';
     const prize = row.unlocked
-      ? ` · награда круга: ${formatNumber(row.points)} очков, ${formatNumber(row.plungers)} вантузов`
+      ? ` · награда: ${formatNumber(row.points)} очков, ${formatNumber(row.plungers)} вантузов`
       : '';
     return `
       ${themeHead}

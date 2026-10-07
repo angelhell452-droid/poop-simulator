@@ -1,9 +1,9 @@
-import { GAME } from '../core/state.js?v=5.0.75';
-import { KNIVES } from '../data/knives.data.js?v=5.0.75';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.75';
-import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.75';
+import { GAME } from '../core/state.js?v=5.0.76';
+import { KNIVES } from '../data/knives.data.js?v=5.0.76';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.76';
+import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.76';
 import { events } from '../core/events.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.75';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.76';
 
 // Bases ~10× below the old table. Power no longer scales with raw clickMult
 // (godly knives sit at 1e5+ and used to make sharpening/sell impossible or broken).

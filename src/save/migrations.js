@@ -1,9 +1,9 @@
 // Save Data Migration Layer (Ensures 100% Backward Compatibility)
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.75';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.75';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.75';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.76';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.76';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.76';
 
 export function migrateSaveData(rawSave) {
   if (!rawSave) return null;
