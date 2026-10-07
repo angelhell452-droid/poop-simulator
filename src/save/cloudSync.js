@@ -1,9 +1,9 @@
-﻿import { GAME } from '../core/state.js?v=5.0.77';
+﻿import { GAME } from '../core/state.js?v=5.0.78';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.77';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.78';
 import { setConfirmedVip } from '../economy/pace.js';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.77';
-import { cmp } from '../utils/big.js?v=5.0.77';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.78';
+import { cmp } from '../utils/big.js?v=5.0.78';
 import { t } from '../i18n/t.js';
 
 function cmpBio(a, b) {

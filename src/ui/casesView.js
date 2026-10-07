@@ -1,19 +1,20 @@
-﻿import { GAME } from '../core/state.js?v=5.0.77';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.77';
-import { KNIVES } from '../data/knives.data.js?v=5.0.77';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
+﻿import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
+import { t, onLocaleChange } from '../i18n/t.js';
+import { GAME } from '../core/state.js?v=5.0.78';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.78';
+import { KNIVES } from '../data/knives.data.js?v=5.0.78';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
 import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.0.77';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.77';
-import { updateHUD } from './hudView.js?v=5.0.77';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.77';
+import { saveLocal } from '../save/saveManager.js?v=5.0.78';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.78';
+import { updateHUD } from './hudView.js?v=5.0.78';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.78';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.77';
-import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.77';
-import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.0.77';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.77';
-
+import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.78';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.78';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.0.78';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.78';
 let caseAudioEnabled = true;
 let audioCtx = null;
 let activeRouletteCase = null;
@@ -42,8 +43,8 @@ function missingCaseFunds(caseObj, count = 1) {
   const parts = [];
   const rolls = caseRollNeed(caseObj, count);
   const plungers = casePlungerCost(caseObj) * count;
-  if ((GAME.prestigeRolls || 0) < rolls) parts.push(`${formatNumber(rolls)} втулок`);
-  if ((GAME.transcendPlungers || 0) < plungers) parts.push(`${formatNumber(plungers)} вантузов`);
+  if ((GAME.prestigeRolls || 0) < rolls) parts.push(t('cases.nBushings', { n: formatNumber(rolls) }));
+  if ((GAME.transcendPlungers || 0) < plungers) parts.push(t('cases.nPlungers', { n: formatNumber(plungers) }));
   return parts;
 }
 
@@ -67,9 +68,9 @@ function refundDuplicate(caseObj) {
 
 function refundLabel(refund) {
   const parts = [];
-  if (refund.rolls > 0) parts.push(`+${formatNumber(refund.rolls)} втулок`);
-  if (refund.plungers > 0) parts.push(`+${formatNumber(refund.plungers)} вантузов`);
-  return parts.join(' и ');
+  if (refund.rolls > 0) parts.push(`+${t('cases.nBushings', { n: formatNumber(refund.rolls) })}`);
+  if (refund.plungers > 0) parts.push(`+${t('cases.nPlungers', { n: formatNumber(refund.plungers) })}`);
+  return parts.join(t('cases.and'));
 }
 
 function casePriceHtml(caseObj) {
@@ -86,12 +87,12 @@ function casesInEpochOrder() {
 function assertCaseReady(caseObj, count = 1) {
   if (!caseIsOpen(caseObj)) {
     const epoch = getPhaseForForm(peakForm()).id;
-    alert(`Этот кейс откроется с эпохи ${formatNumber(caseObj.reqEpoch)}. Рекорд сейчас: эпоха ${formatNumber(epoch)}.`);
+    alert(t('cases.lockedAlert', { req: formatNumber(caseObj.reqEpoch), epoch: formatNumber(epoch) }));
     return false;
   }
   const missing = missingCaseFunds(caseObj, count);
   if (missing.length > 0) {
-    alert(`Не хватает: ${missing.join(' и ')}.`);
+    alert(t('cases.missing', { list: missing.join(t('cases.and')) }));
     return false;
   }
   return true;
@@ -285,7 +286,7 @@ export function openCaseRoulette(caseId) {
   if (modal) modal.classList.remove('hidden');
 
   const titleEl = document.getElementById('rouletteCaseTitle');
-  if (titleEl) titleEl.textContent = caseObj.name;
+  if (titleEl) titleEl.textContent = caseName(caseObj);
   const resBanner = document.getElementById('rouletteResultBanner');
   if (resBanner) resBanner.classList.add('hidden');
   const ctrlSec = document.getElementById('rouletteControlSection');
@@ -474,11 +475,11 @@ export function setupAndRunRouletteTape(caseObj, instantSkip = false) {
     cards.push(`
       <div class="w-36 h-28 shrink-0 rounded-2xl border-2 ${rColor} p-2 flex flex-col items-center justify-between text-center relative select-none">
         <div class="w-full flex justify-between items-center text-[8px]">
-          <span class="font-bold uppercase ${badgeColor} px-1.5 py-0.2 rounded">${itemKnife.rarityName}</span>
+          <span class="font-bold uppercase ${badgeColor} px-1.5 py-0.2 rounded">${knifeRarity(itemKnife)}</span>
           ${starBadge}
         </div>
         <div class="my-0.5 flex items-center justify-center">${getKnifeImageHtml(itemKnife, 52)}</div>
-        <div class="font-game text-[10px] text-yellow-200 truncate w-full px-1">${itemKnife.name}</div>
+        <div class="font-game text-[10px] text-yellow-200 truncate w-full px-1">${knifeName(itemKnife)}</div>
         <div class="h-1 w-full rounded-full ${barColor}"></div>
       </div>
     `);
@@ -585,7 +586,7 @@ function onRouletteFinished() {
   const rIcon = document.getElementById('rouletteResultIcon');
   if (rIcon) rIcon.innerHTML = getKnifeImageHtml(rouletteWinningKnife, 80);
   const rName = document.getElementById('rouletteResultName');
-  if (rName) rName.textContent = rouletteWinningKnife.name;
+  if (rName) rName.textContent = knifeName(rouletteWinningKnife);
 
   if (!GAME.knifeStars) GAME.knifeStars = {};
   let isDuplicate = false;
@@ -605,22 +606,22 @@ function onRouletteFinished() {
   const rarityEl = document.getElementById('rouletteResultRarity');
   if (rarityEl) {
     if (isDuplicate) {
-      rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${rouletteWinningKnife.rarityName}</span> • <span class="text-yellow-400 font-bold">🔁 ДУБЛИКАТ! (Кэшбэк 50%: ${duplicateRefundText})</span>`;
+      rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${knifeRarity(rouletteWinningKnife)}</span> • <span class="text-yellow-400 font-bold">${t('cases.duplicateBanner', { refund: duplicateRefundText })}</span>`;
     } else {
-      rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${rouletteWinningKnife.rarityName}</span> • <span class="text-emerald-400 font-bold">✨ НОВЫЙ НОЖ! (★ Lv.1)</span>`;
+      rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${knifeRarity(rouletteWinningKnife)}</span> • <span class="text-emerald-400 font-bold">${t('cases.newKnifeBanner')}</span>`;
     }
   }
 
   const shown = getKnifeShownBonuses(rouletteWinningKnife);
   const cbEl = document.getElementById('rouletteResultClickBoost');
-  if (cbEl) cbEl.textContent = `+${formatNumber(shown.clickPct)}% Клик`;
+  if (cbEl) cbEl.textContent = `+${formatNumber(shown.clickPct)}${t('hud.buffClick')}`;
 
   const pbEl = document.getElementById('rouletteResultPassiveBoost');
   if (pbEl) pbEl.textContent = `+${formatNumber(getKnifeCpsBonus(rouletteWinningKnife))} CPS`;
 
   showKnifeToast(isDuplicate
-    ? `🔁 Дубликат "${rouletteWinningKnife.name}"! Кэшбэк 50%: ${duplicateRefundText}`
-    : `🎉 Новый нож получен: ${rouletteWinningKnife.name}!`
+    ? t('cases.toastDuplicate', { name: knifeName(rouletteWinningKnife), refund: duplicateRefundText })
+    : t('cases.toastNew', { name: knifeName(rouletteWinningKnife) })
   );
 
   GAME.casesOpened = (GAME.casesOpened || 0) + 1;
@@ -670,7 +671,7 @@ export function openMultipleCases(caseObj, count = 3) {
   if (modal) modal.classList.remove('hidden');
 
   const titleEl = document.getElementById('rouletteCaseTitle');
-  if (titleEl) titleEl.textContent = `${caseObj.name} (Открыто ${count}x)`;
+  if (titleEl) titleEl.textContent = t('cases.openedTitle', { name: caseName(caseObj), n: formatNumber(count) });
 
   const unlockScreen = document.getElementById('rouletteUnlockScreen');
   if (unlockScreen) unlockScreen.classList.add('hidden');
@@ -685,17 +686,17 @@ export function openMultipleCases(caseObj, count = 3) {
   const rIcon = document.getElementById('rouletteResultIcon');
   if (rIcon) rIcon.innerHTML = getKnifeImageHtml(rouletteWinningKnife, 80);
   const rName = document.getElementById('rouletteResultName');
-  if (rName) rName.textContent = `★ Топ из 3 шт: ${rouletteWinningKnife.name}`;
+  if (rName) rName.textContent = t('cases.topOf3', { name: knifeName(rouletteWinningKnife) });
 
   const rarityEl = document.getElementById('rouletteResultRarity');
   if (rarityEl) {
-    rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${rouletteWinningKnife.rarityName}</span> • <span class="text-yellow-400 font-bold">✨ Открыто сразу 3 кейса!</span>`;
+    rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${knifeRarity(rouletteWinningKnife)}</span> • <span class="text-yellow-400 font-bold">${t('cases.opened3Banner')}</span>`;
   }
 
   playCaseWinFanfare(rouletteWinningKnife.rarity);
   launchConfettiFireworks(true);
 
-  showKnifeToast(`🎁 Открыто 3 кейса! Лучший: "${rouletteWinningKnife.name}" (+ещё 2 в инвентаре)`);
+  showKnifeToast(t('cases.toast3', { name: knifeName(rouletteWinningKnife) }));
 }
 
 export function renderCasesSystem() {
@@ -706,7 +707,7 @@ export function renderCasesSystem() {
 
   const countBadge = document.getElementById('knivesCountBadge');
   const unlockedCount = (GAME.unlockedKnives || []).length;
-  if (countBadge) countBadge.textContent = `${unlockedCount} / ${KNIVES.length} найдено`;
+  if (countBadge) countBadge.textContent = t('cases.found', { a: formatNumber(unlockedCount), b: formatNumber(KNIVES.length) });
 
   const topIndexCount = document.getElementById('topKnivesIndexCount');
   if (topIndexCount) topIndexCount.textContent = `${unlockedCount}/${KNIVES.length}`;
@@ -716,14 +717,14 @@ export function renderCasesSystem() {
 
   const cratesList = document.getElementById('casesCratesList');
   if (cratesList && !isCasesUnlocked()) {
-    cratesList.innerHTML = `<div class="col-span-full p-4 rounded-2xl border border-amber-900/60 bg-stone-950 text-center"><div class="text-2xl mb-1">🔒</div><div class="font-game text-sm text-amber-200">Кейсы закрыты</div><p class="text-[11px] text-stone-400 mt-1">Раздел откроется после первого Смыва. Смывов сейчас: ${formatNumber(GAME.totalPrestiges || 0)}.</p></div>`;
+    cratesList.innerHTML = `<div class="col-span-full p-4 rounded-2xl border border-amber-900/60 bg-stone-950 text-center"><div class="text-2xl mb-1">🔒</div><div class="font-game text-sm text-amber-200">${t('cases.closed')}</div><p class="text-[11px] text-stone-400 mt-1">${t('cases.closedHint', { n: formatNumber(GAME.totalPrestiges || 0) })}</p></div>`;
   } else if (cratesList) {
     cratesList.innerHTML = casesInEpochOrder().map(c => {
       const isUnlocked = caseIsOpen(c);
       const hasCurrency = canAffordCase(c, 1);
       const hasCurrency3 = isUnlocked && canAffordCase(c, 3);
       const canOpen = isUnlocked && hasCurrency;
-      const lockReason = `Эпоха ${formatNumber(c.reqEpoch)}`;
+      const lockReason = t('hud.epoch', { n: formatNumber(c.reqEpoch) });
 
       const lockBadge = !isUnlocked
         ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 ${lockReason}</div>`
@@ -731,22 +732,22 @@ export function renderCasesSystem() {
 
       const btnText = !isUnlocked
         ? `🔒 ${lockReason}`
-        : (hasCurrency ? `Открыть 🎰` : `Мало валюты ❌`);
+        : (hasCurrency ? t('cases.open') : t('cases.noFunds'));
 
       return `
         <div class="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-xl flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${!isUnlocked ? 'opacity-70 grayscale-[25%]' : ''}">
           <div>
             <!-- Top Bar: Info button & Price badge cleanly separated -->
             <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-white/10 gap-2">
-              <button class="case-info-btn w-6 h-6 rounded-full bg-stone-950/80 hover:bg-stone-850 text-yellow-300 border border-yellow-400/70 flex items-center justify-center text-xs font-black transition shadow-sm jelly-btn cursor-pointer shrink-0" data-case="${c.id}" title="Просмотреть шансы выпадения и список ножей">ⓘ</button>
+              <button class="case-info-btn w-6 h-6 rounded-full bg-stone-950/80 hover:bg-stone-850 text-yellow-300 border border-yellow-400/70 flex items-center justify-center text-xs font-black transition shadow-sm jelly-btn cursor-pointer shrink-0" data-case="${c.id}" title="${t('cases.infoTitle')}">ⓘ</button>
               <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-stone-950/90 text-yellow-300 border border-yellow-500/50 inline-flex items-center gap-1.5 shrink-0 shadow-sm whitespace-nowrap">${casePriceHtml(c)}</span>
             </div>
 
             <!-- Central Showcase: Centered big icon, full readable title and description -->
             <div class="flex flex-col items-center text-center my-1 px-1">
               <div class="text-4xl my-1 select-none filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transform transition-transform duration-200 hover:scale-110">${c.icon}</div>
-              <div class="font-game text-xs sm:text-sm text-yellow-200 font-bold tracking-wide leading-tight min-h-[2.2rem] flex items-center justify-center text-center">${c.name}</div>
-              <div class="text-[10.5px] text-stone-300 mt-1 leading-snug line-clamp-2 min-h-[26px]">${c.desc}</div>
+              <div class="font-game text-xs sm:text-sm text-yellow-200 font-bold tracking-wide leading-tight min-h-[2.2rem] flex items-center justify-center text-center">${caseName(c)}</div>
+              <div class="text-[10.5px] text-stone-300 mt-1 leading-snug line-clamp-2 min-h-[26px]">${caseDesc(c)}</div>
               ${lockBadge}
             </div>
           </div>
@@ -757,7 +758,7 @@ export function renderCasesSystem() {
               ${btnText}
             </button>
             ${isUnlocked ? `
-              <button class="open-case-3x-btn py-2 px-2.5 rounded-xl font-game text-[11px] font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1 ${hasCurrency3 ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:brightness-110 text-white font-black' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${hasCurrency3 ? '' : 'disabled'} title="Открыть сразу 3 кейса мгновенно">
+              <button class="open-case-3x-btn py-2 px-2.5 rounded-xl font-game text-[11px] font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1 ${hasCurrency3 ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:brightness-110 text-white font-black' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${hasCurrency3 ? '' : 'disabled'} title="${t('cases.open3Title')}">
                 <span>⚡3x</span>
               </button>
             ` : ''}
@@ -805,9 +806,9 @@ export function openCasePreviewModal(caseId) {
   const costEl = document.getElementById('casePreviewCostBadge');
   const listEl = document.getElementById('casePreviewKnivesList');
 
-  if (titleEl) titleEl.textContent = caseObj.name;
+  if (titleEl) titleEl.textContent = caseName(caseObj);
   if (iconEl) iconEl.textContent = caseObj.icon;
-  if (descEl) descEl.textContent = caseObj.desc;
+  if (descEl) descEl.textContent = caseDesc(caseObj);
   if (costEl) costEl.innerHTML = casePriceHtml(caseObj);
 
   if (listEl) {
@@ -859,20 +860,20 @@ export function openCasePreviewModal(caseId) {
           <div class="shrink-0 flex items-center justify-center">${getKnifeImageHtml(knife, 42)}</div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="font-bold text-xs text-stone-100 truncate">${knife.name}</span>
-              <span class="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${badgeColor}">${knife.rarityName}</span>
+              <span class="font-bold text-xs text-stone-100 truncate">${knifeName(knife)}</span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${badgeColor}">${knifeRarity(knife)}</span>
             </div>
             <div class="text-[10px] text-stone-400 mt-1 flex items-center gap-2 flex-wrap font-mono">
-              <span>Клик: <b class="text-emerald-300 font-bold">+${formatNumber(clickPct)}%</b></span>
+              <span>${t('cases.click')} <b class="text-emerald-300 font-bold">+${formatNumber(clickPct)}%</b></span>
               <span class="text-stone-600">•</span>
               <span>CPS: <b class="text-cyan-300 font-bold">+${formatNumber(getKnifeCpsBonus(knife))}</b></span>
               <span class="text-stone-600">•</span>
-              <span>Множитель: <b class="text-amber-300 font-bold">x${formatNumber(knife.clickMult)}</b></span>
+              <span>${t('cases.mult')} <b class="text-amber-300 font-bold">x${formatNumber(knife.clickMult)}</b></span>
             </div>
           </div>
         </div>
         <div class="text-right shrink-0">
-          <span class="text-[10px] text-stone-400 block">Шанс:</span>
+          <span class="text-[10px] text-stone-400 block">${t('cases.chance')}</span>
           <span class="font-game text-xs font-bold text-yellow-300 px-2 py-0.5 rounded-lg bg-stone-950 border border-yellow-500/40">${pct}%</span>
         </div>
       `;
@@ -961,7 +962,7 @@ export function initCasesListeners() {
       const icon = document.getElementById('rouletteAudioIcon');
       const text = document.getElementById('rouletteAudioText');
       if (icon) icon.textContent = caseAudioEnabled ? '🔊' : '🔇';
-      if (text) text.textContent = caseAudioEnabled ? '🔊 ЗВУК: ВКЛ' : '🔇 ЗВУК: ВЫКЛ';
+      if (text) text.textContent = caseAudioEnabled ? t('cases.soundOn') : t('cases.soundOff');
     });
   }
 
@@ -992,8 +993,8 @@ export function updateCasesButtons() {
     btn.disabled = !canOpen;
 
     const newText = !isUnlocked
-      ? `🔒 Эпоха ${formatNumber(c.reqEpoch)}`
-      : (hasCurrency ? `Открыть 🎰` : `Мало валюты ❌`);
+      ? `🔒 ${t('hud.epoch', { n: formatNumber(c.reqEpoch) })}`
+      : (hasCurrency ? t('cases.open') : t('cases.noFunds'));
 
     if (btn.textContent.trim() !== newText) {
       btn.textContent = newText;
@@ -1006,3 +1007,7 @@ export function updateCasesButtons() {
     }
   });
 }
+
+onLocaleChange(() => {
+  renderCasesSystem();
+});

@@ -1,18 +1,19 @@
-﻿import { GAME } from '../core/state.js?v=5.0.77';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
-import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.77';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.77';
-import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.77';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.77';
+﻿import { GAME } from '../core/state.js?v=5.0.78';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.78';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.78';
+import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.78';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.78';
 
-import { updateHUD } from './hudView.js?v=5.0.77';
-import { renderCasesSystem } from './casesView.js?v=5.0.77';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.77';
-import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.77';
-import { renderFactories } from './factoryView.js?v=5.0.77';
+import { updateHUD } from './hudView.js?v=5.0.78';
+import { renderCasesSystem } from './casesView.js?v=5.0.78';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.78';
+import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.0.78';
+import { renderFactories } from './factoryView.js?v=5.0.78';
 import { renderShop } from './shopView.js';
 import { events } from '../core/events.js';
 import { isRelicSectionUnlocked } from '../progression/unlocks.js';
+import { t, onLocaleChange } from '../i18n/t.js';
 
 let pendingPrestigeArchetype = 'balanced';
 function notesAreOpen(modalId) {
@@ -28,7 +29,7 @@ export function updatePrestigeModalRealtime() {
   const bridgePhase = currentBridgePhase();
   const bridgeForm = bridgePhase.flushForm;
   const countsNow = !!(b.isMet && b.countsForBridge && !b.pairSealed);
-  const verdict = countsNow ? 'Этот смыв считается в прорыв' : 'Этот смыв не считается в прорыв';
+  const verdict = countsNow ? t('modal.flushCounts') : t('modal.flushNoCount');
   const verdictClass = countsNow
     ? 'bg-emerald-400 text-stone-950 border-emerald-200'
     : 'bg-amber-400 text-stone-950 border-amber-200';
@@ -39,22 +40,22 @@ export function updatePrestigeModalRealtime() {
       <div class="space-y-1.5">
         <div class="rounded-full border-2 px-3 py-2 text-center font-game text-sm font-bold ${verdictClass}">${verdict}</div>
         <div class="rounded-full border-2 border-yellow-300 bg-stone-950 px-3 py-1.5 text-center font-game text-xs text-yellow-200 whitespace-nowrap">
-          Сейчас #${formatNumber(b.currentForm)} · надо #${formatNumber(bridgeForm)}
+          ${t('modal.nowNeed', { now: formatNumber(b.currentForm), need: formatNumber(bridgeForm) })}
         </div>
         <div class="flex items-center justify-between text-xs">
           <span class="${b.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-            🧬 Смыв откроется: #${formatNumber(b.currentForm)} / #${formatNumber(b.reqForm)}
+            ${t('modal.flushOpens', { cur: formatNumber(b.currentForm), req: formatNumber(b.reqForm) })}
           </span>
           <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${b.meetsStage ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-            ${b.meetsStage ? '✓ Достигнуто' : `Нужно еще +${formatNumber(Math.max(0, b.reqForm - b.currentForm))} форм`}
+            ${b.meetsStage ? t('modal.reached') : t('modal.needMoreForms', { n: formatNumber(Math.max(0, b.reqForm - b.currentForm)) })}
           </span>
         </div>
         <div class="flex items-center justify-between text-xs">
           <span class="${b.meetsBiomass ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-            💨 Биомасса: ${formatNumber(b.currentBiomass)} / ${formatNumber(b.reqBiomass)} 💨
+            ${t('modal.biomassLine', { cur: formatNumber(b.currentBiomass), req: formatNumber(b.reqBiomass) })}
           </span>
           <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${b.meetsBiomass ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-            ${b.meetsBiomass ? '✓ Накоплено' : `Нужно еще ${formatNumber(Math.max(0, b.reqBiomass - b.currentBiomass))} 💨`}
+            ${b.meetsBiomass ? t('modal.collected') : t('modal.needMoreBiomass', { n: formatNumber(Math.max(0, b.reqBiomass - b.currentBiomass)) })}
           </span>
         </div>
       </div>
@@ -77,47 +78,47 @@ export function updatePrestigeModalRealtime() {
     const plungerLine = b.plungerGain > 0
       ? `+${formatNumber(1)}`
       : (echoPhaseId === bridge.id && !b.pairSealed
-        ? (plungerRoom > 0 ? `даст +${formatNumber(1)}, запас ${formatNumber(plungerRoom)}` : 'запас эпохи набран')
-        : `У вас эпоха ${formatNumber(yourEpoch)}, а надо ${formatNumber(bridge.id)}`);
+        ? (plungerRoom > 0 ? t('modal.plungerGives', { n: formatNumber(1), room: formatNumber(plungerRoom) }) : t('modal.plungerCapFull'))
+        : t('modal.yourEpoch', { yours: formatNumber(yourEpoch), need: formatNumber(bridge.id) }));
 
     let nextMilestoneText = '';
-    if (!b.isMet) nextMilestoneText = 'Смыв откроется на нужной форме этой эпохи';
-    else if (b.pairSealed) nextMilestoneText = 'Пара уже закрыта прорывом. Этот смыв даёт только втулки';
-    else if (!b.countsForBridge) nextMilestoneText = `Этот смыв даст втулки и эхо. Для прорыва нужны ${formatNumber(bridgeNeed)} смыва на эпохе ${formatNumber(bridge.id)}: сейчас ${formatNumber(bridgeHave)} из ${formatNumber(bridgeNeed)}`;
-    else if (b.plungerGain > 0) nextMilestoneText = `Этот смыв идёт в прорыв и даёт ${formatNumber(1)} вантуз. На эпохе ${formatNumber(bridge.id)}: ${formatNumber(bridgeHave)} из ${formatNumber(bridgeNeed)}`;
-    else nextMilestoneText = `Этот смыв идёт в прорыв. Вантузы этой эпохи уже набраны: ${formatNumber(bridgeHave)} из ${formatNumber(bridgeNeed)}`;
+    if (!b.isMet) nextMilestoneText = t('modal.ms.notMet');
+    else if (b.pairSealed) nextMilestoneText = t('modal.ms.sealed');
+    else if (!b.countsForBridge) nextMilestoneText = t('modal.ms.noBridge', { need: formatNumber(bridgeNeed), epoch: formatNumber(bridge.id), have: formatNumber(bridgeHave) });
+    else if (b.plungerGain > 0) nextMilestoneText = t('modal.ms.toBridgePlunger', { n: formatNumber(1), epoch: formatNumber(bridge.id), have: formatNumber(bridgeHave), need: formatNumber(bridgeNeed) });
+    else nextMilestoneText = t('modal.ms.toBridge', { have: formatNumber(bridgeHave), need: formatNumber(bridgeNeed) });
 
     calcEl.innerHTML = `
       <div class="mt-2 p-2.5 rounded-xl bg-purple-950/80 border border-yellow-400/40 text-left space-y-1.5">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] text-yellow-300 uppercase font-black tracking-wider">💰 Награда: втулки</span>
+          <span class="text-[10px] text-yellow-300 uppercase font-black tracking-wider">${t('modal.rewardBushings')}</span>
           <span class="font-game text-sm text-yellow-300 font-bold">+${formatNumber(gain)} <span class="roll-icon"></span></span>
         </div>
         <div class="text-[10px] text-purple-200 space-y-0.5 font-mono">
-          <div>├─ 🧻 Втулки за этот смыв: <b class="text-white">+${formatNumber(b.bioPart)}</b></div>
-          <div>├─ 🌀 Эхо эпохи ${formatNumber(echoPhaseId)}: <b class="text-white">${b.pairSealed ? 'уже x3' : `после смыва x${formatNumber(nextEcho)}`}</b></div>
-          <div>├─ <span class="plunger-icon" aria-hidden="true"></span> Вантуз: <b class="${b.plungerGain > 0 ? 'text-cyan-300' : 'text-amber-200'}">${plungerLine}</b></div>
-          <div>└─ 📜 Таланты Смыва: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${formatNumber(Math.round((b.flushTalentBonus - 1) * 100))}%</b></div>
+          <div>├─ 🧻 ${t('modal.bioPart')}: <b class="text-white">+${formatNumber(b.bioPart)}</b></div>
+          <div>├─ 🌀 ${t('modal.echoOfEpoch', { n: formatNumber(echoPhaseId) })}: <b class="text-white">${b.pairSealed ? t('modal.echoSealed') : t('modal.echoAfter', { n: formatNumber(nextEcho) })}</b></div>
+          <div>├─ <span class="plunger-icon" aria-hidden="true"></span> ${t('modal.plunger')}: <b class="${b.plungerGain > 0 ? 'text-cyan-300' : 'text-amber-200'}">${plungerLine}</b></div>
+          <div>└─ 📜 ${t('modal.flushTalents')}: <b class="${b.flushTalentBonus > 1 ? 'text-emerald-300' : 'text-stone-400'}">+${formatNumber(Math.round((b.flushTalentBonus - 1) * 100))}%</b></div>
         </div>
         <div class="text-[11px] text-yellow-100 font-game leading-snug">
-          ${b.pairSealed ? 'Эхо этой эпохи уже x3.' : `Эхо этой эпохи: после смыва x${formatNumber(nextEcho)}, дальше к x3.`}
+          ${b.pairSealed ? t('modal.echoNoteSealed') : t('modal.echoNote', { n: formatNumber(nextEcho) })}
         </div>
         <button type="button" id="flushNotesToggle" class="w-full text-left font-bold text-[10px] text-amber-200 flex items-center justify-between gap-2 rounded-full border border-amber-400/50 px-3 py-1.5">
-          <span>Втулки, эхо и прорыв — разные вещи</span>
+          <span>${t('modal.notesToggle')}</span>
           <span>${notesAreOpen('prestigeModal') ? '▴' : '▾'}</span>
         </button>
         <div class="${notesAreOpen('prestigeModal') ? '' : 'hidden'} text-purple-200/90 text-[9px] leading-tight space-y-0.5">
-          <div>• Втулки тратят на таланты и кейсы. Доход они не множат</div>
-          <div>• Эхо множит доход открытой эпохи. Первый смыв ставит x2, следующие подходят к x3</div>
-          <div>• В прорыв идут смывы эпохи ${formatNumber(bridge.id)}, и только с формы #${formatNumber(bridgeForm)}. Сейчас ${formatNumber(bridgeHave)} из ${formatNumber(bridgeNeed)}</div>
-          <div>• Прорыв ставит паре доход x3 и не сбрасывает забег. Смыв сбрасывает форму, биомассу и заводы</div>
+          <div>• ${t('modal.note1')}</div>
+          <div>• ${t('modal.note2')}</div>
+          <div>• ${t('modal.note3', { epoch: formatNumber(bridge.id), form: formatNumber(bridgeForm), have: formatNumber(bridgeHave), need: formatNumber(bridgeNeed) })}</div>
+          <div>• ${t('modal.note4')}</div>
         </div>
       </div>
       <div class="text-[11px] text-purple-200 mt-2">
-        Доход от эха: <b class="text-white">x${formatNumber(nowMult)}</b> ➔ после смыва <b class="text-emerald-300">x${formatNumber(afterMult)}</b>
+        ${t('modal.echoIncome')} <b class="text-white">x${formatNumber(nowMult)}</b> ➔ ${t('modal.afterFlush')} <b class="text-emerald-300">x${formatNumber(afterMult)}</b>
       </div>
       <div class="mt-1.5 pt-1.5 border-t border-yellow-400/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px]">
-        <span class="text-yellow-400 font-bold">Смыв: Ранг ${formatNumber(flushes)}</span>
+        <span class="text-yellow-400 font-bold">${t('modal.flushRank', { n: formatNumber(flushes) })}</span>
         <span class="text-stone-300 font-semibold">${nextMilestoneText}</span>
       </div>
     `;
@@ -130,23 +131,23 @@ export function updateTranscendModalRealtime() {
   const modal = document.getElementById('transcendModal');
   if (!modal || modal.classList.contains('hidden')) return;
 
-  const t = getTranscendRewardBreakdown();
-  const gain = t.totalGain;
+  const tb = getTranscendRewardBreakdown();
+  const gain = tb.totalGain;
 
   const rollsEl = document.getElementById('transcendCurrentRolls');
   if (rollsEl) rollsEl.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
 
   const plungersEl = document.getElementById('transcendCalcPlungers');
   if (plungersEl) {
-    if (!t.isMet) {
+    if (!tb.isMet) {
       plungersEl.innerHTML = `
         <div class="flex items-center gap-1.5 flex-wrap justify-end">
           <span class="text-cyan-300 font-bold text-sm">+${formatNumber(gain)} <span class="plunger-icon"></span></span>
-          <span class="text-[10px] text-amber-300/80 font-mono">(прогноз к открытию)</span>
+          <span class="text-[10px] text-amber-300/80 font-mono">${t('modal.forecast')}</span>
         </div>
       `;
     } else {
-      plungersEl.innerHTML = `+${formatNumber(gain)} <span class="plunger-icon"></span> Вантузов`;
+      plungersEl.innerHTML = `+${formatNumber(gain)} <span class="plunger-icon"></span> ${t('modal.plungersWord')}`;
     }
   }
 
@@ -155,55 +156,55 @@ export function updateTranscendModalRealtime() {
     tReqLabel.innerHTML = `
       <div class="space-y-1.5">
         <div class="flex items-center justify-between text-xs">
-          <span class="${t.meetsPrestiges ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-            🌀 Смывы на эпохе ${formatNumber(t.phase?.id || 2)}: ${formatNumber(t.currentPrestiges)} из ${formatNumber(t.reqPrestiges)}
+          <span class="${tb.meetsPrestiges ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
+            ${t('modal.tFlushes', { epoch: formatNumber(tb.phase?.id || 2), cur: formatNumber(tb.currentPrestiges), req: formatNumber(tb.reqPrestiges) })}
           </span>
-          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsPrestiges ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-            ${t.meetsPrestiges ? '✓ Выполнено' : `Ещё ${formatNumber(t.reqPrestiges - t.currentPrestiges)} ${t.reqPrestiges - t.currentPrestiges === 1 ? 'смыв' : 'смыва'} на этой эпохе`}
-          </span>
-        </div>
-        <div class="flex items-center justify-between text-xs">
-          <span class="${t.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-            🧬 Форма: #${formatNumber(t.currentForm)} / #${formatNumber(t.reqForm)}
-          </span>
-          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsStage ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-            ${t.meetsStage ? '✓ Достигнуто' : `Нужно еще +${formatNumber(Math.max(0, t.reqForm - t.currentForm))} форм`}
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${tb.meetsPrestiges ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+            ${tb.meetsPrestiges ? t('modal.done') : t(tb.reqPrestiges - tb.currentPrestiges === 1 ? 'modal.moreFlushesOne' : 'modal.moreFlushesMany', { n: formatNumber(tb.reqPrestiges - tb.currentPrestiges) })}
           </span>
         </div>
         <div class="flex items-center justify-between text-xs">
-          <span class="${t.meetsBiomass ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
-            💨 Биомасса забега: ${formatNumber(t.currentBiomass)} / ${formatNumber(t.reqBiomass)}
+          <span class="${tb.meetsStage ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
+            ${t('modal.formLine', { cur: formatNumber(tb.currentForm), req: formatNumber(tb.reqForm) })}
           </span>
-          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${t.meetsBiomass ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-            ${t.meetsBiomass ? '✓ Накоплено' : `Нужно еще ${formatNumber(Math.max(0, t.reqBiomass - t.currentBiomass))} 💨`}
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${tb.meetsStage ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+            ${tb.meetsStage ? t('modal.reached') : t('modal.needMoreForms', { n: formatNumber(Math.max(0, tb.reqForm - tb.currentForm)) })}
+          </span>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="${tb.meetsBiomass ? 'text-emerald-300 font-bold' : 'text-stone-300'}">
+            ${t('modal.runBiomass', { cur: formatNumber(tb.currentBiomass), req: formatNumber(tb.reqBiomass) })}
+          </span>
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${tb.meetsBiomass ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+            ${tb.meetsBiomass ? t('modal.collected') : t('modal.needMoreBiomass', { n: formatNumber(Math.max(0, tb.reqBiomass - tb.currentBiomass)) })}
           </span>
         </div>
       </div>
 
       <div class="mt-2 p-2.5 rounded-xl bg-indigo-950/80 border border-cyan-400/40 text-left space-y-1.5">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] text-cyan-300 uppercase font-black tracking-wider"><span class="plunger-icon" aria-hidden="true"></span> Расчет награды Вантузов:</span>
+          <span class="text-[10px] text-cyan-300 uppercase font-black tracking-wider"><span class="plunger-icon" aria-hidden="true"></span> ${t('modal.plungerCalc')}</span>
           <span class="font-game text-sm text-cyan-300 font-bold">+${formatNumber(gain)} <span class="plunger-icon"></span></span>
         </div>
         <div class="text-[10px] text-indigo-200 space-y-0.5 font-mono">
-          <div>├─ 🌀 База прорыва: <b class="text-white">+${formatNumber(t.basePlungers)}</b> вантуз</div>
-          <div>├─ 🧬 Конец эпохи: <b class="text-white">${t.stagePart > 0 ? `+${formatNumber(t.stagePart)} вантуз` : 'ещё не дошли до конца эпохи'}</b></div>
-          <div>├─ <span class="plunger-icon"></span> Астральный Инкубатор: <b class="${t.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(t.incubatorBonus * 100))}%</b></div>
-          <div>└─ 🔮 Душа Прорыва (Талант): <b class="${t.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(t.soulBonus * 100))}%</b></div>
+          <div>├─ 🌀 ${t('modal.bridgeBase')}: <b class="text-white">+${formatNumber(tb.basePlungers)}</b> ${t('modal.plungerUnit')}</div>
+          <div>├─ 🧬 ${t('modal.epochEnd')}: <b class="text-white">${tb.stagePart > 0 ? `+${formatNumber(tb.stagePart)} ${t('modal.plungerUnit')}` : t('modal.epochEndNo')}</b></div>
+          <div>├─ <span class="plunger-icon"></span> ${t('modal.incubator')}: <b class="${tb.incubatorBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(tb.incubatorBonus * 100))}%</b></div>
+          <div>└─ 🔮 ${t('modal.soul')}: <b class="${tb.soulBonus > 0 ? 'text-cyan-300' : 'text-stone-400'}">+${formatNumber(Math.round(tb.soulBonus * 100))}%</b></div>
         </div>
         <div class="text-[11px] text-cyan-100 font-game leading-snug">
-          Доход пары после прорыва: x3. Забег не сбрасывается, открывается следующая пара.
-          ${t.doubleChance > 0 ? ` Шанс удвоить вантузы сработает только в момент нажатия, прогноз его не крутит.` : ''}
+          ${t('modal.pairIncome')}
+          ${tb.doubleChance > 0 ? ` ${t('modal.doubleChance')}` : ''}
         </div>
         <button type="button" id="transcendNotesToggle" class="w-full text-left font-bold text-[10px] text-cyan-200 flex items-center justify-between gap-2 rounded-full border border-cyan-400/50 px-3 py-1.5">
-          <span>Как получить больше вантузов</span>
+          <span>${t('modal.howMore')}</span>
           <span>${notesAreOpen('transcendModal') ? '▴' : '▾'}</span>
         </button>
         <div class="${notesAreOpen('transcendModal') ? '' : 'hidden'} text-indigo-200/90 text-[9px] leading-tight space-y-0.5">
-          <div>• Нужны ${formatNumber(t.reqPrestiges)} смыва на эпохе ${formatNumber(t.phase?.id || 2)}, которые считаются в прорыв. Смыв этой эпохи даёт ${formatNumber(1)} вантуз, пока не набран запас пары</div>
-          <div>• Потом снова дойдите до формы и биомассы этой эпохи и нажмите Прорыв. Лишний смыв не нужен</div>
-          <div>• Пара получает доход x3, сколько бы смывов на ней ни было. Уже сделанные прорывы этот дар тоже получают</div>
-          <div>• Награда — ${formatNumber(1)} вантуз, и ещё ${formatNumber(1)}, если форма дошла до конца эпохи</div>
+          <div>• ${t('modal.tnote1', { req: formatNumber(tb.reqPrestiges), epoch: formatNumber(tb.phase?.id || 2), n: formatNumber(1) })}</div>
+          <div>• ${t('modal.tnote2')}</div>
+          <div>• ${t('modal.tnote3')}</div>
+          <div>• ${t('modal.tnote4', { n: formatNumber(1) })}</div>
         </div>
       </div>
     `;
@@ -211,17 +212,17 @@ export function updateTranscendModalRealtime() {
 
   const milestoneEl = document.getElementById('transcendMilestoneHint');
   if (milestoneEl) {
-    const transcends = t.transcends;
+    const transcends = tb.transcends;
     let tMilestoneText = '';
-    if (transcends < 1) tMilestoneText = '🎯 Прорыв #1: Вантузы и Базовые Реликвии (Тир 1)';
-    else if (transcends < 3) tMilestoneText = `🎯 Прорыв #3: 🌠 Звёздный дождь и кузница [${formatNumber(transcends)}/3]`;
-    else if (transcends < 5) tMilestoneText = `🎯 Прорыв #5: ⚡ Гипер-Ускоритель заводов (+12% к пассивному доходу) [${formatNumber(transcends)}/5]`;
-    else if (transcends < 10) tMilestoneText = `🎯 Прорыв #10: 🌌 Сингулярность & Корона Демиурга [${formatNumber(transcends)}/10]`;
-    else tMilestoneText = `🏆 Повелитель Астральной Сингулярности (${formatNumber(transcends)} прорывов)!`;
+    if (transcends < 1) tMilestoneText = t('modal.tm1');
+    else if (transcends < 3) tMilestoneText = t('modal.tm3', { n: formatNumber(transcends) });
+    else if (transcends < 5) tMilestoneText = t('modal.tm5', { n: formatNumber(transcends) });
+    else if (transcends < 10) tMilestoneText = t('modal.tm10', { n: formatNumber(transcends) });
+    else tMilestoneText = t('modal.tmMax', { n: formatNumber(transcends) });
 
     milestoneEl.innerHTML = `
       <div class="flex items-center justify-between text-[10px] text-cyan-300 font-bold px-1 py-0.5">
-        <span>Прорыв: Ранг ${formatNumber(transcends)}</span>
+        <span>${t('modal.transcendRank', { n: formatNumber(transcends) })}</span>
         <span class="text-indigo-200">${tMilestoneText}</span>
       </div>
     `;
@@ -234,28 +235,28 @@ export function updateTranscendModalRealtime() {
     relicBranch.disabled = !relicsOpen;
     relicBranch.classList.toggle('opacity-60', !relicsOpen);
     relicBranch.classList.toggle('cursor-not-allowed', !relicsOpen);
-    relicBranch.title = relicsOpen ? 'Открыть реликвии прорыва' : 'Откроется после 1 Прорыва';
+    relicBranch.title = relicsOpen ? t('modal.relicOpenTitle') : t('hud.relicsLocked');
   }
   if (relicBranchLabel) {
     relicBranchLabel.textContent = relicsOpen
-      ? 'Открыть ветку Реликвий в Талантах ➔'
-      : '🔒 Ветка реликвий откроется после 1 Прорыва';
+      ? t('modal.relicOpenLabel')
+      : t('modal.relicLockedLabel');
   }
 
   const execTransBtn = document.getElementById('btnExecuteTranscend');
   if (execTransBtn) {
-    if (!t.isMet) {
+    if (!tb.isMet) {
       execTransBtn.disabled = true;
-      if (!t.meetsPrestiges) {
-        execTransBtn.textContent = `НУЖНЫ ${formatNumber(t.reqPrestiges)} СМЫВА НА ЭПОХЕ ${formatNumber(t.phase?.id || 2)} (${formatNumber(t.currentPrestiges)} ИЗ ${formatNumber(t.reqPrestiges)}) 🔒`;
-      } else if (!t.meetsStage) {
-        execTransBtn.textContent = `ТРЕБУЕТСЯ ФОРМА #${formatNumber(t.reqForm)} (СЕЙЧАС #${formatNumber(t.currentForm)}) 🔒`;
+      if (!tb.meetsPrestiges) {
+        execTransBtn.textContent = t('modal.needFlushesBtn', { req: formatNumber(tb.reqPrestiges), epoch: formatNumber(tb.phase?.id || 2), cur: formatNumber(tb.currentPrestiges) });
+      } else if (!tb.meetsStage) {
+        execTransBtn.textContent = t('modal.needFormBtn', { req: formatNumber(tb.reqForm), cur: formatNumber(tb.currentForm) });
       } else {
-        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(t.reqBiomass)} БИОМАССЫ 🔒`;
+        execTransBtn.textContent = t('modal.needBiomassBtn', { req: formatNumber(tb.reqBiomass) });
       }
     } else {
       execTransBtn.disabled = gain <= 0;
-      execTransBtn.textContent = `СОВЕРШИТЬ АСТРАЛЬНЫЙ ПРОРЫВ! 🌌`;
+      execTransBtn.textContent = t('modal.doTranscend');
     }
   }
 }
@@ -391,6 +392,11 @@ export function initModals() {
     if (tModal && !tModal.classList.contains('hidden')) {
       openTranscendModal();
     }
+  });
+
+  onLocaleChange(() => {
+    updatePrestigeModalRealtime();
+    updateTranscendModalRealtime();
   });
 }
 

@@ -1,13 +1,15 @@
-﻿import { GAME } from '../core/state.js?v=5.0.77';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.77';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
-import { saveLocal } from '../save/saveManager.js?v=5.0.77';
-import { updateHUD } from './hudView.js?v=5.0.77';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.77';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.77';
-import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.0.77';
+﻿import { GAME } from '../core/state.js?v=5.0.78';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.78';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { saveLocal } from '../save/saveManager.js?v=5.0.78';
+import { updateHUD } from './hudView.js?v=5.0.78';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.78';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.78';
+import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.0.78';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
 import { isBoutiqueUnlocked, isShopOfferUnlocked, peakForm } from '../progression/unlocks.js';
+import { t, onLocaleChange } from '../i18n/t.js';
+import { shopName, shopDesc } from '../i18n/localize.js';
 
 export function getBoutiqueRepeatableCost(item) {
   const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[item.id]) || 0;
@@ -40,7 +42,7 @@ export function renderShop() {
   if (!isBoutiqueUnlocked()) {
     const lock = document.createElement('div');
     lock.className = 'p-4 rounded-2xl border border-amber-900/60 bg-stone-950 text-center';
-    lock.innerHTML = `<div class="text-2xl mb-1">🔒</div><div class="font-game text-sm text-amber-200">Бутик закрыт</div><p class="text-[11px] text-stone-400 mt-1">Откроется навсегда, когда форма на аккаунте впервые дойдёт до ${formatNumber(100)}. Рекорд сейчас: форма ${formatNumber(peakForm())}.</p>`;
+    lock.innerHTML = `<div class="text-2xl mb-1">🔒</div><div class="font-game text-sm text-amber-200">${t('shop.lockedTitle')}</div><p class="text-[11px] text-stone-400 mt-1">${t('shop.lockedBody', { n: formatNumber(100), peak: formatNumber(peakForm()) })}</p>`;
     container.appendChild(lock);
     return;
   }
@@ -70,7 +72,7 @@ export function renderShop() {
   // 2. REPEATABLE ENDLESS SPARKLE SINKS
   const repHeader = document.createElement('div');
   repHeader.className = 'font-game text-xs text-yellow-300 uppercase tracking-wider py-1 border-b border-amber-800/40 flex items-center justify-between';
-  repHeader.innerHTML = '<span>💎 Реликвии Омниверса (Многоуровневые)</span><span class="text-[9px] text-amber-400 font-normal">С потолком уровня</span>';
+  repHeader.innerHTML = `<span>${t('shop.relicsHeader')}</span><span class="text-[9px] text-amber-400 font-normal">${t('shop.relicsCap')}</span>`;
   container.appendChild(repHeader);
 
   [...BOUTIQUE_REPEATABLES].sort((a, b) => (a.reqForm || 0) - (b.reqForm || 0)).forEach(it => {
@@ -87,14 +89,14 @@ export function renderShop() {
         <span class="text-2xl">${it.icon}</span>
         <div>
           <div class="font-bold text-xs text-yellow-200">
-            ${it.name} <span class="text-yellow-400 font-game text-[11px] font-black">★ Lv.${formatNumber(lvl)}</span>
+            ${shopName(it)} <span class="text-yellow-400 font-game text-[11px] font-black">★ Lv.${formatNumber(lvl)}</span>
           </div>
-          <div class="text-[10px] text-amber-200/80">${unlocked ? it.desc : `Откроется на форме ${formatNumber(it.reqForm)}. Рекорд: ${formatNumber(peakForm())}.`}</div>
+          <div class="text-[10px] text-amber-200/80">${unlocked ? shopDesc(it) : t('shop.unlockForm', { n: formatNumber(it.reqForm), peak: formatNumber(peakForm()) })}</div>
         </div>
       </div>
       <div class="shrink-0 ml-2">
         <button class="buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition ${canBuy ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-bold border-yellow-300 jelly-btn shadow' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${it.id}" ${canBuy ? '' : 'disabled'}>
-          ${!unlocked ? '🔒' : (maxed ? 'МАКС' : `${formatNumber(cost)} ✨`)}
+          ${!unlocked ? '🔒' : (maxed ? t('shop.max') : `${formatNumber(cost)} ✨`)}
         </button>
       </div>
     `;
@@ -104,7 +106,7 @@ export function renderShop() {
   // 3. EXCLUSIVE ONE-OFF PERKS (WITHOUT HATS)
   const oneOffHeader = document.createElement('div');
   oneOffHeader.className = 'font-game text-xs text-amber-400 uppercase tracking-wider py-1 mt-3 border-b border-stone-800 flex items-center justify-between';
-  oneOffHeader.innerHTML = '<span>✨ Эксклюзивные Пассивные Перки</span><span class="text-[9px] text-stone-400 font-normal">Разовые покупки</span>';
+  oneOffHeader.innerHTML = `<span>${t('shop.perksHeader')}</span><span class="text-[9px] text-stone-400 font-normal">${t('shop.perksOnce')}</span>`;
   container.appendChild(oneOffHeader);
 
   const perkItems = SHOP_ITEMS.filter(it => it.type !== 'hat').sort((a, b) => (a.reqForm || 0) - (b.reqForm || 0));
@@ -119,13 +121,13 @@ export function renderShop() {
       <div class="flex items-center gap-2">
         <span class="text-2xl">${it.icon}</span>
         <div>
-          <div class="font-bold text-xs ${it.cost >= 25000 ? 'text-yellow-300' : 'text-stone-200'}">${it.name}</div>
-          <div class="text-[10px] text-stone-400">${unlocked ? it.desc : `Откроется на форме ${formatNumber(it.reqForm)}. Рекорд: ${formatNumber(peakForm())}.`}</div>
+          <div class="font-bold text-xs ${it.cost >= 25000 ? 'text-yellow-300' : 'text-stone-200'}">${shopName(it)}</div>
+          <div class="text-[10px] text-stone-400">${unlocked ? shopDesc(it) : t('shop.unlockForm', { n: formatNumber(it.reqForm), peak: formatNumber(peakForm()) })}</div>
         </div>
       </div>
       <div class="shrink-0 ml-2">
         ${it.owned ? `
-          <span class="text-xs font-bold text-emerald-400">Куплено ✓</span>
+          <span class="text-xs font-bold text-emerald-400">${t('common.owned')} ✓</span>
         ` : !unlocked ? `
           <span class="text-xs font-bold text-stone-500">🔒</span>
         ` : `
@@ -191,7 +193,7 @@ export function updateShopButtons() {
     } else {
       btn.className = 'buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
     }
-    btn.textContent = !unlocked ? '🔒' : (maxed ? 'МАКС' : `${formatNumber(cost)} ✨`);
+    btn.textContent = !unlocked ? '🔒' : (maxed ? t('shop.max') : `${formatNumber(cost)} ✨`);
   });
 
   container.querySelectorAll('.buy-shop-btn').forEach(btn => {
@@ -205,4 +207,11 @@ export function updateShopButtons() {
       btn.className = 'buy-shop-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
     }
   });
+}
+
+let shopLocaleHooked = false;
+export function initShopI18n() {
+  if (shopLocaleHooked) return;
+  shopLocaleHooked = true;
+  onLocaleChange(() => renderShop());
 }

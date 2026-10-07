@@ -1,5 +1,7 @@
-﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
-import { bigPow10, div, mul } from '../utils/big.js?v=5.0.77';
+﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { bigPow10, div, mul } from '../utils/big.js?v=5.0.78';
+import { t } from '../i18n/t.js';
+import { epochName } from '../i18n/localize.js';
 
 export const PHASE_COUNT = 200;
 export const PHASE_FORMS = 500;
@@ -64,5 +66,9 @@ export function maxUnlockedStage(transcends) {
 }
 
 export function phaseLabel(phase) {
-  return `Эпоха ${formatNumber(phase.id)} · ${phase.band}`;
+  const bandKey = `phase.band.${phase.id}`;
+  const band = t(bandKey) !== bandKey ? t(bandKey) : (phase.band || '');
+  const name = epochName(Math.max(0, (phase.id || 1) - 1), '');
+  const suffix = name || band;
+  return `${t('hud.epoch', { n: formatNumber(phase.id) })}${suffix ? ` · ${suffix}` : ''}`;
 }

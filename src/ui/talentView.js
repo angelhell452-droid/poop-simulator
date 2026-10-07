@@ -1,14 +1,16 @@
-﻿import { GAME } from '../core/state.js?v=5.0.77';
+﻿import { GAME } from '../core/state.js?v=5.0.78';
 import { TALENTS } from '../data/talents.data.js';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.77';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
-import { drawPlunger } from '../utils/icons.js?v=5.0.77';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.78';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { drawPlunger } from '../utils/icons.js?v=5.0.78';
 import { getAffordableTalentInfo, buyTalent } from '../systems/talentService.js';
-import { buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.77';
-import { updateHUD } from './hudView.js?v=5.0.77';
-import { saveLocal } from '../save/saveManager.js?v=5.0.77';
+import { buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.78';
+import { updateHUD } from './hudView.js?v=5.0.78';
+import { saveLocal } from '../save/saveManager.js?v=5.0.78';
 import { getRollIcon } from '../utils/icons.js';
 import { isRelicSectionUnlocked, isTalentVisible } from '../progression/unlocks.js';
+import { t, td, onLocaleChange } from '../i18n/t.js';
+import { talentName, talentDesc, transcendName, transcendDesc } from '../i18n/localize.js';
 
 let activeTalentSubTab = 'flush'; // 'flush' | 'transcend'
 let activeFlushTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
@@ -90,15 +92,15 @@ export function renderFlushTalents() {
 
   // Group by Tiers: 1, 2, 3, 4
   const tierConfigs = [
-    { tier: 1, title: '⭐ Тир 1: Базовый', desc: 'Сразу, ещё до первого Смыва' },
-    { tier: 2, title: '⚡ Тир 2: Продвинутый', desc: 'После 1 Смыва' },
-    { tier: 3, title: '🔮 Тир 3: Мастер', desc: 'После 3 Смывов' },
-    { tier: 4, title: '🌌 Тир 4: Астральный', desc: 'После 8 Прорывов' }
+    { tier: 1, title: t('talent.tier1.title'), desc: t('talent.tier1.desc') },
+    { tier: 2, title: t('talent.tier2.title'), desc: t('talent.tier2.desc') },
+    { tier: 3, title: t('talent.tier3.title'), desc: t('talent.tier3.desc') },
+    { tier: 4, title: t('talent.tier4.title'), desc: t('talent.tier4.desc') }
   ];
 
   const visibleConfigs = activeFlushTier === 'all'
     ? tierConfigs
-    : tierConfigs.filter(t => t.tier === Number(activeFlushTier));
+    : tierConfigs.filter(cfg => cfg.tier === Number(activeFlushTier));
 
   let showedNextLock = false;
   visibleConfigs.forEach(tInfo => {
@@ -113,8 +115,8 @@ export function renderFlushTalents() {
         const lock = document.createElement('div');
         lock.className = 'p-3 rounded-2xl border border-stone-800 bg-stone-950 text-[11px] text-stone-400';
         lock.textContent = needTranscend > (GAME.totalTranscend || 0)
-          ? `${tInfo.title} откроется на прорыве ${formatNumber(needTranscend)}. Сейчас прорывов: ${formatNumber(GAME.totalTranscend || 0)}.`
-          : `${tInfo.title} откроется на смыве ${formatNumber(needFlush)}. Сейчас смывов: ${formatNumber(GAME.totalPrestiges || 0)}.`;
+          ? t('talent.lockTranscend', { title: tInfo.title, need: formatNumber(needTranscend), have: formatNumber(GAME.totalTranscend || 0) })
+          : t('talent.lockFlush', { title: tInfo.title, need: formatNumber(needFlush), have: formatNumber(GAME.totalPrestiges || 0) });
         container.appendChild(lock);
       }
       return;
@@ -135,7 +137,7 @@ export function renderFlushTalents() {
       const nextCost = tlInfo.nextCost || tl.cost;
 
       const btnLabel = maxed
-        ? 'МАКС'
+        ? t('common.max')
         : (buyMultiplier === 'max'
           ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)`
           : (buyMultiplier > 1 ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)` : `${formatNumber(tlInfo.totalCost)} 🧻`));
@@ -152,13 +154,13 @@ export function renderFlushTalents() {
           <span class="text-2xl shrink-0">${drawPlunger(tl.icon)}</span>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="font-bold text-xs text-purple-200">${tl.name}</span>
-              <span class="text-[9px] px-1.5 py-0.2 rounded-full border font-bold ${tierBadgeClass}">${tl.tierName || 'Базовый'}</span>
+              <span class="font-bold text-xs text-purple-200">${talentName(tl)}</span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded-full border font-bold ${tierBadgeClass}">${td(`talent.tierName.${tl.tier}`, tl.tierName || 'Базовый')}</span>
               <span class="text-yellow-400 font-game text-[11px]">(${formatNumber(tl.level)}/${formatNumber(tl.max)})</span>
             </div>
             <div class="text-[10px] text-stone-400 mt-0.5 leading-snug">
-              ${tl.desc}
-              ${!maxed ? `<span class="text-purple-300 font-semibold font-game ml-1.5 inline-flex items-center gap-0.5">След: ${formatNumber(nextCost)} <span class="roll-icon"></span></span>` : ''}
+              ${talentDesc(tl)}
+              ${!maxed ? `<span class="text-purple-300 font-semibold font-game ml-1.5 inline-flex items-center gap-0.5">${t('talent.next', { n: formatNumber(nextCost) })} <span class="roll-icon"></span></span>` : ''}
             </div>
           </div>
         </div>
@@ -170,8 +172,8 @@ export function renderFlushTalents() {
       row.querySelector('.buy-talent-btn').addEventListener('click', async () => {
         if (buyTalent(tl.id)) {
           renderTalents();
-          const inventory = await import('./characterInventoryView.js?v=5.0.77');
-          const index = await import('./knivesIndexView.js?v=5.0.77');
+          const inventory = await import('./characterInventoryView.js?v=5.0.78');
+          const index = await import('./knivesIndexView.js?v=5.0.78');
           inventory.renderCharacterInventory();
           index.renderKnivesIndexBook();
           updateHUD();
@@ -195,10 +197,10 @@ export function renderTranscendRelics() {
   const transcends = GAME.totalTranscend || 0;
 
   const tiers = [
-    { tier: 1, name: '⭐ Тир 1: Базовые Реликвии (1+ Прорыв)', desc: 'Пассивный доход, авто-уход и защита времени' },
-    { tier: 2, name: '⚡ Тир 2: Продвинутые Реликвии (2+ Прорывов)', desc: 'Кузница ножей. Авто-покупка заводов уже в тире 1' },
-    { tier: 3, name: '🔮 Тир 3: Мастер-Реликвии Омниверса (3+ Прорывов)', desc: 'Метеоритные бури, разломы и сингулярность' },
-    { tier: 4, name: '🌌 Тир 4: Космическая Сингулярность (5-10+ Прорывов)', desc: 'Эндгейм-квантование и бесконечная вечность' }
+    { tier: 1, name: t('talent.relic1.name'), desc: t('talent.relic1.desc') },
+    { tier: 2, name: t('talent.relic2.name'), desc: t('talent.relic2.desc') },
+    { tier: 3, name: t('talent.relic3.name'), desc: t('talent.relic3.desc') },
+    { tier: 4, name: t('talent.relic4.name'), desc: t('talent.relic4.desc') }
   ];
 
   // Update tier filter button styles
@@ -213,7 +215,7 @@ export function renderTranscendRelics() {
 
   const visibleTiers = activeTranscendTier === 'all'
     ? tiers
-    : tiers.filter(t => t.tier === Number(activeTranscendTier));
+    : tiers.filter(cfg => cfg.tier === Number(activeTranscendTier));
 
   visibleTiers.forEach(tInfo => {
     const tierUpgrades = TRANSCEND_UPGRADES.filter(u => u.tier === tInfo.tier);
@@ -244,22 +246,22 @@ export function renderTranscendRelics() {
       const canBuy = !isLocked && !isMax && ((GAME.transcendPlungers || 0) >= cost);
 
       const lockBadge = isLocked
-        ? `<span class="text-[9px] text-red-400 font-bold block mt-0.5">🔒 Требуется ${upg.reqTranscend} Прорывов (Сделано: ${transcends})</span>`
+        ? `<span class="text-[9px] text-red-400 font-bold block mt-0.5">${t('talent.reqTranscend', { req: formatNumber(upg.reqTranscend), have: formatNumber(transcends) })}</span>`
         : '';
 
       const btnText = isLocked
         ? '🔒'
-        : (isMax ? 'МАКС' : `${formatNumber(cost)} <span class="plunger-icon"></span>`);
+        : (isMax ? t('common.max') : `${formatNumber(cost)} <span class="plunger-icon"></span>`);
 
       const row = document.createElement('div');
       row.className = `p-2.5 rounded-2xl border flex items-center justify-between shadow-sm transition ${isLocked ? 'bg-indigo-950/20 border-stone-800 opacity-60' : 'bg-indigo-950/50 border-cyan-500/40 hover:border-cyan-400'}`;
       row.innerHTML = `
         <div class="pr-2 min-w-0 flex-1">
           <div class="font-bold text-xs flex items-center gap-1.5 flex-wrap ${isLocked ? 'text-stone-400' : 'text-cyan-200'}">
-            <span>${drawPlunger(upg.name)}</span>
+            <span>${drawPlunger(transcendName(upg))}</span>
             <span class="text-yellow-400 font-game text-[11px]">(${formatNumber(lvl)}/${formatNumber(upg.max)})</span>
           </div>
-          <div class="text-[10px] text-stone-300 leading-snug mt-0.5">${upg.desc}</div>
+          <div class="text-[10px] text-stone-300 leading-snug mt-0.5">${transcendDesc(upg)}</div>
           ${lockBadge}
         </div>
         <button class="buy-art-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 transition ${isMax ? 'bg-stone-800 text-stone-500 border-stone-700' : (canBuy ? 'bg-cyan-500 hover:bg-cyan-400 text-stone-950 font-black border-cyan-300 jelly-btn shadow-md' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed')}" data-id="${upg.id}" ${canBuy ? '' : 'disabled'}>
@@ -313,7 +315,7 @@ export function updateTalentButtons() {
     const canBuy = tlInfo.canBuy && !maxed;
 
     const btnLabel = maxed
-      ? 'МАКС'
+      ? t('common.max')
       : (buyMultiplier === 'max'
         ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)`
         : (buyMultiplier > 1 ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)` : `${formatNumber(tlInfo.totalCost)} 🧻`));
@@ -354,7 +356,7 @@ export function updateTalentButtons() {
 
     btn.disabled = !canBuy;
     if (isMax) {
-      btn.textContent = 'МАКС';
+      btn.textContent = t('common.max');
       btn.className = 'buy-art-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 transition bg-stone-800 text-stone-500 border-stone-700';
     } else if (canBuy) {
       btn.className = 'buy-art-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 transition bg-cyan-500 hover:bg-cyan-400 text-stone-950 font-black border-cyan-300 jelly-btn shadow-md';
@@ -363,3 +365,7 @@ export function updateTalentButtons() {
     }
   });
 }
+
+onLocaleChange(() => {
+  renderTalents();
+});

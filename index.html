@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.77 PRO</title>
+  <title>Poop Simulator v5.0.78 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.77">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.78">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.0.77 PRO</span>
+            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.0.78 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             data-i18n-title="header.bugTitle" title="Сообщить об ошибке">
@@ -113,13 +113,13 @@
       </button>
       <button id="btnLeaderboardModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
-        title="Зал славы">
-        <span>🏆</span> <span>Топ</span>
+        data-i18n-title="header.topTitle" title="Зал славы">
+        <span>🏆</span> <span data-i18n="header.top">Топ</span>
       </button>
       <button id="btnGuideModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
-        title="Справочник и гид">
-        <span>💡</span> <span>Гид</span>
+        data-i18n-title="header.guideTitle" title="Справочник и гид">
+        <span>💡</span> <span data-i18n="header.guide">Гид</span>
       </button>
       <button id="btnPatchNotesModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
@@ -2259,7 +2259,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.0.77"></script>
+  <script type="module" src="src/main.js?v=5.0.78"></script>
 </body>
 
 </html>

@@ -43,6 +43,21 @@ export function t(key, vars) {
   return interpolate(raw, vars);
 }
 
+/** Translate key, or return fallback (RU data field) when key missing. */
+export function td(key, fallback, vars) {
+  const pack = LOCALES[locale] || {};
+  const base = LOCALES[DEFAULT_LOCALE] || {};
+  const raw = pack[key] ?? (locale === DEFAULT_LOCALE ? fallback : (base[key] ?? fallback));
+  if (raw == null || raw === '') return fallback == null ? key : interpolate(String(fallback), vars);
+  return interpolate(String(raw), vars);
+}
+
+/** Localize a data row field: td('shop.hat_cap.name', item.name). */
+export function dataText(ns, id, field, fallback, vars) {
+  if (!id) return fallback == null ? '' : String(fallback);
+  return td(`${ns}.${id}.${field}`, fallback, vars);
+}
+
 export function onLocaleChange(fn) {
   if (typeof fn !== 'function') return () => {};
   listeners.add(fn);

@@ -1,14 +1,14 @@
-﻿import { GAME } from '../core/state.js?v=5.0.77';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.77';
-import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.77';
-import { KNIVES } from '../data/knives.data.js?v=5.0.77';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.77';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.77';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.77';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.77';
-import { pulseMail } from './mailView.js?v=5.0.77';
-import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.77';
+﻿import { GAME } from '../core/state.js?v=5.0.78';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.78';
+import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.78';
+import { KNIVES } from '../data/knives.data.js?v=5.0.78';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.78';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.78';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.78';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.78';
+import { pulseMail } from './mailView.js?v=5.0.78';
+import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.78';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
@@ -232,7 +232,7 @@ function renderSearch() {
     return `
       <div class="garden-card flex items-center justify-between gap-2">
         <div class="min-w-0">
-          <div class="truncate">[${esc(row.tag)}] ${esc(row.name)}</div>
+          <div class="truncate">[${esc(row.tag)}] ${esc(bossName(row) || row.name)}</div>
           <div class="garden-muted">Уровень ${formatNumber(row.level)} · ${formatNumber(row.members)}/${formatNumber(row.cap)} · с эпохи ${formatNumber(row.reqEpoch || 1)}</div>
         </div>
         ${action}
@@ -601,7 +601,7 @@ function paintFight() {
         <div class="garden-card boss-summon-card">
           <img class="boss-thumb" src="assets/poop/bosses/${esc(row.id)}.png" alt="" onerror="this.remove()">
           <div class="boss-summon-info min-w-0">
-            <div class="font-game">${esc(row.icon)} ${esc(row.name)}</div>
+            <div class="font-game">${esc(row.icon)} ${esc(bossName(row) || row.name)}</div>
             <div class="garden-muted">${tier ? `${esc(tier)} · ` : ''}${esc(t('guild.attempt', { n: formatNumber(row.circle) }))} · ${esc(t('guild.reward', { points: formatNumber(row.points), plungers: formatNumber(row.plungers) }))}</div>
           </div>
           ${row.unlocked
@@ -623,7 +623,7 @@ function paintFight() {
   const fill = document.getElementById('bossHpFill');
   if (fill) fill.style.width = `${Math.max(0, Math.min(100, (hp / max) * 100))}%`;
   const phase = livePhase(boss);
-  setText('bossTitle', `${boss.name} · круг ${formatNumber(boss.circle)}`);
+  setText('bossTitle', `${bossName(boss) || boss.name} · круг ${formatNumber(boss.circle)}`);
   setText('bossHpText', `Здоровье ${formatNumber(hp)} / ${formatNumber(max)} · попытка ${clock(boss.deadlineMs)}`);
   setText('bossPhase', phaseLabel(boss));
   setText('bossDamage', damageLine(boss));
@@ -672,7 +672,7 @@ function renderJournal() {
     return;
   }
   const live = guild.boss
-    ? `<div class="garden-pill accent mb-3">Сейчас бой: ${esc(guild.boss.icon)} ${esc(guild.boss.name)} · круг ${formatNumber(guild.boss.circle)}</div>`
+    ? `<div class="garden-pill accent mb-3">Сейчас бой: ${esc(guild.boss.icon)} ${esc(bossName(guild.boss) || guild.boss.name)} · круг ${formatNumber(guild.boss.circle)}</div>`
     : '<div class="garden-muted mb-3">Сейчас босса нет. Журнал можно смотреть в любой момент.</div>';
   let bookTheme = '';
   const book = (guild.roster || []).map((row) => {
@@ -694,7 +694,7 @@ function renderJournal() {
           <span class="boss-thumb-fallback">${esc(row.icon)}</span>
         </div>
         <div class="min-w-0 text-left">
-          <div class="font-game">${esc(row.name)}</div>
+          <div class="font-game">${esc(bossName(row) || row.name)}</div>
           <div class="garden-muted">${status}${prize}</div>
         </div>
       </div>
@@ -711,7 +711,7 @@ function renderJournal() {
         <div class="garden-card flex items-center gap-2">
           <span class="text-2xl shrink-0">${esc(row.icon)}</span>
           <div class="min-w-0 text-left">
-            <div class="truncate">${esc(mark)} · ${esc(row.name)} · круг ${formatNumber(row.circle)}</div>
+            <div class="truncate">${esc(mark)} · ${esc(bossName(row) || row.name)} · круг ${formatNumber(row.circle)}</div>
             <div class="garden-muted">${whenText(row.endedMs)} · урон ${formatNumber(row.damage)} · били ${formatNumber(row.hitters)}${reward}</div>
           </div>
         </div>

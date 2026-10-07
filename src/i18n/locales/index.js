@@ -1,7 +1,12 @@
-﻿import ru from './ru.js';
-import en from './en.js';
+﻿import ruShell from './ru.js';
+import enShell from './en.js';
+import enData from './data.en.js';
 
-export const LOCALES = { ru, en };
+/** RU shell only — gameplay data text stays in src/data as fallback. */
+export const LOCALES = {
+  ru: { ...ruShell },
+  en: { ...enShell, ...enData }
+};
 
 export const LOCALE_META = [
   { code: 'ru', labelKey: 'lang.ru' },

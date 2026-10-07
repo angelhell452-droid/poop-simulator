@@ -1,26 +1,27 @@
-﻿import { GAME } from '../core/state.js?v=5.0.77';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.77';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
-import { drawPlunger } from '../utils/icons.js?v=5.0.77';
-import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.77';
-import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.77';
-import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.77';
+﻿import { GAME } from '../core/state.js?v=5.0.78';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.78';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { drawPlunger } from '../utils/icons.js?v=5.0.78';
+import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.0.78';
+import { getAffordableEvoInfo } from '../economy/costs.js?v=5.0.78';
+import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.0.78';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
-import { liveCps } from '../core/gameLoop.js?v=5.0.77';
-import { saveLocal } from '../save/saveManager.js?v=5.0.77';
-import { updateFactoryButtons } from './factoryView.js?v=5.0.77';
-import { updateTalentButtons } from './talentView.js?v=5.0.77';
+import { liveCps } from '../core/gameLoop.js?v=5.0.78';
+import { saveLocal } from '../save/saveManager.js?v=5.0.78';
+import { updateFactoryButtons } from './factoryView.js?v=5.0.78';
+import { updateTalentButtons } from './talentView.js?v=5.0.78';
 import { updateShopButtons } from './shopView.js';
-import { updateCasesButtons } from './casesView.js?v=5.0.77';
-import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.77';
+import { updateCasesButtons } from './casesView.js?v=5.0.78';
+import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.78';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.77';
+import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.78';
 import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
-import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.77';
-import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.77';
-import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.0.77';
-import { showKnifeToast } from './characterInventoryView.js?v=5.0.77';
+import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.0.78';
+import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.78';
+import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.0.78';
+import { showKnifeToast } from './characterInventoryView.js?v=5.0.78';
 import { getConfirmedVip } from '../economy/pace.js';
+import { t, onLocaleChange } from '../i18n/t.js';
 
 const FLUSH_COOLDOWN = 35000;
 
@@ -84,13 +85,13 @@ export function updateHUD() {
   const topPl = document.getElementById('topPlungers');
   if (topPl) topPl.textContent = formatNumber(GAME.transcendPlungers || 0);
 
-  const lvlPrestigeTxt = `Ур. ${formatNumber(GAME.totalPrestiges || 0)}`;
+  const lvlPrestigeTxt = t('hud.lvl', { n: formatNumber(GAME.totalPrestiges || 0) });
   const headerPrestige = document.getElementById('headerPrestigeLvl');
   if (headerPrestige) headerPrestige.textContent = lvlPrestigeTxt;
   const masterPrestige = document.getElementById('masterPrestigeLvl');
   if (masterPrestige) masterPrestige.textContent = lvlPrestigeTxt;
 
-  const lvlTranscendTxt = `Ур. ${formatNumber(GAME.totalTranscend || 0)}`;
+  const lvlTranscendTxt = t('hud.lvl', { n: formatNumber(GAME.totalTranscend || 0) });
   const headerTranscend = document.getElementById('headerTranscendLvl');
   if (headerTranscend) headerTranscend.textContent = lvlTranscendTxt;
   const masterTranscend = document.getElementById('masterTranscendLvl');
@@ -115,11 +116,11 @@ export function updateHUD() {
 
   // Buff texts (Concise & zero jitter)
   const buffH = document.getElementById('buffHungerText');
-  if (buffH) buffH.textContent = `+${formatNumber(Math.round((GAME.hunger / 100) * 25))}% Клик`;
+  if (buffH) buffH.textContent = `+${formatNumber(Math.round((GAME.hunger / 100) * 25))}${t('hud.buffClick')}`;
   const buffC = document.getElementById('buffCleanText');
-  if (buffC) buffC.textContent = `+${formatNumber(Math.round((GAME.clean / 100) * 25))}% Заводы`;
+  if (buffC) buffC.textContent = `+${formatNumber(Math.round((GAME.clean / 100) * 25))}${t('hud.buffFactories')}`;
   const buffHp = document.getElementById('buffHappyText');
-  if (buffHp) buffHp.textContent = `+${formatNumber(Math.round((GAME.happy / 100) * 20))}% Крит`;
+  if (buffHp) buffHp.textContent = `+${formatNumber(Math.round((GAME.happy / 100) * 20))}${t('hud.buffCrit')}`;
 
   const buffIdeal = document.getElementById('buffIdealPill');
   if (buffIdeal) {
@@ -140,17 +141,27 @@ export function updateHUD() {
   const currEvo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const phase = getPhaseForStage(GAME.evoStage);
   const topStTitle = document.getElementById('topStageTitle');
-  if (topStTitle) topStTitle.textContent = `Форма №${formatNumber(currEvo.id + 1)} · ${phaseLabel(phase)}`;
+  if (topStTitle) {
+    topStTitle.textContent = t('hud.formTitle', {
+      n: formatNumber(currEvo.id + 1),
+      phase: phaseLabel(phase)
+    });
+  }
 
   const topArchBadge = document.getElementById('topArchetypeBadge');
   if (topArchBadge) {
     const arch = ARCHETYPES[GAME.archetype] || ARCHETYPES.balanced;
     topArchBadge.classList.remove('hidden');
     topArchBadge.textContent = arch.badge;
-    topArchBadge.title = `Специализация Смыва: ${arch.name} (${arch.desc}). Нажмите для настройки.`;
+    topArchBadge.title = t('hud.archTitle', { name: arch.name, desc: arch.desc });
   }
   const nameEvo = document.getElementById('evoStageName');
-  if (nameEvo) nameEvo.textContent = `Форма №${formatNumber(currEvo.id + 1)} — ${currEvo.name}`;
+  if (nameEvo) {
+    nameEvo.textContent = t('hud.formName', {
+      n: formatNumber(currEvo.id + 1),
+      name: currEvo.name
+    });
+  }
   const descEvo = document.getElementById('evoStageDesc');
   if (descEvo) descEvo.textContent = currEvo.desc;
 
@@ -165,11 +176,11 @@ export function updateHUD() {
     evoLabel.classList.toggle('evo-xp-gate', needsBreak);
     if (evoInfo.maxReached) {
       evoFill.style.width = '100%';
-      evoLabel.textContent = 'Максимум';
+      evoLabel.textContent = t('hud.evoMax');
       if (evoLeft) evoLeft.textContent = '';
     } else if (needsBreak) {
       evoFill.style.width = '100%';
-      evoLabel.textContent = 'Для продвижения требуется прорыв';
+      evoLabel.textContent = t('hud.evoNeedTranscend');
       if (evoLeft) evoLeft.textContent = '';
     } else {
       const floorCost = stage <= 0 ? 0 : effectiveFormCost(stage);
@@ -180,7 +191,7 @@ export function updateHUD() {
       const pct = Math.max(0, Math.min(100, (into / span) * 100));
       evoFill.style.width = `${pct}%`;
       evoLabel.textContent = `${formatNumber(into)} / ${formatNumber(span)}`;
-      if (evoLeft) evoLeft.textContent = `ещё ${formatNumber(left)}`;
+      if (evoLeft) evoLeft.textContent = t('hud.evoLeft', { n: formatNumber(left) });
     }
   }
 
@@ -188,7 +199,7 @@ export function updateHUD() {
 
   // Rates in footer
   const footPassive = document.getElementById('footPassiveRate');
-  if (footPassive) footPassive.textContent = `+${formatNumber(getPassiveIncome())} /сек`;
+  if (footPassive) footPassive.textContent = t('hud.perSec', { n: formatNumber(getPassiveIncome()) });
   const footClick = document.getElementById('footClickPower');
   if (footClick) footClick.textContent = formatNumber(getClickPower());
   const footCps = document.getElementById('footCpsRate');
@@ -212,20 +223,22 @@ export function updateHUD() {
   if (GAME.turboRushTime > 0) {
     const turboShown = getTurboClickMult();
     const starLeft = GAME.turboStarMultTime || 0;
-    const starNote = starLeft > 0 ? ` · звезда ${formatNumber(Math.ceil(starLeft))}с` : ` (${formatNumber(Math.ceil(GAME.turboRushTime))}с)`;
+    const starNote = starLeft > 0
+      ? t('hud.starSec', { n: formatNumber(Math.ceil(starLeft)) })
+      : t('hud.turboSec', { n: formatNumber(Math.ceil(GAME.turboRushTime)) });
     if (rushTimerEl) {
       rushTimerEl.textContent = `🔥 x${formatNumber(turboShown)}${starNote}`;
       rushTimerEl.classList.remove('opacity-0', 'pointer-events-none');
       rushTimerEl.classList.add('opacity-100');
     }
-    if (comboLbl) comboLbl.textContent = `🔥 ТУРБО x${formatNumber(turboShown)}!`;
+    if (comboLbl) comboLbl.textContent = t('hud.turbo', { n: formatNumber(turboShown) });
     if (comboIcon) comboIcon.textContent = starLeft > 0 ? '⭐' : '🔥';
   } else {
     if (rushTimerEl) {
       rushTimerEl.classList.remove('opacity-100');
       rushTimerEl.classList.add('opacity-0', 'pointer-events-none');
     }
-    if (comboLbl) comboLbl.textContent = `ЯРОСТЬ: ${Math.round(GAME.comboHeat || 0)}%`;
+    if (comboLbl) comboLbl.textContent = t('hud.rage', { n: Math.round(GAME.comboHeat || 0) });
     if (comboIcon) comboIcon.textContent = (GAME.comboHeat > 50) ? '⚡' : '💤';
   }
   if (comboBarEl) comboBarEl.style.width = `${Math.min(100, Math.round(GAME.comboHeat || 0))}%`;
@@ -237,7 +250,7 @@ export function updateHUD() {
   const mIcon = document.getElementById('milestoneIcon');
   if (mIcon) mIcon.textContent = mGoal.icon;
   const mReward = document.getElementById('milestoneRewardText');
-  if (mReward) mReward.textContent = `Награда: ${mGoal.reward}`;
+  if (mReward) mReward.textContent = t('hud.reward', { n: mGoal.reward });
   const mBar = document.getElementById('milestoneProgressBar');
   if (mBar) mBar.style.width = `${mGoal.percent.toFixed(1)}%`;
   const mText = document.getElementById('milestoneProgressText');
@@ -259,7 +272,7 @@ export function updateHUD() {
   const epochSpan = Math.max(1, epoch.formEnd - epoch.formStart + 1);
   const epochLeft = Math.max(0, epoch.formEnd - epochForm);
   const epochNameEl = document.getElementById('poopSkinName');
-  if (epochNameEl) epochNameEl.textContent = `Эпоха ${formatNumber(epoch.id)}`;
+  if (epochNameEl) epochNameEl.textContent = t('hud.epoch', { n: formatNumber(epoch.id) });
   const epochFillEl = document.getElementById('epochScaleFill');
   if (epochFillEl) {
     const pct = Math.max(0, Math.min(100, ((epochForm - epoch.formStart) / epochSpan) * 100));
@@ -267,9 +280,9 @@ export function updateHUD() {
   }
   const epochHintEl = document.getElementById('poopSkinProgressHint');
   if (epochHintEl) {
-    if (epoch.id >= 200) epochHintEl.textContent = 'последняя эпоха';
-    else if (epochLeft <= 0) epochHintEl.textContent = `дальше эпоха ${formatNumber(epoch.id + 1)}`;
-    else epochHintEl.textContent = `следующая через ${formatNumber(epochLeft)} форм`;
+    if (epoch.id >= 200) epochHintEl.textContent = t('hud.epochLast');
+    else if (epochLeft <= 0) epochHintEl.textContent = t('hud.epochNext', { n: formatNumber(epoch.id + 1) });
+    else epochHintEl.textContent = t('hud.epochIn', { n: formatNumber(epochLeft) });
   }
 
   // Real-time update of open Prestige / Transcend Modals (Task 8)
@@ -298,15 +311,15 @@ export function updateAutocareUI() {
     if (!hasAutoCare) {
       btn.classList.add('is-locked');
       txt.textContent = '🔒';
-      btn.title = 'Астральный Авто-Уход (Тир I Прорыва: 25 Вантузов). Нажмите, чтобы открыть Прорыв!';
+      btn.title = t('hud.astralCareTitle');
     } else if (isOn) {
       btn.classList.add('is-on');
       led.classList.add('is-on');
-      txt.textContent = 'Вкл';
-      btn.title = 'Авто-действие включено. Нажмите, чтобы выключить.';
+      txt.textContent = t('hud.autoOn');
+      btn.title = t('hud.autoOnTitle');
     } else {
-      txt.textContent = 'Авто';
-      btn.title = 'Авто-действие выключено. Нажмите, чтобы включить.';
+      txt.textContent = t('hud.autoOff');
+      btn.title = t('hud.autoOffTitle');
     }
   };
 
@@ -347,12 +360,12 @@ export function updateActiveBuffsUI() {
   lastBuffsSignature = sig;
 
   if (buffs.length === 0) {
-    buffsListEl.innerHTML = `<span class="buff-pill px-2 py-0.5 rounded-full border border-stone-600/50 text-[10px] font-bold text-stone-400">Пока тихо</span>`;
+    buffsListEl.innerHTML = `<span class="buff-pill px-2 py-0.5 rounded-full border border-stone-600/50 text-[10px] font-bold text-stone-400">${t('hud.quiet')}</span>`;
     return;
   }
 
   buffsListEl.innerHTML = buffs.map(b => `
-    <button class="buff-pill px-2 py-0.5 rounded-lg border text-[10px] font-game font-bold flex items-center gap-1 transition shadow-sm jelly-btn cursor-pointer whitespace-nowrap shrink-0 ${b.badgeColor}" data-buff="${b.id}" title="Нажмите, чтобы просмотреть действие баффа">
+    <button class="buff-pill px-2 py-0.5 rounded-lg border text-[10px] font-game font-bold flex items-center gap-1 transition shadow-sm jelly-btn cursor-pointer whitespace-nowrap shrink-0 ${b.badgeColor}" data-buff="${b.id}" title="${t('hud.buffTipTitle')}">
       <span>${drawPlunger(b.icon)}</span>
       <span>${b.short}</span>
     </button>
@@ -387,9 +400,9 @@ export function showBuffDetailsModal(buff) {
     badgeEl.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${buff.badgeColor || 'border-yellow-400 text-yellow-300'}`;
   }
   if (descEl) descEl.textContent = buff.desc || '';
-  if (progressEl) progressEl.innerHTML = drawPlunger(buff.progress || 'Активен');
-  if (sourceEl) sourceEl.textContent = buff.source || 'Игровой процесс';
-  if (tipEl) tipEl.innerHTML = `💡 <b>Совет:</b> ${buff.tip || 'Развивайте эту механику для усиления множителя.'}`;
+  if (progressEl) progressEl.innerHTML = drawPlunger(buff.progress || t('hud.buffActive'));
+  if (sourceEl) sourceEl.textContent = buff.source || t('hud.buffSource');
+  if (tipEl) tipEl.textContent = t('hud.tip', { tip: buff.tip || t('hud.buffTip') });
 
   modal.classList.remove('hidden');
 }
@@ -400,19 +413,21 @@ function paintProgressTabs() {
   const relicBtn = document.getElementById('tabTalentsTranscend');
   if (casesBtn) {
     casesBtn.classList.toggle('opacity-45', !isCasesUnlocked());
-    casesBtn.title = isCasesUnlocked() ? 'Кейсы' : 'Откроется после первого Смыва';
+    casesBtn.title = isCasesUnlocked() ? t('hud.cases') : t('hud.casesLocked');
   }
   if (shopBtn) {
     shopBtn.classList.toggle('opacity-45', !isBoutiqueUnlocked());
-    shopBtn.title = isBoutiqueUnlocked() ? 'Бутик' : `Откроется на форме ${formatNumber(100)}. Рекорд: ${formatNumber(peakForm())}`;
+    shopBtn.title = isBoutiqueUnlocked()
+      ? t('hud.boutique')
+      : t('hud.boutiqueLocked', { n: formatNumber(100), peak: formatNumber(peakForm()) });
   }
   if (relicBtn) {
     const open = isRelicSectionUnlocked();
     relicBtn.classList.remove('hidden');
     relicBtn.classList.toggle('opacity-60', !open);
-    relicBtn.title = open ? 'Реликвии Прорыва' : 'Откроется после 1 Прорыва';
+    relicBtn.title = open ? t('hud.relics') : t('hud.relicsLocked');
     const label = document.getElementById('relicTabLabel');
-    if (label) label.textContent = open ? 'Реликвии Прорыва' : '🔒 Реликвии Прорыва';
+    if (label) label.textContent = open ? t('hud.relics') : t('hud.relicsLockedLabel');
   }
 }
 
@@ -431,15 +446,15 @@ export function updateAutomationTogglesUI() {
   if (buyerBtn && buyerLed && buyerLbl) {
     buyerBtn.classList.toggle('hidden', !hasAutoBuyer);
     const isOn = GAME.autoBuyerEnabled !== false;
-    const modeLabel = GAME.autoBuyerMode === 'smart' ? 'умные' : 'последний';
+    const modeLabel = GAME.autoBuyerMode === 'smart' ? t('hud.buyerSmart') : t('hud.buyerLatest');
     if (isOn) {
       buyerBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-emerald-950 border-emerald-500 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
       buyerLed.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse';
-      buyerLbl.textContent = `Заводы: ВКЛ · ${modeLabel}`;
+      buyerLbl.textContent = t('hud.buyerOn', { mode: modeLabel });
     } else {
       buyerBtn.className = 'px-2.5 py-0.5 rounded-lg border text-[11px] font-game flex items-center gap-1.5 transition shadow jelly-btn bg-stone-800 text-stone-400 border-stone-700';
       buyerLed.className = 'w-2 h-2 rounded-full bg-stone-500';
-      buyerLbl.textContent = 'Заводы: ВЫКЛ';
+      buyerLbl.textContent = t('hud.buyerOff');
     }
   }
 
@@ -501,12 +516,22 @@ export function initAutomationToggleListeners() {
 }
 
 export function showWelcomeGreeting(customText = null) {
-  const name = GAME.playerName || 'Игрок';
-  const text = customText || `Привет, какашечка ${name}! 💩✨`;
+  const name = GAME.playerName || t('hud.player');
+  const text = customText || t('hud.hello', { name });
   const slot = document.getElementById('journalWelcome');
   if (!slot) return;
   slot.textContent = text;
   slot.classList.remove('hidden');
+}
+
+let hudLocaleHooked = false;
+export function initHudI18n() {
+  if (hudLocaleHooked) return;
+  hudLocaleHooked = true;
+  onLocaleChange(() => {
+    lastBuffsSignature = '';
+    updateHUD();
+  });
 }
 
 

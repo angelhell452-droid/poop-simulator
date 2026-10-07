@@ -1,15 +1,17 @@
-﻿import { GAME } from '../core/state.js?v=5.0.77';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.77';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.77';
-import { buyFactory } from '../systems/factoryService.js?v=5.0.77';
-import { updateHUD, openRateBreakdown } from './hudView.js?v=5.0.77';
-import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production.js?v=5.0.77';
-import { saveLocal } from '../save/saveManager.js?v=5.0.77';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.77';
-import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.0.77';
-import { mul } from '../utils/big.js?v=5.0.77';
-import { drawPlunger } from '../utils/icons.js?v=5.0.77';
+﻿import { factoryName, factoryTier } from '../i18n/localize.js';
+import { t, onLocaleChange } from '../i18n/t.js';
+import { GAME } from '../core/state.js?v=5.0.78';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.78';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.78';
+import { buyFactory } from '../systems/factoryService.js?v=5.0.78';
+import { updateHUD, openRateBreakdown } from './hudView.js?v=5.0.78';
+import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production.js?v=5.0.78';
+import { saveLocal } from '../save/saveManager.js?v=5.0.78';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.78';
+import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.0.78';
+import { mul } from '../utils/big.js?v=5.0.78';
+import { drawPlunger } from '../utils/icons.js?v=5.0.78';
 
 let activeFactoryTier = 'all'; // 'all' | '1' | '2' | '3' | '4' | '5'
 
@@ -172,7 +174,7 @@ export function renderFactories() {
           <span class="factory-icon">${drawPlunger(fac.icon)}</span>
           <div>
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="font-bold text-xs text-stone-200">${fac.name}</span>
+              <span class="font-bold text-xs text-stone-200">${factoryName(fac)}</span>
               ${starsHtml}
               ${tierBadge}
               ${isLocked ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-red-950/80 text-red-300 border border-red-700/50 font-bold">Форма #${fac.reqStage + 1}</span>` : ''}

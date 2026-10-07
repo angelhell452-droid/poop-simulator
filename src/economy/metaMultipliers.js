@@ -1,5 +1,5 @@
-﻿import { GAME } from '../core/state.js?v=5.0.77';
-import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.77';
+﻿import { GAME } from '../core/state.js?v=5.0.78';
+import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.78';
 
 function echoCount(phaseId) {
   const bag = GAME.phaseEcho || {};

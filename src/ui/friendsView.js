@@ -1,12 +1,12 @@
-﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.77';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.77';
-import { KNIVES } from '../data/knives.data.js?v=5.0.77';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.77';
-import { findBodySkin } from '../data/skins.data.js?v=5.0.77';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.77';
-import { sendGuildInvite } from './guildView.js?v=5.0.77';
-import { registerSocialPulse } from './socialPulse.js?v=5.0.77';
+﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.78';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.78';
+import { KNIVES } from '../data/knives.data.js?v=5.0.78';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.78';
+import { findBodySkin } from '../data/skins.data.js?v=5.0.78';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.78';
+import { sendGuildInvite } from './guildView.js?v=5.0.78';
+import { registerSocialPulse } from './socialPulse.js?v=5.0.78';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 let roster = { friends: [], incoming: [], outgoing: [], canInvite: false };

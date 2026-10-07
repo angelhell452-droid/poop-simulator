@@ -1,9 +1,10 @@
-﻿import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.77';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.77';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.77';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.77';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
-import { drawPlunger } from '../utils/icons.js?v=5.0.77';
+﻿import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.78';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.78';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.78';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.78';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
+import { drawPlunger } from '../utils/icons.js?v=5.0.78';
+import { t, td, onLocaleChange } from '../i18n/t.js';
 
 export function renderAchievements() {
   const container = document.getElementById('achievementsContainer');
@@ -48,7 +49,7 @@ export function renderAchievements() {
       progressHtml = `
         <div class="mt-1 w-full max-w-[210px]">
           <div class="flex justify-between text-[9px] text-stone-400 mb-0.5">
-            <span>Прогресс: ${ach.concealTarget ? `${formatNumber(disp)} • без карты` : `${formatNumber(disp)} / ${formatNumber(ach.target)}`}</span>
+            <span>${t('ach.progress')} ${ach.concealTarget ? `${formatNumber(disp)} • ${t('ach.noMap')}` : `${formatNumber(disp)} / ${formatNumber(ach.target)}`}</span>
             <span class="text-amber-400 font-bold">${pct}%</span>
           </div>
           <div class="h-1.5 w-full bg-stone-800 rounded-full overflow-hidden">
@@ -75,8 +76,8 @@ export function renderAchievements() {
       <div class="flex items-center gap-2.5 min-w-0 flex-1">
         <span class="text-2xl shrink-0">${drawPlunger(ach.icon)}</span>
         <div class="min-w-0 flex-1">
-          <div class="font-bold text-xs ${ach.done ? 'text-emerald-300' : 'text-stone-200'}">${ach.title} ${ach.done ? '✓' : ''}</div>
-          <div class="text-[10px] text-stone-400 leading-snug mt-0.5">${ach.desc}</div>
+          <div class="font-bold text-xs ${ach.done ? 'text-emerald-300' : 'text-stone-200'}">${td(`ach.${ach.id}.title`, ach.title)} ${ach.done ? '✓' : ''}</div>
+          <div class="text-[10px] text-stone-400 leading-snug mt-0.5">${td(`ach.${ach.id}.desc`, ach.desc)}</div>
           ${progressHtml}
         </div>
       </div>
@@ -91,3 +92,7 @@ export function renderAchievements() {
   const countText = document.getElementById('achievementsCountText');
   if (countText) countText.textContent = `${doneCount} / ${ACHIEVEMENTS.length}`;
 }
+
+onLocaleChange(() => {
+  renderAchievements();
+});

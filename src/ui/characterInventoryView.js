@@ -1,30 +1,32 @@
-﻿import { GAME } from '../core/state.js?v=5.0.77';
-import { KNIVES } from '../data/knives.data.js?v=5.0.77';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.77';
+﻿import { knifeName, knifeDesc, knifeRarity, shopName, shopDesc, skinName } from '../i18n/localize.js';
+import { t, onLocaleChange } from '../i18n/t.js';
+import { GAME } from '../core/state.js?v=5.0.78';
+import { KNIVES } from '../data/knives.data.js?v=5.0.78';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.78';
 import {
   getKnifeStar, getKnifeSharpenCost, getKnifeRecycleReward, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.77';
-import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.77';
-import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.77';
-import { saveLocal } from '../save/saveManager.js?v=5.0.77';
-import { updateHUD } from './hudView.js?v=5.0.77';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.78';
+import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.78';
+import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.78';
+import { saveLocal } from '../save/saveManager.js?v=5.0.78';
+import { updateHUD } from './hudView.js?v=5.0.78';
 import { renderShop } from './shopView.js';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.77';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.77';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.78';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.78';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.77';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.78';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'
 
 function hatClickLabel(hat, level) {
   const total = getHatClickMult(hat, level);
-  return `x${formatNumber(total)} к силе клика`;
+  return t('inv.hatClick', { n: formatNumber(total) });
 }
 
 function skinOwned(id) {
@@ -47,7 +49,7 @@ function skinArtHtml(skin, size) {
 }
 
 function skinClickLabel(skin) {
-  return `x${formatNumber(skin.clickMult)} к клику`;
+  return t('inv.skinClick', { n: formatNumber(skin.clickMult) });
 }
 
 function renderBodySlot() {
@@ -58,11 +60,11 @@ function renderBodySlot() {
   const bonus = document.getElementById('invBodyBonus');
   const unequip = document.getElementById('btnUnequipSkin');
   if (icon) icon.innerHTML = worn ? skinArtHtml(worn, 56) : '💩';
-  if (name) name.textContent = worn ? worn.name : 'Скин какашечки не надет';
+  if (name) name.textContent = worn ? skinName(worn) : t('inv.noSkin');
   if (bonus) {
     bonus.textContent = worn
-      ? (skinOwned(worn.id) ? skinClickLabel(worn) : 'Примерка. Бонус к клику включится после покупки.')
-      : 'Тело без наряда';
+      ? (skinOwned(worn.id) ? skinClickLabel(worn) : t('inv.skinFitting'))
+      : t('inv.bodyBare');
     bonus.className = worn ? 'text-[10px] text-emerald-300 font-bold' : 'text-[10px] text-stone-400';
   }
   if (unequip) unequip.classList.toggle('hidden', !worn);
@@ -98,23 +100,23 @@ function renderSkinsGrid() {
     const price = `${formatNumber(skin.price)} ✨`;
     let action = '';
     if (worn) {
-      action = `<button type="button" class="skin-unequip text-[10px] font-bold px-2 py-1.5 rounded-xl border border-stone-600 bg-stone-800 text-stone-200" data-id="${skin.id}">Снять</button>`;
+      action = `<button type="button" class="skin-unequip text-[10px] font-bold px-2 py-1.5 rounded-xl border border-stone-600 bg-stone-800 text-stone-200" data-id="${skin.id}">${t('inv.unequip')}</button>`;
     } else if (owned) {
-      action = `<button type="button" class="skin-equip text-[10px] font-black px-2 py-1.5 rounded-xl bg-emerald-400 text-stone-950" data-id="${skin.id}">Надеть</button>`;
+      action = `<button type="button" class="skin-equip text-[10px] font-black px-2 py-1.5 rounded-xl bg-emerald-400 text-stone-950" data-id="${skin.id}">${t('inv.equip')}</button>`;
     } else if (SKIN_FITTING) {
-      action = `<button type="button" class="skin-equip text-[10px] font-black px-2 py-1.5 rounded-xl bg-emerald-400 text-stone-950" data-id="${skin.id}">Примерить</button>`;
+      action = `<button type="button" class="skin-equip text-[10px] font-black px-2 py-1.5 rounded-xl bg-emerald-400 text-stone-950" data-id="${skin.id}">${t('inv.tryOn')}</button>`;
     } else if (!open) {
-      action = `<span class="text-[10px] text-stone-400 font-bold">Форма ${formatNumber(skin.form)}</span>`;
+      action = `<span class="text-[10px] text-stone-400 font-bold">${t('inv.formN', { n: formatNumber(skin.form) })}</span>`;
     } else {
-      action = `<button type="button" class="skin-buy text-[10px] font-black px-2 py-1.5 rounded-xl bg-yellow-400 text-stone-950" data-id="${skin.id}">Купить ${price}</button>`;
+      action = `<button type="button" class="skin-buy text-[10px] font-black px-2 py-1.5 rounded-xl bg-yellow-400 text-stone-950" data-id="${skin.id}">${t('inv.buy', { price })}</button>`;
     }
     return `
       <div class="p-2.5 rounded-2xl border ${worn ? 'border-emerald-300 bg-emerald-950/40' : 'border-stone-700 bg-stone-900'} flex items-center gap-2">
         <span class="inv-gear-icon">${skinArtHtml(skin, 56)}</span>
         <div class="min-w-0 flex-1">
-          <div class="font-game text-xs text-yellow-300 font-bold">${skin.name}</div>
+          <div class="font-game text-xs text-yellow-300 font-bold">${skinName(skin)}</div>
           <div class="text-[10px] text-emerald-200">${skinClickLabel(skin)}</div>
-          <div class="text-[10px] text-stone-400">${open ? price : `с формы ${formatNumber(skin.form)}`}</div>
+          <div class="text-[10px] text-stone-400">${open ? price : t('inv.fromForm', { n: formatNumber(skin.form) })}</div>
         </div>
         ${action}
       </div>`;
@@ -129,7 +131,7 @@ function equipOwnedSkin(id) {
   updateHUD();
   renderCharacterInventory();
   saveLocal();
-  if (!skinOwned(id)) showKnifeToast(`Примерка: ${skin.name}`);
+  if (!skinOwned(id)) showKnifeToast(t('inv.toastTry', { name: skinName(skin) }));
 }
 
 function buyBodySkin(id) {
@@ -140,7 +142,7 @@ function buyBodySkin(id) {
     return;
   }
   if ((GAME.sparkles || 0) < skin.price) {
-    showKnifeToast(`Нужно ${formatNumber(skin.price)} ✨`);
+    showKnifeToast(t('inv.toastNeed', { n: formatNumber(skin.price) }));
     return;
   }
   GAME.sparkles -= skin.price;
@@ -149,7 +151,7 @@ function buyBodySkin(id) {
   updateHUD();
   renderCharacterInventory();
   saveLocal();
-  showKnifeToast(`${skin.name} надет`);
+  showKnifeToast(t('inv.toastWorn', { name: skinName(skin) }));
 }
 
 function unequipBodySkin() {
@@ -177,9 +179,9 @@ export function handleEquipBestKnife() {
     updateHUD();
     renderCharacterInventory();
     saveLocal();
-    showKnifeToast(`⚔️ Экипирован лучший нож: ${res.knife.icon} ${res.knife.name}!`);
+    showKnifeToast(t('inv.toastBest', { icon: res.knife.icon, name: knifeName(res.knife) }));
   } else {
-    showKnifeToast(res.msg || 'Нет доступных ножей для экипировки');
+    showKnifeToast(res.msg || t('inv.noKnivesToEquip'));
   }
 }
 
@@ -205,9 +207,9 @@ export function renderCharacterInventory() {
   const pIcon = document.getElementById('invPoopIcon');
   if (pIcon) pIcon.textContent = skinInfo.icon;
   const pName = document.getElementById('invPoopFormName');
-  if (pName) pName.textContent = `Форма #${GAME.evoStage + 1}: ${skinInfo.name}`;
+  if (pName) pName.textContent = t('inv.formName', { n: formatNumber(GAME.evoStage + 1), name: skinInfo.name });
   const pTier = document.getElementById('invPoopTierBadge');
-  if (pTier) pTier.textContent = `Тир ${skinInfo.tier}`;
+  if (pTier) pTier.textContent = t('inv.tier', { n: formatNumber(skinInfo.tier) });
   const cpsEl = document.getElementById('invTotalCps');
   if (cpsEl) cpsEl.textContent = `${formatNumber(getClickCapCps())} CPS`;
 
@@ -225,9 +227,9 @@ export function renderCharacterInventory() {
   if (hName) {
     if (equippedHat) {
       const hatLvl = getHatLevel(equippedHat.id);
-      hName.innerHTML = `${equippedHat.name} <span class="text-pink-400 font-black">💎 Lv.${hatLvl}</span>`;
+      hName.innerHTML = `${shopName(equippedHat)} <span class="text-pink-400 font-black">💎 Lv.${hatLvl}</span>`;
     } else {
-      hName.textContent = 'Без головного убора';
+      hName.textContent = t('inv.noHat');
     }
   }
   if (hBonus) {
@@ -236,7 +238,7 @@ export function renderCharacterInventory() {
       hBonus.textContent = `${hatClickLabel(equippedHat, hatLvl)} · 💎 Lv.${formatNumber(hatLvl)}`;
       hBonus.className = 'text-[10px] text-pink-300 font-bold';
     } else {
-      hBonus.textContent = 'Шапка не надета (+0% бонус)';
+      hBonus.textContent = t('inv.hatNone');
       hBonus.className = 'text-[10px] text-stone-400';
     }
   }
@@ -262,7 +264,7 @@ export function renderCharacterInventory() {
           updateHUD();
           renderCharacterInventory();
           saveLocal();
-          showKnifeToast(`💎 Шапка "${equippedHat.name}" инкрустирована до Lv.${formatNumber(res.newLevel)}! (+15% к силе шапки)`);
+          showKnifeToast(`💎 Шапка "${shopName(equippedHat)}" инкрустирована до Lv.${formatNumber(res.newLevel)}! (+15% к силе шапки)`);
         } else {
           alert(res.msg);
         }
@@ -300,8 +302,8 @@ export function renderCharacterInventory() {
           <div class="flex items-center gap-2.5 min-w-0">
             <div class="inv-gear-icon">${getKnifeImageHtml(equippedObj, 56)}</div>
             <div class="min-w-0 flex-1">
-              <div class="font-game text-sm text-white font-black leading-tight">${equippedObj.name}</div>
-              <div class="text-[10px] text-stone-400 leading-tight mt-0.5">${equippedObj.rarityName || 'Нож'}</div>
+              <div class="font-game text-sm text-white font-black leading-tight">${knifeName(equippedObj)}</div>
+              <div class="text-[10px] text-stone-400 leading-tight mt-0.5">${knifeRarity(equippedObj) || 'Нож'}</div>
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-1.5">
@@ -328,7 +330,7 @@ export function renderCharacterInventory() {
           updateHUD();
           renderCharacterInventory();
           saveLocal();
-          showKnifeToast(`⭐ ${equippedObj.name} заточен до Lv.${res.newStar}! (+35% силы)`);
+          showKnifeToast(`⭐ ${knifeName(equippedObj)} заточен до Lv.${res.newStar}! (+35% силы)`);
         } else {
           alert(res.msg);
         }
@@ -472,9 +474,9 @@ function renderKnivesGrid() {
           <div class="flex items-center gap-2 overflow-hidden flex-1">
             <div class="shrink-0 flex items-center justify-center">${getKnifeImageHtml(kn, 40)}</div>
             <div class="truncate">
-              <div class="font-game text-xs text-yellow-300 truncate font-bold" title="${kn.name}">${kn.name}</div>
+              <div class="font-game text-xs text-yellow-300 truncate font-bold" title="${knifeName(kn)}">${knifeName(kn)}</div>
               <div class="flex items-center gap-1.5 text-[9px] mt-0.5">
-                <span class="px-1.5 py-0.2 rounded font-bold uppercase ${rarityBadge}">${kn.rarityName}</span>
+                <span class="px-1.5 py-0.2 rounded font-bold uppercase ${rarityBadge}">${knifeRarity(kn)}</span>
                 <span class="text-amber-400 font-black font-mono">★ Lv.${star}</span>
               </div>
             </div>
@@ -493,7 +495,7 @@ function renderKnivesGrid() {
 
         <!-- Row 3: Collapsible Info Drawer -->
         <div id="knifeInfo_${kn.id}" class="${isInfoOpen ? '' : 'hidden'} p-2 my-1 rounded-xl bg-stone-900 border border-stone-700 text-[10px] text-stone-300 space-y-1">
-          <p class="italic text-stone-400 text-[9px]">${kn.desc}</p>
+          <p class="italic text-stone-400 text-[9px]">${knifeDesc(kn)}</p>
           <div class="pt-1 border-t border-stone-800 flex justify-between text-[9px] font-mono">
             <span>База клика: x${kn.clickMult}</span>
             <span class="text-amber-300">Рост Lv: +35%</span>
@@ -577,7 +579,7 @@ function renderKnivesGrid() {
       const curr = btn.dataset.currency || 'rolls';
       const sym = btn.dataset.symbol || '🧻';
       const currName = curr === 'plungers' ? 'Астральных Вантузов' : 'Втулок Судьбы';
-      if (confirm(`Утилизировать нож "${kn ? kn.name : kid}" и получить +${formatNumber(price)} ${sym} ${currName}?`)) {
+      if (confirm(`Утилизировать нож "${kn ? knifeName(kn) : kid}" и получить +${formatNumber(price)} ${sym} ${currName}?`)) {
         const idx = GAME.unlockedKnives.indexOf(kid);
         if (idx !== -1) {
           GAME.unlockedKnives.splice(idx, 1);
@@ -619,7 +621,7 @@ function renderHatsGrid() {
             <span class="shrink-0">${hatArtHtml(hat, 40)}</span>
             <div class="truncate">
               <div class="font-game text-xs text-yellow-300 truncate font-bold flex items-center gap-1.5">
-                <span>${hat.name}</span>
+                <span>${shopName(hat)}</span>
                 ${hat.owned ? `<span class="text-pink-400 font-mono text-[10px]">💎 Lv.${hatLvl}</span>` : ''}
               </div>
               <div class="text-[9px] text-pink-300 mt-0.5 font-currency">${hatClickLabel(hat, hat.owned ? hatLvl : 1)}</div>
@@ -632,7 +634,7 @@ function renderHatsGrid() {
 
         <!-- Row 2: Collapsible Info Drawer -->
         <div id="hatInfo_${hat.id}" class="${isInfoOpen ? '' : 'hidden'} p-2 my-1.5 rounded-xl bg-stone-900 border border-stone-700 text-[10px] text-stone-300 space-y-1">
-          <p class="text-stone-300 font-bold">${hat.desc}</p>
+          <p class="text-stone-300 font-bold">${shopDesc(hat)}</p>
           <div class="text-[9px] text-stone-400">Сейчас: ${hatClickLabel(hat, hat.owned ? hatLvl : 1)}</div>
           ${hat.owned ? `<div class="text-[9px] text-pink-300 font-bold">Инкрустация 💎 Lv.${formatNumber(hatLvl)}</div>` : ''}
           <div class="text-[9px] text-amber-300">${hat.owned ? '✓ Куплено в Бутике' : `Стоимость: ${formatNumber(hat.cost)} ✨ Блестяшек`}</div>
@@ -711,7 +713,7 @@ function renderHatsGrid() {
         updateHUD();
         renderCharacterInventory();
         saveLocal();
-        showKnifeToast(`🎩 Куплена и надета: ${hat.name}!`);
+        showKnifeToast(`🎩 Куплена и надета: ${shopName(hat)}!`);
       }
     });
   });
@@ -726,7 +728,7 @@ function renderHatsGrid() {
         renderShop();
         saveLocal();
         const hatObj = SHOP_ITEMS.find(i => i.id === hid);
-        showKnifeToast(`💎 Шапка "${hatObj ? hatObj.name : hid}" инкрустирована до Lv.${formatNumber(res.newLevel)}! (+15% к силе шапки)`);
+        showKnifeToast(`💎 Шапка "${hatObj ? shopName(hatObj) : hid}" инкрустирована до Lv.${formatNumber(res.newLevel)}! (+15% к силе шапки)`);
       } else {
         alert(res.msg);
       }
@@ -812,3 +814,4 @@ export function initCharacterInventoryListeners() {
     renderCharacterInventory();
   });
 }
+                               
