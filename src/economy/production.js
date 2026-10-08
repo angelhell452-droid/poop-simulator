@@ -16,7 +16,7 @@ import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
 import { findBodySkin } from '../data/skins.data.js?v=5.0.80';
 import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.80';
 import { horizonIncomeMult } from './horizon.js?v=5.0.80';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.80';
+import { BARE_CLICK_CAP } from '../systems/autoclickService.js?v=5.0.80';
 
 /** Max share of factory income that a full click-cap stream may add. */
 const CLICK_INCOME_SHARE_CAP = 0.30;
@@ -40,7 +40,7 @@ export function getClickIncomeShare() {
 export function getClickSyncRate() {
   const share = getClickIncomeShare();
   if (share <= 0) return 0;
-  return share / Math.max(1, getClickCapCps());
+  return share / BARE_CLICK_CAP;
 }
 
 export function getEquippedBodySkin() {
@@ -270,19 +270,19 @@ function passiveGlobalLines() {
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
   const omniRelicMult = getOmniRelicMult();
-  const gearRaw = rollsMult * plungersMult * knifePassiveMult;
+  const gearRaw = rollsMult * plungersMult;
   const gearMult = dampenGearMult(gearRaw, getPhaseForStage(GAME.evoStage).id);
   const late = getLateComboMult();
 
   const gearBits = [];
   pushAboveOne(gearBits, 'Эхо смыва', rollsMult);
   pushAboveOne(gearBits, 'Вантузы', plungersMult);
-  pushAboveOne(gearBits, 'Нож', knifePassiveMult);
 
   const lines = [];
   pushAboveOne(lines, 'Разгон заводов', turboMult);
   pushAboveOne(lines, 'Золотая лихорадка', goldRushMult);
   pushAboveOne(lines, 'Оверклок заводов', overclockMult);
+  pushAboveOne(lines, 'Нож', knifePassiveMult);
   pushAboveOne(lines, 'Нож-бабочка', styles.butterfly);
   pushAboveOne(lines, 'Кристальный резонатор', crystalMult);
   pushAboveOne(lines, 'Форма', evo.mult);
@@ -307,7 +307,7 @@ function passiveGlobalLines() {
   pushAboveOne(lines, 'Гильдия', guildPresenceMult());
 
   const product = turboMult * goldRushMult * overclockMult * styles.butterfly
-    * crystalMult * evo.mult * gearMult * softRollsMult * cosmicMult * omniRelicMult
+    * crystalMult * evo.mult * gearMult * knifePassiveMult * softRollsMult * cosmicMult * omniRelicMult
     * facOverdriveMult * cleanBuff * archMult * evoBlessingMult * omniWealthMult
     * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult * idealMult * late
     * getIncomePace() * horizonIncomeMult() * guildPresenceMult();
@@ -352,24 +352,24 @@ function clickParts() {
   const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.06;
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
-  const gearRaw = rollsMult * plungersMult * knifeClickMult;
+  const gearRaw = rollsMult * plungersMult;
   const gearMult = dampenGearMult(gearRaw, getPhaseForStage(GAME.evoStage).id);
   const late = getLateComboMult();
-  const product = evo.mult * gearMult * hatClickBoost * skinClickMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late * getIncomePace() * horizonIncomeMult() * guildPresenceMult();
+  const product = evo.mult * gearMult * knifeClickMult * hatClickBoost * skinClickMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late * getIncomePace() * horizonIncomeMult() * guildPresenceMult();
   const syncShare = getClickIncomeShare();
-  const syncCap = Math.max(1, getClickCapCps());
+  const syncCap = BARE_CLICK_CAP;
   const syncRate = syncShare > 0 ? syncShare / syncCap : 0;
 
   const gearBits = [];
   pushAboveOne(gearBits, 'Эхо смыва', rollsMult);
   pushAboveOne(gearBits, 'Вантузы', plungersMult);
-  pushAboveOne(gearBits, 'Нож', knifeClickMult);
-  pushAboveOne(gearBits, 'Шапка', hatClickBoost);
-  pushAboveOne(gearBits, 'Скин', skinClickMult);
 
   const lines = [];
   pushAboveOne(lines, 'Форма', evo.mult);
   pushAboveOne(lines, 'Снаряжение', gearMult);
+  pushAboveOne(lines, 'Нож', knifeClickMult);
+  pushAboveOne(lines, 'Шапка', hatClickBoost);
+  pushAboveOne(lines, 'Скин', skinClickMult);
   pushAboveOne(lines, 'Мягкость слоёв', softRollsMult);
   pushAboveOne(lines, 'Космический резонанс', cosmicMult);
   pushAboveOne(lines, 'Синергизм заводов', synergyMult);
