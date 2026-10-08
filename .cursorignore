@@ -1,0 +1,11 @@
+# Cursor codebase indexing ignore
+package-lock.json
+scripts/
+src/data/patchNotesArchive.data.js
+assets/
+scratch/
+.wrangler/
+.netlify/
+simulator.js
+*.log
+*.map

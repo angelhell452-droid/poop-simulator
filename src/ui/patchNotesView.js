@@ -1,5 +1,5 @@
-﻿import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.0.80';
-import { NEWS } from '../data/news.data.js?v=5.0.80';
+import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.0.81';
+import { NEWS } from '../data/news.data.js?v=5.0.81';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 function escapeText(value) {
