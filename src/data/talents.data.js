@@ -1,4 +1,4 @@
-﻿export const TALENTS = [
+export const TALENTS = [
   // TIER 1 — один ранний смыв покупает один уровень, тир закрывается к 8–10 эпохе
   { id: 'soft_rolls', name: 'Мягкость 4-х слоев', desc: '+4% ко всему доходу за уровень (макс. 6)', cost: 14, costMult: 1.28, level: 0, max: 6, icon: '🧻', tier: 1, tierName: 'Базовый', reqFlushes: 0 },
   { id: 'royal_gold', name: 'Стартовый Золотой Трон', desc: '+200 💨 стартовой биомассы после смыва за уровень', cost: 16, costMult: 1.28, level: 0, max: 5, icon: '🚽', tier: 1, tierName: 'Базовый', reqFlushes: 0 },
@@ -15,7 +15,7 @@
   // TIER 3 — эпохи примерно 12–24
   { id: 'golden_synergy', name: 'Священный Синергизм Заводов', desc: '+3% к силе клика за каждые 10 заводов за уровень', cost: 48, costMult: 1.36, level: 0, max: 5, icon: '🏭', tier: 3, tierName: 'Мастер', reqFlushes: 3 },
   { id: 'infinity_flush', name: 'Вечный Смыв Судьбы', desc: '+6% к получению Втулок за каждый Смыв за уровень', cost: 56, costMult: 1.36, level: 0, max: 5, icon: '🌀', tier: 3, tierName: 'Мастер', reqFlushes: 3 },
-  { id: 'quantum_mastery', name: 'Квантовое Господство', desc: '+3% доли дохода заводов к потоку кликов за уровень. Вместе с эпохой и перком до 30% при полном CPS', cost: 64, costMult: 1.36, level: 0, max: 5, icon: '🔮', tier: 3, tierName: 'Мастер', reqFlushes: 3 },
+  { id: 'quantum_mastery', name: 'Квантовое Господство', desc: '+1.5% доли дохода заводов к потоку кликов за уровень. Вместе с эпохой и перком до 15% при полном CPS', cost: 64, costMult: 1.36, level: 0, max: 5, icon: '🔮', tier: 3, tierName: 'Мастер', reqFlushes: 3 },
   { id: 'star_forge_master', name: 'Ковка Звездной Стали', desc: '+5% к силе экипированного ножа за уровень. Открывает титановый кейс', cost: 72, costMult: 1.38, level: 0, max: 4, icon: '⚔️', tier: 3, tierName: 'Мастер', reqFlushes: 3 },
   { id: 'time_sovereign', name: 'Повелитель Хроноса', desc: '+8% к офлайн-эффективности и +0.15 CPS к потолку автоклика за уровень', cost: 80, costMult: 1.38, level: 0, max: 4, icon: '⏳', tier: 3, tierName: 'Мастер', reqFlushes: 3 },
 

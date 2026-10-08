@@ -19,17 +19,17 @@ import { horizonIncomeMult } from './horizon.js?v=5.0.80';
 import { BARE_CLICK_CAP } from '../systems/autoclickService.js?v=5.0.80';
 
 /** Max share of factory income that a full click-cap stream may add. */
-const CLICK_INCOME_SHARE_CAP = 0.30;
+const CLICK_INCOME_SHARE_CAP = 0.15;
 
 /**
  * How much of factory income the whole click stream should add at click-cap CPS.
- * Epoch gives a floor so mid-game is never stuck at 0. Talent and perk fill up to 30%.
+ * Epoch gives a floor so mid-game is never stuck at 0. Talent and perk fill up to 15%.
  */
 export function getClickIncomeShare() {
   const phase = getPhaseForStage(GAME.evoStage).id;
-  const floor = Math.min(0.10, 0.02 * Math.max(1, phase));
-  const talent = talentLevel('quantum_mastery') * 0.03;
-  const perk = SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned ? 0.05 : 0;
+  const floor = Math.min(0.05, 0.01 * Math.max(1, phase));
+  const talent = talentLevel('quantum_mastery') * 0.015;
+  const perk = SHOP_ITEMS.find(i => i.id === 'upg_quantum_click')?.owned ? 0.025 : 0;
   return Math.min(CLICK_INCOME_SHARE_CAP, floor + talent + perk);
 }
 

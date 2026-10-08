@@ -1,4 +1,4 @@
-﻿export const SHOP_ITEMS = [
+export const SHOP_ITEMS = [
   // --- STARTER TIER (5,000 - 250,000 ✨) ---
   { id: 'hat_cap', name: 'Кепка Новичка', type: 'hat', cost: 5000, clickBoost: 4, icon: '🧢', desc: 'x4 к силе клика' },
   { id: 'hat_party', name: 'Праздничный Колпак', type: 'hat', cost: 25200, clickBoost: 10, icon: '🥳', desc: 'x10 к силе клика' },
@@ -23,7 +23,7 @@
 
   { id: 'upg_magnet', name: 'Магнит Блестяшек', type: 'perk', cost: 1500, reqForm: 100, icon: '🧲', desc: '+30% к шансу выпадения блестяшек при клике!' },
   { id: 'upg_goldrush', name: 'Золотая Лихорадка', type: 'perk', cost: 12600, reqForm: 220, icon: '💰', desc: 'x1.25 к доходу всех заводов навсегда' },
-  { id: 'upg_quantum_click', name: 'Квантовый Синергизм Кликера', type: 'perk', cost: 39600, reqForm: 340, icon: '🔮', desc: '+5% доли дохода заводов к потоку кликов при полном потолке CPS. Вместе с эпохой и талантом до 30%' },
+  { id: 'upg_quantum_click', name: 'Квантовый Синергизм Кликера', type: 'perk', cost: 39600, reqForm: 340, icon: '🔮', desc: '+2.5% доли дохода заводов к потоку кликов при полном потолке CPS. Вместе с эпохой и талантом до 15%' },
   { id: 'upg_comborush', name: 'Катализатор Ярости', type: 'perk', cost: 187000, reqForm: 640, icon: '🔥', desc: 'Увеличивает длительность Турбо-Режима Ярости до 18 секунд!' },
   { id: 'upg_factory_overclock', name: 'Оверклокинг Фабричных Турбин', type: 'perk', cost: 108000, reqForm: 580, icon: '🏭', desc: 'x1.25 к мощности всех заводов' },
   { id: 'upg_meteor_magnet', name: 'Радар Золотых Метеоритов', type: 'perk', cost: 245000, reqForm: 700, icon: '🌠', desc: 'Золотые метеориты прилетают на 40% чаще!' },
