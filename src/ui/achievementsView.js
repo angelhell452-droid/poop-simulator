@@ -1,9 +1,8 @@
-﻿import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.79';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.79';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.79';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.79';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
-import { drawPlunger } from '../utils/icons.js?v=5.0.79';
+﻿import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.80';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.80';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
+import { drawPlunger } from '../utils/icons.js?v=5.0.80';
 import { t, td, onLocaleChange } from '../i18n/t.js';
 
 export function renderAchievements() {
@@ -22,7 +21,6 @@ export function renderAchievements() {
     else if (ach.type === 'flush') current = flushCount;
     else if (ach.type === 'prestige') current = GAME.totalPrestiges;
     else if (ach.type === 'hat') current = GAME.equippedHat ? 1 : 0;
-    else if (ach.type === 'billionaire') current = SHOP_ITEMS.find(i => i.id === 'hat_multiverse')?.owned ? 1 : 0;
     else if (ach.type === 'secret') current = ach.done ? 1 : 0;
     else if (ach.type === 'factories') {
       let tf = 0;

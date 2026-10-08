@@ -1,9 +1,9 @@
-﻿import { GAME } from '../core/state.js?v=5.0.79';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.79';
-import { saveLocal } from '../save/saveManager.js?v=5.0.79';
-import { updateHUD } from './hudView.js?v=5.0.79';
-import { registerSocialPulse } from './socialPulse.js?v=5.0.79';
+﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.80';
+import { saveLocal } from '../save/saveManager.js?v=5.0.80';
+import { updateHUD } from './hudView.js?v=5.0.80';
+import { registerSocialPulse } from './socialPulse.js?v=5.0.80';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 let lettersCache = [];

@@ -530,23 +530,48 @@ async function handleLeaderboard(url, env, headers) {
 }
 
 async function handleBugReport(request, env, headers) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { headers });
+  }
   const hook = env.DISCORD_WEBHOOK;
   if (!hook) {
     return new Response(JSON.stringify({ success: false, error: "not_configured" }), { status: 503, headers });
   }
-  const body = await request.text();
+  let body;
+  try {
+    body = await request.text();
+  } catch (_) {
+    return new Response(JSON.stringify({ success: false, error: "bad_report" }), { status: 400, headers });
+  }
   if (!body || body.length > 8000) {
     return new Response(JSON.stringify({ success: false, error: "bad_report" }), { status: 400, headers });
   }
-  const discordRes = await fetch(hook, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body
-  });
-  return new Response(
-    JSON.stringify({ success: discordRes.ok }),
-    { status: discordRes.ok ? 200 : 502, headers }
-  );
+  let payload;
+  try {
+    payload = JSON.parse(body);
+  } catch (_) {
+    return new Response(JSON.stringify({ success: false, error: "bad_report" }), { status: 400, headers });
+  }
+  // Discord rejects bogus avatar URLs — never forward client avatar_url.
+  if (payload && typeof payload === "object") delete payload.avatar_url;
+
+  try {
+    const discordRes = await fetch(hook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!discordRes.ok) {
+      const detail = (await discordRes.text().catch(() => "")).slice(0, 200);
+      return new Response(
+        JSON.stringify({ success: false, error: "discord_reject", detail }),
+        { status: 502, headers }
+      );
+    }
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers });
+  } catch (_) {
+    return new Response(JSON.stringify({ success: false, error: "discord_unreachable" }), { status: 502, headers });
+  }
 }
 
 export default {
@@ -571,8 +596,11 @@ export default {
       return handleSocial(request, env);
     }
 
-    if (url.pathname === "/api/bug-report" && request.method === "POST") {
-      return handleBugReport(request, env, headers);
+    if (url.pathname === "/api/bug-report") {
+      if (request.method === "POST" || request.method === "OPTIONS") {
+        return handleBugReport(request, env, headers);
+      }
+      return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers });
     }
 
     if (env.ASSETS) {

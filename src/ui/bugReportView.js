@@ -1,8 +1,8 @@
-﻿import { GAME } from '../core/state.js?v=5.0.79';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { t } from '../i18n/t.js';
 
-const GAME_VERSION = 'v5.0.79 PRO';
+const GAME_VERSION = 'v5.0.80 PRO';
 
 const DISCORD_CATEGORY_LABELS = {
   visual: 'Visual bug',
@@ -109,7 +109,6 @@ async function sendBugReport(textarea, categoryBtns, statusEl, btnSend) {
 
   const payload = {
     username: '🐛 Poop Simulator Bug Report',
-    avatar_url: 'https://cdn.discordapp.com/attachments/0/0/poop.png',
     embeds: [
       {
         title: `🐛 New Bug Report | ${GAME_VERSION}`,

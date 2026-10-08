@@ -1,9 +1,8 @@
-﻿import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.79';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.79';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.79';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.79';
+﻿import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.80';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.80';
+import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
 import { events } from '../core/events.js';
-import { gte } from '../utils/big.js?v=5.0.79';
+import { gte } from '../utils/big.js?v=5.0.80';
 
 export function checkAchievements() {
   const completed = [];
@@ -21,7 +20,6 @@ export function checkAchievements() {
     if (ach.type === 'flush' && flushCount >= ach.target) met = true;
     if (ach.type === 'prestige' && GAME.totalPrestiges >= ach.target) met = true;
     if (ach.type === 'hat' && GAME.equippedHat) met = true;
-    if (ach.type === 'billionaire' && SHOP_ITEMS.find(i => i.id === 'hat_multiverse')?.owned) met = true;
     if (ach.type === 'factories') {
       let totalFac = 0;
       FACTORIES.forEach(f => { totalFac += (f.count || 0); });

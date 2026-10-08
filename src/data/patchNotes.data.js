@@ -1,5 +1,16 @@
 ﻿export const PATCH_NOTES = [
   {
+    version: 'v5.0.80 PRO',
+    date: '8 Октября 2026',
+    title: 'Устаревшая ачивка и баг-репорт',
+    badge: 'Патч 5.0',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      { type: 'fix', icon: '🐛', text: 'Баг-репорт снова ходит в Discord через Pages Function /api/bug-report. Убран битый avatar_url, из‑за которого Discord мог отклонять вебхук.' },
+      { type: 'ui', icon: '💎', text: 'Ачивка «Клуб Миллиардеров» (Корона Мультиверса) убрана — шапка давно retired и больше не продаётся.' }
+    ]
+  },
+  {
     version: 'v5.0.79 PRO',
     date: '7 Октября 2026',
     title: 'English доведён до всей оболочки',

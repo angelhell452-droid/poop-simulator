@@ -1,5 +1,5 @@
 ﻿import { getConfirmedVip } from '../economy/pace.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 const VIP_OFFERS = [

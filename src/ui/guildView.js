@@ -1,14 +1,14 @@
-﻿import { GAME } from '../core/state.js?v=5.0.79';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.79';
-import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.79';
-import { KNIVES } from '../data/knives.data.js?v=5.0.79';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.79';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.79';
-import { updateAccountHeaderUI } from './authModalView.js?v=5.0.79';
-import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.79';
-import { pulseMail } from './mailView.js?v=5.0.79';
-import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.79';
+﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.80';
+import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.80';
+import { KNIVES } from '../data/knives.data.js?v=5.0.80';
+import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.80';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.80';
+import { updateAccountHeaderUI } from './authModalView.js?v=5.0.80';
+import { getClickCapCps } from '../systems/autoclickService.js?v=5.0.80';
+import { pulseMail } from './mailView.js?v=5.0.80';
+import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.80';
 import { t, onLocaleChange, getLocale } from '../i18n/t.js';
 import { bossName } from '../i18n/localize.js';
 

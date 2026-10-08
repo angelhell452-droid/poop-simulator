@@ -1,4 +1,4 @@
-﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 
 export function generateAchievements() {
   const list = [];
@@ -198,7 +198,6 @@ export function generateAchievements() {
     { id: 'ach_transcend_10', title: 'Демиург Омниверса', desc: 'Совершить 10 Астральных Прорывов', target: 10, type: 'transcend', reward: 2000, rewardRolls: 6, rewardPlungers: 2, done: false, icon: '🌌' },
 
     { id: 'ach_hat_first', title: 'Модник', desc: 'Купить первый головной убор в гардеробе', target: 1, type: 'hat', reward: 150, done: false, icon: '🎩' },
-    { id: 'ach_billionaire', title: 'Клуб Миллиардеров', desc: 'Приобрести Корону Мультиверса', target: 1, type: 'billionaire', reward: 2000, rewardRolls: 4, done: false, icon: '💎' },
     { id: 'ach_ideal_care', title: 'Идеальный Уход', desc: 'Достичь 90%+ во всех трех потребностях питомца', target: 1, type: 'ideal', reward: 100, rewardRolls: 1, done: false, icon: '👑' },
     { id: 'ach_sharpen_5', title: 'Звездный Клинок', desc: 'Заточить любой нож до ★ Lv.5 в инвентаре', target: 5, type: 'sharpen', reward: 400, rewardRolls: 1, done: false, icon: '⭐' },
     { id: 'ach_sharpen_10', title: 'Мастер Заточки', desc: 'Заточить любой нож до ★ Lv.10 (Максимум)', target: 10, type: 'sharpen', reward: 800, rewardRolls: 2, done: false, icon: '🌟' },

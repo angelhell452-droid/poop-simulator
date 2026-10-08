@@ -1,9 +1,9 @@
-﻿import { GAME } from '../core/state.js?v=5.0.79';
-import { KNIVES } from '../data/knives.data.js?v=5.0.79';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.79';
-import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.79';
+﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { KNIVES } from '../data/knives.data.js?v=5.0.80';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
+import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.80';
 import { events } from '../core/events.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.79';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { t } from '../i18n/t.js';
 import { knifeName } from '../i18n/localize.js';
 
