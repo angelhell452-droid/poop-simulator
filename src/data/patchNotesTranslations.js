@@ -42,6 +42,18 @@ export function translateBadgeToEn(badgeStr) {
 }
 
 export const PATCH_NOTES_EN = {
+  'v5.0.83 PRO': {
+    date: 'October 8, 2026',
+    title: 'Global Weapon Cases Rebalance & Massive Knife Buff',
+    badge: 'Patch 5.0',
+    changes: [
+      'Knives inside each case now have a 15x power spread — dropping rare blades is significantly more rewarding!',
+      'All 12 weapon cases now contain exactly 18 knives, and the 1% jackpot awards the top blade of the next case tier.',
+      'Legendary Karambit Dragon Lore multiplier increased to x500,000, and the legacy knife soft-cap has been removed.',
+      'Added global knife balance configuration KNIFE_BALANCE_CONFIG for instant multiplier series scaling.',
+      'Added an illustrated in-game news announcement in the Journal about the knife system upgrade.'
+    ]
+  },
   'v5.0.82 PRO': {
     date: 'October 8, 2026',
     title: 'Full Patch Notes Localization & Default English',

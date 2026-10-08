@@ -1,6 +1,48 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.82';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.83';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.0.83 PRO',
+    date: '8 Октября 2026',
+    dateEn: 'October 8, 2026',
+    title: 'Глобальный ребаланс кейсов и усиление ножей',
+    titleEn: 'Global Weapon Cases Rebalance & Massive Knife Buff',
+    badge: 'Патч 5.0',
+    badgeEn: 'Patch 5.0',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🗡️',
+        text: 'Ножи в каждом кейсе теперь дают в 15 раз больше разницы в силе — выбивать редкие клинки стало в разы выгоднее!',
+        textEn: 'Knives inside each case now have a 15x power spread — dropping rare blades is significantly more rewarding!'
+      },
+      {
+        type: 'feature',
+        icon: '📦',
+        text: 'Все 12 оружейных кейсов теперь содержат ровно по 18 ножей, а 1% джекпот даёт топовый нож следующего кейса.',
+        textEn: 'All 12 weapon cases now contain exactly 18 knives, and the 1% jackpot awards the top blade of the next case tier.'
+      },
+      {
+        type: 'balance',
+        icon: '🐉',
+        text: 'Множитель легендарного Karambit Dragon Lore вырос до x500,000, а скрытое ограничение софт-капа полностью снято.',
+        textEn: 'Legendary Karambit Dragon Lore multiplier increased to x500,000, and the legacy knife soft-cap has been removed.'
+      },
+      {
+        type: 'feature',
+        icon: '⚙️',
+        text: 'Внедрён глобальный конфиг масштабирования множителей ножей KNIFE_BALANCE_CONFIG для гибкой регулировки силы.',
+        textEn: 'Added global knife balance configuration KNIFE_BALANCE_CONFIG for instant multiplier series scaling.'
+      },
+      {
+        type: 'ui',
+        icon: '📰',
+        text: 'Добавлена иллюстрированная игровая новость в Журнал об улучшении системы ножей.',
+        textEn: 'Added an illustrated in-game news announcement in the Journal about the knife system upgrade.'
+      }
+    ]
+  },
   {
     version: 'v5.0.82 PRO',
     date: '8 Октября 2026',

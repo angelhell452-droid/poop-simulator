@@ -1,8 +1,10 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.80';
 import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
+import { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../data/knifeBalance.config.js?v=5.0.83';
+export { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult };
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.80';
@@ -122,12 +124,16 @@ function knifeBonusStack(knife, perStar) {
 
 export function getKnifeClickMult(knife) {
   if (!knife) return 1;
-  return softCap(knife.clickMult || 1, 50, 0.65) * knifeBonusStack(knife, 0.35);
+  const base = getKnifeEffectiveClickMult(knife);
+  const scaled = KNIFE_BALANCE_CONFIG.softCapEnabled ? softCap(base, KNIFE_BALANCE_CONFIG.clickKnee, 0.65) : base;
+  return scaled * knifeBonusStack(knife, 0.35);
 }
 
 export function getKnifePassiveMult(knife) {
   if (!knife) return 1;
-  return softCap(knife.passiveMult || 1, 30, 0.65) * knifeBonusStack(knife, 0.25);
+  const base = getKnifeEffectivePassiveMult(knife);
+  const scaled = KNIFE_BALANCE_CONFIG.softCapEnabled ? softCap(base, KNIFE_BALANCE_CONFIG.passiveKnee, 0.65) : base;
+  return scaled * knifeBonusStack(knife, 0.25);
 }
 
 export function getKnifeShownBonuses(knife) {

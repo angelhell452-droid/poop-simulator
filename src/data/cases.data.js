@@ -1,4 +1,4 @@
-﻿export const WEAPON_CASES = [
+export const WEAPON_CASES = [
   {
     "id": "case_classic",
     "name": "Оружейный Контейнер #1",
@@ -21,6 +21,7 @@
       "knife_gut_patina",
       "knife_falchion_safari",
       "knife_falchion_urban",
+      "knife_classic_forest",
       "knife_flip_forest",
       "knife_flip_boreal",
       "knife_shadow_safari",
@@ -55,6 +56,7 @@
       "knife_huntsman_safari",
       "knife_bowie_safari",
       "knife_paracord_forest",
+      "knife_paracord_safari",
       "knife_nomad_safari",
       "knife_classic_safari",
       "knife_flip_night",
@@ -395,6 +397,7 @@
       "knife_celestial_huntsman",
       "knife_celestial_bowie",
       "knife_celestial_nomad",
+      "knife_celestial_paracord",
       "knife_celestial_bayonet",
       "knife_celestial_m9",
       "knife_celestial_talon",

@@ -1,4 +1,4 @@
-﻿import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
+import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
 import { GAME } from '../core/state.js?v=5.0.80';
 import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
@@ -11,7 +11,7 @@ import { updateHUD } from './hudView.js?v=5.0.80';
 import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getKnifeShownBonuses } from '../economy/production.js?v=5.0.80';
+import { getKnifeShownBonuses, getKnifeEffectiveClickMult } from '../economy/production.js?v=5.0.83';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.0.80';
 import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.80';
@@ -343,14 +343,14 @@ export function getKnifePoolWithChances(poolKnives, fixedChances = null) {
 
   const rows = [];
   if (regular.length > 0) {
-    const minPower = Math.min(...regular.map(k => k.clickMult || 1));
+    const minPower = Math.min(...regular.map(k => getKnifeEffectiveClickMult(k)));
     // Curve strength: 0.0 = equal chances, 1.0 = fully linear inverse.
     // 0.65 gives a nice balance — strongest is ~3-8x rarer than weakest,
     // but never falls below 5% of the max weight (so always obtainable).
     const CURVE = 0.65;
     const MIN_WEIGHT_RATIO = 0.05;
     const rawWeights = regular.map(k => {
-      const normalizedPower = (k.clickMult || 1) / minPower;
+      const normalizedPower = getKnifeEffectiveClickMult(k) / minPower;
       const raw = 1.0 / Math.pow(normalizedPower, CURVE);
       return Math.max(raw, MIN_WEIGHT_RATIO);
     });
@@ -662,7 +662,7 @@ export function openMultipleCases(caseObj, count = 3) {
   requestCloudSync(2000);
 
   // Set the highest tier knife as winning preview
-  wonKnives.sort((a, b) => (b.clickMult || 1) - (a.clickMult || 1));
+  wonKnives.sort((a, b) => getKnifeEffectiveClickMult(b) - getKnifeEffectiveClickMult(a));
   rouletteWinningKnife = wonKnives[0];
   activeRouletteCase = caseObj;
 
@@ -817,7 +817,7 @@ export function openCasePreviewModal(caseId) {
     const poolWithChances = getKnifePoolWithChances(poolKnives, caseObj.fixedChances);
 
     // Sort by rarity (rarest knives first), then by clickMult descending
-    poolWithChances.sort((a, b) => (a.weight - b.weight) || (b.knife.clickMult - a.knife.clickMult));
+    poolWithChances.sort((a, b) => (a.weight - b.weight) || (getKnifeEffectiveClickMult(b.knife) - getKnifeEffectiveClickMult(a.knife)));
 
     poolWithChances.forEach(item => {
       const knife = item.knife;
@@ -868,7 +868,7 @@ export function openCasePreviewModal(caseId) {
               <span class="text-stone-600">•</span>
               <span>CPS: <b class="text-cyan-300 font-bold">+${formatNumber(getKnifeCpsBonus(knife))}</b></span>
               <span class="text-stone-600">•</span>
-              <span>${t('cases.mult')} <b class="text-amber-300 font-bold">x${formatNumber(knife.clickMult)}</b></span>
+              <span>${t('cases.mult')} <b class="text-amber-300 font-bold">x${formatNumber(getKnifeEffectiveClickMult(knife))}</b></span>
             </div>
           </div>
         </div>

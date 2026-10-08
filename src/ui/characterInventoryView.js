@@ -1,4 +1,4 @@
-﻿import { knifeName, knifeDesc, knifeRarity, shopName, shopDesc, skinName } from '../i18n/localize.js';
+import { knifeName, knifeDesc, knifeRarity, shopName, shopDesc, skinName } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
 import { GAME } from '../core/state.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
@@ -8,7 +8,7 @@ import {
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.80';
-import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.80';
+import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.0.83';
 import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
@@ -420,10 +420,10 @@ function renderKnivesGrid() {
   filteredKnives.sort((a, b) => {
     const starA = getKnifeStar(a.id);
     const starB = getKnifeStar(b.id);
-    const clickA = a.clickMult * (1 + (starA - 1) * 0.35);
-    const clickB = b.clickMult * (1 + (starB - 1) * 0.35);
-    const passA = a.passiveMult * (1 + (starA - 1) * 0.25);
-    const passB = b.passiveMult * (1 + (starB - 1) * 0.25);
+    const clickA = getKnifeEffectiveClickMult(a) * (1 + (starA - 1) * 0.35);
+    const clickB = getKnifeEffectiveClickMult(b) * (1 + (starB - 1) * 0.35);
+    const passA = getKnifeEffectivePassiveMult(a) * (1 + (starA - 1) * 0.25);
+    const passB = getKnifeEffectivePassiveMult(b) * (1 + (starB - 1) * 0.25);
 
     if (knifeSortMode === 'click') return clickB - clickA;
     if (knifeSortMode === 'passive') return passB - passA;
@@ -499,7 +499,7 @@ function renderKnivesGrid() {
         <div id="knifeInfo_${kn.id}" class="${isInfoOpen ? '' : 'hidden'} p-2 my-1 rounded-xl bg-stone-900 border border-stone-700 text-[10px] text-stone-300 space-y-1">
           <p class="italic text-stone-400 text-[9px]">${knifeDesc(kn)}</p>
           <div class="pt-1 border-t border-stone-800 flex justify-between text-[9px] font-mono">
-            <span>${t('inv.baseClick', { n: formatNumber(kn.clickMult) })}</span>
+            <span>${t('inv.baseClick', { n: formatNumber(getKnifeEffectiveClickMult(kn)) })}</span>
             <span class="text-amber-300">${t('inv.growth')}</span>
           </div>
         </div>
