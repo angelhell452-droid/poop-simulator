@@ -1,4 +1,4 @@
-﻿import ruShell from './ru.js';
+import ruShell from './ru.js';
 import enShell from './en.js';
 import enData from './data.en.js';
 
@@ -9,8 +9,8 @@ export const LOCALES = {
 };
 
 export const LOCALE_META = [
-  { code: 'ru', labelKey: 'lang.ru' },
-  { code: 'en', labelKey: 'lang.en' }
+  { code: 'en', labelKey: 'lang.en' },
+  { code: 'ru', labelKey: 'lang.ru' }
 ];
 
-export const DEFAULT_LOCALE = 'ru';
+export const DEFAULT_LOCALE = 'en';

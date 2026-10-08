@@ -1,4 +1,4 @@
-﻿import { DEFAULT_LOCALE, LOCALE_META, LOCALES } from './locales/index.js';
+import { DEFAULT_LOCALE, LOCALE_META, LOCALES } from './locales/index.js';
 
 export const LOCALE_STORAGE_KEY = 'PoopSim_Locale';
 
@@ -14,10 +14,6 @@ function readStoredLocale() {
 }
 
 function detectLocale() {
-  try {
-    const nav = String(navigator.language || navigator.userLanguage || '').toLowerCase();
-    if (nav.startsWith('en')) return 'en';
-  } catch (_) { /* ignore */ }
   return DEFAULT_LOCALE;
 }
 
@@ -46,8 +42,13 @@ export function t(key, vars) {
 /** Translate key, or return fallback (RU data field) when key missing. */
 export function td(key, fallback, vars) {
   const pack = LOCALES[locale] || {};
-  const base = LOCALES[DEFAULT_LOCALE] || {};
-  const raw = pack[key] ?? (locale === DEFAULT_LOCALE ? fallback : (base[key] ?? fallback));
+  let raw;
+  if (locale === 'ru') {
+    raw = pack[key] ?? fallback;
+  } else {
+    const enPack = LOCALES['en'] || {};
+    raw = pack[key] ?? enPack[key] ?? fallback;
+  }
   if (raw == null || raw === '') return fallback == null ? key : interpolate(String(fallback), vars);
   return interpolate(String(raw), vars);
 }

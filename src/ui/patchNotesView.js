@@ -1,6 +1,7 @@
-import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.0.81';
-import { NEWS } from '../data/news.data.js?v=5.0.81';
-import { t, onLocaleChange } from '../i18n/t.js';
+import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.0.82';
+import { NEWS } from '../data/news.data.js?v=5.0.82';
+import { localizePatchNote } from '../data/patchNotesTranslations.js?v=5.0.82';
+import { t, td, dataText, getLocale, onLocaleChange } from '../i18n/t.js';
 
 function escapeText(value) {
   return String(value || '')
@@ -21,8 +22,10 @@ export function openPatchNotesModal() {
 export function renderPatchNotes() {
   const container = document.getElementById('patchNotesList');
   if (!container) return;
+  const currentLocale = getLocale();
 
-  container.innerHTML = PATCH_NOTES.map((pn, idx) => {
+  container.innerHTML = PATCH_NOTES.map((rawPn, idx) => {
+    const pn = localizePatchNote(rawPn, idx, currentLocale);
     const isLatest = idx === 0;
     return `
       <div class="p-3.5 rounded-2xl bg-stone-900/90 border-2 ${isLatest ? 'border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' : 'border-stone-700'} space-y-2">
@@ -56,19 +59,23 @@ export function renderNews() {
     return;
   }
 
-  container.innerHTML = NEWS.map((item) => {
+  container.innerHTML = NEWS.map((item, idx) => {
     const image = typeof item.image === 'string' && item.image.startsWith('assets/news/')
       ? `<img src="${escapeText(item.image)}" alt="" class="w-full rounded-xl border border-amber-500/40 object-cover max-h-52">`
       : '';
+    const title = dataText('news', String(idx), 'title', item.title);
+    const text = dataText('news', String(idx), 'body', item.text);
+    const date = dataText('news', String(idx), 'date', item.date);
+    const tag = dataText('news', String(idx), 'tag', item.tag || t('journal.newsTag'));
     return `
       <article class="p-3.5 rounded-2xl bg-stone-900/90 border-2 border-amber-500/40 space-y-2">
         ${image}
         <div class="flex items-center justify-between flex-wrap gap-1">
-          <span class="text-[10px] px-2 py-0.5 rounded-full border font-bold bg-amber-500/20 text-amber-200 border-amber-400/40">${escapeText(item.tag || t('journal.newsTag'))}</span>
-          <span class="text-[10px] text-stone-400 font-mono">${escapeText(item.date)}</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full border font-bold bg-amber-500/20 text-amber-200 border-amber-400/40">${escapeText(tag)}</span>
+          <span class="text-[10px] text-stone-400 font-mono">${escapeText(date)}</span>
         </div>
-        <div class="font-bold text-xs text-stone-100">${escapeText(item.title)}</div>
-        <p class="text-[11px] text-stone-300 leading-snug">${escapeText(item.text)}</p>
+        <div class="font-bold text-xs text-stone-100">${escapeText(title)}</div>
+        <p class="text-[11px] text-stone-300 leading-snug">${escapeText(text)}</p>
       </article>
     `;
   }).join('');
@@ -104,7 +111,10 @@ export function initPatchNotesListeners() {
     vTag.title = t('journal.versionTitle');
     vTag.addEventListener('click', openPatchNotesModal);
   }
-  document.getElementById('btnJournalPatches')?.addEventListener('click', () => showJournalTab('patches'));
+  document.getElementById('btnJournalPatches')?.addEventListener('click', () => {
+    renderPatchNotes();
+    showJournalTab('patches');
+  });
   document.getElementById('btnJournalNews')?.addEventListener('click', () => {
     renderNews();
     showJournalTab('news');
@@ -113,6 +123,7 @@ export function initPatchNotesListeners() {
     const modal = document.getElementById('patchNotesModal');
     if (modal && !modal.classList.contains('hidden')) {
       renderNews();
+      renderPatchNotes();
     }
     const vTag = document.getElementById('versionTag');
     if (vTag) vTag.title = t('journal.versionTitle');

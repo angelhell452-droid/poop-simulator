@@ -1,6 +1,36 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.81';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.82';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.0.82 PRO',
+    date: '8 Октября 2026',
+    dateEn: 'October 8, 2026',
+    title: 'Полная локализация патч-ноутов и дефолтный English',
+    titleEn: 'Full Patch Notes Localization & Default English',
+    badge: 'Патч 5.0',
+    badgeEn: 'Patch 5.0',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🌐',
+        text: 'Журнал обновлений и новости теперь полностью переводятся на английский при выборе языка English.',
+        textEn: 'Update log and news now fully translate to English when English language is chosen.'
+      },
+      {
+        type: 'balance',
+        icon: '🌍',
+        text: 'Английский язык теперь является стандартным языком игры по умолчанию.',
+        textEn: 'English is now the standard default game language.'
+      },
+      {
+        type: 'ui',
+        icon: '🎯',
+        text: 'Устранена утечка языков при переключении: отображается строго выбранный язык без смешивания.',
+        textEn: 'Eliminated language leaks on switch: strictly the chosen language is displayed with no mixing.'
+      }
+    ]
+  },
   {
     version: 'v5.0.81 PRO',
     date: '8 Октября 2026',

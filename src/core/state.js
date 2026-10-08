@@ -1,4 +1,4 @@
-﻿// Unified Reactive Game State
+// Unified Reactive Game State
 
 export function getDefaultGameState() {
   let playerId = (typeof localStorage !== 'undefined') ? localStorage.getItem('PoopSim_PlayerId') : null;
@@ -8,7 +8,7 @@ export function getDefaultGameState() {
       try { localStorage.setItem('PoopSim_PlayerId', playerId); } catch (e) { }
     }
   }
-  let playerName = (typeof localStorage !== 'undefined' ? localStorage.getItem('PoopSim_PlayerName') : null) || ('Игрок #' + playerId.substring(playerId.length - 4));
+  let playerName = (typeof localStorage !== 'undefined' ? localStorage.getItem('PoopSim_PlayerName') : null) || ('Player #' + playerId.substring(playerId.length - 4));
 
   return {
     saveVersion: 5,

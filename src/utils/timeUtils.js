@@ -1,13 +1,13 @@
-﻿import { t } from '../i18n/t.js';
+import { t } from '../i18n/t.js';
 
 export function formatTimeSeconds(seconds) {
-  if (seconds < 60) return `${Math.ceil(seconds)}с`;
+  if (seconds < 60) return t('time.s', { s: Math.ceil(seconds) });
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
-  if (mins < 60) return `${mins}м ${secs}с`;
+  if (mins < 60) return t('time.ms', { m: mins, s: secs });
   const hours = Math.floor(mins / 60);
   const remMins = mins % 60;
-  return `${hours}ч ${remMins}м`;
+  return t('time.hm', { h: hours, m: remMins });
 }
 
 export function formatDurationAway(seconds) {

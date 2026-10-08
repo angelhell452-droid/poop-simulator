@@ -1,4 +1,4 @@
-﻿import { GAME } from './core/state.js?v=5.0.80';
+import { GAME } from './core/state.js?v=5.0.80';
 import { startGameLoop } from './core/gameLoop.js?v=5.0.80';
 import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.0.80';
 import { saveLocal } from './save/saveManager.js?v=5.0.80';
@@ -18,7 +18,7 @@ import { initFriendsView } from './ui/friendsView.js?v=5.0.80';
 import { initGuildView } from './ui/guildView.js?v=5.0.80';
 import { initMailView } from './ui/mailView.js?v=5.0.80';
 import { startSocialPulse } from './ui/socialPulse.js?v=5.0.80';
-import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.0.80';
+import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.0.82';
 import { initVipShop } from './ui/vipShopView.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.80';
 import { initBugReportListeners } from './ui/bugReportView.js?v=5.0.80';
