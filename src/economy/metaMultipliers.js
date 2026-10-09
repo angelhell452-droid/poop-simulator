@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.80';
 
 function echoCount(phaseId) {
@@ -113,7 +113,7 @@ export function getPlungersIncomeMult() {
 
 export function getOmniRelicMult() {
   const lvl = Math.min(20, GAME.transcendUpgrades?.omniMult || 0);
-  return 1 + lvl * 0.04;
+  return 1 + lvl * 0.08;
 }
 
 export function getRiftMult() {

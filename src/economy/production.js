@@ -116,10 +116,10 @@ function softCap(raw, knee, power) {
 
 function knifeBonusStack(knife, perStar) {
   const knifeStar = getKnifeStar(knife.id);
-  const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.08;
+  const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.18;
   const diamondLvl = Math.min(20, GAME.boutiqueLevels?.diamond_sharpening || 0);
   const diamondBoost = 1 + diamondLvl * 0.05;
-  const starForge = 1 + talentLevel('star_forge_master') * 0.05;
+  const starForge = 1 + talentLevel('star_forge_master') * 0.12;
   return (1 + Math.max(0, knifeStar - 1) * perStar) * knifeForgeBoost * diamondBoost * starForge;
 }
 
@@ -235,7 +235,7 @@ function knifeStyleBonuses() {
 
 function describeFactory(fac, idx, count) {
   const styles = knifeStyleBonuses();
-  const qReplMult = 1 + talentLevel('quantum_replication') * 0.08;
+  const qReplMult = 1 + talentLevel('quantum_replication') * 0.15;
   let knife = 1;
   if (idx < 5) knife = styles.early;
   else if (idx >= 5 && idx < 12) knife = styles.heavy;
@@ -250,27 +250,27 @@ function describeFactory(fac, idx, count) {
 
 function passiveGlobalLines() {
   const styles = knifeStyleBonuses();
-  const turboMult = 1 + talentLevel('turbo_pipe') * 0.06;
+  const turboMult = 1 + talentLevel('turbo_pipe') * 0.15;
   const goldRushMult = SHOP_ITEMS.find(i => i.id === 'upg_goldrush')?.owned ? 1.25 : 1;
   const overclockMult = SHOP_ITEMS.find(i => i.id === 'upg_factory_overclock')?.owned ? 1.25 : 1;
-  const softRollsMult = 1 + talentLevel('soft_rolls') * 0.04;
+  const softRollsMult = 1 + talentLevel('soft_rolls') * 0.12;
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const rollsMult = getRollsIncomeMult();
-  const cosmicMult = Math.pow(1.08, Math.floor(talentLevel('cosmic_resonance') / 2));
+  const cosmicMult = Math.pow(1.20, Math.floor(talentLevel('cosmic_resonance') / 2));
   const plungersMult = getPlungersIncomeMult();
-  const facOverdriveMult = 1 + (GAME.transcendUpgrades?.factoryOverdrive || 0) * 0.12;
+  const facOverdriveMult = 1 + (GAME.transcendUpgrades?.factoryOverdrive || 0) * 0.20;
   const cleanBuff = 1 + Math.max(0, (GAME.clean || 0) / 100) * 0.25;
   const knifePassiveMult = getKnifePassiveMult(styles.knife);
   let archMult = 1;
   if (GAME.archetype === 'tycoon') archMult = 1.5;
   else if (GAME.archetype === 'balanced') archMult = 1.15;
-  const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.08;
+  const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.15;
   const omniWealthMult = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned ? 1.2 : 1;
   const crystalLvl = Math.min(20, GAME.boutiqueLevels?.crystal_factory || 0);
   const crystalMult = 1 + crystalLvl * 0.05;
   const sparkLvl = Math.min(12, GAME.boutiqueLevels?.singularity_spark || 0);
   const sparkMult = 1 + sparkLvl * 0.04;
-  const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.06;
+  const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.12;
   const timeWarpMult = (GAME.totalTranscend >= 5) ? 1.25 : 1;
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
@@ -322,12 +322,12 @@ function passiveGlobalLines() {
 function clickParts() {
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const rollsMult = getRollsIncomeMult();
-  const softRollsMult = 1 + talentLevel('soft_rolls') * 0.04;
-  const cosmicMult = Math.pow(1.08, Math.floor(talentLevel('cosmic_resonance') / 2));
+  const softRollsMult = 1 + talentLevel('soft_rolls') * 0.12;
+  const cosmicMult = Math.pow(1.20, Math.floor(talentLevel('cosmic_resonance') / 2));
 
   let totalFactories = 0;
   FACTORIES.forEach(fac => { totalFactories += (fac.count || 0); });
-  const synergyMult = 1 + Math.floor(totalFactories / 10) * talentLevel('golden_synergy') * 0.03;
+  const synergyMult = 1 + Math.floor(totalFactories / 10) * talentLevel('golden_synergy') * 0.08;
 
   const hyperStacks = Math.min(30, Math.floor((GAME.totalClicks || 0) / 500));
   const hyperMult = 1 + hyperStacks * talentLevel('hyper_click') * 0.02;
@@ -346,7 +346,7 @@ function clickParts() {
   if (GAME.archetype === 'clicker') archMult = 1.5;
   else if (GAME.archetype === 'balanced') archMult = 1.15;
 
-  const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.08;
+  const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.15;
   const equippedHatItem = GAME.equippedHat ? SHOP_ITEMS.find(i => i.id === GAME.equippedHat) : null;
   const hatLvl = equippedHatItem ? Math.min(15, getHatLevel(equippedHatItem.id)) : 1;
   const hatClickBoost = equippedHatItem ? getHatClickMult(equippedHatItem, hatLvl) : 1;
@@ -354,7 +354,7 @@ function clickParts() {
   const omniWealthMult = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned ? 1.2 : 1;
   const sparkLvl = Math.min(12, GAME.boutiqueLevels?.singularity_spark || 0);
   const sparkMult = 1 + sparkLvl * 0.04;
-  const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.06;
+  const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.12;
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
   const gearRaw = rollsMult * plungersMult;
@@ -435,8 +435,8 @@ export function getClickBreakdown() {
   const luckLvl = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
   const happyCrit = Math.max(0, (GAME.happy || 0) / 100) * 0.20;
   const clickerCrit = GAME.archetype === 'clicker' ? 0.10 : 0;
-  const critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.004 : 0.05) + luckLvl * 0.004 + happyCrit + clickerCrit);
-  const critMultiplier = 20 * (1 + (critTalent ? critTalent.level * 0.10 : 0));
+  const critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.012 : 0.05) + luckLvl * 0.004 + happyCrit + clickerCrit);
+  const critMultiplier = 20 * (1 + (critTalent ? critTalent.level * 0.35 : 0));
   rows.push({
     name: 'Крит, отдельно от числа',
     text: `${formatNumber(critChance * 100)}% · x${formatNumber(critMultiplier)}`,

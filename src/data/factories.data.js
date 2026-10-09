@@ -1,4 +1,4 @@
-﻿import { getPhaseByIndex, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.80';
+import { getPhaseByIndex, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.80';
 import { calcEvolutionMult } from './evolutions.data.js?v=5.0.80';
 import { expectedAccountMult } from '../economy/metaMultipliers.js?v=5.0.80';
 import { div, isBig, mul } from '../utils/big.js?v=5.0.80';
@@ -94,8 +94,8 @@ const TIER_TITLES = [
 
 const SLOT_PLAN = [
   { formOffset: 0, payback: 90, decade: 0 },
-  { formOffset: 40, payback: 180, decade: 1 },
-  { formOffset: 200, payback: 240, decade: 2 }
+  { formOffset: 40, payback: 180, decade: 0.6 },
+  { formOffset: 200, payback: 240, decade: 1.2 }
 ];
 
 for (let i = 0; i < FACTORIES.length; i++) {
@@ -147,9 +147,9 @@ for (let i = 0; i < FACTORIES.length; i++) {
 
 const HORIZON_SLOTS = [
   { formOffset: 0, payback: 90, decade: 0, name: 'Подход' },
-  { formOffset: 40, payback: 180, decade: 1, name: 'Разгон' },
-  { formOffset: 200, payback: 240, decade: 2, name: 'Венец' },
-  { formOffset: 400, payback: 360, decade: 2, name: 'Закат' }
+  { formOffset: 40, payback: 180, decade: 0.5, name: 'Разгон' },
+  { formOffset: 200, payback: 240, decade: 1.0, name: 'Венец' },
+  { formOffset: 400, payback: 360, decade: 1.4, name: 'Закат' }
 ];
 
 for (let epoch = CLASSIC_EPOCHS + 1; epoch <= PHASE_COUNT; epoch++) {

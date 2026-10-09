@@ -1,6 +1,48 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.84';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.85';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.0.85 PRO',
+    date: '9 Октября 2026',
+    dateEn: 'October 9, 2026',
+    title: 'Большой ребаланс прогрессии: сетка кейсов, тупики эпох и сила талантов',
+    titleEn: 'Progression Overhaul: Case Spacing, Epoch Walls & Powered Talents',
+    badge: 'Патч 5.0',
+    badgeEn: 'Patch 5.0',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '📦',
+        text: 'Новая сетка кейсов: 12 кейсов равномерно распределены с 1-й по 100-ю эпоху (с выходом в Горизонт), делая каждый кейс долгожданной и ценной целью.',
+        textEn: 'New Case Spacing: 12 weapon cases are now distributed from Epoch 1 to 100 (extending into Horizon), making every case a meaningful long-term milestone.'
+      },
+      {
+        type: 'balance',
+        icon: '⚔️',
+        text: 'Калибровка ножей: разброс силы ножей внутри кейса оптимизирован до 4x–5x. Ножи из ранних кейсов больше не ломают баланс далеких эпох, а лучшие ножи остаются желанными трофеями.',
+        textEn: 'Knife Spread Calibration: Intra-case knife power gap adjusted to 4x–5x. Early drops no longer break future epochs, while top blades remain thrilling rewards.'
+      },
+      {
+        type: 'balance',
+        icon: '🏭',
+        text: 'Заводы и тупики эпох: фабрика «Венец» теперь ускоряет середину эпохи без перегрева, создавая естественное испытание на формах 350–500, требующее кликов и прокачки.',
+        textEn: 'Factory Curves & Epoch Walls: Apex factories now smoothly support mid-epoch forms without instantly blowing past forms 350–500.'
+      },
+      {
+        type: 'feature',
+        icon: '🌟',
+        text: 'Усиление Талантов Смыва: Мягкость 4-х слоев (+12%/ур), Разгон заводов (+15%/ур), Ультра-Шмяк (+1.2% крит, +35% урон/ур), Синергизм (+8%/ур) стали мощным двигателем прохождения.',
+        textEn: 'Strengthened Flush Talents: 4-Ply Softness (+12%/lvl), Pipeline Boost (+15%/lvl), Ultra-Splat (+1.2% crit, +35% dmg/lvl) and Synergy now provide game-changing progression boosts.'
+      },
+      {
+        type: 'feature',
+        icon: '🪠',
+        text: 'Усиление Реликвий Прорыва: Космический Резонатор (+12%/ур), Кузница Ножей (+18%/ур), Гипер-Ускоритель (+20%/ур) и Омни-Множитель (+8%/ур) делают вантузы незаменимыми.',
+        textEn: 'Empowered Astral Relics: Cosmic Resonator (+12%/lvl), Knife Forge (+18%/lvl), Factory Overdrive (+20%/lvl) and Omni Multiplier (+8%/lvl) make plungers essential.'
+      }
+    ]
+  },
   {
     version: 'v5.0.84 PRO',
     date: '9 Октября 2026',

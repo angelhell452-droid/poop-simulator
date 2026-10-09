@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { getClickPower, getEquippedKnife } from '../economy/production.js?v=5.0.80';
@@ -24,8 +24,8 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const luckLvl = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
   const happyCrit = Math.max(0, (GAME.happy || 0) / 100) * 0.20;
   const clickerCrit = GAME.archetype === 'clicker' ? 0.10 : 0;
-  let critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.004 : 0.05) + luckLvl * 0.004 + happyCrit + clickerCrit);
-  let critMultiplier = 20 * (1 + (critTalent ? critTalent.level * 0.10 : 0));
+  let critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.012 : 0.05) + luckLvl * 0.004 + happyCrit + clickerCrit);
+  let critMultiplier = 20 * (1 + (critTalent ? critTalent.level * 0.35 : 0));
 
   const sparkleTalent = TALENTS.find(t => t.id === 'sparkle_alchemy');
   const magnetActive = SHOP_ITEMS.find(i => i.id === 'upg_magnet')?.owned;
