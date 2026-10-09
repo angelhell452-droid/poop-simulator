@@ -1,5 +1,11 @@
 @import './variables.css';
 
+/* Universal hidden utility enforcement: guarantees modals & panels hide properly regardless of flex/grid */
+.hidden,
+[hidden] {
+  display: none !important;
+}
+
 /* =========================================================
    RESPONSIVE LAYOUT CORE
    Desktop (≥1024px) → locked 100vh, no scroll

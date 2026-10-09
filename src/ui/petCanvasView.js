@@ -868,7 +868,11 @@ export function warmSceneArt() {
     finishBoot = () => {
       if (bootFinished) return;
       bootFinished = true;
-      document.getElementById('bootVeil')?.setAttribute('hidden', '');
+      const veil = document.getElementById('bootVeil');
+      if (veil) {
+        veil.setAttribute('hidden', '');
+        veil.style.display = 'none';
+      }
       resolve();
     };
     if (bootNeed.size === 0) finishBoot();

@@ -1,8 +1,8 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { t } from '../i18n/t.js';
 
-const GAME_VERSION = 'v5.0.80 PRO';
+const GAME_VERSION = 'v5.1.0 PRO';
 
 const DISCORD_CATEGORY_LABELS = {
   visual: 'Visual bug',

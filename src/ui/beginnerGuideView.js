@@ -108,7 +108,7 @@ export const BEGINNER_STEPS = [
     descKey: 'tutorial.step4Desc',
     rewardKey: 'tutorial.step4Reward',
     doneKey: 'tutorial.step4Done',
-    beaconSelector: (GAME.unlockedKnives || []).length > 0 ? '#btnOpenCharacterInventory' : '.dash-tab[data-target="panelCases"]',
+    beaconSelector: (GAME.unlockedKnives || []).length > 0 ? '#btnCanvasInventory' : '.dash-tab[data-target="panelCases"]',
     check: () => Boolean(GAME.equippedKnife),
     progress: () => {
       const cur = GAME.equippedKnife ? 1 : 0;
@@ -142,7 +142,7 @@ export const BEGINNER_STEPS = [
     descKey: 'tutorial.step5Desc',
     rewardKey: 'tutorial.step5Reward',
     doneKey: 'tutorial.step5Done',
-    beaconSelector: '#btnOpenCharacterInventory',
+    beaconSelector: '#btnCanvasInventory',
     check: () => Object.values(GAME.knifeStars || {}).some(s => s > 1),
     progress: () => {
       const has = Object.values(GAME.knifeStars || {}).some(s => s > 1);
@@ -172,7 +172,7 @@ export const BEGINNER_STEPS = [
     descKey: 'tutorial.step6Desc',
     rewardKey: 'tutorial.step6Reward',
     doneKey: 'tutorial.step6Done',
-    beaconSelector: '#btnOpenCharacterInventory',
+    beaconSelector: '#btnCanvasInventory',
     check: () => Boolean(GAME.equippedHat) || SHOP_ITEMS.some(i => i.type === 'hat' && i.owned),
     progress: () => {
       const has = Boolean(GAME.equippedHat) || SHOP_ITEMS.some(i => i.type === 'hat' && i.owned);
@@ -203,7 +203,7 @@ export const BEGINNER_STEPS = [
     descKey: 'tutorial.step7Desc',
     rewardKey: 'tutorial.step7Reward',
     doneKey: 'tutorial.step7Done',
-    beaconSelector: '#btnOpenCharacterInventory',
+    beaconSelector: '#btnCanvasInventory',
     check: () => Boolean(GAME.equippedSkin && GAME.equippedSkin !== 'default' && GAME.equippedSkin !== 'skin_default') || (Array.isArray(GAME.ownedSkins) && GAME.ownedSkins.some(s => s !== 'default' && s !== 'skin_default')),
     progress: () => {
       const has = Boolean(GAME.equippedSkin && GAME.equippedSkin !== 'default' && GAME.equippedSkin !== 'skin_default') || (Array.isArray(GAME.ownedSkins) && GAME.ownedSkins.some(s => s !== 'default' && s !== 'skin_default'));

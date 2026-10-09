@@ -8,7 +8,7 @@ import {
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.80';
-import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.0.83';
+import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.1.0';
 import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
