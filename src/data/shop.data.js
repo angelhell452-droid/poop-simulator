@@ -1,9 +1,9 @@
 export const SHOP_ITEMS = [
-  // --- STARTER TIER (5,000 - 250,000 ✨) ---
-  { id: 'hat_cap', name: 'Кепка Новичка', type: 'hat', cost: 5000, clickBoost: 4, icon: '🧢', desc: 'x4 к силе клика' },
-  { id: 'hat_party', name: 'Праздничный Колпак', type: 'hat', cost: 25200, clickBoost: 10, icon: '🥳', desc: 'x10 к силе клика' },
-  { id: 'hat_shades', name: 'Крутые Очки Thug Life', type: 'hat', cost: 57600, clickBoost: 20, icon: '🕶️', desc: 'x20 к силе клика' },
-  { id: 'hat_cowboy', name: 'Ковбойская Шляпа Шерифа', type: 'hat', cost: 144000, clickBoost: 35, icon: '🤠', desc: 'x35 к силе клика' },
+  // --- STARTER TIER (50 - 6,000 ✨) ---
+  { id: 'hat_cap', name: 'Кепка Новичка', type: 'hat', cost: 50, clickBoost: 4, icon: '🧢', desc: 'x4 к силе клика' },
+  { id: 'hat_party', name: 'Праздничный Колпак', type: 'hat', cost: 250, clickBoost: 10, icon: '🥳', desc: 'x10 к силе клика' },
+  { id: 'hat_shades', name: 'Крутые Очки Thug Life', type: 'hat', cost: 1200, clickBoost: 20, icon: '🕶️', desc: 'x20 к силе клика' },
+  { id: 'hat_cowboy', name: 'Ковбойская Шляпа Шерифа', type: 'hat', cost: 6000, clickBoost: 35, icon: '🤠', desc: 'x35 к силе клика' },
 
   // --- ADVANCED TIER (1,000,000 - 40,000,000 ✨) ---
   { id: 'hat_viking', name: 'Шлем Викинга-Берсерка', type: 'hat', cost: 317000, clickBoost: 55, icon: '⚔️', desc: 'x55 к силе клика' },

@@ -79,8 +79,11 @@ export function getRollsIncomeMult(previewPhase = 0, previewAdd = 0, atPhaseId =
  */
 export function expectedAccountMult(phaseId) {
   const id = Math.min(CLASSIC_EPOCHS, Math.max(1, phaseId || 1));
-  if (id <= 4) return 4 + (id - 1) * 2.5;
-  return 11.5 * Math.pow(1.14, id - 4);
+  if (id === 1) return 1.0;
+  if (id === 2) return 2.2;
+  if (id === 3) return 4.5;
+  if (id === 4) return 8.0;
+  return 11.5 * Math.pow(1.14, id - 5);
 }
 
 /**

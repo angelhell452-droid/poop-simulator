@@ -1,4 +1,4 @@
-﻿import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.js?v=5.0.80';
+import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.js?v=5.0.80';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { events } from '../core/events.js';
 
@@ -39,6 +39,7 @@ export function ticklePet() {
   if (!meterHasRoom(GAME.happy)) return false;
   GAME.happy = Math.min(100, GAME.happy + 15);
   GAME.comboHeat = Math.min(100, (GAME.comboHeat || 0) + 8);
+  GAME.tickleCount = (GAME.tickleCount || 0) + 1;
   events.emit('pet:tickle');
   return true;
 }

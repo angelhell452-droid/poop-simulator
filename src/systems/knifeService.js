@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.80';
@@ -10,7 +10,7 @@ import { knifeName } from '../i18n/localize.js';
 // Bases ~10× below the old table. Power no longer scales with raw clickMult
 // (godly knives sit at 1e5+ and used to make sharpening/sell impossible or broken).
 const BASE_RARITY_SPARKLES = {
-  common: 50,
+  common: 25,
   rare: 150,
   very_rare: 500,
   restricted: 500,

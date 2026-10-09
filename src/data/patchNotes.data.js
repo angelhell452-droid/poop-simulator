@@ -1,6 +1,48 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.85';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.0.86 PRO',
+    date: '9 Октября 2026',
+    dateEn: 'October 9, 2026',
+    title: 'Ускорение старта, усиление базовых ножей и система «Первые шаги»',
+    titleEn: 'Early-Game Acceleration, Starter Knife Buff & First Steps Onboarding',
+    badge: 'Патч 5.0',
+    badgeEn: 'Patch 5.0',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🎒',
+        text: 'Интерактивная система «Первые шаги»: пошаговый маршрут из 9 ознакомительных заданий (уход за какашечкой, первая шапка, смыв, кейс, экипировка и заточка ножа, таланты) со световыми маячками и финальной наградой +100 ✨ и +5 🧻.',
+        textEn: 'Interactive "First Steps" Roadmap: 9 step-by-step onboarding quests (pet care, rookie cap, flush, case opening, knife equip & sharpening, talents) with pulsing visual beacons and a +100 ✨ / +5 🧻 completion reward.'
+      },
+      {
+        type: 'balance',
+        icon: '⚔️',
+        text: 'Усиление базовых ножей Контейнера #1: минимальная планка пассивного дохода повышена до +100% (множитель x2.0) и клика до x6.0. Даже самый обычный нож сразу дает мощный ощутимый скачок дохода!',
+        textEn: 'Case #1 Knife Floor Buffed: Minimum factory passive boost raised to +100% (x2.0 mult) and clicks to x6.0. Even the most common drop immediately gives a punchy power spike!'
+      },
+      {
+        type: 'balance',
+        icon: '🏭',
+        text: 'Смягчение темпа ранних эпох: убран штраф демпфирования на эпохах 1–3, благодаря чему заводы на формах 500–1000 производят почти в 3 раза больше биомассы без утомительного гринда.',
+        textEn: 'Early Epoch Pacing Smoothed: Removed harsh factory dampening on epochs 1–3, granting ~3x higher factory output at forms 500–1000 to eliminate sluggish walls.'
+      },
+      {
+        type: 'balance',
+        icon: '🧢',
+        text: 'Доступная «Кепка Новичка»: стоимость снижена с 5,000 до 50 ✨ Блестяшек и открыта с 1-й формы без ожидания 100-й формы, давая мгновенный множитель клика x4.',
+        textEn: 'Accessible Rookie Cap: Cost lowered from 5,000 to 50 ✨ Sparkles and available from Form 1 without waiting for Form 100, providing an instant early x4 click power boost.'
+      },
+      {
+        type: 'balance',
+        icon: '📦',
+        text: 'Кейс «Хрома 3» теперь открывается на Эпохе 2 (Форма 501): цена снижена до 75 втулок, вантузы не требуются. Игрок получает доступ ко второму кейсу сразу после первого смыва.',
+        textEn: 'Chroma 3 Case Unlocks at Epoch 2 (Form 501): Price lowered to 75 rolls with 0 plungers needed. Immediate access to Case 2 right after first flush.'
+      }
+    ]
+  },
   {
     version: 'v5.0.85 PRO',
     date: '9 Октября 2026',

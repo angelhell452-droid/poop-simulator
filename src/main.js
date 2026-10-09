@@ -21,6 +21,7 @@ import { startSocialPulse } from './ui/socialPulse.js?v=5.0.80';
 import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.0.83';
 import { initVipShop } from './ui/vipShopView.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.80';
+import { initBeginnerGuideListeners } from './ui/beginnerGuideView.js';
 import { initBugReportListeners } from './ui/bugReportView.js?v=5.0.80';
 import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.0.80';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
@@ -148,6 +149,7 @@ export async function bootstrap() {
   initPatchNotesListeners();
   initVipShop();
   initSmartAssistantListeners();
+  initBeginnerGuideListeners();
   initBugReportListeners();
   initCharacterInventoryListeners();
 

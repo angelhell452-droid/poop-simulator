@@ -12,9 +12,9 @@ import { gte } from '../utils/big.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { renderCasesSystem, FIRST_CASE_ID, isFirstCaseDiscountAvailable, canAffordCase } from './casesView.js?v=5.0.80';
 import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.80';
-import { addVisualParticle } from './petCanvasView.js?v=5.0.80';
 import { t, onLocaleChange } from '../i18n/t.js';
 import { factoryName, knifeName, caseName } from '../i18n/localize.js';
+import { getNextBeginnerStep, isBeginnerGuideComplete } from './beginnerGuideView.js';
 
 let lastHintAction = null;
 
@@ -77,12 +77,26 @@ function determineBestHint() {
       action: () => {
         washPet();
         updateHUD();
-        addVisualParticle(t('assist.washedParticle'), '#38bdf8');
       }
     };
   }
 
-  // 3. New Factory Available (Zero count unlocked factory affordable!)
+  // 3. Beginner Steps Guidance (Top Priority for New Players)
+  if (!isBeginnerGuideComplete()) {
+    const nextBeginner = getNextBeginnerStep();
+    if (nextBeginner) {
+      return {
+        icon: nextBeginner.icon,
+        text: `<span class="text-amber-400 font-bold">${t('tutorial.bannerTitle')}:</span> ${t(nextBeginner.titleKey)} <span class="text-stone-400 font-normal">(${t(nextBeginner.rewardKey)})</span>`,
+        btnText: t('tutorial.actionBtn'),
+        action: () => {
+          nextBeginner.action();
+        }
+      };
+    }
+  }
+
+  // 4. New Factory Available (Zero count unlocked factory affordable!)
   for (let i = 0; i < FACTORIES.length; i++) {
     const fac = FACTORIES[i];
     const unlocked = fac.reqStage === undefined || GAME.evoStage >= fac.reqStage;

@@ -670,8 +670,8 @@ function renderHatsGrid() {
         ` : `
           <div class="flex items-center justify-between w-full">
             <span class="text-[10px] text-yellow-400 font-mono font-bold">${formatNumber(hat.cost)} ✨</span>
-            <button class="buy-hat-inv-btn py-1 px-2.5 rounded-xl text-[10px] font-game ${isBoutiqueUnlocked() && GAME.sparkles >= hat.cost ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'} font-bold border shadow" data-id="${hat.id}" ${isBoutiqueUnlocked() && GAME.sparkles >= hat.cost ? '' : 'disabled'}>
-              ${isBoutiqueUnlocked() ? t('inv.buyHat') : t('inv.fromFormCap', { n: formatNumber(100) })}
+            <button class="buy-hat-inv-btn py-1 px-2.5 rounded-xl text-[10px] font-game ${(isBoutiqueUnlocked() || hat.id === 'hat_cap') && GAME.sparkles >= hat.cost ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'} font-bold border shadow" data-id="${hat.id}" ${(isBoutiqueUnlocked() || hat.id === 'hat_cap') && GAME.sparkles >= hat.cost ? '' : 'disabled'}>
+              ${(isBoutiqueUnlocked() || hat.id === 'hat_cap') ? t('inv.buyHat') : t('inv.fromFormCap', { n: formatNumber(100) })}
             </button>
           </div>
         `}
@@ -713,7 +713,8 @@ function renderHatsGrid() {
     btn.addEventListener('click', () => {
       const hat = SHOP_ITEMS.find(i => i.id === btn.dataset.id);
       const curSp = Number(GAME.sparkles) || 0;
-      if (hat && isBoutiqueUnlocked() && curSp >= hat.cost && !hat.owned) {
+      const canUnlock = isBoutiqueUnlocked() || hat?.id === 'hat_cap';
+      if (hat && canUnlock && curSp >= hat.cost && !hat.owned) {
         GAME.sparkles = Math.max(0, curSp - hat.cost);
         hat.owned = true;
         GAME.equippedHat = hat.id;

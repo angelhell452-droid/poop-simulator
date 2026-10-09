@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { drawPlunger } from '../utils/icons.js?v=5.0.80';
@@ -13,6 +13,7 @@ import { updateTalentButtons } from './talentView.js?v=5.0.80';
 import { updateShopButtons } from './shopView.js';
 import { updateCasesButtons } from './casesView.js?v=5.0.80';
 import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.80';
+import { updateBeginnerGuide } from './beginnerGuideView.js';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.80';
 import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
@@ -296,6 +297,7 @@ export function updateHUD() {
   updateActiveBuffsUI();
   updateAutomationTogglesUI();
   updateSmartAssistant();
+  updateBeginnerGuide();
 }
 
 export function updateAutocareUI() {

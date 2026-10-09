@@ -69,6 +69,8 @@ export function getDefaultGameState() {
     turboStarMultTime: 0,
     turboCount: 0,
     meteorsCaught: 0,
+    tickleCount: 0,
+    tutorialRewardClaimed: false,
     currentRunPeakGPS: 0,
     boutiqueLevels: {},
 

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.85 PRO</title>
+  <title>Poop Simulator v5.0.86 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.85">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.86">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.0.84 PRO</span>
+            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.0.86 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             data-i18n-title="header.bugTitle" title="Сообщить об ошибке">
@@ -175,6 +175,53 @@
         </button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- BEGINNER ONBOARDING GUIDANCE ROADMAP (First Steps) -->
+  <div class="max-w-7xl w-full mx-auto px-2 sm:px-4 pt-1 pb-0 shrink-0 select-none" id="beginnerGuideBar">
+    <div
+      class="bg-gradient-to-r from-stone-900 via-stone-950 to-stone-900 border border-emerald-500/40 hover:border-emerald-400/60 rounded-xl px-2.5 py-1 flex flex-col gap-1.5 shadow-md text-xs transition">
+      <!-- Summary Row -->
+      <div class="flex items-center justify-between gap-2 min-w-0">
+        <!-- Left: Step Icon & Title -->
+        <div class="flex items-center gap-2 min-w-0 flex-1">
+          <span class="text-base shrink-0 animate-pulse" id="beginnerStepIcon">🎒</span>
+          <div class="flex items-center gap-1.5 min-w-0 truncate">
+            <span class="text-[9px] text-emerald-400 font-black uppercase tracking-wider shrink-0" data-i18n="tutorial.bannerTitle">Первые шаги:</span>
+            <div class="text-xs text-stone-100 font-bold truncate" id="beginnerStepTitle">
+              <span class="text-emerald-400">Помой какашечку</span> <span class="text-stone-400 hidden sm:inline">(+25% к заводам)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: Progress Bar -->
+        <div class="hidden sm:flex items-center gap-1.5 shrink-0 w-24 sm:w-32">
+          <div class="flex-1 bg-stone-800 h-2 rounded-full overflow-hidden border border-stone-700 relative">
+            <div id="beginnerProgressFill"
+              class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300"
+              style="width: 0%"></div>
+          </div>
+          <span id="beginnerProgressBadge" class="text-[10px] font-mono text-emerald-300 font-bold shrink-0">0 / 9</span>
+        </div>
+
+        <!-- Right: Action & Toggle Buttons -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="beginnerActionBtn"
+            class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-stone-950 font-game text-[9.5px] font-black px-2.5 py-0.5 rounded-lg shadow border border-emerald-300 jelly-btn transition" data-i18n="tutorial.actionBtn">
+            Выполнить ⚡
+          </button>
+          <button id="beginnerToggleListBtn"
+            class="bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white text-[9.5px] font-bold px-2 py-0.5 rounded-lg border border-stone-700 transition jelly-btn" data-i18n="tutorial.listBtn">
+            Список
+          </button>
+        </div>
+      </div>
+
+      <!-- Collapsible Detailed 9-Steps Grid -->
+      <div id="beginnerListDrawer" class="hidden border-t border-stone-800 pt-1.5 mt-0.5">
+        <!-- Rendered dynamically in JS -->
+      </div>
     </div>
   </div>
 
