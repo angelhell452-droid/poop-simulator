@@ -1,6 +1,7 @@
 import { sessionUser } from "./workerAdmin.js";
 import { GUILD_BOSSES, bossByIndex, bossReward, guildLevelFromPoints } from "./src/data/bosses.data.js";
-import { bossClickCap, bossClickPower, bossMaxHp } from "./src/data/bossCombat.js";
+import { bossClickCap, bossClickPower, bossMaxHp, bossTicketDamage, getPetCareBossMult } from "./src/data/bossCombat.js";
+import { add, sub, mul, cmp, isBig, rehydrateBig } from "./src/utils/big.js";
 
 const MEMBER_CAP = 20;
 const APPLICATION_CAP = 10;
@@ -8,6 +9,27 @@ const STRIKE_MS = 15000;
 const STRIKE_CD_MS = 3 * 60 * 60 * 1000;
 const ATTEMPT_MS = 12 * 60 * 60 * 1000;
 const TAG_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+function parseHp(val) {
+  if (val == null || val === "") return 0;
+  if (typeof val === "number") return val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    if (val.startsWith("{")) {
+      try { return JSON.parse(val); } catch (e) { return 0; }
+    }
+    const n = Number(val);
+    return Number.isFinite(n) ? n : 0;
+  }
+  return 0;
+}
+
+function serializeHp(val) {
+  if (val && typeof val === "object" && val.__big) {
+    return JSON.stringify(val);
+  }
+  return val;
+}
 
 function json(headers, payload, status = 200) {
   return new Response(JSON.stringify(payload), { status, headers });
@@ -71,10 +93,14 @@ export async function ensureGuildSchema(db) {
       boss_max_hp REAL NOT NULL DEFAULT 0,
       boss_started_ms INTEGER NOT NULL DEFAULT 0,
       boss_deadline_ms INTEGER NOT NULL DEFAULT 0,
+      boss_respawn_ms INTEGER NOT NULL DEFAULT 0,
       tag_changed_ms INTEGER NOT NULL DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now'))
     );
   `).run();
+  try {
+    await db.prepare(`ALTER TABLE guilds ADD COLUMN boss_respawn_ms INTEGER NOT NULL DEFAULT 0`).run();
+  } catch (_) {}
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS guild_members (
       player_id TEXT PRIMARY KEY,
@@ -266,24 +292,29 @@ async function gearOf(db, playerId) {
   const row = await db.prepare(`
     SELECT stage,
       json_extract(save_data, '$.game.equippedKnife') as knifeId,
-      json_extract(save_data, '$.game.knifeStars') as knifeStars
+      json_extract(save_data, '$.game.knifeStars') as knifeStars,
+      json_extract(save_data, '$.game.clean') as clean,
+      json_extract(save_data, '$.game.hunger') as hunger,
+      json_extract(save_data, '$.game.happy') as happy
     FROM player_saves WHERE player_id = ? LIMIT 1
   `).bind(playerId).first();
   const knifeId = textId(row?.knifeId);
   const stars = knifeId ? bagNumber(row?.knifeStars, knifeId) : 1;
+  const careMult = getPetCareBossMult(row?.hunger ?? 100, row?.clean ?? 100, row?.happy ?? 100);
   return {
     stage: Math.max(1, Number(row?.stage) || 1),
     knifeId,
-    stars
+    stars,
+    careMult
   };
 }
 
 async function settleBoss(db, guild) {
   if (!guild || !Number(guild.boss_index)) return { guild, result: null };
   const now = Date.now();
-  const hp = Number(guild.boss_hp) || 0;
-  if (hp > 0 && now < Number(guild.boss_deadline_ms)) return { guild, result: null };
-  const result = await finishAttempt(db, guild, hp <= 0);
+  const hp = parseHp(guild.boss_hp);
+  if (cmp(hp, 0) > 0 && now < Number(guild.boss_deadline_ms)) return { guild, result: null };
+  const result = await finishAttempt(db, guild, cmp(hp, 0) <= 0);
   return { guild: await guildRow(db, guild.id), result };
 }
 
@@ -296,7 +327,8 @@ async function finishAttempt(db, guild, win) {
   const reward = bossReward(index, circle);
   if (win && boss) {
     const points = (Number(guild.points) || 0) + reward.points;
-    await db.prepare(`UPDATE guilds SET points = ? WHERE id = ?`).bind(points, guild.id).run();
+    const respawnMs = ended + 12 * 60 * 60 * 1000;
+    await db.prepare(`UPDATE guilds SET points = ?, boss_respawn_ms = ? WHERE id = ?`).bind(points, respawnMs, guild.id).run();
     await db.prepare(`
       UPDATE guild_unlocks SET clears = clears + 1 WHERE guild_id = ? AND boss_index = ?
     `).bind(guild.id, index).run();
@@ -305,6 +337,10 @@ async function finishAttempt(db, guild, win) {
         INSERT OR IGNORE INTO guild_unlocks (guild_id, boss_index, clears) VALUES (?, ?, 0)
       `).bind(guild.id, index + 1).run();
     }
+  } else if (!win) {
+    // Штраф при поражении (истек 12-часовой рейд-таймер): -40% очков гильдии
+    const points = Math.max(0, Math.floor((Number(guild.points) || 0) * 0.6));
+    await db.prepare(`UPDATE guilds SET points = ? WHERE id = ?`).bind(points, guild.id).run();
   }
   const { results: members } = await db.prepare(`
     SELECT player_id as playerId FROM guild_members WHERE guild_id = ?
@@ -387,9 +423,10 @@ function publicBoss(guild, me) {
     theme: boss.theme || "",
     tier: boss.tier || "",
     circle: Number(guild.boss_circle) || 1,
-    hp: Math.max(0, Number(guild.boss_hp) || 0),
-    maxHp: Math.max(1, Number(guild.boss_max_hp) || 1),
+    hp: parseHp(guild.boss_hp),
+    maxHp: parseHp(guild.boss_max_hp),
     deadlineMs: Number(guild.boss_deadline_ms) || 0,
+    bossRespawnMs: Number(guild.boss_respawn_ms) || 0,
     ...strikePhase(guild, me)
   };
 }
@@ -399,7 +436,7 @@ async function damageOf(db, guild, playerId) {
     SELECT damage FROM guild_hits
     WHERE guild_id = ? AND player_id = ? AND started_ms = ? LIMIT 1
   `).bind(guild.id, playerId, guild.boss_started_ms).first();
-  return Number(row?.damage) || 0;
+  return parseHp(row?.damage);
 }
 
 async function ensureBossUnlockChain(db, guildId) {
@@ -507,6 +544,7 @@ async function viewOf(db, playerId) {
       tag: guild.tag,
       level: guildLevelFromPoints(guild.points),
       points: Number(guild.points) || 0,
+      bossRespawnMs: Number(guild.boss_respawn_ms) || 0,
       role: member.role,
       canInvite,
       canSummon: canInvite,
@@ -623,6 +661,7 @@ export async function handleGuildPost(action, body, req, env, headers) {
   if (action === "guild_gate") return setGate(env.DB, headers, me, body?.epoch);
   if (action === "guild_summon") return summon(env.DB, headers, me, Number(body?.bossIndex));
   if (action === "guild_strike") return strike(env.DB, headers, me, Number(body?.clicks));
+  if (action === "guild_ticket") return contributeTickets(env.DB, headers, me, Number(body?.tickets));
   if (action === "mail_claim") return claimMail(env.DB, headers, me, Number(body?.id));
   return json(headers, { success: false, error: "Неизвестное действие" }, 400);
 }
@@ -872,12 +911,17 @@ async function summon(db, headers, me, bossIndex) {
   if (!unlock) return json(headers, { success: false, error: "Этот босс ещё закрыт" }, 403);
   const circle = (Number(unlock.clears) || 0) + 1;
   const now = Date.now();
+  if (guild.boss_respawn_ms && now < Number(guild.boss_respawn_ms)) {
+    const remainMs = Number(guild.boss_respawn_ms) - now;
+    const remainH = Math.ceil(remainMs / (3600 * 1000));
+    return json(headers, { success: false, error: `Боссы отдыхают после победы ещё ${remainH} ч.` }, 409);
+  }
   const hp = bossMaxHp(boss.index, circle, await memberCount(db, guild.id));
   await db.prepare(`
     UPDATE guilds
     SET boss_index = ?, boss_circle = ?, boss_hp = ?, boss_max_hp = ?, boss_started_ms = ?, boss_deadline_ms = ?
     WHERE id = ?
-  `).bind(boss.index, circle, hp, hp, now, now + ATTEMPT_MS, guild.id).run();
+  `).bind(boss.index, circle, serializeHp(hp), serializeHp(hp), now, now + ATTEMPT_MS, guild.id).run();
   return json(headers, { success: true, ...(await viewOf(db, me)) });
 }
 
@@ -938,7 +982,7 @@ async function strike(db, headers, me, reported) {
             myDamage: await damageOf(db, guild, me),
             myClicks: clicks,
             myPlungers: 0,
-            perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars),
+            perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult),
             cap: bossClickCap(gear.knifeId, gear.stars),
             durationMs: STRIKE_MS
           },
@@ -973,18 +1017,22 @@ async function strike(db, headers, me, reported) {
   const elapsed = Math.min(STRIKE_MS, Math.max(0, now - openMs)) / 1000;
   const allowed = Math.floor(cap * elapsed);
   const want = Math.max(0, Math.min(Math.floor(reported) || 0, allowed));
-  const add = want - clicks;
-  if (add > 0) {
-    const tick = add * bossClickPower(gear.stage, gear.knifeId, gear.stars);
-    const hp = Math.max(0, (Number(guild.boss_hp) || 0) - tick);
-    await db.prepare(`UPDATE guilds SET boss_hp = ? WHERE id = ?`).bind(hp, guild.id).run();
+  const addClicks = want - clicks;
+  if (addClicks > 0) {
+    const power = bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult);
+    const tick = mul(addClicks, power);
+    const curHp = parseHp(guild.boss_hp);
+    const hp = sub(curHp, tick);
+    const isDead = cmp(hp, 0) <= 0;
+
+    await db.prepare(`UPDATE guilds SET boss_hp = ? WHERE id = ?`).bind(serializeHp(hp), guild.id).run();
     await db.prepare(`UPDATE guild_members SET strike_clicks = ? WHERE player_id = ?`).bind(want, me).run();
     await db.prepare(`
       INSERT INTO guild_hits (guild_id, player_id, started_ms, damage) VALUES (?, ?, ?, ?)
       ON CONFLICT(guild_id, player_id, started_ms) DO UPDATE SET damage = damage + excluded.damage
-    `).bind(guild.id, me, guild.boss_started_ms, tick).run();
+    `).bind(guild.id, me, guild.boss_started_ms, serializeHp(tick)).run();
     guild = await guildRow(db, guild.id);
-    if (hp <= 0) {
+    if (isDead) {
       const myDamage = await damageOf(db, guild, me);
       const summary = await finishAttempt(db, guild, true);
       return json(headers, {
@@ -998,7 +1046,7 @@ async function strike(db, headers, me, reported) {
             myDamage,
             myClicks: want,
             myPlungers: myDamage > 0 ? summary.plungers : 0,
-            perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars),
+            perClick: power,
             cap
           }
         }
@@ -1013,9 +1061,76 @@ async function strike(db, headers, me, reported) {
     fight: {
       ...boss,
       blow: blowOf(gear, {
-        added: add,
+        added: addClicks,
         myDamage: await damageOf(db, current, me),
         clicks: want
+      })
+    }
+  });
+}
+
+async function contributeTickets(db, headers, me, ticketsCount) {
+  const mine = await membership(db, me);
+  if (!mine) return json(headers, { success: false, error: "Вы не в гильдии" }, 404);
+  const live = await guildRow(db, mine.guildId);
+  const settled = await settleBoss(db, live);
+  let guild = settled.guild;
+  if (!Number(guild.boss_index)) return json(headers, { success: false, error: "Босс не вызван" }, 409);
+
+  const count = Math.max(1, Math.min(5, Math.floor(Number(ticketsCount) || 1)));
+  const gear = await gearOf(db, me);
+  const power = bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult);
+  const cap = bossClickCap(gear.knifeId, gear.stars);
+  const damagePerTicket = bossTicketDamage(power, cap);
+  const totalDamage = mul(damagePerTicket, count);
+
+  const curHp = parseHp(guild.boss_hp);
+  const hp = sub(curHp, totalDamage);
+  const isDead = cmp(hp, 0) <= 0;
+
+  await db.prepare(`UPDATE guilds SET boss_hp = ? WHERE id = ?`).bind(serializeHp(hp), guild.id).run();
+  await db.prepare(`
+    INSERT INTO guild_hits (guild_id, player_id, started_ms, damage) VALUES (?, ?, ?, ?)
+    ON CONFLICT(guild_id, player_id, started_ms) DO UPDATE SET damage = damage + excluded.damage
+  `).bind(guild.id, me, guild.boss_started_ms, serializeHp(totalDamage)).run();
+
+  guild = await guildRow(db, guild.id);
+  if (isDead) {
+    const myDamage = await damageOf(db, guild, me);
+    const summary = await finishAttempt(db, guild, true);
+    return json(headers, {
+      success: true,
+      mailReady: true,
+      ticketsSpent: count,
+      damageDealt: totalDamage,
+      fight: {
+        ended: "win",
+        result: {
+          ...summary,
+          kind: "win",
+          myDamage,
+          myClicks: count * 500,
+          myPlungers: myDamage > 0 ? summary.plungers : 0,
+          perClick: power,
+          cap
+        }
+      }
+    });
+  }
+
+  const freshMember = await membership(db, me);
+  const current = await guildRow(db, guild.id);
+  const boss = publicBoss(current, freshMember);
+  return json(headers, {
+    success: true,
+    ticketsSpent: count,
+    damageDealt: totalDamage,
+    fight: {
+      ...boss,
+      blow: blowOf(gear, {
+        added: 0,
+        myDamage: await damageOf(db, current, me),
+        clicks: Number(freshMember?.strikeClicks) || 0
       })
     }
   });

@@ -7,7 +7,7 @@ import { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePass
 export { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult };
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
-import { dampenGearMult, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.80';
+import { dampenGearMult, getCleanIncomeMult, getHungerClickMult, getHappyCritBonus, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, getTutorialClickMult, getTutorialCritBonus, getTutorialIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.80';
 import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.80';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { archetypeName } from '../i18n/localize.js';
@@ -126,19 +126,19 @@ function knifeBonusStack(knife, perStar) {
 export function getKnifeClickMult(knife) {
   if (!knife) return 1;
   const base = getKnifeEffectiveClickMult(knife);
-  const scaled = KNIFE_BALANCE_CONFIG.softCapEnabled
+  const scaled = (KNIFE_BALANCE_CONFIG.softCapEnabled && !isBig(base))
     ? softCap(base, KNIFE_BALANCE_CONFIG.clickKnee, KNIFE_BALANCE_CONFIG.clickPower ?? 0.65)
     : base;
-  return scaled * knifeBonusStack(knife, 0.35);
+  return mul(scaled, knifeBonusStack(knife, 0.35));
 }
 
 export function getKnifePassiveMult(knife) {
   if (!knife) return 1;
   const base = getKnifeEffectivePassiveMult(knife);
-  const scaled = KNIFE_BALANCE_CONFIG.softCapEnabled
+  const scaled = (KNIFE_BALANCE_CONFIG.softCapEnabled && !isBig(base))
     ? softCap(base, KNIFE_BALANCE_CONFIG.passiveKnee, KNIFE_BALANCE_CONFIG.passivePower ?? 0.28)
     : base;
-  return scaled * knifeBonusStack(knife, 0.25);
+  return mul(scaled, knifeBonusStack(knife, 0.25));
 }
 
 export function getKnifeShownBonuses(knife) {
@@ -185,8 +185,13 @@ function getLateComboMult() {
 }
 
 function pushAboveOne(lines, name, value, text) {
+  if (value == null) return;
+  if (isBig(value)) {
+    if (cmp(value, 1) > 0) lines.push({ name, value, text: text || `x${formatNumber(value)}` });
+    return;
+  }
   const v = Number(value) || 1;
-  if (v > 1.001) lines.push({ name, value: v, text });
+  if (v > 1.001) lines.push({ name, value: v, text: text || `x${formatNumber(v)}` });
 }
 
 function pushArchetype(lines, mult) {
@@ -247,9 +252,7 @@ function describeFactory(fac, idx, count) {
   const milestone = milestoneMult(count);
   const raw = mul(mul(mul(count, fac.baseCps), milestone * knife * quantum * core), 1);
   return { raw, milestone, knife, quantum, core, count, perCopy: fac.baseCps };
-}
-
-function passiveGlobalLines() {
+}function passiveGlobalLines() {
   const styles = knifeStyleBonuses();
   const turboMult = 1 + talentLevel('turbo_pipe') * 0.15;
   const goldRushMult = SHOP_ITEMS.find(i => i.id === 'upg_goldrush')?.owned ? 1.25 : 1;
@@ -260,7 +263,7 @@ function passiveGlobalLines() {
   const cosmicMult = Math.pow(1.20, Math.floor(talentLevel('cosmic_resonance') / 2));
   const plungersMult = getPlungersIncomeMult();
   const facOverdriveMult = 1 + (GAME.transcendUpgrades?.factoryOverdrive || 0) * 0.20;
-  const cleanBuff = 1 + Math.max(0, (GAME.clean || 0) / 100) * 0.25;
+  const cleanBuff = getCleanIncomeMult();
   const knifePassiveMult = getKnifePassiveMult(styles.knife);
   let archMult = 1;
   if (GAME.archetype === 'tycoon') archMult = 1.5;
@@ -276,13 +279,12 @@ function passiveGlobalLines() {
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
   const omniRelicMult = getOmniRelicMult();
-  const gearRaw = rollsMult * plungersMult;
-  const gearMult = dampenGearMult(gearRaw, getPhaseForStage(GAME.evoStage).id);
   const late = getLateComboMult();
+  const tutIncomeMult = getTutorialIncomeMult();
 
   const gearBits = [];
   pushAboveOne(gearBits, 'Эхо смыва', rollsMult);
-  pushAboveOne(gearBits, 'Вантузы', plungersMult);
+  pushAboveOne(gearBits, 'Буст Прорывов', plungersMult);
 
   const lines = [];
   pushAboveOne(lines, 'Разгон заводов', turboMult);
@@ -292,12 +294,11 @@ function passiveGlobalLines() {
   pushAboveOne(lines, 'Нож-бабочка', styles.butterfly);
   pushAboveOne(lines, 'Кристальный резонатор', crystalMult);
   pushAboveOne(lines, 'Форма', evo.mult);
-  pushAboveOne(lines, 'Снаряжение', gearMult);
   pushAboveOne(lines, 'Мягкость слоёв', softRollsMult);
   pushAboveOne(lines, 'Космический резонанс', cosmicMult);
   pushAboveOne(lines, 'Омни-множитель', omniRelicMult);
   pushAboveOne(lines, 'Гипер-ускоритель', facOverdriveMult);
-  pushAboveOne(lines, 'Чистота', cleanBuff);
+  pushAboveOne(lines, 'Чистота питомца', cleanBuff);
   pushArchetype(lines, archMult);
   pushAboveOne(lines, 'Благословение форм', evoBlessingMult);
   pushAboveOne(lines, 'Эссенция омниверса', omniWealthMult);
@@ -305,19 +306,27 @@ function passiveGlobalLines() {
   pushAboveOne(lines, 'Космическая синергия', cosmicSynergyMult);
   pushAboveOne(lines, 'Разлом времени', timeWarpMult);
   pushAboveOne(lines, 'Врата вечности', riftMult);
-  pushAboveOne(lines, 'Идеал', idealMult);
+  pushAboveOne(lines, 'Идеальный питомец', idealMult);
   pushAboveOne(lines, 'Собранный билд', late);
   pushAboveOne(lines, 'Темп игры', INCOME_PACE);
   pushAboveOne(lines, 'VIP', getVipIncomeMult());
   pushAboveOne(lines, 'Горизонт', horizonIncomeMult());
   pushAboveOne(lines, 'Гильдия', guildPresenceMult());
+  pushAboveOne(lines, 'Бонус обучения', tutIncomeMult);
 
-  const product = turboMult * goldRushMult * overclockMult * styles.butterfly
-    * crystalMult * evo.mult * gearMult * knifePassiveMult * softRollsMult * cosmicMult * omniRelicMult
+  // Сквозная бесконечная формула: Доход = (База * Таланты * Буст Смывов) * Нож * Буст Прорывов * Реликвии * Шапки/Одежда * Баффы Ухода
+  const numProd = turboMult * goldRushMult * overclockMult * styles.butterfly
+    * crystalMult * softRollsMult * cosmicMult * omniRelicMult
     * facOverdriveMult * cleanBuff * archMult * evoBlessingMult * omniWealthMult
     * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult * idealMult * late
-    * getIncomePace() * horizonIncomeMult() * guildPresenceMult();
-  return { lines, gearBits, product, gearRaw, gearMult };
+    * getIncomePace() * horizonIncomeMult() * guildPresenceMult() * tutIncomeMult;
+
+  let product = mul(numProd, rollsMult);
+  product = mul(product, plungersMult);
+  product = mul(product, knifePassiveMult);
+  product = mul(product, evo.mult);
+
+  return { lines, gearBits, product, gearRaw: rollsMult, gearMult: rollsMult };
 }
 
 function clickParts() {
@@ -341,7 +350,7 @@ function clickParts() {
   const katanaBonus = knife && knife.style === 'katana'
     ? Math.min(3, 1 + Math.floor(GAME.evoStage / 50) * 0.15)
     : 1;
-  const hungerBuff = 1 + Math.max(0, (GAME.hunger || 0) / 100) * 0.25;
+  const hungerBuff = getHungerClickMult();
 
   let archMult = 1;
   if (GAME.archetype === 'clicker') archMult = 1.5;
@@ -358,21 +367,15 @@ function clickParts() {
   const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.12;
   const riftMult = getRiftMult();
   const idealMult = getIdealMult();
-  const gearRaw = rollsMult * plungersMult;
-  const gearMult = dampenGearMult(gearRaw, getPhaseForStage(GAME.evoStage).id);
   const late = getLateComboMult();
-  const product = evo.mult * gearMult * knifeClickMult * hatClickBoost * skinClickMult * softRollsMult * cosmicMult * synergyMult * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult * idealMult * late * getIncomePace() * horizonIncomeMult() * guildPresenceMult();
-  const syncShare = getClickIncomeShare();
-  const syncCap = BARE_CLICK_CAP;
-  const syncRate = syncShare > 0 ? syncShare / syncCap : 0;
+  const tutClickMult = getTutorialClickMult();
 
   const gearBits = [];
   pushAboveOne(gearBits, 'Эхо смыва', rollsMult);
-  pushAboveOne(gearBits, 'Вантузы', plungersMult);
+  pushAboveOne(gearBits, 'Буст Прорывов', plungersMult);
 
   const lines = [];
   pushAboveOne(lines, 'Форма', evo.mult);
-  pushAboveOne(lines, 'Снаряжение', gearMult);
   pushAboveOne(lines, 'Нож', knifeClickMult);
   pushAboveOne(lines, 'Шапка', hatClickBoost);
   pushAboveOne(lines, 'Скин', skinClickMult);
@@ -383,20 +386,36 @@ function clickParts() {
   pushAboveOne(lines, 'Омни-множитель', omniRelicMult);
   pushAboveOne(lines, 'Турбо', turboMult);
   pushAboveOne(lines, 'Катана', katanaBonus);
-  pushAboveOne(lines, 'Сытость', hungerBuff);
+  pushAboveOne(lines, 'Сытость питомца', hungerBuff);
   pushArchetype(lines, archMult);
   pushAboveOne(lines, 'Благословение форм', evoBlessingMult);
   pushAboveOne(lines, 'Эссенция омниверса', omniWealthMult);
   pushAboveOne(lines, 'Эссенция сингулярности', sparkMult);
   pushAboveOne(lines, 'Космическая синергия', cosmicSynergyMult);
   pushAboveOne(lines, 'Врата вечности', riftMult);
-  pushAboveOne(lines, 'Идеал', idealMult);
+  pushAboveOne(lines, 'Идеальный питомец', idealMult);
   pushAboveOne(lines, 'Собранный билд', late);
   pushAboveOne(lines, 'Темп игры', INCOME_PACE);
   pushAboveOne(lines, 'VIP', getVipIncomeMult());
   pushAboveOne(lines, 'Горизонт', horizonIncomeMult());
   pushAboveOne(lines, 'Гильдия', guildPresenceMult());
-  return { lines, gearBits, product, syncRate, syncShare, syncCap, gearRaw, gearMult };
+  pushAboveOne(lines, 'Бонус обучения', tutClickMult);
+
+  const numProd = hatClickBoost * skinClickMult * softRollsMult * cosmicMult * synergyMult
+    * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult
+    * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult
+    * idealMult * late * getIncomePace() * horizonIncomeMult() * guildPresenceMult() * tutClickMult;
+
+  let product = mul(numProd, rollsMult);
+  product = mul(product, plungersMult);
+  product = mul(product, knifeClickMult);
+  product = mul(product, evo.mult);
+
+  const syncShare = getClickIncomeShare();
+  const syncCap = BARE_CLICK_CAP;
+  const syncRate = syncShare > 0 ? syncShare / syncCap : 0;
+
+  return { lines, gearBits, product, syncRate, syncShare, syncCap, gearRaw: rollsMult, gearMult: rollsMult };
 }
 
 function multRows(parts) {
@@ -404,9 +423,6 @@ function multRows(parts) {
   parts.gearBits.forEach(bit => {
     rows.push({ name: bit.name, text: `x${formatNumber(bit.value)}`, detail: true });
   });
-  if (parts.gearRaw > parts.gearMult * 1.001) {
-    rows.push({ name: 'Снаряжение до потолка', text: `x${formatNumber(parts.gearRaw)}`, detail: true });
-  }
   parts.lines.forEach(line => {
     rows.push({ name: line.name, text: line.text || `x${formatNumber(line.value)}` });
   });
@@ -434,10 +450,9 @@ export function getClickBreakdown() {
   }
   const critTalent = TALENTS.find(t => t.id === 'crit_master');
   const luckLvl = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
-  const happyCrit = Math.max(0, (GAME.happy || 0) / 100) * 0.20;
-  const clickerCrit = GAME.archetype === 'clicker' ? 0.10 : 0;
-  const critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.012 : 0.05) + luckLvl * 0.004 + happyCrit + clickerCrit);
-  const critMultiplier = 20 * (1 + (critTalent ? critTalent.level * 0.35 : 0));
+  const happyCrit = getHappyCritBonus();
+  const critChance = Math.min(0.75, 0.008 + (critTalent ? critTalent.level * 0.012 : 0) + luckLvl * 0.004 + happyCrit + clickerCrit + getTutorialCritBonus());
+  const critMultiplier = 4.0 * (1 + (critTalent ? critTalent.level * 0.35 : 0));
   rows.push({
     name: 'Крит, отдельно от числа',
     text: `${formatNumber(critChance * 100)}% · x${formatNumber(critMultiplier)}`,

@@ -1,4 +1,4 @@
-﻿import { GAME } from './state.js?v=5.0.80';
+import { GAME } from './state.js?v=5.0.80';
 import { getPassiveIncome } from '../economy/production.js?v=5.0.80';
 import { processBatchedClicks, addPendingClicks } from '../systems/clickService.js?v=5.0.80';
 import { decayNeeds, runAutoCare } from '../systems/petCareService.js';
@@ -39,6 +39,7 @@ export function gameEngineTick() {
   const passivePerSec = getPassiveIncome();
   const passiveGained = mul(passivePerSec, dt);
   GAME.biomass = gainBio(GAME.biomass, passiveGained);
+  GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, passiveGained);
   GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, passiveGained);
   GAME.cycleBiomass = gainBio(GAME.cycleBiomass, passiveGained);
 

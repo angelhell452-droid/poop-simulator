@@ -100,6 +100,14 @@ function wipeRuntimeCatalogs() {
   GAME.firstCaseDiscountUsed = false;
   GAME.firstCaseNotified = false;
   GAME.totalClicks = 0;
+  GAME.tutorialStepIndex = 0;
+  GAME.tutorialCompleted = false;
+  GAME.tutorialCritBonus = 0;
+  GAME.tutorialClickBonus = 0;
+  GAME.tutorialIncomeMult = 1;
+  GAME.tutorialTempBoostUntil = 0;
+  GAME.tutorialCareDone = { wash: false, feed: false, tickle: false };
+  GAME.guildTicketsContributed = 0;
   GAME.phaseEcho = {};
   GAME.biomass = 0;
   GAME.cycleBiomass = 0;
@@ -166,8 +174,15 @@ export function applySaveDataSafely(rawData) {
 
   // Safety sanitisers
   GAME.biomass = keepBio(GAME.biomass);
+  GAME.lifetimeBiomassInCurrentCycle = keepBio(GAME.lifetimeBiomassInCurrentCycle ?? GAME.cycleBiomass ?? 0);
   GAME.allTimeBiomass = keepBio(GAME.allTimeBiomass);
   GAME.cycleBiomass = keepBio(GAME.cycleBiomass);
+  GAME.breakthroughCount = Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
+  GAME.flushCount = Math.max(0, Math.floor(Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0));
+  GAME.guildTickets = Math.max(0, Math.min(5, Math.floor(Number(GAME.guildTickets) || 0)));
+  GAME.clicksTowardsTicket = Math.max(0, Math.floor(Number(GAME.clicksTowardsTicket) || 0));
+  GAME.vipPass = Boolean(GAME.vipPass);
+  GAME.vipPassExpires = Math.max(0, Math.floor(Number(GAME.vipPassExpires) || 0));
   GAME.horizonSparks = Math.max(0, Math.floor(Number(GAME.horizonSparks) || 0));
   if (!GAME.horizonUpgrades || typeof GAME.horizonUpgrades !== 'object') GAME.horizonUpgrades = { pace: 0, seal: 0 };
   GAME.horizonUpgrades.pace = Math.max(0, Math.min(5, Math.floor(Number(GAME.horizonUpgrades.pace) || 0)));
@@ -187,6 +202,23 @@ export function applySaveDataSafely(rawData) {
   if (!Number.isFinite(GAME.pairPlungersFromFlushes) || GAME.pairPlungersFromFlushes < 0) GAME.pairPlungersFromFlushes = 0;
   const phaseCap = maxUnlockedStage(GAME.totalTranscend || 0);
   if (GAME.evoStage > phaseCap) GAME.evoStage = phaseCap;
+
+  GAME.tutorialStepIndex = Math.max(0, Math.min(12, Math.floor(Number(GAME.tutorialStepIndex) || 0)));
+  GAME.tutorialCompleted = Boolean(GAME.tutorialCompleted);
+  GAME.tutorialCritBonus = Math.max(0, Number(GAME.tutorialCritBonus) || 0);
+  GAME.tutorialClickBonus = Math.max(0, Number(GAME.tutorialClickBonus) || 0);
+  GAME.tutorialIncomeMult = Math.max(1, Number(GAME.tutorialIncomeMult) || 1);
+  GAME.tutorialTempBoostUntil = Math.max(0, Math.floor(Number(GAME.tutorialTempBoostUntil) || 0));
+  if (!GAME.tutorialCareDone || typeof GAME.tutorialCareDone !== 'object') {
+    GAME.tutorialCareDone = { wash: false, feed: false, tickle: false };
+  } else {
+    GAME.tutorialCareDone = {
+      wash: Boolean(GAME.tutorialCareDone.wash),
+      feed: Boolean(GAME.tutorialCareDone.feed),
+      tickle: Boolean(GAME.tutorialCareDone.tickle)
+    };
+  }
+  GAME.guildTicketsContributed = Math.max(0, Math.floor(Number(GAME.guildTicketsContributed) || 0));
 
   if (typeof data.feedCount === 'number') setFeedCount(data.feedCount);
   if (typeof data.washCount === 'number') setWashCount(data.washCount);

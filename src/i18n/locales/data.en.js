@@ -1,9 +1,13 @@
 /** EN data strings (patched). RU remains in src/data as fallback. */
 export default {
-  "news.0.title": "Case Overhaul & Massive Knife Buff!",
-  "news.0.date": "October 8, 2026",
-  "news.0.tag": "Update",
-  "news.0.body": "We completely overhauled weapon cases in favor of players! Every case now features exactly 18 knives, and the power spread within each case has increased up to 15x — making high-tier drops truly game-changing. Each case's 1% jackpot knife grants the top blade of the next case tier, and the legendary Karambit Dragon Lore now boosts your power up to x500k with no hidden caps!",
+  "news.0.title": "Patch 5.1: The Infinite Ascension & System Rebalance!",
+  "news.0.date": "October 10, 2026",
+  "news.0.tag": "Patch 5.1",
+  "news.0.body": "The era of Infinite Idle is here! We've overhauled the core economy with big.js infinite numbers, removed all progression dampeners, launched a 12-step Onboarding Campaign with powerful rewards, integrated pet care buffs directly into global income and raid boss damage, and optimized MAX factory purchases at ratio r=1.4. Ascend to infinity!",
+  "news.1.title": "Case Overhaul & Massive Knife Buff!",
+  "news.1.date": "October 8, 2026",
+  "news.1.tag": "Update",
+  "news.1.body": "We completely overhauled weapon cases in favor of players! Every case now features exactly 18 knives, and the power spread within each case has increased up to 15x — making high-tier drops truly game-changing. Each case's 1% jackpot knife grants the top blade of the next case tier, and the legendary Karambit Dragon Lore now boosts your power up to x500k with no hidden caps!",
   "boss.acid-duck.name": "Acid Duck",
   "boss.acid-duck.theme": "Chemical Attack",
   "boss.angry-corn.name": "Angry Corn Kernel",

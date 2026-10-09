@@ -1,4 +1,4 @@
-﻿// Values that fit in a JS number stay numbers, so epochs 1–40 match the old math.
+// Values that fit in a JS number stay numbers, so epochs 1–40 match the old math.
 // Past ~1e308 the value is { __big, m, e } meaning m * 10^e, with 1 <= m < 10.
 
 const EXP_LIMIT = 1e15;
@@ -12,6 +12,11 @@ function normalize(mantissa, exponent) {
   let m = mantissa;
   let e = exponent;
   if (m < 0) return 0;
+  if (e % 1 !== 0) {
+    const floorE = Math.floor(e);
+    m *= Math.pow(10, e - floorE);
+    e = floorE;
+  }
   const shift = Math.floor(Math.log10(m));
   if (shift !== 0 && Number.isFinite(shift)) {
     m /= Math.pow(10, shift);
@@ -146,4 +151,27 @@ export function gainBio(current, amount) {
 
 export function spendBio(current, amount) {
   return sub(current || 0, amount || 0);
+}
+
+export function bigPow(base, exponent) {
+  const p = Number(exponent);
+  if (!Number.isFinite(p) || p === 0) return 1;
+  const b = rehydrateBig(base);
+  if (cmp(b, 0) <= 0) return 0;
+  if (cmp(b, 1) === 0) return 1;
+
+  if (!isBig(b) && p > 0 && p < 100) {
+    const raw = Math.pow(b, p);
+    if (Number.isFinite(raw) && raw < 1e308) return raw;
+  }
+
+  const logVal = log10Of(b);
+  const newLog = logVal * p;
+  if (!Number.isFinite(newLog)) return bigPow10(EXP_LIMIT);
+  if (newLog > EXP_LIMIT) return bigPow10(EXP_LIMIT);
+  if (newLog < -8) return 0;
+
+  const e = Math.floor(newLog);
+  const m = Math.pow(10, newLog - e);
+  return normalize(m, e);
 }

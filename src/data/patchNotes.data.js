@@ -2,6 +2,42 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.1.0 PRO',
+    date: '10 Октября 2026',
+    dateEn: 'October 10, 2026',
+    title: 'Патч 5.1: Великое Восхождение, 12 шагов онбординга и ребаланс ядра Infinite Idle',
+    titleEn: 'Patch 5.1: The Infinite Ascension, 12-Step Onboarding & Infinite Idle Rebalance',
+    badge: 'Патч 5.1',
+    badgeEn: 'Patch 5.1',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🗺️',
+        text: '12-ступенчатая Квестовая Лесенка (Onboarding): Полноценная стартовая кампания от первого клика до рейдов в Гильдии с прогресс-баром, сочными наградами и торжественным триумфом!',
+        textEn: '12-Step Onboarding Questline: Complete starting campaign from first click to Guild raids with dynamic progress bars, juicy rewards, and triumph modal celebration!'
+      },
+      {
+        type: 'balance',
+        icon: '🧼',
+        text: 'Синергия Ухода: Баффы Чистоты (доход), Сытости (клики) и Настроения (криты) теперь сквозным образом перемножаются со всеми множителями big.js и усиливают рейдовый урон по боссам!',
+        textEn: 'Pet Care Synergy: Cleanliness (income), Hunger (clicks), and Happiness (crit chance) buffs now multiply through the full big.js chain and empower raid boss strikes!'
+      },
+      {
+        type: 'perf',
+        icon: '♾️',
+        text: 'Бесконечная математика: Устранено демпфирование Прорывов при расчете ножей; расчеты кнопки MAX на коэффициенте r=1.4 полностью защищены от переполнения.',
+        textEn: 'Infinite Math: Removed Breakthrough dampening on knives; MAX button purchases with ratio r=1.4 fully protected from overflow.'
+      },
+      {
+        type: 'ui',
+        icon: '🏆',
+        text: 'Модальное окно триумфа: Завершение обучающей кампании награждается торжественным окном «Вы полностью готовы к бесконечности!» и скрытием плашки.',
+        textEn: 'Triumph Modal: Finishing the onboarding campaign rewards players with a celebration modal "You are ready for infinity!" and cleanly hides the tutorial bar.'
+      }
+    ]
+  },
+  {
     version: 'v5.0.87 PRO',
     date: '9 Октября 2026',
     dateEn: 'October 9, 2026',

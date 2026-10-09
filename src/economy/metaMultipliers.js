@@ -58,60 +58,31 @@ function openPairEchoBonus(at, closedPairs, previewPhase = 0, previewAdd = 0) {
   return bonus;
 }
 
-/**
- * Flush income. A closed pair is one gift of +2 (x3 together), whatever the flush count was.
- * The open pair still uses real echoes. Existing saves keep the old number when it is higher.
- * Rolls in the wallet do not multiply income.
- */
-export function getRollsIncomeMult(previewPhase = 0, previewAdd = 0, atPhaseId = 0) {
-  const at = atPhaseId || echoViewpoint();
-  const closed = Math.max(0, GAME.totalTranscend || 0);
-  const previewClosed = pairOf(previewPhase) <= closed;
-  const add = previewClosed ? 0 : previewAdd;
-  const legacy = legacyEchoBonus(at, 0, 0);
-  const gifted = closed * 2 + openPairEchoBonus(at, closed, previewPhase, add);
-  return 1 + Math.max(legacy, gifted);
+import { bigPow } from '../utils/big.js?v=5.0.80';
+
+export function getFlushIncomeMult() {
+  const flushes = Math.max(0, GAME.flushCount ?? GAME.totalPrestiges ?? 0);
+  return 1 + 0.5 * flushes;
+}
+
+export function getBreakthroughIncomeMult() {
+  const b = Math.max(0, GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
+  if (b === 0) return 1;
+  return bigPow(1 + b, b);
 }
 
 /**
- * Gear a run is expected to have by this epoch: echo, plungers, knife and hat.
- * Factories are tuned to it. Live gear above the knee is dampened.
+ * Flush income boost: +50% per Flush level. Unspendable level, stays when rolls are spent.
  */
-export function expectedAccountMult(phaseId) {
-  const id = Math.min(CLASSIC_EPOCHS, Math.max(1, phaseId || 1));
-  if (id === 1) return 1.0;
-  if (id === 2) return 2.2;
-  if (id === 3) return 4.5;
-  if (id === 4) return 8.0;
-  return 11.5 * Math.pow(1.14, id - 5);
+export function getRollsIncomeMult() {
+  return getFlushIncomeMult();
 }
 
 /**
- * From epoch 11 a built account pulls ahead of the factory curve.
- * readiness 0 leaves income unchanged. readiness 1 is the tuned full set:
- * knife, hat, plungers, and talents with the shop or relics.
- * Tuned so that run reaches form 20000 in about 77 hours. Epochs 1–10 stay put.
+ * Breakthrough infinite scaling: (1 + b)^b multiplier to all income.
  */
-export function lateComboMult(phaseId, readiness) {
-  const phase = Math.min(CLASSIC_EPOCHS, Math.max(1, phaseId || 1));
-  if (phase <= 10) return 1;
-  const ready = Math.max(0, Math.min(1, Number(readiness) || 0));
-  if (ready <= 0) return 1;
-  return Math.pow(1.34, (phase - 10) * ready);
-}
-
-export function dampenGearMult(raw, phaseId) {
-  const knee = expectedAccountMult(phaseId);
-  const value = Math.max(1, Number(raw) || 1);
-  if (value <= knee) return value;
-  const extra = Math.min(Math.pow(value - knee, 0.72), knee * 1.25);
-  return knee + extra;
-}
-
-/** Plunger meta. 15 plungers ~ x3.4, 100 ~ x7.4, asymptote x9. */
 export function getPlungersIncomeMult() {
-  const plungers = Math.max(0, GAME.transcendPlungers || 0);
-  return 1 + 8 * (plungers / (plungers + 25));
+  return getBreakthroughIncomeMult();
 }
 
 export function getOmniRelicMult() {
@@ -129,4 +100,55 @@ export function isIdealPet() {
 
 export function getIdealMult() {
   return isIdealPet() ? 1.2 : 1;
+}
+
+export function getCleanIncomeMult() {
+  return 1 + Math.max(0, (GAME.clean || 0) / 100) * 0.25;
+}
+
+export function getHungerClickMult() {
+  return 1 + Math.max(0, (GAME.hunger || 0) / 100) * 0.25;
+}
+
+export function getHappyCritBonus() {
+  return Math.max(0, (GAME.happy || 0) / 100) * 0.01;
+}
+
+export function getTutorialIncomeMult() {
+  const perm = GAME.tutorialIncomeMult || 1;
+  const temp = (Date.now() < (GAME.tutorialTempBoostUntil || 0)) ? 1.5 : 1;
+  return perm * temp;
+}
+
+export function getTutorialClickMult() {
+  return 1 + (GAME.tutorialClickBonus || 0);
+}
+
+export function getTutorialCritBonus() {
+  return GAME.tutorialCritBonus || 0;
+}
+
+export function expectedAccountMult(phaseId) {
+  const id = Math.min(40, Math.max(1, phaseId || 1));
+  if (id === 1) return 1.0;
+  if (id === 2) return 2.2;
+  if (id === 3) return 4.5;
+  if (id === 4) return 8.0;
+  return 11.5 * Math.pow(1.14, id - 5);
+}
+
+export function lateComboMult(phaseId, readiness) {
+  const phase = Math.min(40, Math.max(1, phaseId || 1));
+  if (phase <= 10) return 1;
+  const ready = Math.max(0, Math.min(1, Number(readiness) || 0));
+  if (ready <= 0) return 1;
+  return Math.pow(1.34, (phase - 10) * ready);
+}
+
+export function dampenGearMult(raw, phaseId) {
+  const knee = expectedAccountMult(phaseId);
+  const value = Math.max(1, Number(raw) || 1);
+  if (value <= knee) return value;
+  const extra = Math.min(Math.pow(value - knee, 0.72), knee * 1.25);
+  return knee + extra;
 }

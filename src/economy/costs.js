@@ -1,8 +1,8 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.80';
-import { add, div, gte, isBig, log10Of, mul, sub } from '../utils/big.js?v=5.0.80';
+import { add, bigPow, div, gte, isBig, log10Of, mul, sub } from '../utils/big.js?v=5.0.80';
 
 /**
  * Asymptotic discount model with soft-cap guarantee.
@@ -82,41 +82,22 @@ export function getAffordableEvoInfo() {
 }
 
 export function getAffordableFactoryInfo(fac) {
-  const r = 1.15;
+  const r = 1.4;
   const currentCount = fac.count || 0;
   const isTycoon = GAME.archetype === 'tycoon';
   const discountFactor = getAsymptoticDiscountFactor([isTycoon ? 0.10 : 0], 0.90);
   const baseCost = mul(fac.cost, discountFactor);
   const rawMult = GAME.buyMultiplier;
   const isMax = (rawMult === 'max' || rawMult === 'MAX');
-  const costCurrent = mul(baseCost, Math.pow(r, currentCount));
-  const plain = !isBig(costCurrent) && !isBig(GAME.biomass) && Number.isFinite(costCurrent);
-
-  if (plain) {
-    if (isMax) {
-      if (GAME.biomass < costCurrent) {
-        return { count: 1, totalCost: Math.round(costCurrent), singleCost: Math.round(costCurrent), canBuy: false };
-      }
-      let maxM = Math.floor(Math.log(1 + (GAME.biomass * (r - 1)) / costCurrent) / Math.log(r));
-      maxM = Math.max(1, Math.min(100000, maxM));
-      let totalCost = Math.round(costCurrent * (Math.pow(r, maxM) - 1) / (r - 1));
-      while (totalCost > GAME.biomass && maxM > 1) {
-        maxM--;
-        totalCost = Math.round(costCurrent * (Math.pow(r, maxM) - 1) / (r - 1));
-      }
-      return { count: maxM, totalCost, singleCost: Math.round(costCurrent), canBuy: GAME.biomass >= totalCost && maxM > 0 };
-    }
-    const count = parseInt(rawMult) || 1;
-    const totalCost = count === 1
-      ? Math.round(costCurrent)
-      : Math.round(costCurrent * (Math.pow(r, count) - 1) / (r - 1));
-    return { count, totalCost, singleCost: Math.round(costCurrent), canBuy: GAME.biomass >= totalCost };
-  }
+  const costCurrent = mul(baseCost, bigPow(r, currentCount));
 
   const series = (n) => {
     if (n <= 1) return costCurrent;
-    return mul(costCurrent, (Math.pow(r, n) - 1) / (r - 1));
+    const rn = bigPow(r, n);
+    const num = sub(rn, 1);
+    return mul(costCurrent, div(num, r - 1));
   };
+
   if (isMax) {
     if (!gte(GAME.biomass, costCurrent)) {
       return { count: 1, totalCost: costCurrent, singleCost: costCurrent, canBuy: false };
@@ -131,6 +112,7 @@ export function getAffordableFactoryInfo(fac) {
     }
     return { count: maxM, totalCost, singleCost: costCurrent, canBuy: gte(GAME.biomass, totalCost) && maxM > 0 };
   }
+
   const count = parseInt(rawMult) || 1;
   const totalCost = series(count);
   return { count, totalCost, singleCost: costCurrent, canBuy: gte(GAME.biomass, totalCost) };

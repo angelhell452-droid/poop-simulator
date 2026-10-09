@@ -1,16 +1,20 @@
-﻿import { BOSS_ROSTER_PLAN, flatBossRoster } from './bosses.roster.plan.js';
+import { BOSS_ROSTER_PLAN, flatBossRoster } from './bosses.roster.plan.js';
 
 /**
  * Live guild boss ladder: 13 themes × junior + senior = 26.
  * Art: assets/poop/bosses/<id>.png
  */
+export const GUILD_BOSS_COUNT = 25;
+
+/**
+ * Цепочка строго из 25 Гильдейских Боссов.
+ * Награды: от 2 Вантузов за Босса 1 до 150 Вантузов за Босса 25.
+ */
 function buildGuildBosses() {
-  return flatBossRoster().map((boss) => {
-    const i = boss.index;
-    // Fixed reward by ladder position — circle does not raise plungers/points.
-    // Boss 1 → 1 plunger, boss 26 → 26 plungers. Points climb with the same index.
-    const plungers = i;
-    const points = Math.round(8 + (i - 1) * 7);
+  return flatBossRoster().slice(0, GUILD_BOSS_COUNT).map((boss, idx) => {
+    const i = idx + 1; // 1 to 25
+    const plungers = Math.round(2 + (i - 1) * ((150 - 2) / (GUILD_BOSS_COUNT - 1)));
+    const points = Math.round(25 + (i - 1) * 24);
     return {
       index: i,
       id: boss.id,

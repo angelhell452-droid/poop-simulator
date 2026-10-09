@@ -1,11 +1,12 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.0.80';
 
-export const BARE_CLICK_CAP = 40;
+export const BARE_CLICK_CAP = 20;
+export const MAX_HARD_CPS = 300;
 
 const KNIFE_CPS_BONUS = {
   common: 6,
@@ -72,6 +73,9 @@ export function isAutoclickUnlocked() {
 export function getKnifeCpsBonus(knife) {
   if (!knife) return 0;
   const stars = Math.min(15, Math.max(0, getKnifeStar(knife.id) - 1));
+  if (typeof knife.cpsBonus === 'number') {
+    return knife.cpsBonus + stars;
+  }
   return caseCpsBase(knife) + stars;
 }
 
@@ -95,7 +99,7 @@ export function getClickCapCps() {
   if (SHOP_ITEMS.find(i => i.id === 'upg_swift_click')?.owned) cap += 2;
   const sovereign = TALENTS.find(t => t.id === 'time_sovereign');
   cap += (sovereign ? sovereign.level : 0) * 0.15;
-  return Math.max(BARE_CLICK_CAP, Math.round(cap));
+  return Math.min(MAX_HARD_CPS, Math.max(BARE_CLICK_CAP, Math.round(cap)));
 }
 
 export function getAutoclickCap() {

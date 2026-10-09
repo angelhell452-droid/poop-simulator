@@ -1,5 +1,6 @@
-﻿import { KNIVES } from './knives.data.js';
+import { KNIVES } from './knives.data.js';
 import { WEAPON_CASES } from './cases.data.js';
+import { mul } from '../utils/big.js';
 
 const BARE_CAP = 40;
 const CASE_CPS_BAND = {
@@ -55,19 +56,43 @@ export function bossClickCap(knifeId, stars) {
   return BARE_CAP + caseCpsBase(knife) + starBonus;
 }
 
-export function bossClickPower(stage, knifeId, stars) {
-  const knife = knifeById.get(knifeId);
-  const click = Math.max(1, Number(knife?.clickMult) || 1);
-  const starBonus = Math.min(15, Math.max(0, (Number(stars) || 1) - 1));
-  const formPart = Math.sqrt(Math.max(1, Number(stage) || 1));
-  const knifePart = Math.log10(click + 1) * (1 + starBonus * 0.15);
-  return Math.max(1, formPart * (1 + knifePart));
+export function getPetCareBossMult(hunger = 100, clean = 100, happy = 100) {
+  const hBuff = 1 + Math.max(0, (Number(hunger) || 0) / 100) * 0.25;
+  const isIdeal = (Number(hunger) >= 90 && Number(clean) >= 90 && Number(happy) >= 90);
+  return isIdeal ? hBuff * 1.2 : hBuff;
 }
 
-export function bossMaxHp(index, circle, members) {
-  const n = Math.max(1, Math.floor(Number(index) || 1));
+export function bossClickPower(stage, knifeId, stars, careMult = 1) {
+  const knife = knifeById.get(knifeId);
+  const click = knife?.clickMult || 1;
+  const starBonus = Math.min(15, Math.max(0, (Number(stars) || 1) - 1));
+  const formPart = Math.sqrt(Math.max(1, Number(stage) || 1));
+  const starMult = 1 + starBonus * 0.15;
+  const base = mul(click, formPart * starMult);
+  const care = Math.max(1, Number(careMult) || 1);
+  return care > 1.001 ? mul(base, care) : base;
+}
+
+export function bossTicketDamage(clickPower, cpsCap) {
+  // Формула оффлайн-урона по билету вклада: (Доход за 1 клик * Лимит CPS * 15 сек) * 0.7
+  const power = clickPower || 1;
+  const cap = Math.min(300, Math.max(20, Number(cpsCap) || 20));
+  return mul(mul(power, cap * 15), 0.7);
+}
+
+export function bossMaxHp(index, circle = 1, members = 1) {
+  const n = Math.max(1, Math.min(25, Math.floor(Number(index) || 1)));
   const round = Math.max(1, Math.floor(Number(circle) || 1));
   const people = Math.max(1, Math.floor(Number(members) || 1));
-  // Soft curve for 26 bosses: ~5.5k → ~0.7M before circle/people (was n² and exploded at 26).
-  return Math.round(5500 * n * Math.sqrt(n) * round * people);
+
+  // Супер-экспонента от 10^5 (1-й босс) до 10^1000 (25-й босс)
+  const exp = 5 + (n - 1) * (995 / 24);
+  const scale = (1 + (round - 1) * 0.25) * (1 + (people - 1) * 0.08);
+
+  if (exp < 15) {
+    return Math.round(Math.pow(10, exp) * scale);
+  }
+  const e = Math.floor(exp);
+  const m = Number((Math.pow(10, exp - e) * scale).toFixed(2));
+  return { __big: true, m, e };
 }

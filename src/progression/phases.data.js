@@ -1,24 +1,10 @@
-﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { bigPow10, div, mul } from '../utils/big.js?v=5.0.80';
 import { t } from '../i18n/t.js';
-import { epochName } from '../i18n/localize.js';
+import { epochName } from '../i18n/localize.js?v=5.0.80';
+import { PHASE_COUNT, PHASE_FORMS, CLASSIC_EPOCHS, BANDS } from './phases.constants.js?v=5.0.80';
 
-export const PHASE_COUNT = 200;
-export const PHASE_FORMS = 500;
-export const CLASSIC_EPOCHS = 40;
-
-const BANDS = [
-  'миллионы',
-  'миллиарды',
-  'триллионы',
-  'квадриллионы',
-  'квинтиллионы',
-  'секстиллионы',
-  'септиллионы',
-  'октиллионы',
-  'нониллионы',
-  'дециллионы'
-];
+export { PHASE_COUNT, PHASE_FORMS, CLASSIC_EPOCHS, BANDS };
 
 export function phaseCeiling(phaseId) {
   const n = Math.min(PHASE_COUNT, Math.max(1, phaseId));

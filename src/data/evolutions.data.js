@@ -1,4 +1,5 @@
-﻿import { getPhaseForStage, PHASE_FORMS, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.80';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.80';
+import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { isBig, mul } from '../utils/big.js?v=5.0.80';
 

@@ -41,8 +41,18 @@ export function casePlungerCost(caseObj) {
   return Math.max(0, Number(caseObj?.costPlungers) || 0);
 }
 
+export function getCaseIndex(caseObj) {
+  const cid = typeof caseObj === 'string' ? caseObj : caseObj?.id;
+  return WEAPON_CASES.findIndex(c => c.id === cid) + 1;
+}
+
 export function caseIsOpen(caseObj) {
-  return peakForm() >= (caseObj?.reqForm || 1);
+  const index = WEAPON_CASES.findIndex(c => c.id === (caseObj?.id || caseObj));
+  if (index <= 0) return true; // Первый кейс открыт всегда
+  const prevCase = WEAPON_CASES[index - 1];
+  if (!prevCase || !prevCase.pool) return true;
+  const unlocked = GAME.unlockedKnives || [];
+  return prevCase.pool.some(kId => unlocked.includes(kId));
 }
 
 export function caseRollNeed(caseObj, count = 1) {
@@ -56,9 +66,15 @@ export function caseRollNeed(caseObj, count = 1) {
 
 export function missingCaseFunds(caseObj, count = 1) {
   const parts = [];
-  const sparkles = caseRollNeed(caseObj, count);
-  if ((GAME.sparkles || 0) < sparkles) {
-    parts.push(`${formatNumber(sparkles)} ✨`);
+  const cost = caseRollNeed(caseObj, count);
+  if (caseObj?.currency === 'plungers') {
+    if ((GAME.transcendPlungers || 0) < cost) {
+      parts.push(`${formatNumber(cost)} 🪠`);
+    }
+  } else {
+    if ((GAME.sparkles || 0) < cost) {
+      parts.push(`${formatNumber(cost)} ✨`);
+    }
   }
   return parts;
 }
@@ -68,29 +84,42 @@ export function canAffordCase(caseObj, count = 1) {
 }
 
 function payForCase(caseObj, count = 1) {
-  const needSparkles = caseRollNeed(caseObj, count);
-  GAME.sparkles = Math.max(0, (GAME.sparkles || 0) - needSparkles);
-  if (isFirstCaseDiscountAvailable(caseObj)) {
-    GAME.firstCaseDiscountUsed = true;
+  const cost = caseRollNeed(caseObj, count);
+  if (caseObj?.currency === 'plungers') {
+    GAME.transcendPlungers = Math.max(0, (GAME.transcendPlungers || 0) - cost);
+  } else {
+    GAME.sparkles = Math.max(0, (GAME.sparkles || 0) - cost);
+    if (isFirstCaseDiscountAvailable(caseObj)) {
+      GAME.firstCaseDiscountUsed = true;
+    }
   }
 }
 
 function refundDuplicate(caseObj) {
   const baseCost = Math.max(0, Number(caseObj?.cost) || 0);
+  if (caseObj?.currency === 'plungers') {
+    const plungers = baseCost > 0 ? Math.max(1, Math.round(baseCost * 0.4)) : 1;
+    GAME.transcendPlungers = (GAME.transcendPlungers || 0) + plungers;
+    return { amount: plungers, isPlungers: true };
+  }
   const sparkles = baseCost > 0 ? Math.max(1, Math.round(baseCost * 0.4)) : 1;
   GAME.sparkles = (GAME.sparkles || 0) + sparkles;
-  return { sparkles };
+  return { amount: sparkles, isPlungers: false };
 }
 
 function refundLabel(refund) {
-  return `+${formatNumber(refund.sparkles)} ✨`;
+  const sym = refund?.isPlungers ? '🪠' : '✨';
+  return `+${formatNumber(refund?.amount || 1)} ${sym}`;
 }
 
 export function casePriceHtml(caseObj) {
   if (isFirstCaseDiscountAvailable(caseObj)) {
     return `<span class="line-through text-stone-500 text-[10px] mr-1">${formatNumber(caseObj.cost)}</span><span class="inline-flex items-center gap-1 text-emerald-300 font-black">${formatNumber(FIRST_CASE_DISCOUNT_COST)} ✨</span><span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-1 py-0.2 rounded font-black border border-emerald-500/40 uppercase ml-1 animate-pulse">-50%</span>`;
   }
-  return `<span class="inline-flex items-center gap-1 text-yellow-300 font-black">${formatNumber(caseObj.cost)} ✨</span>`;
+  const isPlungers = caseObj?.currency === 'plungers';
+  const sym = isPlungers ? '🪠' : '✨';
+  const col = isPlungers ? 'text-cyan-300' : 'text-yellow-300';
+  return `<span class="inline-flex items-center gap-1 ${col} font-black">${formatNumber(caseObj.cost)} ${sym}</span>`;
 }
 
 export function updateCasesTabBadge() {
@@ -117,12 +146,13 @@ export function checkFirstCaseNotification() {
 }
 
 function casesInEpochOrder() {
-  return [...WEAPON_CASES].sort((a, b) => (a.reqForm || 1) - (b.reqForm || 1));
+  return [...WEAPON_CASES];
 }
 
 function assertCaseReady(caseObj, count = 1) {
   if (!caseIsOpen(caseObj)) {
-    alert(`Кейс откроется на Форме ${formatNumber(caseObj.reqForm || 1)}! Ваша текущая форма: ${formatNumber(peakForm())}`);
+    const idx = getCaseIndex(caseObj);
+    alert(`Кейс #${idx} заблокирован! Чтобы открыть его, выбейте хотя бы один нож из Кейса #${idx - 1}.`);
     return false;
   }
   const missing = missingCaseFunds(caseObj, count);
@@ -791,7 +821,8 @@ export function renderCasesSystem() {
       const hasCurrency = canAffordCase(c, 1);
       const hasCurrency3 = isUnlocked && canAffordCase(c, 3);
       const canOpen = isUnlocked && hasCurrency;
-      const lockReason = `Форма ${formatNumber(c.reqForm || 1)}`;
+      const cIdx = getCaseIndex(c);
+      const lockReason = cIdx > 1 ? `Нужен нож из #${cIdx - 1}` : 'Заблокирован';
 
       const lockBadge = !isUnlocked
         ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 ${lockReason}</div>`
@@ -1095,8 +1126,10 @@ export function updateCasesButtons() {
     const canOpen = isUnlocked && hasCurrency;
     btn.disabled = !canOpen;
 
+    const cIdx = getCaseIndex(c);
+    const lockReason = cIdx > 1 ? `Нужен нож из #${cIdx - 1}` : 'Заблокирован';
     const newText = !isUnlocked
-      ? `🔒 Форма ${formatNumber(c.reqForm || 1)}`
+      ? `🔒 ${lockReason}`
       : (isDiscounted && hasCurrency ? `🎁 ${t('cases.openDiscount')}` : (hasCurrency ? t('cases.open') : t('cases.noFunds')));
 
     if (btn.textContent.trim() !== newText) {

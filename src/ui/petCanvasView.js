@@ -1116,6 +1116,7 @@ export function addManagedTextParticle(p) {
 }
 
 export function addVisualParticle(text, color = '#facc15', scale = 1.2, life = 1.0, vy = -2.2, x = null, y = null) {
+  if (typeof document === 'undefined') return;
   if (!canvas) canvas = document.getElementById('petCanvas');
   if (!canvas) return;
   const w = canvas.width || 360;
@@ -1239,15 +1240,18 @@ function renderPetLoop(time) {
 
   // RENDER GOLDEN METEOR
   if (goldenMeteor.active) {
-    goldenMeteor.x += goldenMeteor.vx;
-    goldenMeteor.y += goldenMeteor.vy;
-    goldenMeteor.rotation += 0.04;
-    goldenMeteor.life--;
-
-    if (goldenMeteor.life <= 0 || goldenMeteor.x < -60 || goldenMeteor.x > w + 60 || goldenMeteor.y < -60 || goldenMeteor.y > h + 60) {
-      goldenMeteor.active = false;
-      scheduleNextMeteor();
+    if (GAME.vipPass) {
+      catchGoldenMeteor();
     } else {
+      goldenMeteor.x += goldenMeteor.vx;
+      goldenMeteor.y += goldenMeteor.vy;
+      goldenMeteor.rotation += 0.04;
+      goldenMeteor.life--;
+
+      if (goldenMeteor.life <= 0 || goldenMeteor.x < -60 || goldenMeteor.x > w + 60 || goldenMeteor.y < -60 || goldenMeteor.y > h + 60) {
+        goldenMeteor.active = false;
+        scheduleNextMeteor();
+      } else {
       ctx.save();
       ctx.translate(goldenMeteor.x, goldenMeteor.y);
       ctx.rotate(goldenMeteor.rotation);
@@ -1266,6 +1270,7 @@ function renderPetLoop(time) {
       ctx.textBaseline = 'middle';
       ctx.fillText('🌟', 0, 0);
       ctx.restore();
+      }
     }
   } else if (Date.now() > nextMeteorSpawn) {
     goldenMeteor.active = true;
@@ -1342,6 +1347,11 @@ function renderPetLoop(time) {
   } finally {
     requestAnimationFrame(renderPetLoop);
   }
+}
+
+export function triggerForcedMeteor() {
+  nextMeteorSpawn = Date.now() - 1;
+  goldenMeteor.active = false;
 }
 
 export function catchGoldenMeteor() {

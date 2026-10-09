@@ -22,23 +22,20 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const basePower = getClickPower();
   const critTalent = TALENTS.find(t => t.id === 'crit_master');
   const luckLvl = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
-  const happyCrit = Math.max(0, (GAME.happy || 0) / 100) * 0.20;
-  const clickerCrit = GAME.archetype === 'clicker' ? 0.10 : 0;
-  let critChance = Math.min(0.85, (critTalent ? 0.05 + critTalent.level * 0.012 : 0.05) + luckLvl * 0.004 + happyCrit + clickerCrit);
-  let critMultiplier = 20 * (1 + (critTalent ? critTalent.level * 0.35 : 0));
+  const happyCrit = Math.max(0, (GAME.happy || 0) / 100) * 0.01;
+  const clickerCrit = GAME.archetype === 'clicker' ? 0.02 : 0;
+  // Стартовый шанс крита 0.8% (0.008), разгон талантами, одеждой и туториалом
+  let critChance = Math.min(0.75, 0.008 + (critTalent ? critTalent.level * 0.012 : 0) + luckLvl * 0.004 + happyCrit + clickerCrit + (GAME.tutorialCritBonus || 0));
+  // Стартовый множитель крита х4 (в диапазоне х3 – х5), разгон талантами
+  let critMultiplier = 4.0 * (1 + (critTalent ? critTalent.level * 0.35 : 0));
 
   const sparkleTalent = TALENTS.find(t => t.id === 'sparkle_alchemy');
-  const magnetActive = SHOP_ITEMS.find(i => i.id === 'upg_magnet')?.owned;
-  const hornActive = SHOP_ITEMS.find(i => i.id === 'upg_infinite_sparkles')?.owned;
-  const isGambler = GAME.archetype === 'gambler';
-  const gamblerMult = isGambler ? 2.0 : 1.0;
-  let sparkleChance = Math.min(0.95, (magnetActive ? 0.30 : 0.15) * (hornActive ? 2.0 : 1.0) * (1 + (sparkleTalent ? sparkleTalent.level * 0.08 : 0)) * gamblerMult);
-
   const eqKnife = getEquippedKnife();
   const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
-  const formScaling = 1 + (GAME.evoStage || 0) * 0.04;
   const sparkleTalentYield = 1 + (sparkleTalent ? sparkleTalent.level * 0.12 : 0);
-  const sparklesPerProc = Math.max(1, Math.round(formScaling * knifeSparkleMult * sparkleTalentYield));
+  const isGambler = GAME.archetype === 'gambler';
+  const gamblerMult = isGambler ? 2.0 : 1.0;
+  const sparklesPerProc = Math.max(1, Math.round(knifeSparkleMult * sparkleTalentYield * gamblerMult));
 
   let totalEarned = 0;
   let sparklesEarned = 0;
@@ -54,10 +51,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     critsCount = Math.max(0, Math.min(clicksToProcess, critsCount));
     const regularClicks = clicksToProcess - critsCount;
     totalEarned = add(mul(regularClicks, basePower), mul(mul(critsCount, basePower), critMultiplier));
-
-    const expectedSparkles = clicksToProcess * sparkleChance;
-    const procsCount = Math.max(0, Math.round(expectedSparkles + (Math.random() - 0.5) * Math.sqrt(Math.max(1, expectedSparkles))));
-    sparklesEarned = procsCount * sparklesPerProc;
+    sparklesEarned = critsCount * sparklesPerProc;
   } else {
     for (let i = 0; i < clicksToProcess; i++) {
       const isCrit = Math.random() < critChance;
@@ -67,13 +61,12 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
       } else {
         totalEarned = add(totalEarned, basePower);
       }
-      if (Math.random() < sparkleChance) {
-        sparklesEarned += sparklesPerProc;
-      }
     }
+    sparklesEarned = critsCount * sparklesPerProc;
   }
 
   GAME.biomass = gainBio(GAME.biomass, totalEarned);
+  GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, totalEarned);
   GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, totalEarned);
   GAME.cycleBiomass = gainBio(GAME.cycleBiomass, totalEarned);
   GAME.totalClicks += clicksToProcess;
@@ -81,6 +74,16 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
 
   if (eqKnife) {
     eqKnife.statTrak = (eqKnife.statTrak || 0) + clicksToProcess;
+  }
+
+  // Билеты вклада гильдии: 1 билет за каждые 500 кликов, жесткий кап 5 шт.
+  GAME.clicksTowardsTicket = (GAME.clicksTowardsTicket || 0) + clicksToProcess;
+  while (GAME.clicksTowardsTicket >= 500) {
+    GAME.clicksTowardsTicket -= 500;
+    if ((GAME.guildTickets || 0) < 5) {
+      GAME.guildTickets = (GAME.guildTickets || 0) + 1;
+      events.emit('guild:ticketEarned', { tickets: GAME.guildTickets });
+    }
   }
 
   GAME.lastClickTimestamp = Date.now();

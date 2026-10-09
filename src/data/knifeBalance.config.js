@@ -16,20 +16,24 @@ export const KNIFE_BALANCE_CONFIG = {
   clickMultiplier: 1.0,
   passiveMultiplier: 1.0,
 
-  // Защитный мягкий кап (активен для защиты экономики от перекоса заводов):
-  softCapEnabled: true,
+  // Мягкий кап отключен для полноценного бесконечного айдлера:
+  softCapEnabled: false,
   clickKnee: 1000000,
   clickPower: 0.65,
   passiveKnee: 2.0,
   passivePower: 0.28
 };
 
+import { mul } from '../utils/big.js?v=5.0.80';
+
 /**
  * Возвращает фактический базовый множитель клика ножа с учётом глобального баланса.
  */
 export function getKnifeEffectiveClickMult(knife) {
   if (!knife) return 1;
-  return (knife.clickMult || 1) * KNIFE_BALANCE_CONFIG.globalMultiplier * KNIFE_BALANCE_CONFIG.clickMultiplier;
+  const raw = knife.clickMult || 1;
+  const cfg = (KNIFE_BALANCE_CONFIG.globalMultiplier || 1) * (KNIFE_BALANCE_CONFIG.clickMultiplier || 1);
+  return mul(raw, cfg);
 }
 
 /**
@@ -37,5 +41,7 @@ export function getKnifeEffectiveClickMult(knife) {
  */
 export function getKnifeEffectivePassiveMult(knife) {
   if (!knife) return 1;
-  return (knife.passiveMult || 1) * KNIFE_BALANCE_CONFIG.globalMultiplier * KNIFE_BALANCE_CONFIG.passiveMultiplier;
+  const raw = knife.passiveMult || 1;
+  const cfg = (KNIFE_BALANCE_CONFIG.globalMultiplier || 1) * (KNIFE_BALANCE_CONFIG.passiveMultiplier || 1);
+  return mul(raw, cfg);
 }

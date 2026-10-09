@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.80';
 import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.80';
@@ -11,6 +11,7 @@ import { pulseMail } from './mailView.js?v=5.0.80';
 import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.80';
 import { t, onLocaleChange, getLocale } from '../i18n/t.js';
 import { bossName } from '../i18n/localize.js';
+import { rehydrateBig, isBig, log10Of } from '../utils/big.js?v=5.0.80';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
 
@@ -516,6 +517,19 @@ function fightShell(boss) {
         <div id="bossDamage" class="font-game text-base"></div>
       </div>
       <div id="bossWhy" class="garden-muted boss-why"></div>
+      <div class="garden-card p-3 my-1 bg-amber-950/40 border border-amber-500/40 rounded-2xl flex flex-col items-center gap-1.5 w-full max-w-[340px]">
+        <div class="flex items-center justify-between w-full text-xs">
+          <span class="font-bold text-amber-200">🎫 Билеты вклада:</span>
+          <span id="guildTicketsBadge" class="font-game font-black text-yellow-300">0 / 5</span>
+        </div>
+        <div class="text-[10px] text-stone-300 text-center leading-tight">
+          1 билет за 500 кликов (макс. 5). Оффлайн-удар (эфф. 70%).
+        </div>
+        <div class="flex items-center gap-2 w-full mt-1">
+          <button type="button" id="btnContributeOneTicket" class="garden-pill flex-1 text-xs py-1" data-guild-action="ticket1">Вложить 1 🎫</button>
+          <button type="button" id="btnContributeAllTickets" class="garden-pill accent flex-1 text-xs py-1" data-guild-action="ticketAll">Вложить все 🎫</button>
+        </div>
+      </div>
       <label class="garden-pill boss-auto" for="bossAutoFight">
         <input id="bossAutoFight" type="checkbox"${autoFight ? ' checked' : ''}>
         <span>${esc(t('guild.autoFightCap'))}</span>
@@ -613,9 +627,11 @@ function paintFight() {
             <div class="font-game">${esc(row.icon)} ${esc(bossName(row) || row.name)}</div>
             <div class="garden-muted">${tier ? `${esc(tier)} · ` : ''}${esc(t('guild.attempt', { n: formatNumber(row.circle) }))} · ${esc(t('guild.reward', { points: formatNumber(row.points), plungers: formatNumber(row.plungers) }))}</div>
           </div>
-          ${row.unlocked
-            ? `<button type="button" class="garden-pill accent jelly-btn shrink-0" data-guild-action="summon" data-boss="${row.index}">${esc(t('guild.summon'))}</button>`
-            : `<span class="garden-pill shrink-0">${esc(t('guild.locked'))}</span>`}
+          ${guild.bossRespawnMs && Date.now() < Number(guild.bossRespawnMs)
+            ? `<span class="garden-pill shrink-0 text-amber-300">⏳ ${clock(guild.bossRespawnMs)}</span>`
+            : (row.unlocked
+              ? `<button type="button" class="garden-pill accent jelly-btn shrink-0" data-guild-action="summon" data-boss="${row.index}">${esc(t('guild.summon'))}</button>`
+              : `<span class="garden-pill shrink-0">${esc(t('guild.locked'))}</span>`)}
         </div>
       `;
     }).join('');
@@ -627,13 +643,28 @@ function paintFight() {
     box.dataset.key = key;
     box.innerHTML = fightShell(boss);
   }
-  const hp = Math.max(0, Number(boss.hp) || 0);
-  const max = Math.max(1, Number(boss.maxHp) || 1);
+  const hpBig = rehydrateBig(boss.hp);
+  const maxBig = rehydrateBig(boss.maxHp);
   const fill = document.getElementById('bossHpFill');
-  if (fill) fill.style.width = `${Math.max(0, Math.min(100, (hp / max) * 100))}%`;
+  if (fill) {
+    let pct = 0;
+    if (isBig(maxBig) || isBig(hpBig)) {
+      const lHp = log10Of(hpBig);
+      const lMax = Math.max(1, log10Of(maxBig));
+      pct = Math.max(0, Math.min(100, (lHp / lMax) * 100));
+    } else {
+      pct = Math.max(0, Math.min(100, (Number(hpBig) / Math.max(1, Number(maxBig))) * 100));
+    }
+    fill.style.width = `${pct}%`;
+  }
   const phase = livePhase(boss);
   setText('bossTitle', t('guild.bossCircleLine', { name: bossName(boss) || boss.name, n: formatNumber(boss.circle) }));
-  setText('bossHpText', t('guild.hpLine', { hp: formatNumber(hp), max: formatNumber(max), time: clock(boss.deadlineMs) }));
+  setText('bossHpText', t('guild.hpLine', { hp: formatNumber(boss.hp), max: formatNumber(boss.maxHp), time: clock(boss.deadlineMs) }));
+  setText('guildTicketsBadge', `${formatNumber(GAME.guildTickets || 0)} / 5`);
+  const t1 = document.getElementById('btnContributeOneTicket');
+  if (t1) t1.disabled = (GAME.guildTickets || 0) < 1;
+  const tAll = document.getElementById('btnContributeAllTickets');
+  if (tAll) tAll.disabled = (GAME.guildTickets || 0) < 1;
   setText('bossPhase', phaseLabel(boss));
   setText('bossDamage', damageLine(boss));
   setText('bossWhy', whyLine(boss.blow));
@@ -801,6 +832,23 @@ async function act(action, button) {
       method: 'POST',
       body: { epoch: document.getElementById('guildEpochInput')?.value || '' }
     });
+  } else if (action === 'ticket1' || action === 'ticketAll') {
+    const available = GAME.guildTickets || 0;
+    const toSpend = action === 'ticket1' ? 1 : available;
+    if (toSpend <= 0) {
+      toast('Нет билетов вклада (макс. 5)');
+      return;
+    }
+    data = await socialRequest('guild_ticket', { method: 'POST', body: { tickets: toSpend } });
+    if (data?.success) {
+      GAME.guildTickets = Math.max(0, (GAME.guildTickets || 0) - toSpend);
+      GAME.guildTicketsContributed = (GAME.guildTicketsContributed || 0) + toSpend;
+      events.emit('guild:ticketContributed', { tickets: toSpend });
+      toast(`Вложено ${toSpend} 🎫! Урон: ${formatNumber(data.damageDealt)}`);
+      if (data.fight?.ended) {
+        applyFightResult(data.fight.result, data.mailReady);
+      }
+    }
   }
   if (!data?.success) {
     toast(data?.error || t('guild.fail'));

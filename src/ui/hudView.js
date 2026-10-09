@@ -122,7 +122,7 @@ export function updateHUD() {
   const buffC = document.getElementById('buffCleanText');
   if (buffC) buffC.textContent = `+${formatNumber(Math.round((GAME.clean / 100) * 25))}${t('hud.buffFactories')}`;
   const buffHp = document.getElementById('buffHappyText');
-  if (buffHp) buffHp.textContent = `+${formatNumber(Math.round((GAME.happy / 100) * 20))}${t('hud.buffCrit')}`;
+  if (buffHp) buffHp.textContent = `+${formatNumber(Number(((GAME.happy / 100) * 1).toFixed(1)))}${t('hud.buffCrit')}`;
 
   const buffIdeal = document.getElementById('buffIdealPill');
   if (buffIdeal) {

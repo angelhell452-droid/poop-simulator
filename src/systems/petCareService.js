@@ -12,6 +12,8 @@ export function feedPet() {
   GAME.happy = Math.min(100, GAME.happy + 10);
   GAME.sparkles += 1;
   incFeedCount();
+  if (!GAME.tutorialCareDone) GAME.tutorialCareDone = {};
+  GAME.tutorialCareDone.feed = true;
   events.emit('pet:feed');
   return true;
 }
@@ -22,6 +24,8 @@ export function washPet() {
   GAME.happy = Math.min(100, GAME.happy + 8);
   GAME.sparkles += 1;
   incWashCount();
+  if (!GAME.tutorialCareDone) GAME.tutorialCareDone = {};
+  GAME.tutorialCareDone.wash = true;
   events.emit('pet:wash');
   return true;
 }
@@ -31,6 +35,8 @@ export function polishPet() {
   GAME.clean = 100;
   GAME.sparkles += 4;
   incPolishCount();
+  if (!GAME.tutorialCareDone) GAME.tutorialCareDone = {};
+  GAME.tutorialCareDone.wash = true;
   events.emit('pet:polish');
   return true;
 }
@@ -40,6 +46,8 @@ export function ticklePet() {
   GAME.happy = Math.min(100, GAME.happy + 15);
   GAME.comboHeat = Math.min(100, (GAME.comboHeat || 0) + 8);
   GAME.tickleCount = (GAME.tickleCount || 0) + 1;
+  if (!GAME.tutorialCareDone) GAME.tutorialCareDone = {};
+  GAME.tutorialCareDone.tickle = true;
   events.emit('pet:tickle');
   return true;
 }
