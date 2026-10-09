@@ -7,7 +7,7 @@ import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.0
 import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.0.80';
 import { renderShop, initShopI18n } from './ui/shopView.js';
 import { renderAchievements } from './ui/achievementsView.js';
-import { renderCasesSystem, initCasesListeners } from './ui/casesView.js?v=5.0.80';
+import { renderCasesSystem, initCasesListeners, updateCasesButtons, updateCasesTabBadge, checkFirstCaseNotification } from './ui/casesView.js?v=5.0.84';
 import { initKnivesIndexListeners } from './ui/knivesIndexView.js?v=5.0.80';
 import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.0.80';
 import { initModals } from './ui/modalManager.js?v=5.0.80';
@@ -289,9 +289,9 @@ export async function bootstrap() {
       document.getElementById(target)?.classList.remove('hidden');
 
       document.querySelectorAll('.dash-tab').forEach(t => {
-        t.className = 'dash-tab py-2.5 text-center text-stone-400 hover:text-white';
+        t.className = 'dash-tab py-1.5 sm:py-2 text-center text-stone-400 hover:text-white relative';
       });
-      tab.className = 'dash-tab py-2.5 text-center bg-amber-700 text-white';
+      tab.className = 'dash-tab py-1.5 sm:py-2 text-center bg-amber-700 text-white relative';
 
       // Trigger panel-specific rendering
       if (target === 'panelFactories') renderFactories();
@@ -328,12 +328,16 @@ export async function bootstrap() {
   renderShop();
   renderAchievements();
   renderCasesSystem();
+  updateCasesTabBadge();
+  checkFirstCaseNotification();
   renderCharacterInventory();
   updateHUD();
 
   // 9. Event Listener for tick UI sync
   events.on('tick', () => {
     updateHUD();
+    updateCasesTabBadge();
+    checkFirstCaseNotification();
   });
 
   // 10. Start High-Resolution Game Loop (100ms)

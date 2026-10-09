@@ -1,4 +1,4 @@
-﻿import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.0.80';
+import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.0.80';
 import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.80';
@@ -97,6 +97,8 @@ function wipeRuntimeCatalogs() {
   GAME.meteorsCaught = 0;
   GAME.turboCount = 0;
   GAME.casesOpened = 0;
+  GAME.firstCaseDiscountUsed = false;
+  GAME.firstCaseNotified = false;
   GAME.totalClicks = 0;
   GAME.phaseEcho = {};
   GAME.biomass = 0;

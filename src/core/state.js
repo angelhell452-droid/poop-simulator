@@ -60,6 +60,8 @@ export function getDefaultGameState() {
     knifeStars: {},
     hatLevels: {},
     casesOpened: 0,
+    firstCaseDiscountUsed: false,
+    firstCaseNotified: false,
     lastDailyTop10Claim: 0,
 
     comboHeat: 0,

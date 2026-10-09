@@ -1,6 +1,48 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.83';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.84';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.0.84 PRO',
+    date: '9 Октября 2026',
+    dateEn: 'October 9, 2026',
+    title: 'Ребаланс цен кейсов, скидка на первый кейс и уведомления',
+    titleEn: 'Case Economy Rebalance, First Case Discount & Notifications',
+    badge: 'Патч 5.0',
+    badgeEn: 'Patch 5.0',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🎁',
+        text: 'Скидка на 1-ю покупку: первый кейс доступен со скидкой 73% (всего 12 🧻 вместо 45 🧻), позволяя открыть кейс сразу после 1-го Смыва!',
+        textEn: 'First Purchase Discount: The first case is available with a 73% discount (only 12 🧻 instead of 45 🧻), allowing an open right after the 1st Flush!'
+      },
+      {
+        type: 'balance',
+        icon: '⚖️',
+        text: 'Ребаланс цен кейсов: повышены требования к втулкам и вантузам на поздних кейсах, сбалансировав возросшую силу ножей и вантузы из рейдов гильдий.',
+        textEn: 'Case Pricing Rebalance: Scaled roll and plunger requirements for late-tier cases to match increased knife power and guild raid rewards.'
+      },
+      {
+        type: 'ui',
+        icon: '🔔',
+        text: 'Интерактивное уведомление и пульсирующий бейдж на вкладке «Кейсы», когда доступен первый кейс со скидкой.',
+        textEn: 'Interactive toast notification and pulsing badge on the Cases tab whenever the discounted first case is ready to buy.'
+      },
+      {
+        type: 'ui',
+        icon: '🤖',
+        text: 'Умный советник теперь сразу подсказывает открыть первый кейс со скидкой после совершения Смыва.',
+        textEn: 'Smart Assistant now immediately suggests claiming your discounted first case right after flushing.'
+      },
+      {
+        type: 'balance',
+        icon: '🛡️',
+        text: 'Защита прогрессии форм: активирован мягкий кап на пассивный бонус ножей к заводам. Ножи сохраняют 100% сокрушительной силы клика, а заводы больше не перегреваются до бесконечного пропуска уровней.',
+        textEn: 'Form Progression Guard: Activated soft-cap on knife passive factory multiplier. Knives retain 100% click power, while factories no longer skip dozens of forms uncontrollably.'
+      }
+    ]
+  },
   {
     version: 'v5.0.83 PRO',
     date: '8 Октября 2026',

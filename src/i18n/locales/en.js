@@ -1,4 +1,4 @@
-﻿/** English — same keys as ru.js */
+/** English — same keys as ru.js */
 export default {
   'header.bug': 'Bug',
   'header.bugTitle': 'Report a bug',
@@ -436,6 +436,9 @@ export default {
   'cases.closed': 'Cases locked',
   'cases.closedHint': 'Unlock after the first Flush. Flushes now: {n}.',
   'cases.open': 'Open',
+  'cases.openDiscount': 'Open with discount',
+  'cases.firstDiscountBadge': '🎁 1st Purchase Discount!',
+  'cases.firstAvailableToast': '🎉 First weapon case is available with a discount! Click to open 🔪 Cases',
   'cases.noFunds': 'No funds',
   'cases.infoTitle': 'Case contents',
   'cases.open3Title': 'Open 3 at once',
@@ -568,7 +571,9 @@ export default {
   'assist.flushReady': 'A Fate Flush is worth <b>+{n} 🧻 Bushings</b>! Time to Flush!',
   'assist.flushBtn': 'Flush 🌀',
   'assist.caseAffordable': 'You can afford <b>“{name}”</b>! Try your luck and drop a rare blade!',
+  'assist.firstCaseAffordable': 'Your first case <b>“{name}”</b> is available with a discount! Try your luck and get your first blade!',
   'assist.casesBtn': 'To cases 🎰',
+  'assist.openFirstCaseBtn': 'To Cases 🔪',
   'assist.generalTip': 'Click the character and fill the Combo bar to {n}% for <b>Turbo x{x}</b>!',
   'assist.guideBtn': 'Guide 📖',
   'canvas.critEarn': '💥 CRIT! +{n} 💨',

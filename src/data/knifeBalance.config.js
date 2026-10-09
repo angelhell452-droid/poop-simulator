@@ -16,10 +16,12 @@ export const KNIFE_BALANCE_CONFIG = {
   clickMultiplier: 1.0,
   passiveMultiplier: 1.0,
 
-  // Защитный мягкий кап (false = игроки получают 100% заявленной силы ножа):
-  softCapEnabled: false,
+  // Защитный мягкий кап (активен для защиты экономики от перекоса заводов):
+  softCapEnabled: true,
   clickKnee: 1000000,
-  passiveKnee: 1000000
+  clickPower: 0.65,
+  passiveKnee: 2.0,
+  passivePower: 0.28
 };
 
 /**

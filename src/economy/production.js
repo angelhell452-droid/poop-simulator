@@ -110,7 +110,8 @@ export function getTurboClickMult() {
 }
 
 function softCap(raw, knee, power) {
-  return raw > knee ? (knee + Math.pow(raw - knee, power)) : raw;
+  if (raw <= knee) return raw;
+  return knee * Math.pow(raw / knee, power);
 }
 
 function knifeBonusStack(knife, perStar) {
@@ -125,14 +126,18 @@ function knifeBonusStack(knife, perStar) {
 export function getKnifeClickMult(knife) {
   if (!knife) return 1;
   const base = getKnifeEffectiveClickMult(knife);
-  const scaled = KNIFE_BALANCE_CONFIG.softCapEnabled ? softCap(base, KNIFE_BALANCE_CONFIG.clickKnee, 0.65) : base;
+  const scaled = KNIFE_BALANCE_CONFIG.softCapEnabled
+    ? softCap(base, KNIFE_BALANCE_CONFIG.clickKnee, KNIFE_BALANCE_CONFIG.clickPower ?? 0.65)
+    : base;
   return scaled * knifeBonusStack(knife, 0.35);
 }
 
 export function getKnifePassiveMult(knife) {
   if (!knife) return 1;
   const base = getKnifeEffectivePassiveMult(knife);
-  const scaled = KNIFE_BALANCE_CONFIG.softCapEnabled ? softCap(base, KNIFE_BALANCE_CONFIG.passiveKnee, 0.65) : base;
+  const scaled = KNIFE_BALANCE_CONFIG.softCapEnabled
+    ? softCap(base, KNIFE_BALANCE_CONFIG.passiveKnee, KNIFE_BALANCE_CONFIG.passivePower ?? 0.28)
+    : base;
   return scaled * knifeBonusStack(knife, 0.25);
 }
 

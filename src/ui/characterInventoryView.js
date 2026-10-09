@@ -185,20 +185,27 @@ export function handleEquipBestKnife() {
   }
 }
 
-export function showKnifeToast(text) {
+export function showKnifeToast(text, onClick = null) {
   const existing = document.getElementById('knifeToastNotification');
   if (existing) existing.remove();
 
   const toast = document.createElement('div');
   toast.id = 'knifeToastNotification';
-  toast.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-[9999] bg-gradient-to-r from-amber-500 to-yellow-500 text-stone-950 font-game font-bold text-xs px-4 py-2 rounded-2xl shadow-2xl border-2 border-yellow-200 flex items-center gap-2 animate-bounce';
+  toast.className = `fixed top-20 left-1/2 -translate-x-1/2 z-[9999] bg-gradient-to-r from-amber-500 to-yellow-500 text-stone-950 font-game font-bold text-xs px-4 py-2 rounded-2xl shadow-2xl border-2 border-yellow-200 flex items-center gap-2 animate-bounce ${onClick ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`;
   toast.innerHTML = `<span>${text}</span>`;
+  if (typeof onClick === 'function') {
+    toast.addEventListener('click', () => {
+      onClick();
+      toast.remove();
+    });
+  }
   document.body.appendChild(toast);
+  const duration = onClick ? 4000 : 2400;
   setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transition = 'opacity 0.4s ease';
     setTimeout(() => toast.remove(), 400);
-  }, 2400);
+  }, duration);
 }
 
 export function renderCharacterInventory() {

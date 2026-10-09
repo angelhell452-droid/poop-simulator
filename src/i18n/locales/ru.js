@@ -1,4 +1,4 @@
-﻿/** Russian — source of truth for keys. */
+/** Russian — source of truth for keys. */
 export default {
   'header.bug': 'Баг',
   'header.bugTitle': 'Сообщить об ошибке',
@@ -436,6 +436,9 @@ export default {
   'cases.closed': 'Кейсы закрыты',
   'cases.closedHint': 'Откроются после первого Смыва. Смывов сейчас: {n}.',
   'cases.open': 'Открыть',
+  'cases.openDiscount': 'Открыть со скидкой',
+  'cases.firstDiscountBadge': '🎁 Скидка на 1-ю покупку!',
+  'cases.firstAvailableToast': '🎉 Доступен первый кейс к покупке со скидкой! Нажмите, чтобы открыть 🔪 Кейсы',
   'cases.noFunds': 'Нет валюты',
   'cases.infoTitle': 'Состав кейса',
   'cases.open3Title': 'Открыть 3 сразу',
@@ -568,7 +571,9 @@ export default {
   'assist.flushReady': 'За Смыв Судьбы доступно <b>+{n} 🧻 Втулок</b>! Пора совершить Смыв!',
   'assist.flushBtn': 'Смыв 🌀',
   'assist.caseAffordable': 'Хватает валюты на <b>«{name}»</b>! Испытайте удачу и выбейте редкий клинок!',
+  'assist.firstCaseAffordable': 'Доступен ваш первый кейс <b>«{name}»</b> со скидкой! Испытайте удачу и выбейте свой первый клинок!',
   'assist.casesBtn': 'К кейсам 🎰',
+  'assist.openFirstCaseBtn': 'К кейсам 🔪',
   'assist.generalTip': 'Кликайте по персонажу, заполняйте Комбо-шкалу до {n}% для <b>Турбо x{x}</b>!',
   'assist.guideBtn': 'Гид 📖',
   'canvas.critEarn': '💥 КРИТ! +{n} 💨',
