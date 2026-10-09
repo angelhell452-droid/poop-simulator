@@ -326,6 +326,7 @@ export function renderCharacterInventory() {
             <span class="text-emerald-300 font-currency bg-emerald-950/70 px-1.5 py-0.5 rounded">${t('inv.clickPct', { n: formatNumber(eqClickPct) })}</span>
             <span class="text-lime-200 font-currency bg-lime-950/70 px-1.5 py-0.5 rounded">${t('inv.factoriesPct', { n: formatNumber(shown.passPct) })}</span>
             <span class="text-cyan-300 font-currency bg-cyan-950/70 px-1.5 py-0.5 rounded">+${formatNumber(getKnifeCpsBonus(equippedObj))} CPS</span>
+            ${equippedObj.sparkleMult > 1 ? `<span class="text-yellow-300 font-currency bg-amber-950/70 px-1.5 py-0.5 rounded">✨ x${formatNumber(equippedObj.sparkleMult)}</span>` : ''}
             <span class="text-amber-300 font-currency bg-amber-950/70 px-1.5 py-0.5 rounded">★ ${t('hud.lvl', { n: formatNumber(eqStar) })}</span>
             ${equippedObj.statTrak ? `<span class="text-orange-300 font-currency bg-orange-950/70 px-1.5 py-0.5 rounded">🔥 ${formatNumber(equippedObj.statTrak)}</span>` : ''}
           </div>
@@ -499,6 +500,7 @@ function renderKnivesGrid() {
         <div class="flex items-center gap-1.5 my-1.5 text-[9px] sm:text-[10px] font-mono font-bold flex-wrap">
           <span class="bg-emerald-950/80 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30">🗡️ +${formatNumber(clickBonus)}%</span>
           <span class="bg-cyan-950/80 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/30">+${formatNumber(getKnifeCpsBonus(kn))} CPS</span>
+          ${kn.sparkleMult > 1 ? `<span class="bg-amber-950/80 text-yellow-300 px-1.5 py-0.5 rounded border border-yellow-500/30">✨ x${formatNumber(kn.sparkleMult)}</span>` : ''}
           ${kn.statTrak ? `<span class="bg-orange-950/80 text-orange-400 px-1.5 py-0.5 rounded border border-orange-500/30" title="${t('inv.statTrakTitle')}">🔥 ${formatNumber(kn.statTrak)}</span>` : ''}
         </div>
 

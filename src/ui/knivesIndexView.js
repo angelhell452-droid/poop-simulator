@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
 import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
@@ -19,11 +19,10 @@ import { knifeName, knifeRarity, caseName, shopName, shopDesc, factoryName, tale
 
 // Быстрый поиск кейса для ножа
 const KNIFE_CASE_MAP = new Map();
-[...WEAPON_CASES].sort((a, b) => (a.reqEpoch || 1) - (b.reqEpoch || 1)).forEach(c => {
-  const teased = new Set(Object.keys(c.fixedChances || {}));
+[...WEAPON_CASES].sort((a, b) => (a.reqForm || 1) - (b.reqForm || 1)).forEach(c => {
   (c.pool || []).forEach(kid => {
-    if (teased.has(kid) || KNIFE_CASE_MAP.has(kid)) return;
-    KNIFE_CASE_MAP.set(kid, { id: c.id, name: c.name, icon: c.icon, cost: c.cost, currency: c.currency, source: c });
+    if (KNIFE_CASE_MAP.has(kid)) return;
+    KNIFE_CASE_MAP.set(kid, { id: c.id, name: c.name, icon: c.icon, cost: c.cost, currency: c.currency, currencySymbol: c.currencySymbol || '✨', source: c });
   });
 });
 
@@ -180,7 +179,10 @@ export function renderKnivesIndexBook() {
               <span class="text-amber-400">★ ${t('hud.lvl', { n: formatNumber(star) })}</span>
               <span class="text-emerald-400">+${formatNumber(clickPct)}${t('hud.buffClick')}</span>
             </div>
-            <div class="text-[9px] text-cyan-300 font-mono text-center mb-1.5">+${formatNumber(getKnifeCpsBonus(knife))} CPS</div>
+            <div class="text-[9px] text-stone-300 font-mono text-center mb-1.5 flex justify-center items-center gap-2">
+              <span class="text-cyan-300">+${formatNumber(getKnifeCpsBonus(knife))} CPS</span>
+              <span class="text-yellow-300 font-bold">✨ x${formatNumber(knife.sparkleMult || 1)}</span>
+            </div>
             <div class="flex gap-1">
               ${!isEquipped ? `
                 <button class="index-equip-btn flex-1 py-1 rounded-xl text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold transition shadow" data-id="${knife.id}">

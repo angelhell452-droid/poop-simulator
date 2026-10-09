@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 
 export function accountForm() {
   return (GAME.evoStage || 0) + 1;
@@ -16,7 +16,7 @@ export function peakForm() {
 }
 
 export function isCasesUnlocked() {
-  return (GAME.totalPrestiges || 0) >= 1;
+  return true;
 }
 
 export function isBoutiqueUnlocked() {

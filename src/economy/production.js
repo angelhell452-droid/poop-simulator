@@ -146,7 +146,8 @@ export function getKnifeShownBonuses(knife) {
   return {
     clickPct: Math.round((getKnifeClickMult(knife) - 1) * 100),
     passPct: Math.round((passive - 1) * 100),
-    cpsMult: passive
+    cpsMult: passive,
+    sparkleMult: Math.max(1, Number(knife?.sparkleMult) || 1)
   };
 }
 

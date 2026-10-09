@@ -434,7 +434,7 @@ export default {
   'cases.toast3': '🎁 Opened 3 cases! Best: "{name}" (+2 more in inventory)',
   'cases.found': 'Found {a}/{b}',
   'cases.closed': 'Cases locked',
-  'cases.closedHint': 'Unlock after the first Flush. Flushes now: {n}.',
+  'cases.closedHint': 'Cases are available right away! Collect sparkles and unlock rare knives.',
   'cases.open': 'Open',
   'cases.openDiscount': 'Open with discount',
   'cases.firstDiscountBadge': '🎁 1st Purchase Discount!',

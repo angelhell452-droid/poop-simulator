@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.0.86 PRO</title>
+  <title>Poop Simulator v5.0.87 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.0.86">
+  <link rel="stylesheet" href="styles/main.css?v=5.0.87">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.0.86 PRO</span>
+            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.0.87 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             data-i18n-title="header.bugTitle" title="Сообщить об ошибке">
@@ -581,11 +581,12 @@
             <div class="flex justify-between items-center">
               <span class="font-game text-yellow-300 text-sm" data-i18n="cases.panelTitle">📦 Оружейные Контейнеры</span>
               <div class="flex items-center gap-2 text-xs">
-                <span class="text-yellow-200 font-game" id="casesRollsLabel">0 🧻</span>
-                <span class="text-cyan-300 font-game" id="casesPlungersLabel">0 <span class="plunger-icon" aria-hidden="true"></span></span>
+                <span class="text-yellow-300 font-game font-bold" id="casesSparklesLabel">0 ✨</span>
+                <span class="text-yellow-200 font-game hidden" id="casesRollsLabel">0 🧻</span>
+                <span class="text-cyan-300 font-game hidden" id="casesPlungersLabel">0 <span class="plunger-icon" aria-hidden="true"></span></span>
               </div>
             </div>
-            <p class="text-[10px] text-stone-300 mt-0.5" data-i18n="cases.panelIntro">Раздел открывается после первого Смыва. Дальше кейсы за втулки и вантузы. Выбитые ножи отправляются в ваш Инвентарь Персонажа и дают сокрушительные множители силы.</p>
+            <p class="text-[10px] text-stone-300 mt-0.5" data-i18n="cases.panelIntro">Открывайте кейсы за Блестяшки ✨, находите редкие ножи и получайте сокрушительные множители урона и дохода блестяшек!</p>
           </div>
 
           <!-- Shortcut to Dedicated Character Inventory Modal -->
@@ -614,14 +615,20 @@
               <div class="flex items-center gap-1.5">
                 <span id="indexBookHeaderBadge"
                   class="bg-black/50 px-2 py-0.5 rounded-full text-[10px] text-yellow-300 font-bold border border-yellow-400/50">0
-                  / 202</span>
+                  / 205</span>
                 <span class="text-xs">➔</span>
               </div>
             </button>
           </div>
 
-          <!-- Cases Crates Grid -->
-          <div class="font-bold text-stone-400 uppercase text-[10px] px-1" data-i18n="cases.availableHeader">Доступные Кейсы для Открытия:</div>
+          <!-- Fast Open Toggle & Cases Header -->
+          <div class="flex items-center justify-between px-1">
+            <div class="font-bold text-stone-400 uppercase text-[10px]" data-i18n="cases.availableHeader">Доступные Кейсы для Открытия:</div>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs select-none bg-stone-900 px-2.5 py-0.5 rounded-full border border-stone-700 hover:border-amber-500/60 transition shadow-sm">
+              <input type="checkbox" id="chkFastCaseOpen" class="accent-amber-400 w-3.5 h-3.5 cursor-pointer rounded">
+              <span class="text-[10px] font-black text-amber-300 font-game flex items-center gap-1">⚡ Быстро</span>
+            </label>
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="casesCratesList">
             <!-- Rendered in JS -->
           </div>
@@ -1615,6 +1622,8 @@
                 Клик</span>
               <span id="rouletteResultPassiveBoost"
                 class="px-2.5 py-0.5 rounded-lg bg-cyan-950 border border-cyan-500/50 text-cyan-300">+30% Заводы</span>
+              <span id="rouletteResultSparkleBoost"
+                class="px-2.5 py-0.5 rounded-lg bg-amber-950 border border-yellow-500/50 text-yellow-300 font-mono">✨ x1.15</span>
             </div>
           </div>
         </div>

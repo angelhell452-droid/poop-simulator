@@ -34,6 +34,12 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const gamblerMult = isGambler ? 2.0 : 1.0;
   let sparkleChance = Math.min(0.95, (magnetActive ? 0.30 : 0.15) * (hornActive ? 2.0 : 1.0) * (1 + (sparkleTalent ? sparkleTalent.level * 0.08 : 0)) * gamblerMult);
 
+  const eqKnife = getEquippedKnife();
+  const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
+  const formScaling = 1 + (GAME.evoStage || 0) * 0.04;
+  const sparkleTalentYield = 1 + (sparkleTalent ? sparkleTalent.level * 0.12 : 0);
+  const sparklesPerProc = Math.max(1, Math.round(formScaling * knifeSparkleMult * sparkleTalentYield));
+
   let totalEarned = 0;
   let sparklesEarned = 0;
   let critsCount = 0;
@@ -50,8 +56,8 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     totalEarned = add(mul(regularClicks, basePower), mul(mul(critsCount, basePower), critMultiplier));
 
     const expectedSparkles = clicksToProcess * sparkleChance;
-    sparklesEarned = Math.round(expectedSparkles + (Math.random() - 0.5) * Math.sqrt(Math.max(1, expectedSparkles)));
-    sparklesEarned = Math.max(0, sparklesEarned);
+    const procsCount = Math.max(0, Math.round(expectedSparkles + (Math.random() - 0.5) * Math.sqrt(Math.max(1, expectedSparkles))));
+    sparklesEarned = procsCount * sparklesPerProc;
   } else {
     for (let i = 0; i < clicksToProcess; i++) {
       const isCrit = Math.random() < critChance;
@@ -62,7 +68,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
         totalEarned = add(totalEarned, basePower);
       }
       if (Math.random() < sparkleChance) {
-        sparklesEarned++;
+        sparklesEarned += sparklesPerProc;
       }
     }
   }
@@ -73,7 +79,6 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   GAME.totalClicks += clicksToProcess;
   GAME.sparkles += sparklesEarned;
 
-  const eqKnife = getEquippedKnife();
   if (eqKnife) {
     eqKnife.statTrak = (eqKnife.statTrak || 0) + clicksToProcess;
   }

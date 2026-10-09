@@ -434,7 +434,7 @@ export default {
   'cases.toast3': '🎁 Открыто 3 кейса! Лучший: «{name}» (+ещё 2 в инвентаре)',
   'cases.found': 'Найдено {a}/{b}',
   'cases.closed': 'Кейсы закрыты',
-  'cases.closedHint': 'Откроются после первого Смыва. Смывов сейчас: {n}.',
+  'cases.closedHint': 'Кейсы доступны сразу! Собирайте блестяшки и открывайте редкие ножи.',
   'cases.open': 'Открыть',
   'cases.openDiscount': 'Открыть со скидкой',
   'cases.firstDiscountBadge': '🎁 Скидка на 1-ю покупку!',

@@ -28,7 +28,7 @@ let currentWinnerIndex = 48;
 let currentWinningOffset = 0;
 
 export const FIRST_CASE_ID = 'case_classic';
-export const FIRST_CASE_DISCOUNT_COST = 12;
+export const FIRST_CASE_DISCOUNT_COST = 10;
 
 export function isFirstCaseDiscountAvailable(caseObj) {
   const cid = typeof caseObj === 'string' ? caseObj : caseObj?.id;
@@ -56,10 +56,10 @@ export function caseRollNeed(caseObj, count = 1) {
 
 export function missingCaseFunds(caseObj, count = 1) {
   const parts = [];
-  const rolls = caseRollNeed(caseObj, count);
-  const plungers = casePlungerCost(caseObj) * count;
-  if ((GAME.prestigeRolls || 0) < rolls) parts.push(t('cases.nBushings', { n: formatNumber(rolls) }));
-  if ((GAME.transcendPlungers || 0) < plungers) parts.push(t('cases.nPlungers', { n: formatNumber(plungers) }));
+  const sparkles = caseRollNeed(caseObj, count);
+  if ((GAME.sparkles || 0) < sparkles) {
+    parts.push(`${formatNumber(sparkles)} ✨`);
+  }
   return parts;
 }
 
@@ -68,10 +68,8 @@ export function canAffordCase(caseObj, count = 1) {
 }
 
 function payForCase(caseObj, count = 1) {
-  const needRolls = caseRollNeed(caseObj, count);
-  GAME.prestigeRolls -= needRolls;
-  const plungers = casePlungerCost(caseObj) * count;
-  if (plungers > 0) GAME.transcendPlungers = (GAME.transcendPlungers || 0) - plungers;
+  const needSparkles = caseRollNeed(caseObj, count);
+  GAME.sparkles = Math.max(0, (GAME.sparkles || 0) - needSparkles);
   if (isFirstCaseDiscountAvailable(caseObj)) {
     GAME.firstCaseDiscountUsed = true;
   }
@@ -79,28 +77,20 @@ function payForCase(caseObj, count = 1) {
 
 function refundDuplicate(caseObj) {
   const baseCost = Math.max(0, Number(caseObj?.cost) || 0);
-  const rolls = baseCost > 0 ? Math.max(1, Math.round(baseCost * 0.5)) : 0;
-  const plungers = Math.floor(casePlungerCost(caseObj) * 0.5);
-  if (rolls > 0) GAME.prestigeRolls = (GAME.prestigeRolls || 0) + rolls;
-  if (plungers > 0) GAME.transcendPlungers = (GAME.transcendPlungers || 0) + plungers;
-  return { rolls, plungers };
+  const sparkles = baseCost > 0 ? Math.max(1, Math.round(baseCost * 0.4)) : 1;
+  GAME.sparkles = (GAME.sparkles || 0) + sparkles;
+  return { sparkles };
 }
 
 function refundLabel(refund) {
-  const parts = [];
-  if (refund.rolls > 0) parts.push(`+${t('cases.nBushings', { n: formatNumber(refund.rolls) })}`);
-  if (refund.plungers > 0) parts.push(`+${t('cases.nPlungers', { n: formatNumber(refund.plungers) })}`);
-  return parts.join(t('cases.and'));
+  return `+${formatNumber(refund.sparkles)} ✨`;
 }
 
 export function casePriceHtml(caseObj) {
   if (isFirstCaseDiscountAvailable(caseObj)) {
-    return `<span class="line-through text-stone-500 text-[10px] mr-1">${formatNumber(caseObj.cost)}</span><span class="inline-flex items-center gap-1 text-emerald-300 font-black">${formatNumber(FIRST_CASE_DISCOUNT_COST)} <span class="roll-icon"></span></span><span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-1 py-0.2 rounded font-black border border-emerald-500/40 uppercase ml-1 animate-pulse">-73%</span>`;
+    return `<span class="line-through text-stone-500 text-[10px] mr-1">${formatNumber(caseObj.cost)}</span><span class="inline-flex items-center gap-1 text-emerald-300 font-black">${formatNumber(FIRST_CASE_DISCOUNT_COST)} ✨</span><span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-1 py-0.2 rounded font-black border border-emerald-500/40 uppercase ml-1 animate-pulse">-50%</span>`;
   }
-  const rolls = `<span class="inline-flex items-center gap-1">${formatNumber(caseObj.cost)} <span class="roll-icon"></span></span>`;
-  const plungers = casePlungerCost(caseObj);
-  if (plungers <= 0) return rolls;
-  return `${rolls}<span class="text-stone-500">+</span><span class="inline-flex items-center gap-1">${formatNumber(plungers)} <span class="plunger-icon"></span></span>`;
+  return `<span class="inline-flex items-center gap-1 text-yellow-300 font-black">${formatNumber(caseObj.cost)} ✨</span>`;
 }
 
 export function updateCasesTabBadge() {
@@ -127,13 +117,12 @@ export function checkFirstCaseNotification() {
 }
 
 function casesInEpochOrder() {
-  return [...WEAPON_CASES].sort((a, b) => (a.reqEpoch || 1) - (b.reqEpoch || 1));
+  return [...WEAPON_CASES].sort((a, b) => (a.reqForm || 1) - (b.reqForm || 1));
 }
 
 function assertCaseReady(caseObj, count = 1) {
   if (!caseIsOpen(caseObj)) {
-    const epoch = getPhaseForForm(peakForm()).id;
-    alert(t('cases.lockedAlert', { req: formatNumber(caseObj.reqEpoch), epoch: formatNumber(epoch) }));
+    alert(`Кейс откроется на Форме ${formatNumber(caseObj.reqForm || 1)}! Ваша текущая форма: ${formatNumber(peakForm())}`);
     return false;
   }
   const missing = missingCaseFunds(caseObj, count);
@@ -344,6 +333,13 @@ export function openCaseRoulette(caseId) {
   if (wheelBox) wheelBox.classList.add('opacity-40');
   playCaseUnlock();
 
+  if (GAME.fastCaseOpen) {
+    if (unlockScreen) unlockScreen.classList.add('hidden');
+    if (wheelBox) wheelBox.classList.remove('opacity-40');
+    setupAndRunRouletteTape(caseObj, true);
+    return;
+  }
+
   unlockTimeoutId = setTimeout(() => {
     unlockTimeoutId = null;
     if (unlockScreen) unlockScreen.classList.add('hidden');
@@ -383,9 +379,9 @@ export function getKnifePoolWithChances(poolKnives, fixedChances = null) {
   }
 
   const asked = fixedKnives.reduce((sum, knife) => sum + fixedChanceOf(knife), 0);
-  const fixedBudget = Math.min(0.95, asked);
+  const fixedBudget = regular.length > 0 ? Math.min(0.95, asked) : Math.min(1.0, asked);
   const fixedScale = asked > 0 ? fixedBudget / asked : 1;
-  const rest = 1 - fixedBudget;
+  const rest = Math.max(0, 1 - fixedBudget);
 
   const rows = [];
   if (regular.length > 0) {
@@ -739,6 +735,16 @@ export function openMultipleCases(caseObj, count = 3) {
     rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${knifeRarity(rouletteWinningKnife)}</span> • <span class="text-yellow-400 font-bold">${t('cases.opened3Banner')}</span>`;
   }
 
+  const shown = getKnifeShownBonuses(rouletteWinningKnife);
+  const cbEl = document.getElementById('rouletteResultClickBoost');
+  if (cbEl) cbEl.textContent = `+${formatNumber(shown.clickPct)}${t('hud.buffClick')}`;
+
+  const pbEl = document.getElementById('rouletteResultPassiveBoost');
+  if (pbEl) pbEl.textContent = `+${formatNumber(getKnifeCpsBonus(rouletteWinningKnife))} CPS`;
+
+  const sbEl = document.getElementById('rouletteResultSparkleBoost');
+  if (sbEl) sbEl.textContent = `✨ x${formatNumber(shown.sparkleMult || 1)}`;
+
   playCaseWinFanfare(rouletteWinningKnife.rarity);
   launchConfettiFireworks(true);
 
@@ -746,10 +752,24 @@ export function openMultipleCases(caseObj, count = 3) {
 }
 
 export function renderCasesSystem() {
+  const sparklesHeader = document.getElementById('casesSparklesLabel');
+  if (sparklesHeader) sparklesHeader.innerHTML = `${formatNumber(GAME.sparkles || 0)} ✨`;
   const rollsLabel = document.getElementById('casesRollsLabel');
-  if (rollsLabel) rollsLabel.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
+  if (rollsLabel) rollsLabel.innerHTML = `${formatNumber(GAME.sparkles || 0)} ✨`;
   const plungersLabel = document.getElementById('casesPlungersLabel');
   if (plungersLabel) plungersLabel.innerHTML = `${formatNumber(GAME.transcendPlungers || 0)} <span class="plunger-icon"></span>`;
+
+  const fastChk = document.getElementById('chkFastCaseOpen');
+  if (fastChk) {
+    fastChk.checked = Boolean(GAME.fastCaseOpen);
+    if (!fastChk._bound) {
+      fastChk._bound = true;
+      fastChk.addEventListener('change', () => {
+        GAME.fastCaseOpen = fastChk.checked;
+        saveLocal();
+      });
+    }
+  }
 
   const countBadge = document.getElementById('knivesCountBadge');
   const unlockedCount = (GAME.unlockedKnives || []).length;
@@ -771,7 +791,7 @@ export function renderCasesSystem() {
       const hasCurrency = canAffordCase(c, 1);
       const hasCurrency3 = isUnlocked && canAffordCase(c, 3);
       const canOpen = isUnlocked && hasCurrency;
-      const lockReason = t('hud.epoch', { n: formatNumber(c.reqEpoch) });
+      const lockReason = `Форма ${formatNumber(c.reqForm || 1)}`;
 
       const lockBadge = !isUnlocked
         ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 ${lockReason}</div>`
@@ -787,27 +807,46 @@ export function renderCasesSystem() {
             ? `🎁 ${t('cases.openDiscount')}`
             : (hasCurrency ? t('cases.open') : t('cases.noFunds')));
 
+      const showcaseHtml = `
+        <div class="mt-2 grid grid-cols-5 gap-1 bg-stone-950/80 p-1.5 rounded-xl border border-white/5">
+          ${(c.pool || []).map((kid) => {
+            const kn = KNIVES.find(k => k.id === kid);
+            const chance = Math.round((c.fixedChances?.[kid] || 0) * 100);
+            const isJackpot = chance === 1;
+            return `
+              <div class="flex flex-col items-center text-center p-0.5 rounded-lg ${isJackpot ? 'bg-amber-500/10 border border-amber-500/40 shadow-sm' : 'bg-stone-900/60'} relative" title="${kn ? knifeName(kn) : kid}">
+                <div class="scale-75 my-[-4px] flex items-center justify-center">${kn ? getKnifeImageHtml(kn, 28) : '🗡️'}</div>
+                <span class="text-[8.5px] font-mono font-bold ${isJackpot ? 'text-yellow-300 animate-pulse' : 'text-stone-300'}">${chance}%</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+
       return `
         <div class="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br ${c.bgClass} border-2 ${c.borderClass} shadow-xl flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${!isUnlocked ? 'opacity-70 grayscale-[25%]' : ''}">
           <div>
             <!-- Top Bar: Info button & Price badge cleanly separated -->
-            <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-white/10 gap-2">
+            <div class="flex items-center justify-between mb-1.5 pb-1 border-b border-white/10 gap-2">
               <button class="case-info-btn w-6 h-6 rounded-full bg-stone-950/80 hover:bg-stone-850 text-yellow-300 border border-yellow-400/70 flex items-center justify-center text-xs font-black transition shadow-sm jelly-btn cursor-pointer shrink-0" data-case="${c.id}" title="${t('cases.infoTitle')}">ⓘ</button>
               <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-stone-950/90 text-yellow-300 border border-yellow-500/50 inline-flex items-center gap-1.5 shrink-0 shadow-sm whitespace-nowrap">${casePriceHtml(c)}</span>
             </div>
 
             <!-- Central Showcase: Centered big icon, full readable title and description -->
             <div class="flex flex-col items-center text-center my-1 px-1">
-              <div class="text-4xl my-1 select-none filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transform transition-transform duration-200 hover:scale-110">${c.icon}</div>
-              <div class="font-game text-xs sm:text-sm text-yellow-200 font-bold tracking-wide leading-tight min-h-[2.2rem] flex items-center justify-center text-center">${caseName(c)}</div>
-              <div class="text-[10.5px] text-stone-300 mt-1 leading-snug line-clamp-2 min-h-[26px]">${caseDesc(c)}</div>
+              <div class="text-3xl my-0.5 select-none filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transform transition-transform duration-200 hover:scale-110">${c.icon}</div>
+              <div class="font-game text-xs sm:text-sm text-yellow-200 font-bold tracking-wide leading-tight min-h-[1.8rem] flex items-center justify-center text-center">${caseName(c)}</div>
+              <div class="text-[10px] text-stone-300 mt-0.5 leading-snug line-clamp-1">${caseDesc(c)}</div>
               ${lockBadge}
               ${discountBadge}
             </div>
+
+            <!-- 5 Knives Roblox-style showcase -->
+            ${showcaseHtml}
           </div>
 
           <!-- Bottom Action Buttons: Open 1x and Open 3x -->
-          <div class="mt-3 flex gap-1.5 w-full">
+          <div class="mt-2.5 flex gap-1.5 w-full">
             <button class="open-case-btn flex-1 py-2 px-1.5 rounded-xl font-game text-[11px] font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1 ${canOpen ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black' : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'}" data-case="${c.id}" ${canOpen ? '' : 'disabled'}>
               ${btnText}
             </button>
@@ -924,7 +963,7 @@ export function openCasePreviewModal(caseId) {
               <span class="text-stone-600">•</span>
               <span>CPS: <b class="text-cyan-300 font-bold">+${formatNumber(getKnifeCpsBonus(knife))}</b></span>
               <span class="text-stone-600">•</span>
-              <span>${t('cases.mult')} <b class="text-amber-300 font-bold">x${formatNumber(getKnifeEffectiveClickMult(knife))}</b></span>
+              <span>✨ <b class="text-yellow-300 font-bold">x${formatNumber(knife.sparkleMult || 1)}</b></span>
             </div>
           </div>
         </div>
@@ -1034,8 +1073,10 @@ export function initCasesListeners() {
 }
 
 export function updateCasesButtons() {
+  const sparklesHeader = document.getElementById('casesSparklesLabel');
+  if (sparklesHeader) sparklesHeader.innerHTML = `${formatNumber(GAME.sparkles || 0)} ✨`;
   const rollsLabel = document.getElementById('casesRollsLabel');
-  if (rollsLabel) rollsLabel.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
+  if (rollsLabel) rollsLabel.innerHTML = `${formatNumber(GAME.sparkles || 0)} ✨`;
   const plungersLabel = document.getElementById('casesPlungersLabel');
   if (plungersLabel) plungersLabel.innerHTML = `${formatNumber(GAME.transcendPlungers || 0)} <span class="plunger-icon"></span>`;
 
@@ -1055,7 +1096,7 @@ export function updateCasesButtons() {
     btn.disabled = !canOpen;
 
     const newText = !isUnlocked
-      ? `🔒 ${t('hud.epoch', { n: formatNumber(c.reqEpoch) })}`
+      ? `🔒 Форма ${formatNumber(c.reqForm || 1)}`
       : (isDiscounted && hasCurrency ? `🎁 ${t('cases.openDiscount')}` : (hasCurrency ? t('cases.open') : t('cases.noFunds')));
 
     if (btn.textContent.trim() !== newText) {
@@ -1066,6 +1107,19 @@ export function updateCasesButtons() {
       btn.className = 'open-case-btn flex-1 py-2 px-1.5 rounded-xl font-game text-[11px] font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-stone-950 font-black';
     } else {
       btn.className = 'open-case-btn flex-1 py-2 px-1.5 rounded-xl font-game text-[11px] font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1 bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700';
+    }
+  });
+
+  cratesList.querySelectorAll('.open-case-3x-btn').forEach(btn => {
+    const c = WEAPON_CASES.find(cs => cs.id === btn.dataset.case);
+    if (!c) return;
+    const isUnlocked = caseIsOpen(c);
+    const hasCurrency3 = isUnlocked && canAffordCase(c, 3);
+    btn.disabled = !hasCurrency3;
+    if (hasCurrency3) {
+      btn.className = 'open-case-3x-btn py-2 px-2.5 rounded-xl font-game text-[11px] font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:brightness-110 text-white font-black';
+    } else {
+      btn.className = 'open-case-3x-btn py-2 px-2.5 rounded-xl font-game text-[11px] font-bold transition jelly-btn shadow-md text-center flex items-center justify-center gap-1 bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700';
     }
   });
 }

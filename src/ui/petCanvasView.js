@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { getEquippedKnife } from '../economy/production.js?v=5.0.80';
 
 import { TALENTS } from '../data/talents.data.js';
@@ -1371,8 +1371,10 @@ export function catchGoldenMeteor() {
     label = t('canvas.meteorGoldBurst', { n: formatNumber(burst) });
   } else if (roll < 0.90) {
     const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
-    const raw = profile.purse * (0.10 + Math.random() * 0.08) * profile.localMult * profile.flushBonus * lootMult;
-    const spGain = Math.max(20, Math.round(Math.min(profile.purse * 0.45, raw)));
+    const eqKnife = getEquippedKnife();
+    const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
+    const raw = profile.purse * (0.10 + Math.random() * 0.08) * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult;
+    const spGain = Math.max(20, Math.round(raw));
     GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
     label = t('canvas.meteorSparkleRain', { n: formatNumber(spGain) });
   } else {

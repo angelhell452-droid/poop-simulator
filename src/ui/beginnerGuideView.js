@@ -59,6 +59,40 @@ export const BEGINNER_STEPS = [
     }
   },
   {
+    id: 'case',
+    icon: '📦',
+    titleKey: 'tutorial.step6Title',
+    descKey: 'tutorial.step6Desc',
+    rewardKey: 'tutorial.step6Reward',
+    beaconSelector: '.dash-tab[data-target="panelCases"]',
+    check: () => (GAME.casesOpened || 0) > 0 || (GAME.unlockedKnives || []).length > 0,
+    action: () => {
+      const tab = document.querySelector('.dash-tab[data-target="panelCases"]');
+      if (tab) tab.click();
+    }
+  },
+  {
+    id: 'equipKnife',
+    icon: '🗡️',
+    titleKey: 'tutorial.step7Title',
+    descKey: 'tutorial.step7Desc',
+    rewardKey: 'tutorial.step7Reward',
+    beaconSelector: '#btnOpenCharacterInventoryFromCases',
+    check: () => Boolean(GAME.equippedKnife),
+    action: () => {
+      const res = equipBestKnife();
+      if (res.success) {
+        updateHUD();
+        renderCasesSystem();
+        renderCharacterInventory();
+        addVisualParticle(t('tutorial.step7Equipped'), '#facc15', 1.35);
+        saveLocal();
+      } else {
+        openCharacterInventoryModal('knives');
+      }
+    }
+  },
+  {
     id: 'hat',
     icon: '🧢',
     titleKey: 'tutorial.step4Title',
@@ -91,40 +125,6 @@ export const BEGINNER_STEPS = [
     check: () => (GAME.totalPrestiges || 0) > 0,
     action: () => {
       openPrestigeModal();
-    }
-  },
-  {
-    id: 'case',
-    icon: '📦',
-    titleKey: 'tutorial.step6Title',
-    descKey: 'tutorial.step6Desc',
-    rewardKey: 'tutorial.step6Reward',
-    beaconSelector: '.dash-tab[data-target="panelCases"]',
-    check: () => (GAME.casesOpened || 0) > 0 || (GAME.unlockedKnives || []).length > 0,
-    action: () => {
-      const tab = document.querySelector('.dash-tab[data-target="panelCases"]');
-      if (tab) tab.click();
-    }
-  },
-  {
-    id: 'equipKnife',
-    icon: '🗡️',
-    titleKey: 'tutorial.step7Title',
-    descKey: 'tutorial.step7Desc',
-    rewardKey: 'tutorial.step7Reward',
-    beaconSelector: '#btnOpenCharacterInventoryFromCases',
-    check: () => Boolean(GAME.equippedKnife),
-    action: () => {
-      const res = equipBestKnife();
-      if (res.success) {
-        updateHUD();
-        renderCasesSystem();
-        renderCharacterInventory();
-        addVisualParticle(t('tutorial.step7Equipped'), '#facc15', 1.35);
-        saveLocal();
-      } else {
-        openCharacterInventoryModal('knives');
-      }
     }
   },
   {

@@ -2,6 +2,48 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.0.87 PRO',
+    date: '9 Октября 2026',
+    dateEn: 'October 9, 2026',
+    title: 'Roblox-модель: 41 кейс за Блестяшки ✨, множители блестяшек на ножах и быстрое открытие',
+    titleEn: 'Roblox Simulator Model: 41 Cases for Sparkles ✨, Knife Multipliers & Fast Open',
+    badge: 'Патч 5.0',
+    badgeEn: 'Patch 5.0',
+    badgeClass: 'bg-yellow-500/20 text-yellow-200 border-yellow-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '📦',
+        text: '41 Тематический Кейс: Все 205 ножей в игре распределены строго по 5 уникальных клинков на каждый кейс (50% Common, 32% Rare, 13% Epic, 4% Covert, 1% Secret Jackpot). Кейсы плавно открываются от Формы 1 до Формы 200,000.',
+        textEn: '41 Themed Cases: All 205 knives in the game are strictly divided into 5 unique blades per case (50% Common, 32% Rare, 13% Epic, 4% Covert, 1% Secret Jackpot), smoothly unlocking from Form 1 up to Form 200,000.'
+      },
+      {
+        type: 'balance',
+        icon: '✨',
+        text: 'Все кейсы за Блестяшки: Кейсы больше не требуют втулок и смывов. Первый кейс доступен сразу со старта за 20 ✨ (10 ✨ со скидкой 50%), а дубликаты возвращают 40% стоимости в Блестяшках.',
+        textEn: 'All Cases Cost Sparkles: Cases no longer require flushes or plungers. Case #1 is available immediately at launch for 20 ✨ (10 ✨ with 50% discount), and duplicates refund 40% in Sparkles.'
+      },
+      {
+        type: 'feature',
+        icon: '🗡️',
+        text: 'Множитель Блестяшек у ножей: Каждый клинок теперь обладает бонусом sparkleMult (от x1.15 до x937.5), масштабирующим доход блестяшек от каждого клика и падения золотых метеоров.',
+        textEn: 'Knife Sparkle Multiplier: Every knife now features a sparkleMult stat (from x1.15 up to x937.5), scaling sparkle earnings from clicks and golden meteor drops.'
+      },
+      {
+        type: 'feature',
+        icon: '⚡',
+        text: 'Тумблер «Быстрое открытие»: Включите режим «⚡ Быстро» в панели кейсов для моментального открытия без ожидания анимации рулетки.',
+        textEn: 'Fast Open Toggle: Enable "⚡ Fast" in the cases panel for instant openings skipping roulette spinning delays.'
+      },
+      {
+        type: 'ui',
+        icon: '👀',
+        text: 'Наглядная витрина шансов: На каждой карточке кейса отображаются все 5 ножей с процентной вероятностью выпадения в стиле симуляторов Roblox.',
+        textEn: 'Roblox-Style Drop Preview: Every case card showcases its 5 knives with their exact drop chances.'
+      }
+    ]
+  },
+  {
     version: 'v5.0.86 PRO',
     date: '9 Октября 2026',
     dateEn: 'October 9, 2026',
