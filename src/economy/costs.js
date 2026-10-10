@@ -80,14 +80,18 @@ export function getAffordableEvoInfo() {
   return { count, totalCost, canBuy: canBuy && count > 0, maxReached: false, phaseLocked: false };
 }
 
+export function getFactoryBaseCost(fac) {
+  const isTycoon = GAME.archetype === 'tycoon';
+  const discountFactor = getAsymptoticDiscountFactor([isTycoon ? 0.10 : 0], 0.90);
+  return mul(fac.cost, discountFactor);
+}
+
 export function getAffordableFactoryInfo(fac) {
   const exponentReduction = getRelicLevel('relic_cost_exponent_reduction') * 0.01;
   const baseR = hasPerk('perk_alchemical_mutation') ? 1.37 : 1.4;
   const r = Math.max(1.05, baseR - exponentReduction);
   const currentCount = fac.count || 0;
-  const isTycoon = GAME.archetype === 'tycoon';
-  const discountFactor = getAsymptoticDiscountFactor([isTycoon ? 0.10 : 0], 0.90);
-  const baseCost = mul(fac.cost, discountFactor);
+  const baseCost = getFactoryBaseCost(fac);
   const rawMult = GAME.buyMultiplier;
   const isMax = (rawMult === 'max' || rawMult === 'MAX');
   const costCurrent = mul(baseCost, bigPow(r, currentCount));

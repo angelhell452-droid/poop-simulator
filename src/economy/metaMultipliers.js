@@ -119,7 +119,8 @@ export function calculateInfiniteIncomeChain({
   relicsMult = 1,
   gearMult = 1,
   careMult = 1,
-  perksMult = null
+  perksMult = null,
+  knifeSynergyMult = 1
 } = {}) {
   const flush = flushMult !== null ? flushMult : getFlushIncomeMult();
   const bMult = breakthroughMult !== null ? breakthroughMult : getBreakthroughIncomeMult();
@@ -145,6 +146,8 @@ export function calculateInfiniteIncomeChain({
   result = mul(result, infMult);
   // * Вантузный Капитал (relic_guild_plunger_scaling)
   result = mul(result, capMult);
+  // * Синергия Ножа и Фабрик (штраф x0.1 при отсутствии актуального ножа)
+  result = mul(result, knifeSynergyMult);
 
   return result;
 }

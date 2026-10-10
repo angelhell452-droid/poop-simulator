@@ -3,6 +3,7 @@ import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.80';
 import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
 import { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../data/knifeBalance.config.js?v=5.0.83';
 export { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult };
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
@@ -284,6 +285,47 @@ function describeFactory(fac, idx, count) {
   return { raw, milestone, knife, quantum: 1, core, metaMult, count, perCopy: effectiveBaseCps };
 }
 
+export function getKnifeFactorySynergyMult() {
+  const knife = getEquippedKnife();
+  if (!knife) return 0.1; // 90% penalty without knife
+
+  // Find the highest factory that is unlocked or owned
+  const currentStage = GAME.evoStage || 0;
+  let maxFac = null;
+  for (let i = FACTORIES.length - 1; i >= 0; i--) {
+    const f = FACTORIES[i];
+    if ((f.count && f.count > 0) || (f.reqStage !== undefined && f.reqStage <= currentStage)) {
+      maxFac = f;
+      break;
+    }
+  }
+
+  // Tier 1 factories do not trigger advanced knife requirements
+  if (!maxFac || (maxFac.tierNumber || 1) <= 1) {
+    return 1.0;
+  }
+
+  // Celestial, godly, special or titanium knives always satisfy synergy
+  if (['godly', 'celestial', 'special', 'titanium'].includes(knife.rarity)) {
+    return 1.0;
+  }
+
+  const knifeCase = WEAPON_CASES.find(c => c.pool && c.pool.includes(knife.id));
+  if (!knifeCase) {
+    return 1.0;
+  }
+
+  const knifeReqForm = knifeCase.reqForm || 0;
+  const facTier = maxFac.tierNumber || 1;
+  const minRequiredKnifeForm = facTier === 2 ? 3500 : facTier === 3 ? 7000 : facTier === 4 ? 11000 : 15000;
+
+  if (knifeReqForm < minRequiredKnifeForm) {
+    return 0.1; // 90% penalty if knife is from a too old case
+  }
+
+  return 1.0;
+}
+
 function passiveGlobalLines() {
   const styles = knifeStyleBonuses();
   const turboMult = 1 + talentLevel('turbo_pipe') * 0.15;
@@ -296,6 +338,7 @@ function passiveGlobalLines() {
   const plungersMult = getPlungersIncomeMult();
   const cleanBuff = getCleanIncomeMult();
   const knifePassiveMult = getKnifePassiveMult(styles.knife);
+  const knifeSynergy = getKnifeFactorySynergyMult();
   let archMult = 1;
   if (GAME.archetype === 'tycoon') archMult = 1.5;
   else if (GAME.archetype === 'balanced') archMult = 1.15;
@@ -344,7 +387,13 @@ function passiveGlobalLines() {
   pushAboveOne(lines, 'Эссенция Бесконечности', infinityMult);
   pushAboveOne(lines, 'Вантузный Капитал', capitalMult);
 
-  // Сквозная бесконечная формула: Доход = (База * Таланты * Буст Смывов) * Нож * Буст Прорывов * Реликвии * Шапки/Одежда * Баффы Ухода
+  if (knifeSynergy < 1) {
+    lines.push({ name: '⚠️ Штраф: Без актуального ножа', text: 'x0.10 (-90%)' });
+  } else {
+    lines.push({ name: '🗡️ Синергия ножа и заводов', text: 'x1.00 (100%)' });
+  }
+
+  // Сквозная бесконечная формула: Доход = (База * Таланты * Буст Смывов) * Нож * Буст Прорывов * Реликвии * Шапки/Одежда * Баффы Ухода * Синергия Ножа
   const numProd = turboMult * goldRushMult * overclockMult * styles.butterfly
     * crystalMult * softRollsMult * cosmicMult
     * cleanBuff * archMult * omniWealthMult
@@ -356,8 +405,9 @@ function passiveGlobalLines() {
   product = mul(product, plungersMult);
   product = mul(product, knifePassiveMult);
   product = mul(product, evo.mult);
+  product = mul(product, knifeSynergy);
 
-  return { lines, gearBits, product, gearRaw: rollsMult, gearMult: rollsMult };
+  return { lines, gearBits, product, gearRaw: rollsMult, gearMult: rollsMult, knifeSynergy };
 }
 
 function clickParts() {

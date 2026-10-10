@@ -1,7 +1,7 @@
 import { getPhaseByIndex, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.0.80';
 import { calcEvolutionMult } from './evolutions.data.js?v=5.0.80';
 import { expectedAccountMult } from '../economy/metaMultipliers.js?v=5.0.80';
-import { div, isBig, mul } from '../utils/big.js?v=5.0.80';
+import { div, isBig, mul, bigPow } from '../utils/big.js?v=5.0.80';
 import { horizonDrag } from '../economy/horizon.js?v=5.0.80';
 
 export const FACTORIES_PER_EPOCH = 3;
@@ -130,19 +130,39 @@ for (let i = 0; i < FACTORIES.length; i++) {
   }
 
   const spec = SLOT_PLAN[slot];
-  const decade = epoch === 1 ? slot - 1 : spec.decade;
+  const decade = slot * 0.48;
   fac.reqStage = phase.formStart - 1 + spec.formOffset;
-  const arrival = epoch === 1 ? 100 : 400000 * Math.pow(1000, epoch - 2);
-  const income = arrival * Math.pow(10, decade);
+
+  // Smooth arrival progression: ~3.0x between adjacent factories
+  // 3 slots per epoch -> arrival per epoch grows by 3.0^3 ≈ 27x
+  const arrival = mul(2000, bigPow(27.0, epoch - 2));
+  const income = mul(arrival, Math.pow(10, decade));
   const formMult = Math.max(1, calcEvolutionMult(fac.reqStage));
   const expected = expectedAccountMult(epoch);
   const cpsFactor = 9 * Math.pow(pace, 0.45);
-  // From epoch 11 the plant pays less, so clicks plus factories with no talents,
-  // rolls, plungers, knife or hat flatten out before form 20000.
-  // A built account catches back up through lateComboMult.
   const lateDrag = Math.pow(1.18, Math.max(0, epoch - 10));
-  fac.cost = Math.max(1, Math.round(income * spec.payback * pace));
-  fac.baseCps = (income * cpsFactor) / (formMult * expected * lateDrag);
+
+  // Tier nerfing: T2 cut 100x-250x, T3 cut 300x-700x, T4+ cut 1000x
+  let tierNerf = 1;
+  if (tierNumber === 2) {
+    tierNerf = 100 * Math.pow(2.5, (epoch - 11) / 9);
+  } else if (tierNumber === 3) {
+    tierNerf = 300 * Math.pow(2.33, (epoch - 21) / 9);
+  } else if (tierNumber >= 4) {
+    tierNerf = 1000;
+  }
+
+  // Cost escalation starting from mid Tier 2 (epoch 15+)
+  let costHike = 1;
+  if (epoch >= 15) {
+    costHike = bigPow(4.0, epoch - 14);
+  }
+
+  const rawCost = mul(mul(mul(income, spec.payback), pace), costHike);
+  fac.cost = isBig(rawCost) ? rawCost : Math.max(1, Math.round(rawCost));
+
+  const rawCps = div(mul(income, cpsFactor), mul(formMult * expected * lateDrag, tierNerf));
+  fac.baseCps = isBig(rawCps) ? rawCps : (Number.isFinite(rawCps) ? rawCps : 1);
 }
 
 const HORIZON_SLOTS = [
@@ -157,18 +177,20 @@ for (let epoch = CLASSIC_EPOCHS + 1; epoch <= PHASE_COUNT; epoch++) {
   const pace = Math.pow(1.12, CLASSIC_EPOCHS - 1);
   const drag = horizonDrag(epoch);
   HORIZON_SLOTS.forEach((spec, slot) => {
-    const rawArrival = 400000 * Math.pow(1000, epoch - 2);
-    const arrival = Number.isFinite(rawArrival)
+    const rawArrival = mul(2000, bigPow(27.0, epoch - 2));
+    const arrival = isBig(rawArrival)
       ? rawArrival
-      : { __big: true, m: 4, e: 5 + 3 * (epoch - 2) };
-    const income = mul(arrival, Math.pow(10, spec.decade));
+      : { __big: true, m: 2, e: 3 + Math.floor((epoch - 2) * Math.log10(27)) };
+    const income = mul(arrival, Math.pow(10, slot * 0.48));
     const reqStage = phase.formStart - 1 + spec.formOffset;
     const formMult = Math.max(1, calcEvolutionMult(reqStage));
     const expected = expectedAccountMult(epoch);
     const cpsFactor = 9 * Math.pow(pace, 0.45);
     const lateDrag = Math.pow(1.18, CLASSIC_EPOCHS - 10);
-    const divisor = formMult * expected * lateDrag * drag;
-    const cost = mul(mul(income, spec.payback), pace);
+    const tierNerf = 1000;
+    const divisor = mul(formMult * expected * lateDrag * drag, tierNerf);
+    const costHike = bigPow(4.0, epoch - 14);
+    const cost = mul(mul(mul(income, spec.payback), pace), costHike);
     const baseCps = div(mul(income, cpsFactor), divisor);
     FACTORIES.push({
       id: `horizon_${epoch}_${slot}`,
