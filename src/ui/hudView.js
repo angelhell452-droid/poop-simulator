@@ -13,6 +13,7 @@ import { updateTalentButtons } from './talentView.js?v=5.0.80';
 import { updateShopButtons } from './shopView.js';
 import { updateCasesButtons } from './casesView.js?v=5.0.80';
 import { updateSmartAssistant } from './smartAssistantView.js?v=5.0.80';
+import { updateTutorialQuestWidget } from './tutorialView.js';
 import { updateBeginnerGuide } from './beginnerGuideView.js';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.0.80';
@@ -269,24 +270,8 @@ export function updateHUD() {
   updateShopButtons();
   updateCasesButtons();
 
-  // Dynamic Poop Skin Badge (Ensures accurate form & tier without tab dependency)
-  const epoch = getPhaseForStage(GAME.evoStage || 0);
-  const epochForm = (GAME.evoStage || 0) + 1;
-  const epochSpan = Math.max(1, epoch.formEnd - epoch.formStart + 1);
-  const epochLeft = Math.max(0, epoch.formEnd - epochForm);
-  const epochNameEl = document.getElementById('poopSkinName');
-  if (epochNameEl) epochNameEl.textContent = t('hud.epoch', { n: formatNumber(epoch.id) });
-  const epochFillEl = document.getElementById('epochScaleFill');
-  if (epochFillEl) {
-    const pct = Math.max(0, Math.min(100, ((epochForm - epoch.formStart) / epochSpan) * 100));
-    epochFillEl.style.width = pct <= 0 ? '0%' : `max(4px, ${pct}%)`;
-  }
-  const epochHintEl = document.getElementById('poopSkinProgressHint');
-  if (epochHintEl) {
-    if (epoch.id >= 200) epochHintEl.textContent = t('hud.epochLast');
-    else if (epochLeft <= 0) epochHintEl.textContent = t('hud.epochNext', { n: formatNumber(epoch.id + 1) });
-    else epochHintEl.textContent = t('hud.epochIn', { n: formatNumber(epochLeft) });
-  }
+  // Dynamic Tutorial Quest Widget (Replaces old epoch pill)
+  updateTutorialQuestWidget();
 
   // Real-time update of open Prestige / Transcend Modals (Task 8)
   updatePrestigeModalRealtime();

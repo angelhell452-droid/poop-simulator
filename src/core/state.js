@@ -75,6 +75,7 @@ export function getDefaultGameState() {
     tickleCount: 0,
     tutorialRewardClaimed: false,
     tutorialStepIndex: 0,
+    currentQuestId: 1,
     tutorialCompleted: false,
     tutorialCritBonus: 0,
     tutorialClickBonus: 0,

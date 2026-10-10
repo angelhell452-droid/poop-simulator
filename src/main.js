@@ -23,6 +23,7 @@ import { initVipShop } from './ui/vipShopView.js';
 import { hasPerk } from './data/perks.data.js';
 import { getRelicLevel } from './data/relics.data.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.80';
+import { initTutorialListeners, validateAndAdvanceRetroactiveQuests } from './ui/tutorialView.js';
 import { initBeginnerGuideListeners } from './ui/beginnerGuideView.js?v=5.1.0';
 import { initBugReportListeners } from './ui/bugReportView.js?v=5.1.0';
 import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.1.0';
@@ -151,6 +152,7 @@ export async function bootstrap() {
   initPatchNotesListeners();
   initVipShop();
   initSmartAssistantListeners();
+  initTutorialListeners();
   initBeginnerGuideListeners();
   initBugReportListeners();
   initCharacterInventoryListeners();
@@ -173,7 +175,10 @@ export async function bootstrap() {
     clampAutoclickerState();
     updateAutoclickerUI();
   });
-  events.on('save:loaded', () => updateAutoclickerUI());
+  events.on('save:loaded', () => {
+    updateAutoclickerUI();
+    validateAndAdvanceRetroactiveQuests();
+  });
 
   let shownClickCap = -1;
   events.on('tick', () => {
@@ -335,6 +340,7 @@ export async function bootstrap() {
   updateCasesTabBadge();
   checkFirstCaseNotification();
   renderCharacterInventory();
+  validateAndAdvanceRetroactiveQuests();
   updateHUD();
 
   // 9. Event Listener for tick UI sync

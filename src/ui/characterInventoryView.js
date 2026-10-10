@@ -90,6 +90,15 @@ function paintInvTabs() {
   else renderSkinsGrid();
 }
 
+export function getSkinPrice(skin) {
+  // Динамическая скидка на Квест №9: Если на аккаунте активен Квест №9 ("Новая кожа"), то стоимость самой первой Одежды (скина) в магазине принудительно и временно снижается с 25,000 Блестяшек до строго 1,000 Блестяшек ✨.
+  if (skin.id === 'skin_robe') {
+    const isQuest9 = !GAME.tutorialCompleted && (GAME.tutorialStepIndex === 8 || Number(GAME.currentQuestId) === 9);
+    if (isQuest9) return 1000;
+  }
+  return skin.price;
+}
+
 function renderSkinsGrid() {
   const box = document.getElementById('skinsInventoryContainer');
   if (!box) return;
@@ -97,7 +106,8 @@ function renderSkinsGrid() {
     const owned = skinOwned(skin.id);
     const worn = skinWorn(skin);
     const open = skinFormOpen(skin);
-    const price = `${formatNumber(skin.price)} ✨`;
+    const effectivePrice = getSkinPrice(skin);
+    const price = `${formatNumber(effectivePrice)} ✨`;
     let action = '';
     if (worn) {
       action = `<button type="button" class="skin-unequip text-[10px] font-bold px-2 py-1.5 rounded-xl border border-stone-600 bg-stone-800 text-stone-200" data-id="${skin.id}">${t('inv.unequip')}</button>`;
@@ -141,11 +151,12 @@ function buyBodySkin(id) {
     equipOwnedSkin(id);
     return;
   }
-  if ((GAME.sparkles || 0) < skin.price) {
-    showKnifeToast(t('inv.toastNeed', { n: formatNumber(skin.price) }));
+  const effectiveCost = getSkinPrice(skin);
+  if ((GAME.sparkles || 0) < effectiveCost) {
+    showKnifeToast(t('inv.toastNeed', { n: formatNumber(effectiveCost) }));
     return;
   }
-  GAME.sparkles -= skin.price;
+  GAME.sparkles -= effectiveCost;
   GAME.ownedSkins = [...(GAME.ownedSkins || []), id];
   GAME.equippedSkin = id;
   updateHUD();

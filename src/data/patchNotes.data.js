@@ -2,6 +2,42 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.2.1 PRO',
+    date: '10 Октября 2026',
+    dateEn: 'October 10, 2026',
+    title: 'Патч 5.2.1: Полная Переработка Обучения — 18 Квестов, Spotlight и Акции',
+    titleEn: 'Patch 5.2.1: Beginner Guide Overhaul — 18 Quests, Spotlight & Dynamic Deals',
+    badge: 'Патч 5.2.1',
+    badgeEn: 'Patch 5.2.1',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '📜',
+        text: 'Новая Кампания из 18 Интерактивных Квестов: Старое окошко эпох заменено на динамическую постоянную плашку квестов с полосой прогресса, иконками, счетчиками и быстрыми наградами.',
+        textEn: 'New 18-Quest Interactive Campaign: Replaced old epoch text pill with dynamic persistent quest widget featuring progress bar, icons, counters, and instant rewards.'
+      },
+      {
+        type: 'ui',
+        icon: '🔦',
+        text: 'Система UI Spotlight и Затемнения: Интерактивный оверлей (black 0.6) затемняет экран и подсвечивает строго целевую кнопку, зону или вкладку квеста с блокировкой случайных кликов.',
+        textEn: 'UI Spotlight & Dimming System: Interactive overlay (black 0.6) dims the entire screen and highlights the exact target button, tab, or pet needed with pointer-block safeguards.'
+      },
+      {
+        type: 'balance',
+        icon: '🏷️',
+        text: 'Акционная Скидка на Квесте №9: Во время квеста «Новая кожа» цена первого скина в гардеробе снижается с 25 000 до 1 000 Блестяшек ✨ с возвратом стандартной стоимости после прохождения.',
+        textEn: 'Dynamic Discount on Quest #9: During "New Skin" quest, first body skin price is temporarily reduced from 25,000 to 1,000 Sparkles ✨, restoring standard cost upon completion.'
+      },
+      {
+        type: 'feature',
+        icon: '⚡',
+        text: 'Ретроактивная Валидация Сохранений: Движок автоматически проверяет текущее состояние игры и моментально засчитывает ранее выполненные действия без застреваний на старых аккаунтах.',
+        textEn: 'Retroactive State Validation: Engine automatically validates state and instantly claims rewards for milestones already completed on existing saves.'
+      }
+    ]
+  },
+  {
     version: 'v5.2.0 PRO',
     date: '10 Октября 2026',
     dateEn: 'October 10, 2026',

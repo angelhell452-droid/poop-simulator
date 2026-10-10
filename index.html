@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.2.0 PRO</title>
+  <title>Poop Simulator v5.2.1 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,11 +20,13 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.2.0">
+  <link rel="stylesheet" href="styles/main.css?v=5.2.1">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
   <div id="bootVeil" class="boot-veil" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:#121816;"><span data-i18n="common.loading">Загрузка</span></div>
+  <!-- TUTORIAL SPOTLIGHT OVERLAY (Black 0.6 backdrop) -->
+  <div id="tutorialSpotlightOverlay" class="fixed inset-0 bg-black/60 z-[850] transition-opacity duration-300 hidden pointer-events-auto"></div>
 
   <!-- TOP APP HEADER -->
   <header
@@ -407,14 +409,28 @@
         id="canvasBox">
         <canvas id="petCanvas" class="w-full h-full block z-0"></canvas>
 
-        <!-- Dynamic Poop Skin Badge (Roblox Top-Tier Game aesthetic) -->
-        <div id="poopSkinPill"
-          class="absolute top-3 left-3 bg-stone-900/85 backdrop-blur-md px-3 py-1.5 rounded-2xl border-2 border-emerald-400/70 shadow-lg flex flex-col gap-1 z-10 select-none pointer-events-none min-w-[9.5rem]">
-          <span id="poopSkinName" class="font-game text-xs text-emerald-200">Эпоха 1</span>
-          <div class="h-1.5 w-full rounded-full bg-stone-600 overflow-hidden">
-            <div id="epochScaleFill" class="h-full rounded-full bg-emerald-400" style="width:0%"></div>
+        <!-- DYNAMIC TUTORIAL QUEST WIDGET (Replaces old epoch pill) -->
+        <div id="tutorialQuestWidget"
+          class="absolute top-3 left-3 bg-stone-900/90 backdrop-blur-md px-3 py-2 rounded-2xl border-2 border-amber-400/70 shadow-2xl flex flex-col gap-1.5 z-20 select-none min-w-[13.5rem] max-w-[18.5rem] transition-all">
+          <div class="flex items-center justify-between gap-1.5">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span id="tqQuestIcon" class="text-base shrink-0 animate-bounce">🎒</span>
+              <div class="truncate">
+                <span id="tqQuestHeader" class="font-game text-xs text-yellow-300 font-extrabold block truncate">Квест 1/18: Первая слизь</span>
+              </div>
+            </div>
+            <button id="tqActionBtn" type="button"
+              class="shrink-0 font-game text-[10px] font-black px-2.5 py-0.5 rounded-xl shadow border jelly-btn transition bg-gradient-to-r from-emerald-500 to-teal-500 text-stone-950 border-emerald-300">
+              ⚡
+            </button>
           </div>
-          <span id="poopSkinProgressHint" class="text-[9px] text-stone-200 whitespace-nowrap">следующая через 499 форм</span>
+          <div class="h-2 w-full rounded-full bg-stone-800 overflow-hidden border border-stone-700/80">
+            <div id="tqProgressFill" class="h-full rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400 transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] gap-1">
+            <span id="tqProgressLabel" class="text-emerald-300 font-mono font-bold truncate">Клики: 0 / 50</span>
+            <span id="tqRewardLabel" class="text-stone-300 text-[9px] font-bold truncate">+300 💨</span>
+          </div>
         </div>
 
         <!-- Canvas Quick Prestige & Transcend Badges (Prominent immediate access) -->
@@ -1930,7 +1946,7 @@
       <div class="text-6xl my-2 animate-bounce">🏆</div>
       <h3 class="font-game text-2xl text-emerald-300" data-i18n="tutorial.triumphTitle">Вы полностью готовы к бесконечности!</h3>
       <p class="text-xs text-stone-300 mt-2 leading-relaxed" data-i18n="tutorial.triumphSubtitle">
-        Все 12 ступеней обучения успешно пройдены! Все системы игры освоены: Фабрики, Уход, Ножи, Смывы, Таланты, Прорывы, Реликвии и Гильдии.
+        Все 18 ступеней обучения успешно пройдены! Все системы игры освоены: Фабрики, Уход, Ножи, Смывы, Таланты, Перки, Прорывы, Реликвии и Гильдии.
       </p>
       <div class="bg-stone-950/80 border border-emerald-500/40 rounded-2xl p-3 my-4 text-left text-xs space-y-1.5 text-stone-300">
         <div class="flex items-center gap-2 text-emerald-400 font-bold">

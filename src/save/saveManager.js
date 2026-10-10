@@ -41,6 +41,9 @@ export function buildSavePayload() {
     achievements: ACHIEVEMENTS.map(a => ({ id: a.id, done: !!a.done })),
     purchasedItems: SHOP_ITEMS.filter(item => item.owned).map(i => i.id),
     ownedPerks: PERMANENT_PERKS.filter(p => p.owned || (GAME.ownedPerks && GAME.ownedPerks[p.id])).map(p => p.id),
+    currentQuestId: GAME.currentQuestId || ((GAME.tutorialStepIndex || 0) + 1),
+    tutorialStepIndex: GAME.tutorialStepIndex || 0,
+    tutorialCompleted: !!GAME.tutorialCompleted,
     relics: GAME.relics || {},
     transcendUpgrades: GAME.transcendUpgrades || {},
     knifeStats: KNIVES.map(k => ({ id: k.id, statTrak: k.statTrak || 0 })),
@@ -234,8 +237,10 @@ export function applySaveDataSafely(rawData) {
   const phaseCap = maxUnlockedStage(GAME.totalTranscend || 0);
   if (GAME.evoStage > phaseCap) GAME.evoStage = phaseCap;
 
-  GAME.tutorialStepIndex = Math.max(0, Math.min(12, Math.floor(Number(GAME.tutorialStepIndex) || 0)));
-  GAME.tutorialCompleted = Boolean(GAME.tutorialCompleted);
+  const stepIdx = Math.max(0, Math.min(18, Math.floor(Number(GAME.tutorialStepIndex ?? ((Number(GAME.currentQuestId) || 1) - 1)) || 0)));
+  GAME.tutorialStepIndex = stepIdx;
+  GAME.currentQuestId = Math.max(1, Math.min(19, Math.floor(Number(GAME.currentQuestId ?? (stepIdx + 1)) || 1)));
+  GAME.tutorialCompleted = Boolean(GAME.tutorialCompleted || stepIdx >= 18);
   GAME.tutorialCritBonus = Math.max(0, Number(GAME.tutorialCritBonus) || 0);
   GAME.tutorialClickBonus = Math.max(0, Number(GAME.tutorialClickBonus) || 0);
   GAME.tutorialIncomeMult = Math.max(1, Number(GAME.tutorialIncomeMult) || 1);
