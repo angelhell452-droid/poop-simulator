@@ -8,7 +8,7 @@ import {
   showTriumphModal
 } from './tutorialView.js';
 
-export const BEGINNER_STEPS = TUTORIAL_QUESTS;
+export const BEGINNER_STEPS = [];
 
 export function isBeginnerGuideComplete() {
   return isTutorialComplete();
@@ -16,7 +16,7 @@ export function isBeginnerGuideComplete() {
 
 export function getCurrentTutorialStepIndex() {
   const current = getCurrentQuest();
-  return current ? current.num - 1 : TUTORIAL_QUESTS.length;
+  return current ? current.num - 1 : (TUTORIAL_QUESTS ? TUTORIAL_QUESTS.length : 18);
 }
 
 export function getNextBeginnerStep() {

@@ -1724,7 +1724,6 @@ select {
 }
 
 #tutorialQuestWidget {
-  z-index: 901 !important;
   pointer-events: auto !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }

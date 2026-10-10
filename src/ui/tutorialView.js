@@ -1,7 +1,8 @@
 import { GAME, feedCount, washCount } from '../core/state.js?v=5.0.80';
 import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
-import { TALENTS } from '../data/talents.data.js?v=5.0.80';
-import { PERMANENT_PERKS } from '../data/perks.data.js';
+import { TALENTS } from '../data/talents.data.js';
+import { PERMANENT_PERKS, hasPerk } from '../data/perks.data.js';
+import { RELICS, hasRelic } from '../data/relics.data.js';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { gainBio } from '../utils/big.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
@@ -13,6 +14,7 @@ import { switchTalentSubTab } from './talentView.js?v=5.0.80';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 let activeSpotlightElement = null;
+let isSpotlightActive = false;
 
 export const TUTORIAL_QUESTS = [
   // 1. Первая слизь
@@ -378,9 +380,9 @@ export const TUTORIAL_QUESTS = [
     fallbackTitle: 'Постоянная роскошь',
     rewardDesc: 'Вечный Перк',
     beaconSelector: '#btnVipShop',
-    check: () => PERMANENT_PERKS.some(p => p.owned) || Object.keys(GAME.ownedPerks || {}).length > 0 || (GAME.breakthroughCount || 0) > 0,
+    check: () => PERMANENT_PERKS.some(p => p.owned || hasPerk(p.id)) || Object.keys(GAME.ownedPerks || {}).length > 0 || (GAME.breakthroughCount || 0) > 0,
     progress: () => {
-      const hasP = PERMANENT_PERKS.some(p => p.owned) || Object.keys(GAME.ownedPerks || {}).length > 0 || (GAME.breakthroughCount || 0) > 0;
+      const hasP = PERMANENT_PERKS.some(p => p.owned || hasPerk(p.id)) || Object.keys(GAME.ownedPerks || {}).length > 0 || (GAME.breakthroughCount || 0) > 0;
       return { current: hasP ? 1 : 0, max: 1, label: `Перки: ${hasP ? 'Куплен' : '0 / 1'}` };
     },
     guide: () => {
@@ -450,10 +452,10 @@ export const TUTORIAL_QUESTS = [
     fallbackTitle: 'Древняя Святыня',
     rewardDesc: 'Триумф 🏆',
     beaconSelector: '.dash-tab[data-target="panelTalents"]',
-    check: () => Object.values(GAME.relics || {}).some(lvl => Number(lvl) > 0) || Object.values(GAME.transcendUpgrades || {}).some(lvl => Number(lvl) > 0),
+    check: () => RELICS.some(r => hasRelic(r.id)) || Object.values(GAME.relics || {}).some(lvl => Number(lvl) > 0) || Object.values(GAME.transcendUpgrades || {}).some(lvl => Number(lvl) > 0),
     progress: () => {
-      const hasRelic = Object.values(GAME.relics || {}).some(lvl => Number(lvl) > 0) || Object.values(GAME.transcendUpgrades || {}).some(lvl => Number(lvl) > 0);
-      return { current: hasRelic ? 1 : 0, max: 1, label: `Реликвии: ${hasRelic ? 'Куплена' : '0 / 1'}` };
+      const hasRelicPurchased = RELICS.some(r => hasRelic(r.id)) || Object.values(GAME.relics || {}).some(lvl => Number(lvl) > 0) || Object.values(GAME.transcendUpgrades || {}).some(lvl => Number(lvl) > 0);
+      return { current: hasRelicPurchased ? 1 : 0, max: 1, label: `Реликвии: ${hasRelicPurchased ? 'Куплена' : '0 / 1'}` };
     },
     guide: () => {
       const tab = document.querySelector('.dash-tab[data-target="panelTalents"]');
@@ -713,10 +715,10 @@ export function resolveSpotlightTarget(step) {
 }
 
 /**
- * Непрерывное обновление фокуса: обеспечивает принудительную подсветку текущей цели
+ * Интеллектуальное обновление фокуса: срабатывает только когда игрок запросил подсветку
  */
 export function refreshTutorialSpotlight() {
-  if (isTutorialComplete()) {
+  if (!isSpotlightActive || isTutorialComplete()) {
     deactivateTutorialSpotlight();
     return;
   }
@@ -734,7 +736,7 @@ export function refreshTutorialSpotlight() {
 
   const widget = document.getElementById('tutorialQuestWidget');
   if (widget) {
-    widget.style.zIndex = '901';
+    widget.style.zIndex = '860';
   }
 
   let target = null;
@@ -766,18 +768,22 @@ export function refreshTutorialSpotlight() {
 }
 
 /**
- * Активация Spotlight затемнения экрана с направлением на шаг
+ * Активация Spotlight затемнения экрана строго по клику игрока
  */
 export function activateTutorialSpotlight(step) {
-  if (!step) return;
+  if (!step || isTutorialComplete()) return;
+  isSpotlightActive = true;
   step.guide();
-  setTimeout(refreshTutorialSpotlight, 50);
+  setTimeout(() => {
+    if (isSpotlightActive) refreshTutorialSpotlight();
+  }, 50);
 }
 
 /**
- * Снятие Spotlight затемнения при завершении обучения
+ * Снятие Spotlight затемнения экрана
  */
 export function deactivateTutorialSpotlight() {
+  isSpotlightActive = false;
   if (activeSpotlightElement) {
     activeSpotlightElement.classList.remove('tutorial-spotlight-target');
     activeSpotlightElement = null;
@@ -795,9 +801,21 @@ export function deactivateTutorialSpotlight() {
   }
   const widget = document.getElementById('tutorialQuestWidget');
   if (widget) {
-    widget.style.zIndex = '20';
+    widget.style.zIndex = '';
   }
 }
+
+/**
+ * Переключение Spotlight по клику на плашку квеста
+ */
+export function toggleTutorialSpotlight(step) {
+  if (isSpotlightActive) {
+    deactivateTutorialSpotlight();
+  } else {
+    activateTutorialSpotlight(step || getCurrentQuest());
+  }
+}
+
 
 /**
  * Обновление плашки текущего Квеста на экране питомца
@@ -870,6 +888,7 @@ export function updateTutorialQuestWidget() {
         currentStep.claim(false);
         GAME.tutorialStepIndex = stepIdx + 1;
         GAME.currentQuestId = Math.min(19, stepIdx + 2);
+        deactivateTutorialSpotlight();
         if (GAME.tutorialStepIndex >= TUTORIAL_QUESTS.length) {
           GAME.tutorialCompleted = true;
           showTriumphModal();
@@ -883,13 +902,25 @@ export function updateTutorialQuestWidget() {
       actionBtn.className = 'shrink-0 font-game text-[10px] font-black px-2.5 py-0.5 rounded-xl shadow border border-emerald-300 jelly-btn transition bg-gradient-to-r from-emerald-500 to-teal-500 text-stone-950 cursor-pointer';
       actionBtn.onclick = (e) => {
         e.stopPropagation();
-        activateTutorialSpotlight(currentStep);
+        toggleTutorialSpotlight(currentStep);
       };
     }
   }
 
-  // Принудительное непрерывное сопровождение
-  refreshTutorialSpotlight();
+  // Обновление подсветки только если игрок сам её включил
+  if (isSpotlightActive) {
+    refreshTutorialSpotlight();
+  } else {
+    const overlay = document.getElementById('tutorialSpotlightOverlay');
+    if (overlay && !overlay.classList.contains('hidden')) {
+      overlay.classList.add('hidden');
+    }
+    if (widget) widget.style.zIndex = '';
+    if (activeSpotlightElement) {
+      activeSpotlightElement.classList.remove('tutorial-spotlight-target');
+      activeSpotlightElement = null;
+    }
+  }
 }
 
 export function showTriumphModal() {
@@ -902,20 +933,16 @@ export function initTutorialListeners() {
   if (overlay) {
     overlay.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (!isTutorialComplete()) {
-        const step = getCurrentQuest();
-        if (step) {
-          step.guide();
-          refreshTutorialSpotlight();
-        }
-      }
+      deactivateTutorialSpotlight();
     });
   }
 
   // Реактивный трекинг действий игрока для переключения фокуса внутри вкладок и модалок
   document.addEventListener('click', () => {
-    if (!isTutorialComplete()) {
-      setTimeout(refreshTutorialSpotlight, 40);
+    if (isSpotlightActive && !isTutorialComplete()) {
+      setTimeout(() => {
+        if (isSpotlightActive) refreshTutorialSpotlight();
+      }, 40);
     }
   }, true);
 
@@ -929,6 +956,7 @@ export function initTutorialListeners() {
         current.claim(false);
         GAME.tutorialStepIndex = (GAME.tutorialStepIndex || 0) + 1;
         GAME.currentQuestId = Math.min(19, (GAME.tutorialStepIndex || 0) + 1);
+        deactivateTutorialSpotlight();
         if (GAME.tutorialStepIndex >= TUTORIAL_QUESTS.length) {
           GAME.tutorialCompleted = true;
           showTriumphModal();
@@ -937,8 +965,7 @@ export function initTutorialListeners() {
         saveLocal();
         updateTutorialQuestWidget();
       } else {
-        current.guide();
-        refreshTutorialSpotlight();
+        toggleTutorialSpotlight(current);
       }
     });
   }

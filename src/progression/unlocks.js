@@ -29,11 +29,12 @@ export function isShopOfferUnlocked(reqForm) {
 }
 
 export function isRelicSectionUnlocked() {
-  return (GAME.totalTranscend || 0) >= 1;
+  return (GAME.breakthroughCount || GAME.totalTranscend || 0) >= 1;
 }
 
 export function isTalentVisible(talent) {
   const flushes = Math.max(0, Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0);
   if (flushes < (talent?.reqFlushes || 0)) return false;
-  return (GAME.totalTranscend || 0) >= (talent?.reqTranscend || 0);
+  const breakthroughs = Math.max(0, Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0);
+  return breakthroughs >= (talent?.reqTranscend || 0);
 }
