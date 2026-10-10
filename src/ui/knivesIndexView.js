@@ -16,6 +16,7 @@ import { hatArtHtml } from './artIcon.js?v=5.0.17';
 import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.0.80';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { t, td, onLocaleChange } from '../i18n/t.js';
+import { isBig } from '../utils/big.js?v=5.0.80';
 import { knifeName, knifeRarity, caseName, shopName, shopDesc, factoryName, talentName, talentDesc } from '../i18n/localize.js';
 
 // Быстрый поиск кейса для ножа
@@ -32,10 +33,18 @@ let indexFilterRarity = 'all';
 let indexFilterStatus = 'all';
 let indexSearchQuery = '';
 
+export function updateIndexTabLabels() {
+  const facTab = document.getElementById('tabIndexFactories');
+  if (facTab) {
+    facTab.innerHTML = `<span>${t('index.tabFactories', { n: formatNumber(FACTORIES.length) })}</span>`;
+  }
+}
+
 export function openKnivesIndexModal() {
   const modal = document.getElementById('knivesIndexModal');
   if (!modal) return;
   modal.classList.remove('hidden');
+  updateIndexTabLabels();
   switchIndexCategory(currentCategory);
 }
 
@@ -153,61 +162,63 @@ export function renderKnivesIndexBook() {
       covert: 'border-red-500 bg-red-950/40 text-red-400',
       rainbow: 'border-yellow-400 bg-gradient-to-br from-red-950/40 via-purple-950/40 to-blue-950/40 text-yellow-300',
       celestial: 'border-cyan-400 bg-cyan-950/50 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.2)]',
-      titanium: 'border-teal-400 bg-teal-950/50 text-teal-300 shadow-[0_0_15px_rgba(45,212,191,0.2)]',
       godly: 'border-amber-400 bg-amber-950/60 text-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.3)] animate-pulse'
     };
 
     const colorClass = rarityColors[knife.rarity] || 'border-stone-700 bg-stone-900 text-stone-400';
     const shown = getKnifeShownBonuses(knife);
     const clickPct = shown.clickPct;
+    const clickBonusText = isBig(shown.clickMult)
+      ? `x${formatNumber(shown.clickMult)}`
+      : `+${formatNumber(clickPct)}${t('hud.buffClick')}`;
 
     return `
-      <div class="p-2 sm:p-2.5 rounded-2xl border-2 flex flex-col justify-between relative transition duration-200 min-h-[195px] overflow-hidden ${isUnlocked ? colorClass : 'border-stone-800 bg-stone-950/80 opacity-65 grayscale'} ${isEquipped ? 'ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]' : ''}">
-        ${isEquipped ? '<span class="absolute top-1.5 right-1.5 text-[8.5px] bg-yellow-400 text-stone-950 font-black px-1.5 py-0.5 rounded-full shadow z-10">' + t('knives.equippedBadge') + '</span>' : ''}
-        ${!isUnlocked ? '<span class="absolute top-1.5 right-1.5 text-xs text-stone-500 z-10">🔒</span>' : ''}
+      <div class="p-3 sm:p-3.5 rounded-2xl border-2 flex flex-col justify-between relative transition duration-200 min-h-[200px] overflow-hidden ${isUnlocked ? colorClass : 'border-stone-800 bg-stone-950/80 opacity-65 grayscale'} ${isEquipped ? 'ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]' : ''}">
+        ${isEquipped ? '<span class="text-[8.5px] bg-yellow-400 text-stone-950 font-black px-2 py-0.5 rounded-full shadow z-10 pointer-events-none" style="position: absolute; right: 12px; top: 12px;">' + t('knives.equippedBadge') + '</span>' : ''}
+        ${!isUnlocked ? '<span class="text-xs text-stone-400 z-10 pointer-events-none" style="position: absolute; right: 12px; top: 12px;">🔒</span>' : ''}
         
         <div class="flex flex-col items-center text-center w-full">
           <div class="my-0.5 flex justify-center items-center select-none h-14">${getKnifeImageHtml(knife, 50)}</div>
-          <div class="font-game text-xs font-bold text-yellow-100 line-clamp-1 w-full text-center px-0.5" title="${knifeName(knife)}">${knifeName(knife)}</div>
+          <div class="font-game text-xs font-bold text-yellow-100 line-clamp-1 w-full text-center px-1" title="${knifeName(knife)}">${knifeName(knife)}</div>
           <div class="mt-1 text-[8.5px] font-bold text-amber-300/90 bg-stone-950/80 px-2 py-0.5 rounded-full border border-amber-500/30 truncate max-w-full inline-flex items-center gap-1 shadow-sm" title="${t('knives.dropsFromTitle', { name: caseLabel })}">
             <span>${caseInfo.icon}</span> <span class="truncate">${caseLabel}</span>
           </div>
         </div>
 
-        <div class="mt-2 pt-1.5 border-t border-stone-800/80 w-full">
+        <div class="mt-2 pt-2 border-t border-stone-800/80 w-full">
           ${isUnlocked ? `
             <div class="flex justify-between items-center text-[10px] font-bold mb-1">
               <span class="text-amber-400">★ ${t('hud.lvl', { n: formatNumber(star) })}</span>
-              <span class="text-emerald-400">+${formatNumber(clickPct)}${t('hud.buffClick')}</span>
+              <span class="text-emerald-400">${clickBonusText}</span>
             </div>
             <div class="text-[9px] text-stone-300 font-mono text-center mb-1.5 flex justify-center items-center gap-2">
               <span class="text-cyan-300">+${formatNumber(getKnifeCpsBonus(knife))} CPS</span>
               <span class="text-yellow-300 font-bold">✨ x${formatNumber(knife.sparkleMult || 1)}</span>
             </div>
-            <div class="flex gap-1">
+            <div class="flex gap-1.5 px-0.5">
               ${!isEquipped ? `
-                <button class="index-equip-btn flex-1 py-1 rounded-xl text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold transition shadow" data-id="${knife.id}">
+                <button class="index-equip-btn flex-1 py-1.5 rounded-xl text-[10px] font-game bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold transition shadow" data-id="${knife.id}">
                   ${t('inv.equip')}
                 </button>
               ` : `
-                <span class="flex-1 py-1 text-center text-[10px] font-game text-yellow-300 font-bold">${t('knives.inHand')}</span>
+                <span class="flex-1 py-1.5 text-center text-[10px] font-game text-yellow-300 font-bold">${t('knives.inHand')}</span>
               `}
               ${costInfo.maxReached ? `
-                <button class="px-2 py-1 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed" disabled>
+                <button class="px-2 py-1.5 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed" disabled>
                   ★ ${t('common.max')}
                 </button>
               ` : ((GAME.sparkles || 0) < costInfo.cost ? `
-                <button class="px-2 py-1 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="${t('inv.noSparkles')}">
+                <button class="px-2 py-1.5 rounded-xl text-[10px] font-game bg-stone-900 text-stone-500 font-bold border border-stone-800 cursor-not-allowed opacity-60 flex items-center gap-1" disabled title="${t('inv.noSparkles')}">
                   <span>🔒</span> <span>${formatNumber(costInfo.cost)} ✨</span>
                 </button>
               ` : `
-                <button class="index-sharpen-btn px-2 py-1 rounded-xl text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 border border-yellow-500/40 font-bold shadow jelly-btn flex items-center gap-1" data-id="${knife.id}" title="${t('knives.sharpenTitle')}">
+                <button class="index-sharpen-btn px-2 py-1.5 rounded-xl text-[10px] font-game bg-stone-800 hover:bg-stone-700 text-yellow-300 border border-yellow-500/40 font-bold shadow jelly-btn flex items-center gap-1" data-id="${knife.id}" title="${t('knives.sharpenTitle')}">
                   ⭐ +1 (${formatNumber(costInfo.cost)} ✨)
                 </button>
               `)}
             </div>
           ` : `
-            <div class="text-[9px] text-stone-400 text-center py-1 bg-stone-900/60 rounded-lg border border-stone-800/60">
+            <div class="text-[9px] text-stone-400 text-center py-1.5 bg-stone-900/60 rounded-lg border border-stone-800/60">
               ${t('knives.dropsFrom')} <b class="text-yellow-400 font-bold">${caseLabel}</b>
             </div>
           `}
@@ -378,6 +389,7 @@ export function renderPerksIndex() {
 }
 
 export function initKnivesIndexListeners() {
+  updateIndexTabLabels();
   const btnOpenIndexModal = document.getElementById('btnOpenKnivesIndexModal');
   if (btnOpenIndexModal) btnOpenIndexModal.addEventListener('click', openKnivesIndexModal);
 
@@ -424,6 +436,7 @@ export function initKnivesIndexListeners() {
   });
 
   onLocaleChange(() => {
+    updateIndexTabLabels();
     const modal = document.getElementById('knivesIndexModal');
     if (modal && !modal.classList.contains('hidden')) switchIndexCategory(currentCategory);
     else renderKnivesIndexBook();

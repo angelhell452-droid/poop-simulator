@@ -44,6 +44,17 @@ export function rehydrateBig(value) {
   if (isBig(value) && Number.isFinite(value.m) && Number.isFinite(value.e) && value.m > 0) {
     return normalize(value.m, value.e);
   }
+  if (typeof value === 'string') {
+    const s = value.trim();
+    const match = s.match(/^([+-]?\d+(?:\.\d+)?|\.\d+)e([+-]?\d+)$/i);
+    if (match) {
+      const m = parseFloat(match[1]);
+      const e = parseInt(match[2], 10);
+      if (Number.isFinite(m) && Number.isFinite(e) && m > 0) {
+        return normalize(m, e);
+      }
+    }
+  }
   const n = Number(value);
   if (Number.isFinite(n) && n >= 0) return n;
   return 0;

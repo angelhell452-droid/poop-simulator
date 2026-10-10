@@ -1,7 +1,8 @@
-﻿import { isBig, log10Of } from './big.js?v=5.0.80';
+import { isBig, log10Of, rehydrateBig } from './big.js?v=5.0.80';
 
 // Ordinary numbers stay as they were. Bigger values print as 1.23e603.
-export function formatNumber(num, decimals = 2) {
+export function formatNumber(rawNum, decimals = 2) {
+  const num = rehydrateBig(rawNum);
   if (isBig(num)) {
     const exp = Math.floor(log10Of(num));
     const mantissa = Math.pow(10, log10Of(num) - exp);

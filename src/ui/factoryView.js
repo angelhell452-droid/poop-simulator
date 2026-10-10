@@ -1,4 +1,4 @@
-﻿import { factoryName, factoryTier } from '../i18n/localize.js';
+import { factoryName, factoryTier } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
 import { GAME } from '../core/state.js?v=5.0.80';
 import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
@@ -13,7 +13,7 @@ import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } fr
 import { mul } from '../utils/big.js?v=5.0.80';
 import { drawPlunger } from '../utils/icons.js?v=5.0.80';
 
-let activeFactoryTier = 'all'; // 'all' | '1' | '2' | '3' | '4' | '5'
+let activeFactoryTier = '1'; // '1' | '2' | '3' | '4'
 
 function horizonEpochWindow() {
   const epoch = getPhaseForStage(GAME.evoStage || 0).id;
@@ -23,15 +23,9 @@ function horizonEpochWindow() {
 }
 
 function factoryVisible(fac) {
-  if ((fac.tierNumber || 1) !== 5) {
-    if (activeFactoryTier === '5') return false;
-    if (activeFactoryTier === 'all') return true;
-    return fac.tierNumber === Number(activeFactoryTier);
-  }
-  const window = horizonEpochWindow();
-  if (!window) return false;
-  const inWindow = fac.epoch >= window.lo && fac.epoch <= window.hi;
-  return (activeFactoryTier === 'all' || activeFactoryTier === '5') && inWindow;
+  const tn = fac.tierNumber || 1;
+  if (activeFactoryTier === '4') return tn >= 4;
+  return tn === Number(activeFactoryTier);
 }
 let paintedFactoryStage = -1;
 
@@ -65,9 +59,9 @@ export function renderFactories() {
   document.querySelectorAll('.fac-tier-btn').forEach(b => {
     const isAct = b.dataset.tier === String(activeFactoryTier);
     if (isAct) {
-      b.className = 'fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 shadow border border-yellow-300';
+      b.className = 'fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 shadow border border-yellow-300 shrink-0';
     } else {
-      b.className = 'fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800';
+      b.className = 'fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800 shrink-0';
     }
   });
 

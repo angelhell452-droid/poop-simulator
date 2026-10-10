@@ -146,10 +146,29 @@ export function getKnifePassiveMult(knife) {
 }
 
 export function getKnifeShownBonuses(knife) {
+  const clickMult = getKnifeClickMult(knife);
   const passive = getKnifePassiveMult(knife);
+  
+  let clickPct = 0;
+  if (isBig(clickMult)) {
+    clickPct = mul(clickMult, 100);
+  } else {
+    const rawVal = Number(clickMult) || 1;
+    clickPct = Math.round((Math.max(1, rawVal) - 1) * 100);
+  }
+
+  let passPct = 0;
+  if (isBig(passive)) {
+    passPct = mul(passive, 100);
+  } else {
+    const rawPass = Number(passive) || 1;
+    passPct = Math.round((Math.max(1, rawPass) - 1) * 100);
+  }
+
   return {
-    clickPct: Math.round((getKnifeClickMult(knife) - 1) * 100),
-    passPct: Math.round((passive - 1) * 100),
+    clickMult,
+    clickPct,
+    passPct,
     cpsMult: passive,
     sparkleMult: Math.max(1, Number(knife?.sparkleMult) || 1)
   };

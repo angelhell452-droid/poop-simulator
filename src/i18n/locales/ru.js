@@ -1102,7 +1102,7 @@ export default {
   'index.omniTitle': "ОМНИВЕРС ЭНЦИКЛОПЕДИЯ",
   'index.omniBlurb': "Полный справочник вселенной: 202 ножа, 760 заводов (три в первых 40 эпохах, четыре на горизонте), 7 шапок до потолка x80 и постоянные перки!",
   'index.tabKnives': "🗡️ Ножи (202)",
-  'index.tabFactories': "🏭 Заводы (14)",
+  'index.tabFactories': "🏭 Заводы ({n})",
   'index.tabHats': "🎩 Шапки (12)",
   'index.tabPerks': "🔮 Перки & Таланты",
   'index.progressLabel': "Прогресс Коллекции:",

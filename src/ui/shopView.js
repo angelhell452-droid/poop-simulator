@@ -10,10 +10,43 @@ import { isBoutiqueUnlocked, peakForm } from '../progression/unlocks.js';
 import { t, onLocaleChange } from '../i18n/t.js';
 import { PERMANENT_PERKS, hasPerk, buyPermanentPerk, getPerkCost } from '../data/perks.data.js';
 
+let activeBoutiqueTier = '1'; // '1' | '2' | '3' | '4'
+let shopListenersHooked = false;
+
+function ensureBoutiqueListeners() {
+  if (shopListenersHooked) return;
+  shopListenersHooked = true;
+  document.querySelectorAll('.boutique-tier-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeBoutiqueTier = btn.dataset.tier;
+      renderShop();
+    });
+  });
+}
+
+export function perkTier(perk) {
+  const req = perk.reqBreakthrough || 0;
+  if (req <= 1) return 1;
+  if (req <= 5) return 2;
+  if (req <= 40) return 3;
+  return 4;
+}
+
 export function renderShop() {
   const container = document.getElementById('shopItemsContainer');
   if (!container) return;
   container.innerHTML = '';
+  ensureBoutiqueListeners();
+
+  // Update boutique tier filter button styles
+  document.querySelectorAll('.boutique-tier-btn').forEach(b => {
+    const isAct = b.dataset.tier === String(activeBoutiqueTier);
+    if (isAct) {
+      b.className = 'boutique-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 shadow border border-yellow-300 shrink-0';
+    } else {
+      b.className = 'boutique-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800 shrink-0';
+    }
+  });
 
   const sparkleLabel = document.getElementById('shopSparkleLabel');
   if (sparkleLabel) sparkleLabel.textContent = `${formatNumber(GAME.sparkles)} ✨`;
@@ -48,16 +81,17 @@ export function renderShop() {
     openCharacterInventoryModal('hats');
   });
 
-  // 2. 20 PERMANENT PERKS FOR BREAKTHROUGHS
+  // 2. PERMANENT PERKS FOR BREAKTHROUGHS FILTERED BY TIER
   const b = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
+  const visiblePerks = PERMANENT_PERKS.filter(p => perkTier(p) === Number(activeBoutiqueTier));
   const perksHeader = document.createElement('div');
   perksHeader.className = 'font-game text-xs text-yellow-300 uppercase tracking-wider py-1 mt-2 border-b border-amber-800/40 flex items-center justify-between';
-  perksHeader.innerHTML = `<span>🔮 ${t('shop.perksHeader')} (20)</span><span class="text-[9px] text-amber-400 font-normal">Прорыв: ${formatNumber(b)}</span>`;
+  perksHeader.innerHTML = `<span>🔮 ${t('shop.perksHeader')} (Тир ${activeBoutiqueTier}: ${visiblePerks.length})</span><span class="text-[9px] text-amber-400 font-normal">Прорыв: ${formatNumber(b)}</span>`;
   container.appendChild(perksHeader);
 
   const curSparkles = Number(GAME.sparkles) || 0;
 
-  PERMANENT_PERKS.forEach(perk => {
+  visiblePerks.forEach(perk => {
     const isUnlocked = b >= perk.reqBreakthrough;
     const isOwned = hasPerk(perk.id);
     const cost = getPerkCost(perk);

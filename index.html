@@ -524,23 +524,29 @@
           <!-- Factory Tier Sub-Sections -->
           <div class="flex items-center gap-1.5 pb-1 overflow-x-auto custom-scroll" id="factoryTierFilters">
             <button
-              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 shadow border border-yellow-300"
-              data-tier="all" data-i18n="hud.tierAll">Все</button>
+              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 shadow border border-yellow-300 shrink-0"
+              data-tier="1">⭐ Тир 1</button>
             <button
-              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800"
-              data-tier="1" data-i18n="hud.tier1">⭐ Тир 1</button>
+              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800 shrink-0"
+              data-tier="2">⚡ Тир 2</button>
             <button
-              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800"
-              data-tier="2" data-i18n="hud.tier2">⚡ Тир 2</button>
+              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800 shrink-0"
+              data-tier="3">🔮 Тир 3</button>
             <button
-              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800"
-              data-tier="3" data-i18n="hud.tier3">🔮 Тир 3</button>
+              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 shrink-0"
+              data-tier="4">🌌 Тир 4</button>
             <button
-              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800"
-              data-tier="4" data-i18n="hud.tier4">🌌 Тир 4</button>
+              class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+              disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 5</button>
             <button
-              class="fac-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800"
-              data-tier="5" data-i18n="hud.tierHorizon">🌅 Горизонт</button>
+              class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+              disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 6</button>
+            <button
+              class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+              disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 7</button>
+            <button
+              class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+              disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 8</button>
           </div>
           <div id="horizonShop" class="hidden space-y-2"></div>
           <div class="space-y-2 pr-1" id="factoriesContainer"></div>
@@ -616,6 +622,33 @@
             </div>
             <p class="text-[10px] text-stone-300 mt-0.5" data-i18n="shop.panelIntro">Бутик открывается навсегда с формы 100. Перки и реликвии внутри доходят до формы 1000.</p>
           </div>
+          <!-- Boutique Tier Filters -->
+          <div class="flex items-center gap-1.5 pb-1 overflow-x-auto custom-scroll" id="boutiqueTierFilters">
+            <button
+              class="boutique-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 shadow border border-yellow-300 shrink-0"
+              data-tier="1">⭐ Тир 1</button>
+            <button
+              class="boutique-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800 shrink-0"
+              data-tier="2">⚡ Тир 2</button>
+            <button
+              class="boutique-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800 shrink-0"
+              data-tier="3">🔮 Тир 3</button>
+            <button
+              class="boutique-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 shrink-0"
+              data-tier="4">🌌 Тир 4</button>
+            <button
+              class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+              disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 5</button>
+            <button
+              class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+              disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 6</button>
+            <button
+              class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+              disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 7</button>
+            <button
+              class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+              disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 8</button>
+          </div>
           <div class="space-y-2 pr-1" id="shopItemsContainer"></div>
         </div>
 
@@ -644,23 +677,32 @@
               </div>
               <p class="text-[10px] text-purple-200 mt-0.5" data-i18n="talent.flushIntro">Бонусы сохраняются при Смыве Судьбы навсегда. Развивайте ветви по тирам!</p>
             </div>
-            <!-- Tier Filter Sub-Buttons: Strictly 5 Prestige Tiers -->
-            <div class="grid grid-cols-5 gap-1 pb-1" id="talentFlushTierFilters">
+            <!-- Tier Filter Sub-Buttons: Unified Tiers -->
+            <div class="flex items-center gap-1.5 pb-1 overflow-x-auto custom-scroll" id="talentFlushTierFilters">
               <button
-                class="talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow border border-purple-400 text-center"
-                data-tier="1">🥚 Тир 1</button>
+                class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow border border-purple-400 shrink-0"
+                data-tier="1">⭐ Тир 1</button>
               <button
-                class="talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800 text-center"
+                class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800 shrink-0"
                 data-tier="2">⚡ Тир 2</button>
               <button
-                class="talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800 text-center"
-                data-tier="3">⚔️ Тир 3</button>
+                class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800 shrink-0"
+                data-tier="3">🔮 Тир 3</button>
               <button
-                class="talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 text-center"
-                data-tier="4">🤖 Тир 4</button>
+                class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 shrink-0"
+                data-tier="4">🌌 Тир 4</button>
               <button
-                class="talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-amber-300 border border-stone-800 text-center"
-                data-tier="5">⚛️ Тир 5</button>
+                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 5</button>
+              <button
+                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 6</button>
+              <button
+                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 7</button>
+              <button
+                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 8</button>
             </div>
             <div class="space-y-2 pr-1" id="talentsContainer"></div>
           </div>
@@ -674,26 +716,32 @@
               </div>
               <p class="text-[10px] text-indigo-200 mt-0.5" data-i18n="talent.relicIntro">Высшие артефакты автоматизации и космической силы, открываемые за Астральные Вантузы.</p>
             </div>
-            <!-- Tier Filter Sub-Buttons: Strictly 5 Relic Tiers + All -->
-            <div class="grid grid-cols-6 gap-1 pb-1" id="talentTranscendTierFilters">
+            <!-- Tier Filter Sub-Buttons: Unified Tiers -->
+            <div class="flex items-center gap-1.5 pb-1 overflow-x-auto custom-scroll" id="talentTranscendTierFilters">
               <button
-                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-700 text-white shadow border border-cyan-400 text-center"
-                data-tier="all" data-i18n="hud.tierAll">Все</button>
+                class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-700 text-white shadow border border-cyan-400 shrink-0"
+                data-tier="1">⭐ Тир 1</button>
               <button
-                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800 text-center"
-                data-tier="1">🥚 Т1</button>
+                class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800 shrink-0"
+                data-tier="2">⚡ Тир 2</button>
               <button
-                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800 text-center"
-                data-tier="2">⚡ Т2</button>
+                class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800 shrink-0"
+                data-tier="3">🔮 Тир 3</button>
               <button
-                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800 text-center"
-                data-tier="3">⚔️ Т3</button>
+                class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 shrink-0"
+                data-tier="4">🌌 Тир 4</button>
               <button
-                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 text-center"
-                data-tier="4">🌌 Т4</button>
+                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 5</button>
               <button
-                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-amber-300 border border-stone-800 text-center"
-                data-tier="5">👑 Т5</button>
+                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 6</button>
+              <button
+                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 7</button>
+              <button
+                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
+                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 8</button>
             </div>
             <div class="space-y-2 pr-1" id="transcendRelicsContainer"></div>
           </div>
@@ -1342,7 +1390,7 @@
         </button>
         <button id="tabIndexFactories"
           class="index-category-tab px-3 py-1.5 rounded-xl font-game text-xs font-bold bg-stone-900 text-stone-400 hover:text-white border border-stone-800">
-          <span data-i18n="index.tabFactories">🏭 Заводы (14)</span>
+          <span data-i18n="index.tabFactories">🏭 Заводы</span>
         </button>
         <button id="tabIndexHats"
           class="index-category-tab px-3 py-1.5 rounded-xl font-game text-xs font-bold bg-stone-900 text-stone-400 hover:text-white border border-stone-800">

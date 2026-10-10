@@ -432,48 +432,68 @@ async function handleCloudSave(req, env) {
 
 function storedBiomass(value) {
   if (value && typeof value === "object" && value.__big === true && Number.isFinite(Number(value.e))) {
-    const exp = Math.min(300, Math.max(0, Math.floor(Number(value.e))));
-    const mantissa = Number(value.m) || 1;
-    const capped = mantissa * Math.pow(10, exp);
-    return Number.isFinite(capped) ? capped : 1e300;
+    return `${value.m}e${value.e}`;
   }
+  if (typeof value === "string") return value;
   const n = Number(value);
   if (!Number.isFinite(n) || n <= 0) return 0;
-  return Math.min(n, 1e300);
+  return n;
 }
 
-function gloryScore(player) {
-  const transcends = Number(player.transcends || 0);
-  const plungers = Number(player.plungers || 0);
-  const prestiges = Number(player.prestiges || 0);
-  const rolls = Number(player.rolls || 0);
-  const stage = Number(player.stage || 1);
-  const bio = Number(player.biomass || 0);
-  const logBio = bio > 1 ? Math.floor(Math.log10(bio) * 150) : 0;
-  return Math.floor(
-    (transcends * 25000) +
-    (plungers * 100) +
-    (prestiges * 500) +
-    Math.min(rolls * 0.1, 50000) +
-    (stage * 100) +
-    logBio
-  );
+function calcExpLevel(bio) {
+  let logVal = -Infinity;
+  if (bio && typeof bio === "object") {
+    const e = Number(bio.e);
+    const m = Number(bio.m) || 1;
+    if (Number.isFinite(e)) logVal = e + Math.log10(Math.max(1, m));
+  } else if (typeof bio === "string" && bio.includes("e")) {
+    const parts = bio.split("e");
+    const m = Number(parts[0]) || 1;
+    const e = Number(parts[1]) || 0;
+    logVal = e + Math.log10(Math.max(1, m));
+  } else {
+    const n = Number(bio);
+    if (Number.isFinite(n) && n > 0) logVal = Math.log10(n);
+  }
+  if (!Number.isFinite(logVal) || logVal <= 2) return 0;
+  return Math.max(0, Math.floor((logVal - 2) * (1000 / 15)));
 }
 
-function byGlory(a, b) {
-  if (b.score !== a.score) return b.score - a.score;
-  if (b.stage !== a.stage) return b.stage - a.stage;
+function stringifyBiomass(val) {
+  if (!val) return "0";
+  if (typeof val === "object" && val.__big === true && Number.isFinite(Number(val.e))) {
+    return `${val.m}e${val.e}`;
+  }
+  if (typeof val === "string") return val;
+  const n = Number(val);
+  if (Number.isFinite(n)) {
+    if (n >= 1e6) return n.toExponential(4).replace('+', '');
+    return String(n);
+  }
+  return "0";
+}
+
+function byRanking(a, b) {
+  if (b._breakthroughs !== a._breakthroughs) {
+    return b._breakthroughs - a._breakthroughs;
+  }
+  if (b._expLevel !== a._expLevel) {
+    return b._expLevel - a._expLevel;
+  }
+  if (b._prestiges !== a._prestiges) {
+    return b._prestiges - a._prestiges;
+  }
   return String(a.playerId).localeCompare(String(b.playerId));
 }
 
 function publicLadderEntry(entry) {
-  const { accountName, ...rest } = entry;
+  const { accountName, _breakthroughs, _expLevel, _prestiges, ...rest } = entry;
   return rest;
 }
 
 // The hall lists accounts only. A save with no user_accounts row is a guest and stays out.
 export function accountLadder(ranked) {
-  return ranked.filter((entry) => entry.accountName).sort(byGlory);
+  return ranked.filter((entry) => entry.accountName).sort(byRanking);
 }
 
 async function handleLeaderboard(url, env, headers) {
@@ -483,6 +503,7 @@ async function handleLeaderboard(url, env, headers) {
       player_saves.player_name as playerName,
       player_saves.stage,
       player_saves.biomass,
+      player_saves.save_data as saveData,
       CAST(IFNULL(json_extract(player_saves.save_data, '$.game.totalTranscend'), 0) AS INTEGER) as transcends,
       CAST(IFNULL(json_extract(player_saves.save_data, '$.game.transcendPlungers'), 0) AS INTEGER) as plungers,
       CAST(IFNULL(json_extract(player_saves.save_data, '$.game.totalPrestiges'), 0) AS INTEGER) as prestiges,
@@ -495,22 +516,41 @@ async function handleLeaderboard(url, env, headers) {
   `).all();
 
   const ranked = (results || []).map((row) => {
+    let sData = null;
+    try {
+      sData = typeof row.saveData === 'string' ? JSON.parse(row.saveData) : row.saveData;
+    } catch (_) {}
+
+    const game = sData?.game || {};
+    const breakthroughs = Number(game.breakthroughCount ?? game.totalTranscend ?? row.transcends) || 0;
+    const cycleBio = game.breakthroughProgress ?? game.lifetimeBiomassInCurrentCycle ?? game.allTimeBiomass ?? game.biomass ?? row.biomass ?? 0;
+    const expLevel = Number(game.biomassExpLevel) || calcExpLevel(cycleBio);
+    const bioStr = stringifyBiomass(cycleBio || row.biomass);
+    const stage = Number(game.stage ?? row.stage) || 1;
+    const prestiges = Number(game.flushCount ?? game.totalPrestiges ?? row.prestiges) || 0;
+    const plungers = Number(game.transcendPlungers ?? row.plungers) || 0;
+
     const entry = {
       playerId: row.playerId,
       playerName: String(row.accountName || row.playerName || "Игрок"),
-      stage: Number(row.stage) || 1,
-      biomass: Number(row.biomass) || 0,
-      transcends: Number(row.transcends) || 0,
-      plungers: Number(row.plungers) || 0,
-      prestiges: Number(row.prestiges) || 0,
-      rolls: Number(row.rolls) || 0,
+      stage: String(stage),
+      biomass: String(bioStr),
+      breakthroughCount: String(breakthroughs),
+      expLevel: String(expLevel),
+      transcends: String(breakthroughs),
+      plungers: String(plungers),
+      prestiges: String(prestiges),
+      rolls: String(Number(row.rolls) || 0),
+      score: String(breakthroughs),
       vipLevel: Math.max(0, Math.min(5, Math.floor(Number(row.vipLevel) || 0))),
       accountName: row.accountName ? String(row.accountName) : "",
-      updatedAt: row.updatedAt
+      updatedAt: row.updatedAt,
+      _breakthroughs: breakthroughs,
+      _expLevel: expLevel,
+      _prestiges: prestiges
     };
-    entry.score = gloryScore(entry);
     return entry;
-  }).sort(byGlory);
+  }).sort(byRanking);
 
   const board = accountLadder(ranked);
   const top = board.slice(0, 50).map((entry, index) => ({ ...publicLadderEntry(entry), rank: index + 1 }));

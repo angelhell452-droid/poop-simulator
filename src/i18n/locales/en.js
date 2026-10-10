@@ -1102,7 +1102,7 @@ export default {
   'index.omniTitle': "OMNIVERSE ENCYCLOPEDIA",
   'index.omniBlurb': "Full universe reference: 202 knives, 760 factories (three in the first 40 epochs, four on Horizon), 7 hats up to x80 click cap, and permanent perks!",
   'index.tabKnives': "🗡️ Knives (202)",
-  'index.tabFactories': "🏭 Factories (14)",
+  'index.tabFactories': "🏭 Factories ({n})",
   'index.tabHats': "🎩 Hats (12)",
   'index.tabPerks': "🔮 Perks & Talents",
   'index.progressLabel': "Collection progress:",

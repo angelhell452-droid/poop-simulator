@@ -14,6 +14,7 @@ import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { getKnifeShownBonuses, getKnifeEffectiveClickMult } from '../economy/production.js?v=5.0.83';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.0.80';
+import { isBig } from '../utils/big.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.0.80';
 let caseAudioEnabled = true;
@@ -782,7 +783,11 @@ function onRouletteFinished() {
 
   const shown = getKnifeShownBonuses(rouletteWinningKnife);
   const cbEl = document.getElementById('rouletteResultClickBoost');
-  if (cbEl) cbEl.textContent = `+${formatNumber(shown.clickPct)}${t('hud.buffClick')}`;
+  if (cbEl) {
+    cbEl.textContent = isBig(shown.clickMult)
+      ? `x${formatNumber(shown.clickMult)} ${t('knives.clickWord')}`
+      : `+${formatNumber(shown.clickPct)}${t('hud.buffClick')}`;
+  }
 
   const pbEl = document.getElementById('rouletteResultPassiveBoost');
   if (pbEl) pbEl.textContent = `+${formatNumber(getKnifeCpsBonus(rouletteWinningKnife))} CPS`;
@@ -863,7 +868,11 @@ export function openMultipleCases(caseObj, count = 3) {
 
   const shown = getKnifeShownBonuses(rouletteWinningKnife);
   const cbEl = document.getElementById('rouletteResultClickBoost');
-  if (cbEl) cbEl.textContent = `+${formatNumber(shown.clickPct)}${t('hud.buffClick')}`;
+  if (cbEl) {
+    cbEl.textContent = isBig(shown.clickMult)
+      ? `x${formatNumber(shown.clickMult)} ${t('knives.clickWord')}`
+      : `+${formatNumber(shown.clickPct)}${t('hud.buffClick')}`;
+  }
 
   const pbEl = document.getElementById('rouletteResultPassiveBoost');
   if (pbEl) pbEl.textContent = `+${formatNumber(getKnifeCpsBonus(rouletteWinningKnife))} CPS`;
@@ -1075,6 +1084,10 @@ export function openCasePreviewModal(caseId) {
         badgeColor = 'bg-stone-800 text-stone-300';
       }
 
+      const clickLabel = isBig(shown.clickMult)
+        ? `x${formatNumber(shown.clickMult)}`
+        : `+${formatNumber(clickPct)}%`;
+
       const itemRow = document.createElement('div');
       itemRow.className = `p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition ${rColor}`;
       itemRow.innerHTML = `
@@ -1086,7 +1099,7 @@ export function openCasePreviewModal(caseId) {
               <span class="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${badgeColor}">${knifeRarity(knife)}</span>
             </div>
             <div class="text-[10px] text-stone-400 mt-1 flex items-center gap-2 flex-wrap font-mono">
-              <span>${t('cases.click')} <b class="text-emerald-300 font-bold">+${formatNumber(clickPct)}%</b></span>
+              <span>${t('cases.click')} <b class="text-emerald-300 font-bold">${clickLabel}</b></span>
               <span class="text-stone-600">•</span>
               <span>CPS: <b class="text-cyan-300 font-bold">+${formatNumber(getKnifeCpsBonus(knife))}</b></span>
               <span class="text-stone-600">•</span>

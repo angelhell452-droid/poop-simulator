@@ -118,16 +118,83 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
             player_name as playerName,
             stage,
             biomass,
+            save_data as saveData,
             sparkles,
             prestige_currency as prestigeCurrency,
             updated_at as updatedAt
           FROM player_saves
-          ORDER BY biomass DESC
-          LIMIT 20
         `).all();
 
+        const calcLvl = (bio: any) => {
+          let logVal = -Infinity;
+          if (bio && typeof bio === "object") {
+            const e = Number(bio.e);
+            const m = Number(bio.m) || 1;
+            if (Number.isFinite(e)) logVal = e + Math.log10(Math.max(1, m));
+          } else if (typeof bio === "string" && bio.includes("e")) {
+            const parts = bio.split("e");
+            const m = Number(parts[0]) || 1;
+            const e = Number(parts[1]) || 0;
+            logVal = e + Math.log10(Math.max(1, m));
+          } else {
+            const n = Number(bio);
+            if (Number.isFinite(n) && n > 0) logVal = Math.log10(n);
+          }
+          if (!Number.isFinite(logVal) || logVal <= 2) return 0;
+          return Math.max(0, Math.floor((logVal - 2) * (1000 / 15)));
+        };
+
+        const stringifyBio = (val: any) => {
+          if (!val) return "0";
+          if (typeof val === "object" && val.__big === true && Number.isFinite(Number(val.e))) {
+            return `${val.m}e${val.e}`;
+          }
+          if (typeof val === "string") return val;
+          const n = Number(val);
+          if (Number.isFinite(n)) {
+            if (n >= 1e6) return n.toExponential(4).replace('+', '');
+            return String(n);
+          }
+          return "0";
+        };
+
+        const list = (results || []).map((row: any) => {
+          let sData: any = null;
+          try {
+            sData = typeof row.saveData === 'string' ? JSON.parse(row.saveData) : row.saveData;
+          } catch (_) {}
+          const game = sData?.game || {};
+          const breakthroughs = Number(game.breakthroughCount ?? game.totalTranscend ?? 0) || 0;
+          const cycleBio = game.breakthroughProgress ?? game.lifetimeBiomassInCurrentCycle ?? game.allTimeBiomass ?? game.biomass ?? row.biomass ?? 0;
+          const expLevel = Number(game.biomassExpLevel) || calcLvl(cycleBio);
+          const prestiges = Number(game.flushCount ?? game.totalPrestiges ?? 0) || 0;
+
+          return {
+            playerId: row.playerId,
+            playerName: String(row.playerName || "Игрок"),
+            stage: String(game.stage ?? row.stage ?? 1),
+            biomass: stringifyBio(cycleBio || row.biomass),
+            breakthroughCount: String(breakthroughs),
+            expLevel: String(expLevel),
+            transcends: String(breakthroughs),
+            prestiges: String(prestiges),
+            updatedAt: row.updatedAt,
+            _b: breakthroughs,
+            _e: expLevel,
+            _p: prestiges
+          };
+        }).sort((a: any, b: any) => {
+          if (b._b !== a._b) return b._b - a._b;
+          if (b._e !== a._e) return b._e - a._e;
+          if (b._p !== a._p) return b._p - a._p;
+          return String(a.playerId).localeCompare(String(b.playerId));
+        }).slice(0, 50).map((r: any, idx: number) => {
+          const { _b, _e, _p, ...rest } = r;
+          return { ...rest, rank: idx + 1 };
+        });
+
         return new Response(
-          JSON.stringify({ success: true, leaderboard: results || [] }),
+          JSON.stringify({ success: true, leaderboard: list }),
           { status: 200, headers }
         );
       }

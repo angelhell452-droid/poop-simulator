@@ -14,8 +14,8 @@ import { t, td, onLocaleChange } from '../i18n/t.js';
 import { talentName, talentDesc, transcendName, transcendDesc } from '../i18n/localize.js';
 
 let activeTalentSubTab = 'flush'; // 'flush' | 'transcend'
-let activeFlushTier = '1'; // '1' | '2' | '3' | '4' | '5'
-let activeTranscendTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
+let activeFlushTier = '1'; // '1' | '2' | '3' | '4'
+let activeTranscendTier = '1'; // '1' | '2' | '3' | '4'
 
 export function switchTalentSubTab(tabName) {
   if (tabName === 'transcend' && !isRelicSectionUnlocked()) return;
@@ -89,15 +89,15 @@ export function renderFlushTalents() {
     const isAct = b.dataset.tier === String(activeFlushTier);
 
     if (isAct) {
-      b.className = 'talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold text-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md border border-purple-400';
+      b.className = 'talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold shrink-0 text-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md border border-purple-400';
     } else if (isLocked) {
-      b.className = 'talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold text-center bg-stone-900 text-stone-500 border border-stone-800 opacity-70 hover:opacity-100';
+      b.className = 'talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold shrink-0 text-center bg-stone-900 text-stone-500 border border-stone-800 opacity-70 hover:opacity-100';
     } else {
-      b.className = 'talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold text-center bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800';
+      b.className = 'talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold shrink-0 text-center bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800';
     }
 
-    const tierEmoji = tierNum === 1 ? '🥚' : (tierNum === 2 ? '⚡' : (tierNum === 3 ? '⚔️' : (tierNum === 4 ? '🤖' : '⚛️')));
-    b.innerHTML = isLocked ? `🔒 Т${tierNum}` : `${tierEmoji} Т${tierNum}`;
+    const tierEmoji = tierNum === 1 ? '⭐' : (tierNum === 2 ? '⚡' : (tierNum === 3 ? '🔮' : '🌌'));
+    b.innerHTML = isLocked ? `🔒 Тир ${tierNum}` : `${tierEmoji} Тир ${tierNum}`;
     b.title = isLocked ? `🔒 Открывается на ${cfg?.reqFlushes || 0} уровне Смыва` : (cfg?.title || '');
   });
 
@@ -134,7 +134,7 @@ export function renderFlushTalents() {
   `;
   container.appendChild(tierHeader);
 
-  const tierTalents = TALENTS.filter(tl => tl.tier === activeCfg.tier);
+  const tierTalents = selectedTier === 4 ? TALENTS.filter(tl => tl.tier >= 4) : TALENTS.filter(tl => tl.tier === activeCfg.tier);
 
   tierTalents.forEach(tl => {
     const tlInfo = getAffordableTalentInfo(tl);
@@ -214,22 +214,22 @@ export function renderTranscendRelics() {
     const isLocked = tierCfg ? (currentBreakthroughs < tierCfg.reqBreakthrough) : false;
 
     if (isAct) {
-      b.className = 'talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-700 text-white shadow-md border border-cyan-400 text-center';
+      b.className = 'talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold shrink-0 bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-700 text-white shadow-md border border-cyan-400 text-center';
     } else if (isLocked) {
-      b.className = 'talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-500 border border-stone-800 opacity-70 hover:opacity-100 text-center';
+      b.className = 'talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold shrink-0 bg-stone-900 text-stone-500 border border-stone-800 opacity-70 hover:opacity-100 text-center';
     } else {
-      b.className = 'talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 text-center';
+      b.className = 'talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold shrink-0 bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 text-center';
     }
 
-    if (tierCfg) {
-      b.innerHTML = isLocked ? `🔒 Т${tierNum}` : `${tierCfg.icon} Т${tierNum}`;
-      b.title = isLocked ? `🔒 Требуется ${tierCfg.reqBreakthrough} Прорыв` : tierCfg.name;
-    }
+    const tierEmoji = tierNum === 1 ? '⭐' : (tierNum === 2 ? '⚡' : (tierNum === 3 ? '🔮' : '🌌'));
+    b.innerHTML = isLocked ? `🔒 Тир ${tierNum}` : `${tierEmoji} Тир ${tierNum}`;
+    b.title = isLocked ? `🔒 Требуется ${tierCfg?.reqBreakthrough || 0} Прорыв` : (tierCfg?.name || '');
   });
 
-  const visibleTiers = activeTranscendTier === 'all'
-    ? RELIC_TIERS
-    : RELIC_TIERS.filter(cfg => cfg.tier === Number(activeTranscendTier));
+  const selectedRelicTier = Number(activeTranscendTier) || 1;
+  const visibleTiers = selectedRelicTier === 4
+    ? RELIC_TIERS.filter(cfg => cfg.tier >= 4)
+    : RELIC_TIERS.filter(cfg => cfg.tier === selectedRelicTier);
 
   visibleTiers.forEach(tInfo => {
     const tierUpgrades = RELICS.filter(u => u.tier === tInfo.tier);

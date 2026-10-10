@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.0.80';
 import { formatTaggedName } from '../guild/guildPresence.js?v=5.0.80';
@@ -71,7 +71,7 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
     let cardBorder = isCurrent ? 'border-amber-500/80 bg-gradient-to-r from-amber-950/70 via-stone-900 to-stone-950 shadow-md' : 'border-stone-800 bg-stone-950/90';
 
     if (rank === 1) {
-      rankBadge = '🥇';
+      rankBadge = '👑';
       rankClass = 'text-2xl filter drop-shadow';
       if (!isCurrent) cardBorder = 'border-yellow-500/50 bg-stone-900/90';
     } else if (rank === 2) {
@@ -88,7 +88,8 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-    const formattedScore = formatNumber(player.score || 0);
+    const breakthroughs = formatNumber(player.breakthroughCount ?? player.transcends ?? 0);
+    const expLevel = formatNumber(player.expLevel ?? player.level ?? 0);
     const formattedBio = formatNumber(player.biomass || 0);
 
     return `
@@ -101,19 +102,21 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
               ${player.vipLevel > 0 ? `<span class="vip-badge shrink-0">VIP ${formatNumber(player.vipLevel)}</span>` : ''}
               ${isCurrent ? '<span class="text-[9px] bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 px-1.5 py-0.2 rounded font-black uppercase tracking-wider shrink-0 shadow">' + t('lb.you') + '</span>' : ''}
             </div>
-            <div class="text-[10px] text-stone-400 flex items-center gap-2 mt-0.5">
+            <div class="text-[10px] text-stone-200 flex items-center gap-1.5 mt-0.5 font-game">
+              <span class="text-amber-300 font-bold">Прорывы: <strong class="text-cyan-300">${breakthroughs}</strong> | Уровень: <strong class="text-emerald-300">${expLevel}</strong></span>
+            </div>
+            <div class="text-[9.5px] text-stone-400 flex items-center gap-2 mt-0.5">
               <span>🧬 ${t('lb.form', { n: formatNumber(player.stage || 1) })}</span>
               <span class="text-stone-600">•</span>
               <span class="text-purple-300 font-mono">🧻 ${t('lb.flushesShort', { n: formatNumber(player.prestiges || 0) })}</span>
-              ${player.transcends ? `<span class="text-stone-600">•</span><span class="text-cyan-300 font-mono">🌌 ${t('lb.breaksShort', { n: formatNumber(player.transcends) })}</span>` : ''}
             </div>
           </div>
         </div>
         <div class="text-right shrink-0 ml-2">
-          <div class="text-yellow-400 font-game font-bold text-xs flex items-center justify-end gap-1">
-            <span>🏆</span> <span>${formattedScore}</span>
+          <div class="text-cyan-400 font-game font-bold text-xs flex items-center justify-end gap-1">
+            <span>🌌</span> <span>${breakthroughs} прор.</span>
           </div>
-          <div class="text-[9px] text-stone-500 font-mono">+${formattedBio} 💨</div>
+          <div class="text-[9px] text-stone-400 font-mono">+${formattedBio} 🧬</div>
         </div>
       </div>
     `;
