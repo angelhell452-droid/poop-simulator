@@ -1,4 +1,5 @@
-﻿import { applySaveDataSafely, saveLocal } from '../save/saveManager.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
+import { applySaveDataSafely, saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { AUTH_STORAGE_KEY, adminRequest, fetchAdminSession, getStoredAccount, wipeAllCloudSaves, wipeCloudPlayer } from '../save/cloudSync.js?v=5.0.80';
 import { STORAGE_KEY, BACKUP_KEY } from '../save/saveManager.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
@@ -17,6 +18,14 @@ import { t, onLocaleChange } from '../i18n/t.js';
 
 let adminRole = null;
 let adminPlayerId = '';
+
+export function getAdminRole() {
+  return adminRole;
+}
+
+export function isCreatorOrAdmin() {
+  return adminRole === 'creator' || adminRole === 'admin';
+}
 
 const CURRENCIES = [
   ['biomass', 'admin.curr.biomass'],
@@ -236,6 +245,10 @@ export async function refreshAdminAccess() {
   paintRole();
   if (adminRole === 'creator') loadAdminList();
   if (adminRole) loadAudit();
+  const vipModal = document.getElementById('vipShopModal');
+  if (vipModal && !vipModal.classList.contains('hidden')) {
+    import('./vipShopView.js').then(m => m.renderVipShop?.());
+  }
 }
 
 function applyLocalGrant(saveData) {
@@ -404,17 +417,20 @@ export function initAdminPanel() {
       setAdminStatus(t('admin.pickPlayerTop'), false);
       return;
     }
-    const level = Math.max(0, Math.min(5, Math.floor(Number(document.getElementById('adminVipLevel')?.value) || 0)));
+    const val = Number(document.getElementById('adminVipLevel')?.value) || 0;
+    const level = val > 0 ? 1 : 0;
     const result = await adminRequest('admin_set_vip', { method: 'POST', body: { targetPlayerId: target, level } });
     if (!result.success) {
       setAdminStatus(result.error || t('admin.vipFail'), false);
       return;
     }
     if (result.playerId && result.playerId === (adminPlayerId || getStoredAccount()?.playerId)) {
-      setConfirmedVip(result.vipLevel);
+      setConfirmedVip(result.vipLevel ? 1 : 0);
+      GAME.vipPass = Boolean(result.vipLevel);
       updateHUD();
+      saveLocal();
     }
-    const label = level > 0 ? `VIP ${formatNumber(level)}` : t('admin.vip.none');
+    const label = level > 0 ? 'VIP' : t('admin.vip.none');
     setAdminStatus(t('admin.vipSet', { user: result.username, label }), true);
     loadAudit();
   });

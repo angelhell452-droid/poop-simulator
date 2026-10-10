@@ -379,14 +379,15 @@ export const TUTORIAL_QUESTS = [
     titleKey: 'tutorial.step15Title',
     fallbackTitle: 'Постоянная роскошь',
     rewardDesc: 'Вечный Перк',
-    beaconSelector: '#btnVipShop',
+    beaconSelector: '.dash-tab[data-target="panelShop"]',
     check: () => PERMANENT_PERKS.some(p => p.owned || hasPerk(p.id)) || Object.keys(GAME.ownedPerks || {}).length > 0 || (GAME.breakthroughCount || 0) > 0,
     progress: () => {
       const hasP = PERMANENT_PERKS.some(p => p.owned || hasPerk(p.id)) || Object.keys(GAME.ownedPerks || {}).length > 0 || (GAME.breakthroughCount || 0) > 0;
       return { current: hasP ? 1 : 0, max: 1, label: `Перки: ${hasP ? 'Куплен' : '0 / 1'}` };
     },
     guide: () => {
-      document.getElementById('btnVipShop')?.click();
+      const tab = document.querySelector('.dash-tab[data-target="panelShop"]');
+      if (tab) tab.click();
     },
     claim: (silent = false) => {
       GAME.sparkles = (GAME.sparkles || 0) + 50;
@@ -666,14 +667,14 @@ export function resolveSpotlightTarget(step) {
     }
 
     case 15: {
-      // 15. Постоянная роскошь: Купить Постоянный Перк за Блестяшки
-      const vipModal = document.getElementById('vipShopModal');
-      if (!vipModal || vipModal.classList.contains('hidden')) {
-        return document.getElementById('btnVipShop');
+      // 15. Постоянная роскошь: Купить Постоянный Перк в Бутике
+      const panel = document.getElementById('panelShop');
+      if (!panel || panel.classList.contains('hidden')) {
+        return document.querySelector('.dash-tab[data-target="panelShop"]');
       }
-      return vipModal.querySelector('.btn-buy-vip-perk:not([disabled])') ||
-             vipModal.querySelector('.btn-buy-vip-perk') ||
-             vipModal;
+      return panel.querySelector('.buy-shop-perk-btn:not([disabled])') ||
+             panel.querySelector('.buy-shop-perk-btn') ||
+             panel;
     }
 
     case 16: {

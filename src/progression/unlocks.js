@@ -20,7 +20,7 @@ export function isCasesUnlocked() {
 }
 
 export function isBoutiqueUnlocked() {
-  return peakForm() >= 100;
+  return peakForm() >= 100 || (GAME.flushCount || GAME.totalPrestiges || 0) > 0 || (GAME.breakthroughCount || 0) > 0;
 }
 
 export function isShopOfferUnlocked(reqForm) {

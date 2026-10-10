@@ -71,8 +71,9 @@ export function updateHUD() {
   const vipBadge = document.getElementById('headerVipBadge');
   if (vipBadge) {
     const vip = getConfirmedVip();
-    vipBadge.textContent = vip > 0 ? `VIP ${formatNumber(vip)}` : '';
-    vipBadge.classList.toggle('hidden', vip <= 0);
+    const isVip = vip > 0 || Boolean(GAME.vipPass);
+    vipBadge.textContent = isVip ? 'VIP' : '';
+    vipBadge.classList.toggle('hidden', !isVip);
   }
 
   const topBio = document.getElementById('topBiomass');

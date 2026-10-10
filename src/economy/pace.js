@@ -1,11 +1,11 @@
-﻿const VIP_MULT = [1, 2, 2.5, 3, 4, 5];
+const VIP_MULT = [1, 2];
 let confirmedVip = 0;
 
 export const INCOME_PACE = 1.5;
 
 export function setConfirmedVip(level) {
   const next = Math.floor(Number(level) || 0);
-  confirmedVip = Math.max(0, Math.min(VIP_MULT.length - 1, next));
+  confirmedVip = next > 0 ? 1 : 0;
   return confirmedVip;
 }
 
@@ -14,7 +14,7 @@ export function getConfirmedVip() {
 }
 
 export function getVipIncomeMult() {
-  return VIP_MULT[confirmedVip] || 1;
+  return confirmedVip > 0 ? 2 : 1;
 }
 
 export function getIncomePace() {

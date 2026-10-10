@@ -5,11 +5,9 @@ import { mul, gainBio } from '../utils/big.js?v=5.0.80';
 import { showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { onLocaleChange } from '../i18n/t.js';
 import { TALENTS } from '../data/talents.data.js';
-import { PERMANENT_PERKS, hasPerk, buyPermanentPerk, getPerkCost } from '../data/perks.data.js';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.80';
+import { isCreatorOrAdmin } from './adminView.js?v=5.0.80';
 
 export function getWarpTalentMult() {
   const warpLvl = TALENTS.find(t => t.id === 'talent_warp_buff')?.level || 0;
@@ -23,6 +21,10 @@ export function getSparklePackYield(base) {
 }
 
 export function executeTimeWarp(hours) {
+  if (!isCreatorOrAdmin()) {
+    showKnifeToast('🔒 Варпы доступны только создателю и главному админу!');
+    return;
+  }
   const h = Number(hours) || 2;
   const rate = getPassiveIncome();
   const warpTalentMult = getWarpTalentMult();
@@ -38,6 +40,10 @@ export function executeTimeWarp(hours) {
 }
 
 export function buySparklePack(base) {
+  if (!isCreatorOrAdmin()) {
+    showKnifeToast('🔒 Наборы доступны только создателю и главному админу!');
+    return;
+  }
   const yieldAmt = getSparklePackYield(base);
   GAME.sparkles = (GAME.sparkles || 0) + yieldAmt;
   showKnifeToast(`✨ Получено +${formatNumber(yieldAmt)} Блестяшек!`);
@@ -45,21 +51,28 @@ export function buySparklePack(base) {
 }
 
 export function activateVipPass() {
+  if (!isCreatorOrAdmin()) {
+    showKnifeToast('🔒 Активация доступна только создателю и главному админу!');
+    return;
+  }
   if (GAME.vipPass) {
     showKnifeToast('👑 VIP-Пасс уже активен на вашем аккаунте!');
     return;
   }
   GAME.vipPass = true;
   showKnifeToast('👑 Поздравляем! VIP-Пасс активирован! Автосбор метеоритов и х2 ресурсы включены!');
+  updateHUD();
+  saveLocal();
   renderVipShop();
 }
 
-function renderVipShop() {
+export function renderVipShop() {
   const list = document.getElementById('vipShopList');
   if (!list) return;
 
   const b = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
   const isVip = Boolean(GAME.vipPass);
+  const hasAdminAccess = isCreatorOrAdmin();
   const incomeRate = getPassiveIncome();
   const warpMult = getWarpTalentMult();
 
@@ -70,6 +83,27 @@ function renderVipShop() {
   const packSmall = getSparklePackYield(500);
   const packMedium = getSparklePackYield(2500);
   const packLarge = getSparklePackYield(15000);
+
+  let vipBtnHtml = '';
+  if (isVip) {
+    vipBtnHtml = `
+      <button type="button" id="btnActivateVipPass" disabled class="w-full py-2.5 rounded-2xl font-game text-xs font-bold transition flex items-center justify-center gap-2 shadow bg-stone-800 text-yellow-400 border border-yellow-500/30 cursor-default">
+        👑 VIP-Пасс уже активен
+      </button>
+    `;
+  } else if (hasAdminAccess) {
+    vipBtnHtml = `
+      <button type="button" id="btnActivateVipPass" class="w-full jelly-btn py-2.5 rounded-2xl font-game text-xs font-bold transition flex items-center justify-center gap-2 shadow bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-stone-950 hover:brightness-110 border border-yellow-300">
+        ✨ Активировать VIP-Пасс (Админ)
+      </button>
+    `;
+  } else {
+    vipBtnHtml = `
+      <button type="button" id="btnActivateVipPass" disabled class="w-full py-2.5 rounded-2xl font-game text-xs font-bold transition flex items-center justify-center gap-2 shadow bg-stone-900 text-stone-500 border border-stone-800 cursor-not-allowed">
+        🔒 Скоро в продаже (Только для Создателя / Админа)
+      </button>
+    `;
+  }
 
   list.innerHTML = `
     <!-- CATEGORY 1: VIP PASS -->
@@ -104,9 +138,7 @@ function renderVipShop() {
       </div>
 
       <div>
-        <button type="button" id="btnActivateVipPass" class="w-full jelly-btn py-2.5 rounded-2xl font-game text-xs font-bold transition flex items-center justify-center gap-2 shadow ${isVip ? 'bg-stone-800 text-yellow-400 border border-yellow-500/30' : 'bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-stone-950 hover:brightness-110 border border-yellow-300'}">
-          ${isVip ? '👑 VIP-Пасс уже активен' : '✨ Активировать VIP-Пасс'}
-        </button>
+        ${vipBtnHtml}
       </div>
     </div>
 
@@ -120,6 +152,9 @@ function renderVipShop() {
             <div class="text-[10px] text-stone-400">Мгновенная выплата дохода заводов за часы</div>
           </div>
         </div>
+        ${hasAdminAccess 
+          ? '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-yellow-300 border border-amber-400/40">⚡ Админ-доступ</span>' 
+          : '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-stone-800 text-stone-400 border border-stone-700">🔒 Скоро</span>'}
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -127,21 +162,27 @@ function renderVipShop() {
         <div class="p-2.5 rounded-2xl bg-stone-900 border border-cyan-500/20 flex flex-col justify-between text-center gap-1">
           <div class="text-xs font-game font-bold text-cyan-200">⚡ Варп 2 Часа</div>
           <div class="text-[11px] text-emerald-300 font-bold font-game">+${formatNumber(warp2Yield)}</div>
-          <button type="button" class="btn-time-warp garden-pill accent text-[11px] py-1 mt-1 font-bold" data-hours="2">Варп 2ч</button>
+          ${hasAdminAccess 
+            ? '<button type="button" class="btn-time-warp garden-pill accent text-[11px] py-1 mt-1 font-bold" data-hours="2">Варп 2ч</button>' 
+            : '<button type="button" class="btn-time-warp garden-pill text-[11px] py-1 mt-1 font-bold bg-stone-800 text-stone-500 border border-stone-700 cursor-not-allowed" disabled>🔒 Скоро</button>'}
         </div>
 
         <!-- 6H WARP -->
         <div class="p-2.5 rounded-2xl bg-stone-900 border border-cyan-500/20 flex flex-col justify-between text-center gap-1">
           <div class="text-xs font-game font-bold text-cyan-200">⚡ Варп 6 Часов</div>
           <div class="text-[11px] text-emerald-300 font-bold font-game">+${formatNumber(warp6Yield)}</div>
-          <button type="button" class="btn-time-warp garden-pill accent text-[11px] py-1 mt-1 font-bold" data-hours="6">Варп 6ч</button>
+          ${hasAdminAccess 
+            ? '<button type="button" class="btn-time-warp garden-pill accent text-[11px] py-1 mt-1 font-bold" data-hours="6">Варп 6ч</button>' 
+            : '<button type="button" class="btn-time-warp garden-pill text-[11px] py-1 mt-1 font-bold bg-stone-800 text-stone-500 border border-stone-700 cursor-not-allowed" disabled>🔒 Скоро</button>'}
         </div>
 
         <!-- 12H WARP -->
         <div class="p-2.5 rounded-2xl bg-stone-900 border border-cyan-500/20 flex flex-col justify-between text-center gap-1">
           <div class="text-xs font-game font-bold text-cyan-200">⚡ Варп 12 Часов</div>
           <div class="text-[11px] text-emerald-300 font-bold font-game">+${formatNumber(warp12Yield)}</div>
-          <button type="button" class="btn-time-warp garden-pill accent text-[11px] py-1 mt-1 font-bold" data-hours="12">Варп 12ч</button>
+          ${hasAdminAccess 
+            ? '<button type="button" class="btn-time-warp garden-pill accent text-[11px] py-1 mt-1 font-bold" data-hours="12">Варп 12ч</button>' 
+            : '<button type="button" class="btn-time-warp garden-pill text-[11px] py-1 mt-1 font-bold bg-stone-800 text-stone-500 border border-stone-700 cursor-not-allowed" disabled>🔒 Скоро</button>'}
         </div>
       </div>
     </div>
@@ -156,7 +197,12 @@ function renderVipShop() {
             <div class="text-[10px] text-stone-400">Растут со степенным множителем (1 + Прорывы)<sup>1.5</sup></div>
           </div>
         </div>
-        <span class="text-[10px] text-yellow-300 font-bold">Ур. Прорыва: ${formatNumber(b)}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-yellow-300 font-bold">Ур. Прорыва: ${formatNumber(b)}</span>
+          ${hasAdminAccess 
+            ? '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-yellow-300 border border-amber-400/40">⚡ Админ-доступ</span>' 
+            : '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-stone-800 text-stone-400 border border-stone-700">🔒 Скоро</span>'}
+        </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -165,7 +211,9 @@ function renderVipShop() {
           <div class="text-xl">🎒</div>
           <div class="text-xs font-game font-bold text-pink-200">Мешочек Искр</div>
           <div class="text-[11px] text-yellow-300 font-bold font-game">+${formatNumber(packSmall)} ✨</div>
-          <button type="button" class="btn-sparkle-pack garden-pill accent text-[11px] py-1 mt-1 font-bold" data-base="500">Забрать ✨</button>
+          ${hasAdminAccess 
+            ? '<button type="button" class="btn-sparkle-pack garden-pill accent text-[11px] py-1 mt-1 font-bold" data-base="500">Забрать ✨</button>' 
+            : '<button type="button" class="btn-sparkle-pack garden-pill text-[11px] py-1 mt-1 font-bold bg-stone-800 text-stone-500 border border-stone-700 cursor-not-allowed" disabled>🔒 Скоро</button>'}
         </div>
 
         <!-- MEDIUM -->
@@ -173,7 +221,9 @@ function renderVipShop() {
           <div class="text-xl">💼</div>
           <div class="text-xs font-game font-bold text-pink-200">Сундук Блеска</div>
           <div class="text-[11px] text-yellow-300 font-bold font-game">+${formatNumber(packMedium)} ✨</div>
-          <button type="button" class="btn-sparkle-pack garden-pill accent text-[11px] py-1 mt-1 font-bold" data-base="2500">Забрать ✨</button>
+          ${hasAdminAccess 
+            ? '<button type="button" class="btn-sparkle-pack garden-pill accent text-[11px] py-1 mt-1 font-bold" data-base="2500">Забрать ✨</button>' 
+            : '<button type="button" class="btn-sparkle-pack garden-pill text-[11px] py-1 mt-1 font-bold bg-stone-800 text-stone-500 border border-stone-700 cursor-not-allowed" disabled>🔒 Скоро</button>'}
         </div>
 
         <!-- LARGE -->
@@ -181,120 +231,32 @@ function renderVipShop() {
           <div class="text-xl">👑</div>
           <div class="text-xs font-game font-bold text-pink-200">Сокровищница</div>
           <div class="text-[11px] text-yellow-300 font-bold font-game">+${formatNumber(packLarge)} ✨</div>
-          <button type="button" class="btn-sparkle-pack garden-pill accent text-[11px] py-1 mt-1 font-bold" data-base="15000">Забрать ✨</button>
+          ${hasAdminAccess 
+            ? '<button type="button" class="btn-sparkle-pack garden-pill accent text-[11px] py-1 mt-1 font-bold" data-base="15000">Забрать ✨</button>' 
+            : '<button type="button" class="btn-sparkle-pack garden-pill text-[11px] py-1 mt-1 font-bold bg-stone-800 text-stone-500 border border-stone-700 cursor-not-allowed" disabled>🔒 Скоро</button>'}
         </div>
-    <!-- CATEGORY 4: PERMANENT PERKS (20 UNIQUE PERKS) -->
-    <div class="garden-card p-4 rounded-3xl border-2 border-yellow-500/50 bg-stone-950/90 shadow-xl space-y-3">
-      <div class="flex items-center justify-between border-b border-amber-900/50 pb-2.5">
-        <div class="flex items-center gap-2.5">
-          <span class="text-3xl">🔮</span>
-          <div>
-            <div class="font-game text-base text-yellow-300 font-bold">Постоянные Перки Прорыва</div>
-            <div class="text-[10px] text-stone-300">20 уникальных улучшений • Разовая покупка за Блестяшки ✨</div>
-          </div>
-        </div>
-        <div class="text-right">
-          <div class="text-[11px] font-bold text-yellow-300 font-game">Куплено: ${PERMANENT_PERKS.filter(p => hasPerk(p.id)).length} / 20</div>
-          <div class="text-[9px] text-stone-400">Прорыв: ${formatNumber(b)}</div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-        ${PERMANENT_PERKS.map(perk => {
-          const isUnlocked = b >= perk.reqBreakthrough;
-          const isOwned = hasPerk(perk.id);
-          const curSparkles = Number(GAME.sparkles) || 0;
-          const cost = getPerkCost(perk);
-          const canBuy = isUnlocked && !isOwned && curSparkles >= cost;
-
-          if (!isUnlocked) {
-            return `
-              <div class="p-3 rounded-2xl border border-stone-800 bg-stone-900/60 flex flex-col justify-between gap-2 text-left relative overflow-hidden">
-                <div class="flex items-start gap-2.5 opacity-40">
-                  <span class="text-2xl p-1.5 bg-stone-800 rounded-xl shrink-0">${perk.icon}</span>
-                  <div class="min-w-0 flex-1">
-                    <div class="font-game text-xs font-bold text-stone-300 truncate">${perk.nameRu || perk.name}</div>
-                    <div class="text-[10px] text-stone-500 mt-0.5 line-clamp-2">${perk.desc}</div>
-                  </div>
-                </div>
-                <div class="mt-1 p-2 rounded-xl bg-stone-950/90 border border-stone-700/60 text-center text-stone-400 font-game text-[11px] font-bold shadow-inner">
-                  🔒 Требуется ${formatNumber(perk.reqBreakthrough)} Прорыв
-                </div>
-              </div>
-            `;
-          }
-
-          if (isOwned) {
-            return `
-              <div class="p-3 rounded-2xl border border-emerald-500/50 bg-gradient-to-br from-emerald-950/30 via-stone-900 to-stone-950 flex flex-col justify-between gap-2 text-left shadow">
-                <div class="flex items-start gap-2.5">
-                  <span class="text-2xl p-1.5 bg-emerald-950/60 border border-emerald-500/30 rounded-xl shrink-0">${perk.icon}</span>
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center justify-between">
-                      <span class="font-game text-xs font-bold text-yellow-300 truncate">${perk.nameRu || perk.name}</span>
-                      <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">✓ КУПЛЕНО</span>
-                    </div>
-                    <div class="text-[10px] text-stone-300 mt-0.5">${perk.desc}</div>
-                  </div>
-                </div>
-              </div>
-            `;
-          }
-
-          return `
-            <div class="p-3 rounded-2xl border border-yellow-500/40 bg-stone-900/90 flex flex-col justify-between gap-2 text-left shadow hover:border-yellow-400/70 transition">
-              <div class="flex items-start gap-2.5">
-                <span class="text-2xl p-1.5 bg-stone-800 rounded-xl shrink-0">${perk.icon}</span>
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center justify-between">
-                    <span class="font-game text-xs font-bold text-yellow-200 truncate">${perk.nameRu || perk.name}</span>
-                    <span class="text-[10px] text-amber-300 font-bold">${formatNumber(cost)} ✨</span>
-                  </div>
-                  <div class="text-[10px] text-stone-300 mt-0.5">${perk.desc}</div>
-                </div>
-              </div>
-              <button type="button" class="btn-buy-vip-perk w-full py-1.5 rounded-xl font-game text-xs font-bold transition flex items-center justify-center gap-1.5 shadow ${canBuy ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 border border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border border-stone-700 cursor-not-allowed'}" data-id="${perk.id}" ${canBuy ? '' : 'disabled'}>
-                ✨ Купить (${formatNumber(cost)} ✨)
-              </button>
-            </div>
-          `;
-        }).join('')}
       </div>
     </div>
   `;
 
-  // Attach event listeners
-  document.getElementById('btnActivateVipPass')?.addEventListener('click', () => {
-    activateVipPass();
-  });
-
-  list.querySelectorAll('.btn-time-warp').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      executeTimeWarp(Number(btn.dataset.hours) || 2);
+  // Attach event listeners only for active buttons
+  if (hasAdminAccess) {
+    document.getElementById('btnActivateVipPass')?.addEventListener('click', () => {
+      activateVipPass();
     });
-  });
 
-  list.querySelectorAll('.btn-sparkle-pack').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      buySparklePack(Number(btn.dataset.base) || 500);
+    list.querySelectorAll('.btn-time-warp').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        executeTimeWarp(Number(btn.dataset.hours) || 2);
+      });
     });
-  });
 
-  list.querySelectorAll('.btn-buy-vip-perk').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const res = buyPermanentPerk(btn.dataset.id);
-      if (res.success) {
-        showKnifeToast(`✨ Куплен перк «${res.perk.nameRu || res.perk.name}»!`);
-        checkAchievements();
-        renderVipShop();
-        updateHUD();
-        saveLocal();
-        requestCloudSync(2000);
-      } else {
-        showKnifeToast(res.msg);
-      }
+    list.querySelectorAll('.btn-sparkle-pack').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        buySparklePack(Number(btn.dataset.base) || 500);
+      });
     });
-  });
+  }
 }
 
 export function initVipShop() {
