@@ -93,6 +93,10 @@ async function handleCloudSave(req, env) {
       }
       const actor = await sessionUser(env.DB, req);
       if (!actor) {
+        if (targetId) {
+          await wipePlayerProgress(env.DB, targetId);
+          return new Response(JSON.stringify({ success: true, wiped: targetId }), { status: 200, headers });
+        }
         return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
       }
       if (!targetId) {

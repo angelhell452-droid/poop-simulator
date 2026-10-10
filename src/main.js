@@ -1,7 +1,7 @@
 import { GAME } from './core/state.js?v=5.0.80';
 import { startGameLoop } from './core/gameLoop.js?v=5.0.80';
 import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.0.80';
-import { saveLocal } from './save/saveManager.js?v=5.0.80';
+import { saveLocal, hardReset } from './save/saveManager.js?v=5.0.80';
 import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.0.80';
 import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.0.80';
 import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.0.80';
@@ -323,7 +323,7 @@ export async function bootstrap() {
 
   document.getElementById('btnResetData')?.addEventListener('click', async () => {
     if (confirm(t('main.wipeConfirm'))) {
-      await wipePlayerData();
+      await hardReset();
     }
   });
 

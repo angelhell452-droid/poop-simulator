@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.80';
 import { setConfirmedVip } from '../economy/pace.js';
@@ -544,11 +544,16 @@ export async function wipeAllCloudSaves() {
 
 export async function wipePlayerData() {
   try {
-    if (GAME.playerId) {
-      await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=wipe&playerId=${encodeURIComponent(GAME.playerId)}`, { method: 'POST' });
-    }
-  } catch (e) { }
-  saveStoredAccount(null);
-  localStorage.clear();
-  location.reload();
+    const { hardReset } = await import('./saveManager.js?v=5.0.80');
+    await hardReset();
+  } catch (e) {
+    try {
+      if (GAME.playerId) {
+        await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=wipe&playerId=${encodeURIComponent(GAME.playerId)}`, { method: 'POST' });
+      }
+    } catch (_) { }
+    saveStoredAccount(null);
+    localStorage.clear();
+    location.reload();
+  }
 }

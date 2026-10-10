@@ -28,6 +28,12 @@ export const PATCH_NOTES = [
         icon: '🪠',
         text: 'Новая Матрица 25 Боссов: Экспоненциальное здоровье от 10^8 (Босс 1) до 10^1000 (Босс 25) и награды от 2 до 150 Вантузов 🪠, сбалансированные под гильдейскую кооперацию.',
         textEn: 'New 25 Bosses Matrix: Exponential boss HP scaling from 10^8 (Boss 1) to 10^1000 (Boss 25) with rewards scaling from 2 to 150 Plungers 🪠, balanced around guild teamwork.'
+      },
+      {
+        type: 'fix',
+        icon: '🧹',
+        text: 'Абсолютный Вайп в Чистый Ноль: Полная переработка функции hardReset() в профиле игрока, админ-сброса и глобального вайпа. Жестко обнуляются все эндгейм-переменные big.js (Уровни Прорыва и Смыва, одометр опыта, все 25 талантов и 24 реликвии, инвентарь ножей, шапок и скинов). База данных и Топ-Ладдер гарантированно очищаются от фантомных рекордов, питомец стартует со 100% сытости, чистоты и настроения.',
+        textEn: 'Absolute Pure Zero Wipe: Total overhaul of hardReset(), admin account wipe, and global wipe. All big.js endgame variables (Breakthrough & Flush levels, exp odometer, all 25 talents, 24 relics, knife & skin inventory) are strictly zeroed out. Leaderboard and database are guaranteed purged of ghost records, starting pet care gauges at 100%.'
       }
     ]
   },

@@ -84,15 +84,16 @@ function loggedInUsername() {
   return clean.slice(0, 32);
 }
 
-function wipeRuntimeCatalogs() {
+export function wipeRuntimeCatalogs() {
   FACTORIES.forEach((row) => { row.count = 0; });
   TALENTS.forEach((row) => { row.level = 0; });
   ACHIEVEMENTS.forEach((row) => { row.done = false; });
   SHOP_ITEMS.forEach((row) => { row.owned = false; });
   PERMANENT_PERKS.forEach((row) => { row.owned = false; });
   GAME.ownedPerks = {};
+  GAME.relics = {};
   RELICS.forEach((r) => {
-    if (GAME.relics) GAME.relics[r.id] = 0;
+    GAME.relics[r.id] = 0;
     if (r.legacyKey && GAME.transcendUpgrades) GAME.transcendUpgrades[r.legacyKey] = 0;
   });
   KNIVES.forEach((row) => {
@@ -115,25 +116,35 @@ function wipeRuntimeCatalogs() {
   GAME.firstCaseNotified = false;
   GAME.totalClicks = 0;
   GAME.tutorialStepIndex = 0;
+  GAME.currentQuestId = 1;
   GAME.tutorialCompleted = false;
   GAME.tutorialCritBonus = 0;
   GAME.tutorialClickBonus = 0;
   GAME.tutorialIncomeMult = 1;
   GAME.tutorialTempBoostUntil = 0;
   GAME.tutorialCareDone = { wash: false, feed: false, tickle: false };
+  GAME.tutorialRewardClaimed = false;
   GAME.guildTicketsContributed = 0;
+  GAME.guildTickets = 0;
+  GAME.clicksTowardsTicket = 0;
   GAME.phaseEcho = {};
   GAME.biomass = 0;
   GAME.cycleBiomass = 0;
   GAME.allTimeBiomass = 0;
+  GAME.lifetimeBiomassInCurrentCycle = 0;
+  GAME.breakthroughProgress = 0;
+  GAME.biomassExpLevel = 0;
   GAME.sparkles = 20;
   GAME.prestigeRolls = 0;
   GAME.allTimePrestigeRolls = 0;
   GAME.transcendCycleRolls = 0;
   GAME.totalPrestiges = 0;
+  GAME.flushCount = 0;
   GAME.transcendPlungers = 0;
   GAME.totalTranscend = 0;
+  GAME.breakthroughCount = 0;
   GAME.flushesThisCycle = 0;
+  GAME.pairPlungersFromFlushes = 0;
   GAME.horizonSparks = 0;
   GAME.horizonUpgrades = { pace: 0, seal: 0 };
   GAME.evoStage = 0;
@@ -141,7 +152,14 @@ function wipeRuntimeCatalogs() {
   GAME.clean = 100;
   GAME.happy = 100;
   GAME.comboHeat = 0;
+  GAME.turboRushTime = 0;
+  GAME.turboStarMultTime = 0;
   GAME.autoclickerActive = false;
+  GAME.autoclickerSpeed = 1;
+  GAME.vipPass = false;
+  GAME.vipPassExpires = 0;
+  GAME.tickleCount = 0;
+  GAME.currentRunPeakGPS = 0;
   setFeedCount(0);
   setWashCount(0);
   setPolishCount(0);
@@ -161,6 +179,40 @@ function wipeRuntimeCatalogs() {
     autoEvolution: false,
     singularityRift: false
   };
+}
+
+export async function hardReset() {
+  // 1. Wipe runtime catalogs, stats, and progression in memory
+  wipeRuntimeCatalogs();
+
+  // 2. Overwrite local storage with pure zero state
+  saveLocal();
+
+  // 3. Purge cloud save from server
+  try {
+    const targetId = GAME.playerId || ((typeof localStorage !== 'undefined') ? localStorage.getItem('PoopSim_PlayerId') : null);
+    if (targetId) {
+      await fetch(`/api/cloud-save?action=wipe&playerId=${encodeURIComponent(targetId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'wipe', playerId: targetId })
+      }).catch(() => null);
+    }
+  } catch (err) {
+    console.warn('Cloud wipe error during hardReset:', err);
+  }
+
+  // 4. Remove all local persistent storage keys
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(BACKUP_KEY);
+    localStorage.removeItem('PoopSim_User_Account');
+  } catch (_) {}
+
+  // 5. Reload to start from clean slate
+  if (typeof window !== 'undefined' && window.location) {
+    window.location.reload();
+  }
 }
 
 export function applySaveDataSafely(rawData) {

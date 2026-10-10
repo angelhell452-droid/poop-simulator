@@ -60,9 +60,48 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
 
   try {
     await ensureSchema(env.DB);
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action");
+    const playerIdParam = url.searchParams.get("playerId");
+
+    // Handle wipe and wipe_all endpoints
+    if (action === "wipe" || action === "delete") {
+      let targetId = playerIdParam;
+      if (!targetId && req.method === "POST") {
+        try {
+          const body: any = await req.clone().json();
+          targetId = body.playerId;
+        } catch (_) {}
+      }
+      if (targetId) {
+        await env.DB.prepare(`DELETE FROM player_saves WHERE player_id = ?`).bind(targetId).run();
+        return new Response(JSON.stringify({ success: true, wiped: targetId }), { status: 200, headers });
+      }
+      return new Response(JSON.stringify({ error: "Missing playerId" }), { status: 400, headers });
+    }
+
+    if (action === "wipe_all") {
+      await env.DB.prepare(`DELETE FROM player_saves`).run();
+      return new Response(JSON.stringify({ success: true, wiped: "all" }), { status: 200, headers });
+    }
 
     if (req.method === "POST") {
       const body: any = await req.json();
+
+      if (body?.action === "wipe" || body?.action === "delete") {
+        const targetId = body.playerId || playerIdParam;
+        if (targetId) {
+          await env.DB.prepare(`DELETE FROM player_saves WHERE player_id = ?`).bind(targetId).run();
+          return new Response(JSON.stringify({ success: true, wiped: targetId }), { status: 200, headers });
+        }
+        return new Response(JSON.stringify({ error: "Missing playerId" }), { status: 400, headers });
+      }
+
+      if (body?.action === "wipe_all") {
+        await env.DB.prepare(`DELETE FROM player_saves`).run();
+        return new Response(JSON.stringify({ success: true, wiped: "all" }), { status: 200, headers });
+      }
+
       const { playerId, playerName, saveData } = body;
 
       if (!playerId || !saveData) {
