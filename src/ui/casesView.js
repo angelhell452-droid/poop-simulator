@@ -214,6 +214,8 @@ export function updateCasesTabBadge() {
 }
 
 export function checkFirstCaseNotification() {
+  const veil = document.getElementById('bootVeil');
+  if (veil && !veil.classList.contains('hidden') && veil.style.display !== 'none') return;
   if (!isCasesUnlocked()) return;
   const firstCase = WEAPON_CASES.find(c => c.id === FIRST_CASE_ID);
   if (!firstCase || !isFirstCaseDiscountAvailable(firstCase) || !canAffordCase(firstCase, 1)) return;

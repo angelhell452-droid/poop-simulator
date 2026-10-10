@@ -197,6 +197,8 @@ export function handleEquipBestKnife() {
 }
 
 export function showKnifeToast(text, onClick = null) {
+  const veil = document.getElementById('bootVeil');
+  if (veil && !veil.classList.contains('hidden') && veil.style.display !== 'none') return;
   const existing = document.getElementById('knifeToastNotification');
   if (existing) existing.remove();
 

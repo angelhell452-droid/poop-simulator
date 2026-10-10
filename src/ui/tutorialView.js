@@ -506,36 +506,285 @@ export function validateAndAdvanceRetroactiveQuests() {
 /**
  * Активация Spotlight затемнения экрана с подсветкой целевой зоны
  */
-export function activateTutorialSpotlight(step) {
-  deactivateTutorialSpotlight();
-  if (!step || !step.beaconSelector) return;
+let activeElevatedModal = null;
 
-  step.guide();
+/**
+ * Интеллектуальный динамический резолвер: возвращает конкретный элемент,
+ * который должен подсвечиваться прямо сейчас в зависимости от открытых вкладок и модалок.
+ */
+export function resolveSpotlightTarget(step) {
+  if (!step) return null;
 
-  setTimeout(() => {
-    const target = document.querySelector(step.beaconSelector);
-    const overlay = document.getElementById('tutorialSpotlightOverlay');
-    if (overlay) {
-      overlay.classList.remove('hidden');
+  switch (step.num) {
+    case 1: {
+      // 1. Первая слизь: 50 ручных кликов
+      return document.getElementById('canvasBox') || document.getElementById('petCanvas');
     }
-    if (target) {
-      target.classList.add('tutorial-spotlight-target');
-      activeSpotlightElement = target;
+
+    case 2: {
+      // 2. Автоматизация: Купить первый Авто-завод Тира 1
+      const panel = document.getElementById('panelFactories');
+      if (!panel || panel.classList.contains('hidden')) {
+        return document.querySelector('.dash-tab[data-target="panelFactories"]');
+      }
+      return panel.querySelector('.buy-factory-btn') || panel;
     }
-    const widget = document.getElementById('tutorialQuestWidget');
-    if (widget) {
-      widget.style.zIndex = '901';
+
+    case 3: {
+      // 3. Полный уход: Помыть, покормить, пощекотать
+      const needs = document.getElementById('petNeedsStation');
+      const wDone = GAME.tutorialCareDone?.wash || (GAME.clean || 0) >= 90;
+      const fDone = GAME.tutorialCareDone?.feed || (GAME.hunger || 0) >= 90;
+      const tDone = GAME.tutorialCareDone?.tickle || (GAME.comboHeat || 0) >= 5;
+      if (!wDone) return document.getElementById('btnWash') || needs;
+      if (!fDone) return document.getElementById('btnFeed') || needs;
+      if (!tDone) return document.getElementById('btnTickle') || needs;
+      return needs;
     }
-  }, 120);
+
+    case 4: {
+      // 4. Включить пулемет: Активировать встроенный автокликер
+      return document.getElementById('btnToggleAutoclicker');
+    }
+
+    case 5: {
+      // 5. Первый сундук: Открыть Кейс №1 в магазине за Блестяшки
+      const panel = document.getElementById('panelCases');
+      if (!panel || panel.classList.contains('hidden')) {
+        return document.querySelector('.dash-tab[data-target="panelCases"]');
+      }
+      return document.querySelector('.open-case-btn[data-case="case_weapon_1"]') ||
+             panel.querySelector('.open-case-btn') ||
+             panel;
+    }
+
+    case 6: {
+      // 6. Стальной хват: Зайти в Инвентарь и экипировать выбитый Нож
+      const invModal = document.getElementById('characterInventoryModal');
+      if (!invModal || invModal.classList.contains('hidden')) {
+        return document.getElementById('btnCanvasInventory');
+      }
+      const knivesPanel = document.getElementById('invKnivesPanel');
+      if (!knivesPanel || knivesPanel.classList.contains('hidden')) {
+        return document.getElementById('invTabKnives') || invModal;
+      }
+      return invModal.querySelector('.equip-knife-btn') || invModal;
+    }
+
+    case 7: {
+      // 7. Закалка стали: Заточить нож на +1 звезду в гардеробе
+      const invModal = document.getElementById('characterInventoryModal');
+      if (!invModal || invModal.classList.contains('hidden')) {
+        return document.getElementById('btnCanvasInventory');
+      }
+      return document.getElementById('btnSharpenEquippedKnife') ||
+             invModal.querySelector('.sharpen-knife-btn') ||
+             invModal;
+    }
+
+    case 8: {
+      // 8. Стиль и Сила: Купить и экипировать первую Шапку в гардеробе
+      const invModal = document.getElementById('characterInventoryModal');
+      if (!invModal || invModal.classList.contains('hidden')) {
+        return document.getElementById('btnCanvasInventory');
+      }
+      const hatsPanel = document.getElementById('invHatsPanel');
+      if (!hatsPanel || hatsPanel.classList.contains('hidden')) {
+        return document.getElementById('invTabHats') || invModal;
+      }
+      return hatsPanel.querySelector('.buy-hat-btn:not([disabled])') ||
+             hatsPanel.querySelector('.equip-hat-btn') ||
+             hatsPanel.querySelector('.buy-hat-btn') ||
+             hatsPanel;
+    }
+
+    case 9: {
+      // 9. Новая кожа: Купить и экипировать первую Одежду (скин) по акции за 1000 ✨
+      const invModal = document.getElementById('characterInventoryModal');
+      if (!invModal || invModal.classList.contains('hidden')) {
+        return document.getElementById('btnCanvasInventory');
+      }
+      const skinsPanel = document.getElementById('invSkinsPanel');
+      if (!skinsPanel || skinsPanel.classList.contains('hidden')) {
+        return document.getElementById('invTabSkins') || invModal;
+      }
+      return skinsPanel.querySelector('.buy-skin-btn[data-id="skin_robe"]') ||
+             skinsPanel.querySelector('.buy-skin-btn') ||
+             skinsPanel.querySelector('.equip-skin-btn') ||
+             skinsPanel;
+    }
+
+    case 10: {
+      // 10. Поймай звезду: Кликнуть по прилетевшему Метеориту
+      return document.getElementById('canvasBox') || document.getElementById('petCanvas');
+    }
+
+    case 11: {
+      // 11. Промышленный бум: Купить заводы пакетом MAX
+      const panel = document.getElementById('panelFactories');
+      if (!panel || panel.classList.contains('hidden')) {
+        return document.querySelector('.dash-tab[data-target="panelFactories"]');
+      }
+      if (GAME.buyMultiplier !== 'max') {
+        return document.querySelector('.buy-mult-btn[data-mult="max"]');
+      }
+      return panel.querySelector('.buy-factory-btn') || panel;
+    }
+
+    case 12: {
+      // 12. Испытание кликом: 10 000 кликов автокликером
+      if (!GAME.autoclickerActive) {
+        return document.getElementById('btnToggleAutoclicker');
+      }
+      return document.getElementById('tqActionBtn') || document.getElementById('tutorialQuestWidget');
+    }
+
+    case 13: {
+      // 13. Большой Смыв: Нажать Смыв
+      const prestModal = document.getElementById('prestigeModal');
+      if (prestModal && !prestModal.classList.contains('hidden')) {
+        return document.getElementById('btnExecutePrestige') || prestModal;
+      }
+      return document.getElementById('btnCanvasPrestige') || document.getElementById('btnFlush');
+    }
+
+    case 14: {
+      // 14. Скрытый потенциал: Купить первый Талант за Втулки
+      const panel = document.getElementById('panelTalents');
+      if (!panel || panel.classList.contains('hidden')) {
+        return document.querySelector('.dash-tab[data-target="panelTalents"]');
+      }
+      const viewFlush = document.getElementById('viewTalentsFlush');
+      if (!viewFlush || viewFlush.classList.contains('hidden')) {
+        return document.getElementById('tabTalentsFlush') || panel;
+      }
+      return viewFlush.querySelector('.buy-talent-btn:not([disabled])') ||
+             viewFlush.querySelector('.buy-talent-btn') ||
+             panel;
+    }
+
+    case 15: {
+      // 15. Постоянная роскошь: Купить Постоянный Перк за Блестяшки
+      const vipModal = document.getElementById('vipShopModal');
+      if (!vipModal || vipModal.classList.contains('hidden')) {
+        return document.getElementById('btnVipShop');
+      }
+      return vipModal.querySelector('.btn-buy-vip-perk:not([disabled])') ||
+             vipModal.querySelector('.btn-buy-vip-perk') ||
+             vipModal;
+    }
+
+    case 16: {
+      // 16. Марафонец Смывов: Достичь 20-го Уровня Смыва
+      const prestModal = document.getElementById('prestigeModal');
+      if (prestModal && !prestModal.classList.contains('hidden')) {
+        return document.getElementById('btnExecutePrestige') || prestModal;
+      }
+      return document.getElementById('btnCanvasPrestige') || document.getElementById('btnFlush');
+    }
+
+    case 17: {
+      // 17. Великий Прорыв: Нажать Прорыв
+      const transcModal = document.getElementById('transcendModal');
+      if (transcModal && !transcModal.classList.contains('hidden')) {
+        return document.getElementById('btnExecuteTranscend') || transcModal;
+      }
+      return document.getElementById('btnCanvasTranscend') || document.getElementById('btnTranscend');
+    }
+
+    case 18: {
+      // 18. Древняя Святыня: Купить Реликвию за Вантузы
+      const panel = document.getElementById('panelTalents');
+      if (!panel || panel.classList.contains('hidden')) {
+        return document.querySelector('.dash-tab[data-target="panelTalents"]');
+      }
+      const viewRelics = document.getElementById('viewTalentsTranscend');
+      if (!viewRelics || viewRelics.classList.contains('hidden')) {
+        return document.getElementById('tabTalentsTranscend') || panel;
+      }
+      return viewRelics.querySelector('.buy-art-btn:not([disabled])') ||
+             viewRelics.querySelector('.buy-art-btn') ||
+             panel;
+    }
+
+    default:
+      return step.beaconSelector ? document.querySelector(step.beaconSelector) : null;
+  }
 }
 
 /**
- * Снятие Spotlight затемнения
+ * Непрерывное обновление фокуса: обеспечивает принудительную подсветку текущей цели
+ */
+export function refreshTutorialSpotlight() {
+  if (isTutorialComplete()) {
+    deactivateTutorialSpotlight();
+    return;
+  }
+
+  const step = getCurrentQuest();
+  if (!step) {
+    deactivateTutorialSpotlight();
+    return;
+  }
+
+  const overlay = document.getElementById('tutorialSpotlightOverlay');
+  if (overlay) {
+    overlay.classList.remove('hidden');
+  }
+
+  const widget = document.getElementById('tutorialQuestWidget');
+  if (widget) {
+    widget.style.zIndex = '901';
+  }
+
+  let target = null;
+  if (step.check()) {
+    target = document.getElementById('tqActionBtn') || widget;
+  } else {
+    target = resolveSpotlightTarget(step);
+  }
+
+  if (activeSpotlightElement && activeSpotlightElement !== target) {
+    activeSpotlightElement.classList.remove('tutorial-spotlight-target');
+  }
+
+  if (activeElevatedModal && (!target || !target.closest('.fixed'))) {
+    activeElevatedModal.style.zIndex = '';
+    activeElevatedModal = null;
+  }
+
+  if (target) {
+    target.classList.add('tutorial-spotlight-target');
+    activeSpotlightElement = target;
+
+    const modal = target.closest('.fixed:not(#tutorialSpotlightOverlay):not(#bootVeil)');
+    if (modal) {
+      modal.style.zIndex = '860';
+      activeElevatedModal = modal;
+    }
+  }
+}
+
+/**
+ * Активация Spotlight затемнения экрана с направлением на шаг
+ */
+export function activateTutorialSpotlight(step) {
+  if (!step) return;
+  step.guide();
+  setTimeout(refreshTutorialSpotlight, 50);
+}
+
+/**
+ * Снятие Spotlight затемнения при завершении обучения
  */
 export function deactivateTutorialSpotlight() {
   if (activeSpotlightElement) {
     activeSpotlightElement.classList.remove('tutorial-spotlight-target');
     activeSpotlightElement = null;
+  }
+  if (activeElevatedModal) {
+    activeElevatedModal.style.zIndex = '';
+    activeElevatedModal = null;
   }
   document.querySelectorAll('.tutorial-spotlight-target').forEach(el => {
     el.classList.remove('tutorial-spotlight-target');
@@ -555,11 +804,9 @@ export function deactivateTutorialSpotlight() {
  */
 export function updateTutorialQuestWidget() {
   const widget = document.getElementById('tutorialQuestWidget');
-  const oldBanner = document.getElementById('beginnerGuideBar');
 
   if (isTutorialComplete()) {
     if (widget) widget.classList.add('hidden');
-    if (oldBanner) oldBanner.classList.add('hidden');
     deactivateTutorialSpotlight();
     return;
   }
@@ -569,7 +816,6 @@ export function updateTutorialQuestWidget() {
 
   if (isTutorialComplete()) {
     if (widget) widget.classList.add('hidden');
-    if (oldBanner) oldBanner.classList.add('hidden');
     deactivateTutorialSpotlight();
     return;
   }
@@ -577,6 +823,7 @@ export function updateTutorialQuestWidget() {
   const currentStep = getCurrentQuest();
   if (!currentStep) {
     if (widget) widget.classList.add('hidden');
+    deactivateTutorialSpotlight();
     return;
   }
 
@@ -620,7 +867,6 @@ export function updateTutorialQuestWidget() {
       actionBtn.className = 'shrink-0 font-game text-[10px] font-black px-2.5 py-0.5 rounded-xl shadow-lg border-2 border-yellow-200 animate-pulse jelly-btn transition bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-stone-950 cursor-pointer';
       actionBtn.onclick = (e) => {
         e.stopPropagation();
-        deactivateTutorialSpotlight();
         currentStep.claim(false);
         GAME.tutorialStepIndex = stepIdx + 1;
         GAME.currentQuestId = Math.min(19, stepIdx + 2);
@@ -642,41 +888,8 @@ export function updateTutorialQuestWidget() {
     }
   }
 
-  // Also sync old banner if present
-  if (oldBanner) {
-    const bTitle = document.getElementById('beginnerStepTitle');
-    const bProg = document.getElementById('beginnerProgressFill');
-    const bBadge = document.getElementById('beginnerProgressBadge');
-    const bAction = document.getElementById('beginnerActionBtn');
-    if (bTitle) bTitle.textContent = `${currentStep.num}. ${questTitle} (${currentStep.rewardDesc})`;
-    if (bProg) bProg.style.width = `${pct}%`;
-    if (bBadge) bBadge.textContent = `${currentStep.num} / 18`;
-    if (bAction) {
-      if (isDone) {
-        bAction.textContent = 'Забрать 🎁';
-        bAction.className = 'bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-stone-950 font-game text-[9.5px] font-black px-2.5 py-0.5 rounded-lg shadow border border-yellow-200 jelly-btn animate-pulse';
-        bAction.onclick = () => {
-          deactivateTutorialSpotlight();
-          currentStep.claim(false);
-          GAME.tutorialStepIndex = stepIdx + 1;
-          GAME.currentQuestId = Math.min(19, stepIdx + 2);
-          if (GAME.tutorialStepIndex >= TUTORIAL_QUESTS.length) {
-            GAME.tutorialCompleted = true;
-            showTriumphModal();
-          }
-          updateHUD();
-          saveLocal();
-          updateTutorialQuestWidget();
-        };
-      } else {
-        bAction.textContent = 'Выполнить ⚡';
-        bAction.className = 'bg-gradient-to-r from-emerald-500 to-teal-500 text-stone-950 font-game text-[9.5px] font-black px-2.5 py-0.5 rounded-lg shadow border border-emerald-300 jelly-btn';
-        bAction.onclick = () => {
-          activateTutorialSpotlight(currentStep);
-        };
-      }
-    }
-  }
+  // Принудительное непрерывное сопровождение
+  refreshTutorialSpotlight();
 }
 
 export function showTriumphModal() {
@@ -687,10 +900,24 @@ export function showTriumphModal() {
 export function initTutorialListeners() {
   const overlay = document.getElementById('tutorialSpotlightOverlay');
   if (overlay) {
-    overlay.addEventListener('click', () => {
-      deactivateTutorialSpotlight();
+    overlay.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!isTutorialComplete()) {
+        const step = getCurrentQuest();
+        if (step) {
+          step.guide();
+          refreshTutorialSpotlight();
+        }
+      }
     });
   }
+
+  // Реактивный трекинг действий игрока для переключения фокуса внутри вкладок и модалок
+  document.addEventListener('click', () => {
+    if (!isTutorialComplete()) {
+      setTimeout(refreshTutorialSpotlight, 40);
+    }
+  }, true);
 
   const widget = document.getElementById('tutorialQuestWidget');
   if (widget) {
@@ -710,7 +937,8 @@ export function initTutorialListeners() {
         saveLocal();
         updateTutorialQuestWidget();
       } else {
-        activateTutorialSpotlight(current);
+        current.guide();
+        refreshTutorialSpotlight();
       }
     });
   }
@@ -720,6 +948,7 @@ export function initTutorialListeners() {
     triumphClose.addEventListener('click', () => {
       const modal = document.getElementById('tutorialTriumphModal');
       if (modal) modal.classList.add('hidden');
+      deactivateTutorialSpotlight();
       updateTutorialQuestWidget();
     });
   }

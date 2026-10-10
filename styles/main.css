@@ -1708,7 +1708,7 @@ select {
 
 .tutorial-spotlight-target {
   position: relative !important;
-  z-index: 860 !important;
+  z-index: 870 !important;
   box-shadow: 0 0 0 4px #34d399, 0 0 35px 12px rgba(52, 211, 153, 0.85) !important;
   pointer-events: auto !important;
   animation: tutorialSpotlightPulse 1.8s infinite ease-in-out !important;
@@ -1724,6 +1724,8 @@ select {
 }
 
 #tutorialQuestWidget {
+  z-index: 901 !important;
+  pointer-events: auto !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 

@@ -338,7 +338,6 @@ export async function bootstrap() {
   renderAchievements();
   renderCasesSystem();
   updateCasesTabBadge();
-  checkFirstCaseNotification();
   renderCharacterInventory();
   validateAndAdvanceRetroactiveQuests();
   updateHUD();
