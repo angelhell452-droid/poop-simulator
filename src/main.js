@@ -18,7 +18,7 @@ import { initFriendsView } from './ui/friendsView.js?v=5.0.80';
 import { initGuildView } from './ui/guildView.js?v=5.0.80';
 import { initMailView } from './ui/mailView.js?v=5.0.80';
 import { startSocialPulse } from './ui/socialPulse.js?v=5.0.80';
-import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.1.0';
+import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.1.1';
 import { initVipShop } from './ui/vipShopView.js';
 import { hasPerk } from './data/perks.data.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.80';

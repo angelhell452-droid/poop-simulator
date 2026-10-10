@@ -2,6 +2,54 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.1.1 PRO',
+    date: '10 Октября 2026',
+    dateEn: 'October 10, 2026',
+    title: 'Патч 5.1.1: Симметричные Таланты Смыва 5x5, 20 Перков Прорыва и Сквозная Бесконечная Экономика',
+    titleEn: 'Patch 5.1.1: Symmetrical 5x5 Flush Talents, 20 Breakthrough Perks & Infinite Meta Multipliers',
+    badge: 'Патч 5.1.1',
+    badgeEn: 'Patch 5.1.1',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🌳',
+        text: 'Симметричное Дерево Талантов 5x5: Ровно 5 прогресс-тиров по 5 уникальных талантов на Big.js (всего 25). Тиры жестко заблокированы по уровням Смыва (0, 20, 50, 100, 500 Смывов) с удобными вкладками и индикацией требований.',
+        textEn: 'Symmetrical 5x5 Talent Tree: Strictly 5 progress tiers with 5 unique talents each on Big.js (25 total). Tiers are hard-locked behind Flush counts (0, 20, 50, 100, 500 Flushes) with 5 tabs and lock status badges.'
+      },
+      {
+        type: 'perf',
+        icon: '⚡',
+        text: 'Логарифмический «Купить MAX»: Кнопка моментальной покупки всех бесконечных талантов переведена на аналитическую формулу суммы геометрической прогрессии O(1) без лагов.',
+        textEn: 'Logarithmic Buy MAX: Instant purchase button for infinite talents solved analytically using geometric progression sum in O(1) time without lag.'
+      },
+      {
+        type: 'feature',
+        icon: '🔮',
+        text: '20 Постоянных Перков Прорыва: Полная замена магазина — убраны повторяемые улучшения, внедрены 20 уникальных разовых перков за Блестяшки от 0 до 100 Прорывов с подробными карточками и блокировками.',
+        textEn: '20 Permanent Breakthrough Perks: Complete shop overhaul — removed repeatable upgrades, added 20 unique permanent perks for Sparkles scaling up to 100 Breakthroughs.'
+      },
+      {
+        type: 'balance',
+        icon: '♾️',
+        text: 'Сквозная Цепочка Мультипликаторов (metaMultipliers.js): Доход = (База * Таланты * Буст Смывов) * Нож * Буст Прорывов * Реликвии * Шапки/Одежда * Баффы Ухода * Перки. Все эффекты перемножаются мультипликативно!',
+        textEn: 'Infinite Multiplier Chain (metaMultipliers.js): Income = (Base * Talents * Flush Boost) * Knife * Breakthrough Boost * Relics * Hats/Skins * Care Buffs * Perks. All effects scale multiplicatively!'
+      },
+      {
+        type: 'balance',
+        icon: '⚖️',
+        text: 'Ребаланс Смывов и Кейсов: Требование биомассы для 1-го Смыва увеличено до 50k с экспонентой 2.5 (Req = 50,000 * 2.5^L), исключая ранний перефарм. 1-й Прорыв строго на 20 Смывах. Кейсы теперь требуют Прорыв + открытие ножа из прошлого кейса.',
+        textEn: 'Flush & Cases Rebalance: 1st Flush biomass requirement increased to 50k with 2.5 exponent (Req = 50,000 * 2.5^L), preventing early rush. 1st Breakthrough locked at 20 Flushes. Cases require Breakthrough levels + knife from previous case.'
+      },
+      {
+        type: 'balance',
+        icon: '🛡️',
+        text: 'Механики Эндгейма: Перк «Алхимическая Мутация» снижает множитель цен заводов с 1.4 до 1.37; «Благословение Кузнеца» спасает нож от сброса в 0 при неудачной заточке; «Фабрика Билетов» пассивно дает рейдовые билеты.',
+        textEn: 'Endgame Mechanics: "Alchemical Mutation" reduces factory cost ratio from 1.4 to 1.37; "Blacksmith\'s Blessing" protects knives from zero reset on failure; "Ticket Factory" generates raid tickets offline.'
+      }
+    ]
+  },
+  {
     version: 'v5.1.0 PRO',
     date: '10 Октября 2026',
     dateEn: 'October 10, 2026',
