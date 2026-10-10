@@ -2,6 +2,36 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.2.4 PRO',
+    date: '10 Октября 2026',
+    dateEn: 'October 10, 2026',
+    title: 'Патч 5.2.4: Ребаланс Стартовых Кейсов и Рейдовые Боссы 10s',
+    titleEn: 'Patch 5.2.4: Early Cases Rebalance & 10s Raid Bosses Rework',
+    badge: 'Патч 5.2.4',
+    badgeEn: 'Patch 5.2.4',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '📦',
+        text: 'Ребаланс Кейсов Тира 1: Базовые цены первых пяти кейсов в Блестяшках исправлены (Кейс 1: 20 ✨, Кейс 2: 1 500 ✨, Кейс 3: 8 000 ✨, Кейс 4: 35 000 ✨, Кейс 5: 150 000 ✨) для устранения перефарма на 0-м прорыве.',
+        textEn: 'Tier 1 Cases Rebalance: Sparkle costs for the first five cases updated (Case 1: 20 ✨, Case 2: 1,500 ✨, Case 3: 8,000 ✨, Case 4: 35,000 ✨, Case 5: 150,000 ✨) to fix early game pacing.'
+      },
+      {
+        type: 'balance',
+        icon: '⏱️',
+        text: 'Рейдовый Таймер 10 Секунд: Длительность сессии боя с рейдовыми боссами зажата с 15 до 10 секунд. Формула урона Билетов вклада и реликвии кровотечения синхронизированы на сервере и клиенте под 10-секундный таймер.',
+        textEn: '10-Second Raid Timer: Raid boss combat session shortened from 15s to 10s. Ticket damage and bleed relic calculations updated synchronously on server and client.'
+      },
+      {
+        type: 'balance',
+        icon: '🪠',
+        text: 'Новая Матрица 25 Боссов: Экспоненциальное здоровье от 10^8 (Босс 1) до 10^1000 (Босс 25) и награды от 2 до 150 Вантузов 🪠, сбалансированные под гильдейскую кооперацию.',
+        textEn: 'New 25 Bosses Matrix: Exponential boss HP scaling from 10^8 (Boss 1) to 10^1000 (Boss 25) with rewards scaling from 2 to 150 Plungers 🪠, balanced around guild teamwork.'
+      }
+    ]
+  },
+  {
     version: 'v5.2.3 PRO',
     date: '10 Октября 2026',
     dateEn: 'October 10, 2026',

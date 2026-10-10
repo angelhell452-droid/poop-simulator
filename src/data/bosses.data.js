@@ -6,15 +6,68 @@ import { BOSS_ROSTER_PLAN, flatBossRoster } from './bosses.roster.plan.js';
  */
 export const GUILD_BOSS_COUNT = 25;
 
+export const BOSS_ANCHORS = [
+  { index: 1, logHp: 8, plungers: 2 },
+  { index: 5, logHp: 15, plungers: 5 },
+  { index: 6, logHp: 22, plungers: 10 },
+  { index: 10, logHp: 50, plungers: 20 },
+  { index: 11, logHp: 90, plungers: 35 },
+  { index: 15, logHp: 200, plungers: 50 },
+  { index: 16, logHp: 350, plungers: 75 },
+  { index: 20, logHp: 600, plungers: 100 },
+  { index: 21, logHp: 750, plungers: 120 },
+  { index: 25, logHp: 1000, plungers: 150 }
+];
+
+export function getBossLogHp(idx) {
+  const i = Math.max(1, Math.min(GUILD_BOSS_COUNT, Number(idx) || 1));
+  for (let s = 0; s < BOSS_ANCHORS.length - 1; s++) {
+    const a = BOSS_ANCHORS[s];
+    const b = BOSS_ANCHORS[s + 1];
+    if (i >= a.index && i <= b.index) {
+      if (a.index === b.index) return a.logHp;
+      const t = (i - a.index) / (b.index - a.index);
+      return a.logHp + (b.logHp - a.logHp) * t;
+    }
+  }
+  return 1000;
+}
+
+export function getBossPlungers(idx) {
+  const i = Math.max(1, Math.min(GUILD_BOSS_COUNT, Number(idx) || 1));
+  for (let s = 0; s < BOSS_ANCHORS.length - 1; s++) {
+    const a = BOSS_ANCHORS[s];
+    const b = BOSS_ANCHORS[s + 1];
+    if (i >= a.index && i <= b.index) {
+      if (a.index === b.index) return a.plungers;
+      const t = (i - a.index) / (b.index - a.index);
+      return Math.round(a.plungers + (b.plungers - a.plungers) * t);
+    }
+  }
+  return 150;
+}
+
+export function makeBossHpBig(logVal) {
+  if (logVal < 15) {
+    return Math.round(Math.pow(10, logVal));
+  }
+  const e = Math.floor(logVal);
+  const m = Number(Math.pow(10, logVal - e).toFixed(4));
+  return { __big: true, m, e };
+}
+
 /**
  * Цепочка строго из 25 Гильдейских Боссов.
  * Награды: от 2 Вантузов за Босса 1 до 150 Вантузов за Босса 25.
+ * HP: от 10^8 за Босса 1 до 10^1000 за Босса 25.
  */
 function buildGuildBosses() {
   return flatBossRoster().slice(0, GUILD_BOSS_COUNT).map((boss, idx) => {
     const i = idx + 1; // 1 to 25
-    const plungers = Math.round(2 + (i - 1) * ((150 - 2) / (GUILD_BOSS_COUNT - 1)));
+    const plungers = getBossPlungers(i);
     const points = Math.round(25 + (i - 1) * 24);
+    const logHp = getBossLogHp(i);
+    const baseHp = makeBossHpBig(logHp);
     return {
       index: i,
       id: boss.id,
@@ -23,7 +76,10 @@ function buildGuildBosses() {
       theme: boss.theme,
       tier: boss.tier,
       points,
-      plungers
+      plungers,
+      logHp,
+      baseHp,
+      hp: baseHp
     };
   });
 }

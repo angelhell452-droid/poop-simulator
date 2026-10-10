@@ -1,6 +1,10 @@
 import { KNIVES } from './knives.data.js';
 import { WEAPON_CASES } from './cases.data.js';
+import { getBossLogHp } from './bosses.data.js';
 import { mul } from '../utils/big.js';
+
+export const COMBAT_DURATION_MS = 10000;
+export const COMBAT_DURATION_SEC = 10;
 
 const BARE_CAP = 40;
 const CASE_CPS_BAND = {
@@ -120,9 +124,9 @@ export function bossClickPower(stage, knifeId, stars, careMult = 1, bonusMult = 
   const facToBoss = getRelicLvl('relic_factory_to_boss');
   if (facToBoss > 0) relicMult *= (1 + facToBoss * 0.01);
 
-  // relic_boss_bleed: Ручные атаки вешают на босса кровотечение, наносящее +2% от твоего урона в сек (15 сек = +30% за уровень)
+  // relic_boss_bleed: Ручные атаки вешают на босса кровотечение, наносящее +2% от твоего урона в сек (10 сек = +20% за уровень)
   const bleed = getRelicLvl('relic_boss_bleed');
-  if (bleed > 0) relicMult *= (1 + bleed * 0.02 * 15);
+  if (bleed > 0) relicMult *= (1 + bleed * 0.02 * 10);
 
   // relic_gate_of_eternity: удваивает урон по финальному боссу
   const gateOfEternity = getRelicLvl('relic_gate_of_eternity');
@@ -140,10 +144,10 @@ export function bossClickPower(stage, knifeId, stars, careMult = 1, bonusMult = 
 }
 
 export function bossTicketDamage(clickPower, cpsCap) {
-  // Формула оффлайн-урона по билету вклада: (Доход за 1 клик * Лимит CPS * 15 сек) * 0.7
+  // Формула оффлайн-урона по билету вклада: (Доход за 1 клик * Лимит CPS * 10 сек) * 0.7
   const power = clickPower || 1;
   const cap = Math.min(300, Math.max(20, Number(cpsCap) || 20));
-  return mul(mul(power, cap * 15), 0.7);
+  return mul(mul(power, cap * 10), 0.7);
 }
 
 export function bossMaxHp(index, circle = 1, members = 1) {
@@ -151,14 +155,18 @@ export function bossMaxHp(index, circle = 1, members = 1) {
   const round = Math.max(1, Math.floor(Number(circle) || 1));
   const people = Math.max(1, Math.floor(Number(members) || 1));
 
-  // Супер-экспонента от 10^5 (1-й босс) до 10^1000 (25-й босс)
-  const exp = 5 + (n - 1) * (995 / 24);
+  // Экспоненциальные контрольные точки на big.js (от 10^8 до 10^1000)
+  const exp = getBossLogHp(n);
   const scale = (1 + (round - 1) * 0.25) * (1 + (people - 1) * 0.08);
 
-  if (exp < 15) {
+  if (exp < 15 && exp + Math.log10(scale) < 15) {
     return Math.round(Math.pow(10, exp) * scale);
   }
-  const e = Math.floor(exp);
-  const m = Number((Math.pow(10, exp - e) * scale).toFixed(2));
-  return { __big: true, m, e };
+  let e = Math.floor(exp);
+  let m = Math.pow(10, exp - e) * scale;
+  while (m >= 10) {
+    m /= 10;
+    e += 1;
+  }
+  return { __big: true, m: Number(m.toFixed(4)), e };
 }

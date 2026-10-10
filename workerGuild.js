@@ -5,7 +5,7 @@ import { add, sub, mul, cmp, isBig, rehydrateBig } from "./src/utils/big.js";
 
 const MEMBER_CAP = 20;
 const APPLICATION_CAP = 10;
-const STRIKE_MS = 15000;
+const STRIKE_MS = 10000;
 const STRIKE_CD_MS = 3 * 60 * 60 * 1000;
 const ATTEMPT_MS = 12 * 60 * 60 * 1000;
 const TAG_COOLDOWN_MS = 24 * 60 * 60 * 1000;

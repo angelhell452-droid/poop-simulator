@@ -12,6 +12,7 @@ import { registerSocialPulse, nudgeSocialBadges } from './socialPulse.js?v=5.0.8
 import { t, onLocaleChange, getLocale } from '../i18n/t.js';
 import { bossName } from '../i18n/localize.js';
 import { rehydrateBig, isBig, log10Of } from '../utils/big.js?v=5.0.80';
+import { COMBAT_DURATION_MS } from '../data/bossCombat.js';
 
 const AUTO_KEY = 'PoopSim_BossAuto';
 
@@ -955,7 +956,7 @@ async function pushStrike() {
         myClicks: liveClicks(boss),
         myDamage: liveDamage(boss),
         perClick: Number(boss?.blow?.perClick) || 0,
-        durationMs: 15000
+        durationMs: COMBAT_DURATION_MS || 10000
       }, false);
       return;
     }
@@ -975,7 +976,7 @@ function startStrike() {
   const boss = state?.guild?.boss;
   if (boss && livePhase(boss) === 'ready') {
     boss.phase = 'hitting';
-    boss.windowUntilMs = Date.now() + 15000;
+    boss.windowUntilMs = Date.now() + (COMBAT_DURATION_MS || 10000);
     boss.cdUntilMs = 0;
   }
   strikeTimer = setInterval(() => {
