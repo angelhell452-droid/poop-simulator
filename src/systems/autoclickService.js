@@ -4,6 +4,7 @@ import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.0.80';
+import { hasPerk } from '../data/perks.data.js';
 
 export const BARE_CLICK_CAP = 20;
 export const MAX_HARD_CPS = 300;
@@ -96,7 +97,7 @@ export function getClickCapCps() {
   let cap = BARE_CLICK_CAP;
   const knife = getEquippedKnife();
   if (knife) cap += getKnifeCpsBonus(knife);
-  if (SHOP_ITEMS.find(i => i.id === 'upg_swift_click')?.owned) cap += 2;
+  if (hasPerk('perk_speed_glove') || hasPerk('upg_swift_click')) cap += 10;
   const sovereign = TALENTS.find(t => t.id === 'time_sovereign');
   cap += (sovereign ? sovereign.level : 0) * 0.15;
   return Math.min(MAX_HARD_CPS, Math.max(BARE_CLICK_CAP, Math.round(cap)));

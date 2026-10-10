@@ -3,6 +3,7 @@ import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
 import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
 import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.80';
+import { PERMANENT_PERKS, hasPerk } from '../data/perks.data.js';
 import { TALENTS } from '../data/talents.data.js';
 import { getKnifeStar, getKnifeSharpenCost, sharpenKnife, getHatLevel } from '../systems/knifeService.js';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
@@ -307,51 +308,43 @@ export function renderPerksIndex() {
   const container = document.getElementById('viewIndexPerks');
   if (!container) return;
 
-  const perks = SHOP_ITEMS.filter(i => i.type === 'perk');
+  const b = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
 
   let html = `
-    <div class="col-span-1 sm:col-span-2 text-left mb-1">
-      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">${t('knives.perksHeader')}</h4>
+    <div class="col-span-1 sm:col-span-2 text-left mb-1 flex items-center justify-between">
+      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">${t('knives.perksHeader')} (20)</h4>
+      <span class="text-[10px] text-amber-300 font-game">Прорыв: ${formatNumber(b)}</span>
     </div>
   `;
 
-  html += perks.map(p => {
-    const isOwned = !!p.owned;
+  html += PERMANENT_PERKS.map(p => {
+    const isOwned = hasPerk(p.id);
+    const isUnlocked = b >= p.reqBreakthrough;
     return `
-      <div class="p-2.5 rounded-2xl border ${isOwned ? 'border-emerald-500/60 bg-emerald-950/20' : 'border-stone-800 bg-stone-950/80'} flex items-start gap-2.5 text-left">
+      <div class="p-2.5 rounded-2xl border ${
+        isOwned 
+          ? 'border-emerald-500/60 bg-emerald-950/20' 
+          : !isUnlocked 
+          ? 'border-stone-800/80 bg-stone-950/60 opacity-60' 
+          : 'border-yellow-500/40 bg-stone-950/80'
+      } flex items-start gap-2.5 text-left">
         <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${p.icon}</span>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between">
-            <span class="font-game text-xs font-bold ${isOwned ? 'text-yellow-300' : 'text-stone-300'} truncate">${shopName(p)}</span>
-            <span class="text-[9px] px-1.5 py-0.5 rounded font-black ${isOwned ? 'bg-emerald-500 text-stone-950' : 'bg-stone-800 text-stone-400'}">
-              ${isOwned ? t('knives.bought') : `${formatNumber(p.cost)} ✨`}
+            <span class="font-game text-xs font-bold ${isOwned ? 'text-yellow-300' : isUnlocked ? 'text-stone-300' : 'text-stone-400'} truncate">
+              ${p.nameRu || p.name}
+            </span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-black ${
+              isOwned 
+                ? 'bg-emerald-500 text-stone-950' 
+                : !isUnlocked 
+                ? 'bg-stone-800 text-stone-400' 
+                : 'bg-yellow-500 text-stone-950'
+            }">
+              ${isOwned ? t('knives.bought') : !isUnlocked ? `🔒 ${formatNumber(p.reqBreakthrough)} Прорыв` : `${formatNumber(p.cost)} ✨`}
             </span>
           </div>
-          <div class="text-[10px] text-stone-400 mt-0.5">${shopDesc(p)}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  html += `
-    <div class="col-span-1 sm:col-span-2 text-left mt-3 mb-1">
-      <h4 class="font-game text-xs text-yellow-300 font-bold uppercase tracking-wider">${t('knives.upgradesHeader')}</h4>
-    </div>
-  `;
-
-  html += BOUTIQUE_REPEATABLES.map(b => {
-    const curLvl = GAME.boutiqueLevels?.[b.id] || 0;
-    return `
-      <div class="p-2.5 rounded-2xl border border-stone-800 bg-stone-950/80 flex items-start gap-2.5 text-left">
-        <span class="text-2xl shrink-0 p-1.5 bg-stone-800/80 rounded-xl">${b.icon}</span>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center justify-between">
-            <span class="font-game text-xs font-bold text-yellow-300 truncate">${shopName(b)}</span>
-            <span class="text-[9px] px-1.5 py-0.5 rounded font-black bg-purple-900 text-purple-200">
-              ${t('hud.lvl', { n: formatNumber(curLvl) })}
-            </span>
-          </div>
-          <div class="text-[10px] text-stone-400 mt-0.5">${shopDesc(b)}</div>
+          <div class="text-[10px] text-stone-400 mt-0.5">${p.desc}</div>
         </div>
       </div>
     `;

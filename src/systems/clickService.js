@@ -5,6 +5,7 @@ import { getClickPower, getEquippedKnife } from '../economy/production.js?v=5.0.
 import { takeClickBudget } from './autoclickService.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { add, gainBio, mul } from '../utils/big.js?v=5.0.80';
+import { hasPerk } from '../data/perks.data.js';
 
 export let pendingClicks = 0;
 
@@ -27,10 +28,14 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const luckLvl = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
   const happyCrit = Math.max(0, (GAME.happy || 0) / 100) * 0.01;
   const clickerCrit = GAME.archetype === 'clicker' ? 0.02 : 0;
+  // perk_sparkle_magnet: +5% к шансу крита на 15 секунд при клике по метеориту
+  const magnetBonus = (Date.now() < (GAME.sparkleMagnetUntil || 0)) ? 0.05 : 0;
   // Стартовый шанс крита 0.8% (0.008) +0.2% за ур. talent_crit_chance (макс 50)
-  let critChance = Math.min(0.75, 0.008 + (critChanceTalent ? critChanceTalent.level * 0.002 : 0) + luckLvl * 0.004 + happyCrit + clickerCrit + (GAME.tutorialCritBonus || 0));
+  let critChance = Math.min(0.85, 0.008 + (critChanceTalent ? critChanceTalent.level * 0.002 : 0) + luckLvl * 0.004 + happyCrit + clickerCrit + (GAME.tutorialCritBonus || 0) + magnetBonus);
   // Стартовый множитель крита х4 +0.5x за ур. talent_crit_mult (макс 20)
   let critMultiplier = 4.0 + (critMultTalent ? critMultTalent.level * 0.5 : 0);
+  // perk_critical_singularity: умножает итоговый Критический Урон на х1.50
+  if (hasPerk('perk_critical_singularity')) critMultiplier *= 1.5;
 
   // talent_crit_cascade: дает +0.1% шанс на Супер-Крит с множителем x100
   const cascadeChance = (critCascadeTalent ? critCascadeTalent.level * 0.001 : 0);
@@ -84,6 +89,18 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     sparklesEarned = critsCount * sparklesPerProc;
   }
 
+  // perk_sparkle_cornucopia: +15% шанс на дабл-дроп Блестяшек при выпадении Крита
+  if (critsCount > 0 && (hasPerk('perk_sparkle_cornucopia') || hasPerk('upg_infinite_sparkles'))) {
+    if (Math.random() < 0.15) {
+      sparklesEarned *= 2;
+    }
+  }
+
+  // perk_omniverse_essence: глобальный x1.20 ко всему
+  if (hasPerk('perk_omniverse_essence') || hasPerk('upg_omniversal_wealth')) {
+    totalEarned = mul(totalEarned, 1.20);
+  }
+
   GAME.biomass = gainBio(GAME.biomass, totalEarned);
   GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, totalEarned);
   GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, totalEarned);
@@ -110,7 +127,8 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
 
   // Combo Heat & Turbo Rush
   const comboTalent = TALENTS.find(t => t.id === 'combo_master');
-  const bonusDuration = (comboTalent ? comboTalent.level * 0.4 : 0) + (SHOP_ITEMS.find(i => i.id === 'upg_comborush')?.owned ? 6 : 0);
+  const hasRage = hasPerk('perk_rage_catalyst') || hasPerk('upg_comborush');
+  const bonusDuration = (comboTalent ? comboTalent.level * 0.4 : 0) + (hasRage ? 6 : 0);
   const maxTurboDuration = Math.round(12 + bonusDuration);
 
   if (GAME.turboRushTime <= 0) {

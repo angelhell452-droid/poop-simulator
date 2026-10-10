@@ -8,6 +8,7 @@ export { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePass
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { dampenGearMult, getCleanIncomeMult, getHungerClickMult, getHappyCritBonus, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, getTutorialClickMult, getTutorialCritBonus, getTutorialIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.80';
+import { hasPerk } from '../data/perks.data.js';
 import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.80';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { archetypeName } from '../i18n/localize.js';
@@ -106,7 +107,8 @@ function talentLevel(id) {
 /** Click multiplier from Turbo. A caught star doubles it for a short timer that clicks do not refresh. */
 export function getTurboClickMult() {
   if ((GAME.turboRushTime || 0) <= 0) return 1;
-  const turboBase = GAME.archetype === 'combo' ? 6 : 4;
+  const hasRage = hasPerk('perk_rage_catalyst') || hasPerk('upg_comborush');
+  const turboBase = hasRage ? (GAME.archetype === 'combo' ? 12 : 10) : (GAME.archetype === 'combo' ? 6 : 4);
   const turboBonus = 1 + talentLevel('combo_master') * 0.15;
   const star = (GAME.turboStarMultTime || 0) > 0 ? 2 : 1;
   return turboBase * turboBonus * star;
@@ -247,8 +249,8 @@ function describeFactory(fac, idx, count) {
   let knife = 1;
   if (idx < 5) knife = styles.early;
   else if (idx >= 5 && idx < 12) knife = styles.heavy;
-  const coreOn = !!SHOP_ITEMS.find(i => i.id === 'upg_singularity_core')?.owned;
-  const highTier = fac.tier === 'late' || fac.tier === 'endgame' || fac.tier === 'singularity';
+  const coreOn = hasPerk('perk_singularity_core') || hasPerk('upg_singularity_core');
+  const highTier = fac.tier === 'late' || fac.tier === 'endgame' || fac.tier === 'singularity' || idx >= 11;
   const core = (coreOn && highTier) ? 1.5 : 1;
   const milestone = milestoneMult(count);
 
@@ -267,8 +269,8 @@ function describeFactory(fac, idx, count) {
 function passiveGlobalLines() {
   const styles = knifeStyleBonuses();
   const turboMult = 1 + talentLevel('turbo_pipe') * 0.15;
-  const goldRushMult = SHOP_ITEMS.find(i => i.id === 'upg_goldrush')?.owned ? 1.25 : 1;
-  const overclockMult = SHOP_ITEMS.find(i => i.id === 'upg_factory_overclock')?.owned ? 1.25 : 1;
+  const goldRushMult = (hasPerk('perk_gold_rush') || hasPerk('upg_goldrush')) ? 1.25 : 1;
+  const overclockMult = (hasPerk('perk_factory_overclock') || hasPerk('upg_factory_overclock')) ? 1.25 : 1;
   const softRollsMult = 1 + talentLevel('soft_rolls') * 0.12;
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const rollsMult = getRollsIncomeMult();
@@ -281,7 +283,7 @@ function passiveGlobalLines() {
   if (GAME.archetype === 'tycoon') archMult = 1.5;
   else if (GAME.archetype === 'balanced') archMult = 1.15;
   const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.15;
-  const omniWealthMult = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned ? 1.2 : 1;
+  const omniWealthMult = (hasPerk('perk_omniverse_essence') || hasPerk('upg_omniversal_wealth')) ? 1.2 : 1;
   const crystalLvl = Math.min(20, GAME.boutiqueLevels?.crystal_factory || 0);
   const crystalMult = 1 + crystalLvl * 0.05;
   const sparkLvl = Math.min(12, GAME.boutiqueLevels?.singularity_spark || 0);
@@ -377,7 +379,7 @@ function clickParts() {
   const hatLvl = equippedHatItem ? Math.min(15, getHatLevel(equippedHatItem.id)) : 1;
   const hatClickBoost = equippedHatItem ? getHatClickMult(equippedHatItem, hatLvl) : 1;
   const skinClickMult = getSkinClickMult();
-  const omniWealthMult = SHOP_ITEMS.find(i => i.id === 'upg_omniversal_wealth')?.owned ? 1.2 : 1;
+  const omniWealthMult = (hasPerk('perk_omniverse_essence') || hasPerk('upg_omniversal_wealth')) ? 1.2 : 1;
   const sparkLvl = Math.min(12, GAME.boutiqueLevels?.singularity_spark || 0);
   const sparkMult = 1 + sparkLvl * 0.04;
   const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.12;
@@ -451,6 +453,10 @@ export function getClickPower() {
   let basePower = mul(baseBio, parts.product);
   if (parts.syncRate > 0) {
     basePower = add(basePower, mul(getPassiveIncome(), parts.syncRate));
+  }
+  // perk_kinetic_core: Навсегда переносит 5% от общего пассивного дохода всех заводов в силу каждого клика
+  if (hasPerk('perk_kinetic_core') || hasPerk('upg_quantum_click')) {
+    basePower = add(basePower, mul(getPassiveIncome(), 0.05));
   }
   if (isBig(basePower)) return basePower;
   return Math.max(1, basePower);

@@ -3,6 +3,7 @@ import { getEquippedKnife } from '../economy/production.js?v=5.0.80';
 
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
+import { hasPerk } from '../data/perks.data.js';
 import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.80';
@@ -75,9 +76,10 @@ function meteorTalentSparkle() {
 function scheduleNextMeteor(extraMs = 0) {
   const spawnTalent = TALENTS.find(t => t.id === 'talent_meteor_spawn')?.level || 0;
   const spawnScale = 1 / (1 + spawnTalent * 0.05);
+  const catcherScale = (hasPerk('perk_meteor_catcher') || hasPerk('upg_meteor_magnet')) ? 0.85 : 1;
   const magnet = SHOP_ITEMS.find(i => i.id === 'upg_meteor_magnet')?.owned ? 0.6 : 1;
   const base = 40000 + Math.random() * 35000 + extraMs;
-  nextMeteorSpawn = Date.now() + Math.max(12000, base * spawnScale * magnet);
+  nextMeteorSpawn = Date.now() + Math.max(12000, base * spawnScale * magnet * catcherScale);
 }
 let listenersInitialized = false;
 
@@ -1366,7 +1368,13 @@ export function catchGoldenMeteor() {
   const luckBonus = 1 + Math.min(20, GAME.boutiqueLevels?.golden_luck || 0) * 0.25;
   const hunterBonus = 1 + (hunterTalent ? hunterTalent.level * 0.20 : 0);
   const stormBonus = 1 + (GAME.transcendUpgrades?.meteorStorm || 0) * 0.40;
-  const lootMult = hunterBonus * luckBonus * stormBonus;
+  const catcherBonus = (hasPerk('perk_meteor_catcher') || hasPerk('upg_meteor_magnet')) ? 1.25 : 1;
+  const lootMult = hunterBonus * luckBonus * stormBonus * catcherBonus;
+
+  // perk_sparkle_magnet: на 15 сек +5% крит шанса автокликеру
+  if (hasPerk('perk_sparkle_magnet') || hasPerk('upg_magnet')) {
+    GAME.sparkleMagnetUntil = Date.now() + 15000;
+  }
 
   const roll = Math.random();
   let label = '';
@@ -1407,6 +1415,14 @@ export function catchGoldenMeteor() {
   addVisualParticle(label, '#facc15', 1.6, 2.2, -2.5);
 
   scheduleNextMeteor();
+  // perk_meteor_echo: 15% шанс на мгновенный спавн второго Метеорита
+  if (hasPerk('perk_meteor_echo') && Math.random() < 0.15) {
+    setTimeout(() => {
+      triggerForcedMeteor();
+      addVisualParticle('☄️ МЕТЕОРИТНОЕ ЭХО! ☄️', '#38bdf8', 1.8, 2.5, -2.8);
+    }, 400);
+  }
+
   if (Date.now() >= showerUntil && Math.random() < SHOWER_CHANCE) {
     startMeteorShower();
   }

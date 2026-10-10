@@ -20,6 +20,7 @@ import { initMailView } from './ui/mailView.js?v=5.0.80';
 import { startSocialPulse } from './ui/socialPulse.js?v=5.0.80';
 import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.1.0';
 import { initVipShop } from './ui/vipShopView.js';
+import { hasPerk } from './data/perks.data.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.80';
 import { initBeginnerGuideListeners } from './ui/beginnerGuideView.js?v=5.1.0';
 import { initBugReportListeners } from './ui/bugReportView.js?v=5.1.0';
@@ -381,16 +382,29 @@ function checkOfflineProgress() {
     const awaySeconds = Math.floor((now - GAME.lastActiveTime) / 1000);
     const afkTalent = TALENTS.find(t => t.id === 'talent_afk_efficiency')?.level || 0;
     const godArtifact = GAME.transcendUpgrades?.afkCap || 0;
-    const maxHours = 4 + afkTalent * 1 + godArtifact * 12;
+    // perk_stasis_chronometer: лимит с 4 до 12 часов. perk_cosmic_hibernate: еще +12 часов (до 24 часов)
+    let baseAfkHours = 4;
+    if (hasPerk('perk_stasis_chronometer')) baseAfkHours = 12;
+    if (hasPerk('perk_cosmic_hibernate')) baseAfkHours += 12;
+    const maxHours = baseAfkHours + afkTalent * 1 + godArtifact * 12;
     const maxSeconds = maxHours * 3600;
     const effectiveSeconds = Math.min(awaySeconds, maxSeconds);
 
-    const boosterActive = SHOP_ITEMS.find(i => i.id === 'upg_afk_booster')?.owned;
-    const efficiency = boosterActive ? 1.0 : Math.min(1, 0.35 + afkTalent * 0.05);
+    // perk_hypersleep_capsule: базовая эффективность с 25% до 75%
+    const hasHypersleep = hasPerk('perk_hypersleep_capsule') || hasPerk('upg_afk_booster');
+    const baseEff = hasHypersleep ? 0.75 : 0.25;
+    const efficiency = Math.min(1.0, baseEff + afkTalent * 0.05);
     const basePassive = getPassiveIncome();
     const offlineRaw = mul(mul(basePassive, effectiveSeconds), efficiency);
     const offlineBiomass = isBig(offlineRaw) ? offlineRaw : Math.round(offlineRaw);
     const offlineSparkles = Math.min(500, Math.floor((effectiveSeconds / 180) * (1 + afkTalent * 0.05)));
+
+    // perk_ticket_factory: 1 бесплатный билет гильдии каждые 12 часов оффлайна
+    if (hasPerk('perk_ticket_factory') && effectiveSeconds >= 12 * 3600) {
+      const generatedTickets = Math.floor(effectiveSeconds / (12 * 3600));
+      const ticketCap = 5 + (TALENTS.find(t => t.id === 'talent_ticket_cap')?.level || 0);
+      GAME.guildTickets = Math.min(ticketCap, (GAME.guildTickets || 0) + generatedTickets);
+    }
 
     if (offlineBiomass > 0 || isBig(offlineBiomass) || offlineSparkles > 0) {
       GAME.biomass = gainBio(GAME.biomass, offlineBiomass);

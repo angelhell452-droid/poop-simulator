@@ -5,6 +5,11 @@ import { mul, gainBio } from '../utils/big.js?v=5.0.80';
 import { showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { onLocaleChange } from '../i18n/t.js';
 import { TALENTS } from '../data/talents.data.js';
+import { PERMANENT_PERKS, hasPerk, buyPermanentPerk } from '../data/perks.data.js';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.0.80';
+import { updateHUD } from './hudView.js?v=5.0.80';
+import { saveLocal } from '../save/saveManager.js?v=5.0.80';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.80';
 
 export function getWarpTalentMult() {
   const warpLvl = TALENTS.find(t => t.id === 'talent_warp_buff')?.level || 0;
@@ -178,6 +183,81 @@ function renderVipShop() {
           <div class="text-[11px] text-yellow-300 font-bold font-game">+${formatNumber(packLarge)} ✨</div>
           <button type="button" class="btn-sparkle-pack garden-pill accent text-[11px] py-1 mt-1 font-bold" data-base="15000">Забрать ✨</button>
         </div>
+    <!-- CATEGORY 4: PERMANENT PERKS (20 UNIQUE PERKS) -->
+    <div class="garden-card p-4 rounded-3xl border-2 border-yellow-500/50 bg-stone-950/90 shadow-xl space-y-3">
+      <div class="flex items-center justify-between border-b border-amber-900/50 pb-2.5">
+        <div class="flex items-center gap-2.5">
+          <span class="text-3xl">🔮</span>
+          <div>
+            <div class="font-game text-base text-yellow-300 font-bold">Постоянные Перки Прорыва</div>
+            <div class="text-[10px] text-stone-300">20 уникальных улучшений • Разовая покупка за Блестяшки ✨</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[11px] font-bold text-yellow-300 font-game">Куплено: ${PERMANENT_PERKS.filter(p => hasPerk(p.id)).length} / 20</div>
+          <div class="text-[9px] text-stone-400">Прорыв: ${formatNumber(b)}</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        ${PERMANENT_PERKS.map(perk => {
+          const isUnlocked = b >= perk.reqBreakthrough;
+          const isOwned = hasPerk(perk.id);
+          const curSparkles = Number(GAME.sparkles) || 0;
+          const canBuy = isUnlocked && !isOwned && curSparkles >= perk.cost;
+
+          if (!isUnlocked) {
+            return `
+              <div class="p-3 rounded-2xl border border-stone-800 bg-stone-900/60 flex flex-col justify-between gap-2 text-left relative overflow-hidden">
+                <div class="flex items-start gap-2.5 opacity-40">
+                  <span class="text-2xl p-1.5 bg-stone-800 rounded-xl shrink-0">${perk.icon}</span>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-game text-xs font-bold text-stone-300 truncate">${perk.nameRu || perk.name}</div>
+                    <div class="text-[10px] text-stone-500 mt-0.5 line-clamp-2">${perk.desc}</div>
+                  </div>
+                </div>
+                <div class="mt-1 p-2 rounded-xl bg-stone-950/90 border border-stone-700/60 text-center text-stone-400 font-game text-[11px] font-bold shadow-inner">
+                  🔒 Требуется ${formatNumber(perk.reqBreakthrough)} Прорыв
+                </div>
+              </div>
+            `;
+          }
+
+          if (isOwned) {
+            return `
+              <div class="p-3 rounded-2xl border border-emerald-500/50 bg-gradient-to-br from-emerald-950/30 via-stone-900 to-stone-950 flex flex-col justify-between gap-2 text-left shadow">
+                <div class="flex items-start gap-2.5">
+                  <span class="text-2xl p-1.5 bg-emerald-950/60 border border-emerald-500/30 rounded-xl shrink-0">${perk.icon}</span>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center justify-between">
+                      <span class="font-game text-xs font-bold text-yellow-300 truncate">${perk.nameRu || perk.name}</span>
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">✓ КУПЛЕНО</span>
+                    </div>
+                    <div class="text-[10px] text-stone-300 mt-0.5">${perk.desc}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="p-3 rounded-2xl border border-yellow-500/40 bg-stone-900/90 flex flex-col justify-between gap-2 text-left shadow hover:border-yellow-400/70 transition">
+              <div class="flex items-start gap-2.5">
+                <span class="text-2xl p-1.5 bg-stone-800 rounded-xl shrink-0">${perk.icon}</span>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center justify-between">
+                    <span class="font-game text-xs font-bold text-yellow-200 truncate">${perk.nameRu || perk.name}</span>
+                    <span class="text-[10px] text-amber-300 font-bold">${formatNumber(perk.cost)} ✨</span>
+                  </div>
+                  <div class="text-[10px] text-stone-300 mt-0.5">${perk.desc}</div>
+                </div>
+              </div>
+              <button type="button" class="btn-buy-vip-perk w-full py-1.5 rounded-xl font-game text-xs font-bold transition flex items-center justify-center gap-1.5 shadow ${canBuy ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 border border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border border-stone-700 cursor-not-allowed'}" data-id="${perk.id}" ${canBuy ? '' : 'disabled'}>
+                ✨ Купить (${formatNumber(perk.cost)} ✨)
+              </button>
+            </div>
+          `;
+        }).join('')}
       </div>
     </div>
   `;
@@ -196,6 +276,22 @@ function renderVipShop() {
   list.querySelectorAll('.btn-sparkle-pack').forEach((btn) => {
     btn.addEventListener('click', () => {
       buySparklePack(Number(btn.dataset.base) || 500);
+    });
+  });
+
+  list.querySelectorAll('.btn-buy-vip-perk').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const res = buyPermanentPerk(btn.dataset.id);
+      if (res.success) {
+        showKnifeToast(`✨ Куплен перк «${res.perk.nameRu || res.perk.name}»!`);
+        checkAchievements();
+        renderVipShop();
+        updateHUD();
+        saveLocal();
+        requestCloudSync(2000);
+      } else {
+        showKnifeToast(res.msg);
+      }
     });
   });
 }

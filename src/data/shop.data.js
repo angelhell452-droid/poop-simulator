@@ -35,9 +35,4 @@ export const SHOP_ITEMS = [
   { id: 'upg_omniversal_wealth', name: 'Эссенция Омниверса', type: 'perk', cost: 1908000, reqForm: 1000, icon: '👑', desc: 'x1.20 ко всему доходу и силе клика' }
 ];
 
-export const BOUTIQUE_REPEATABLES = [
-  { id: 'diamond_sharpening', name: 'Алмазная Заточка Ножей', baseCost: 12000, costMult: 1.25, max: 20, reqForm: 160, icon: '💎', desc: '+5% к силе ножей за уровень (макс. 20)' },
-  { id: 'crystal_factory', name: 'Кристальный Резонатор Фабрик', baseCost: 25000, costMult: 1.25, max: 20, reqForm: 280, icon: '🔮', desc: '+5% к пассивному доходу заводов за уровень (макс. 20)' },
-  { id: 'golden_luck', name: 'Золотая Пыль Фортуны', baseCost: 40000, costMult: 1.25, max: 20, reqForm: 400, icon: '🌠', desc: '+0.4% шанс крита и +25% награды метеоритов за уровень (макс. 20)' },
-  { id: 'singularity_spark', name: 'Эссенция Сингулярности', baseCost: 80000, costMult: 1.25, max: 12, reqForm: 520, icon: '👑', desc: '+4% ко всему доходу и клику за уровень (макс. 12)' }
-];
+export const BOUTIQUE_REPEATABLES = [];

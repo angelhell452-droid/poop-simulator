@@ -1,35 +1,14 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { checkAchievements } from '../systems/achievementsService.js?v=5.0.80';
 import { requestCloudSync } from '../save/cloudSync.js?v=5.0.80';
-import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.0.80';
+import { openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
-import { isBoutiqueUnlocked, isShopOfferUnlocked, peakForm } from '../progression/unlocks.js';
+import { isBoutiqueUnlocked, peakForm } from '../progression/unlocks.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { shopName, shopDesc } from '../i18n/localize.js';
-
-export function getBoutiqueRepeatableCost(item) {
-  const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[item.id]) || 0;
-  return Math.round(item.baseCost * Math.pow(item.costMult, lvl));
-}
-
-export function buyBoutiqueRepeatable(itemId) {
-  const item = BOUTIQUE_REPEATABLES.find(i => i.id === itemId);
-  if (!item || !isShopOfferUnlocked(item.reqForm)) return false;
-  const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[item.id]) || 0;
-  if (item.max && lvl >= item.max) return false;
-  const cost = getBoutiqueRepeatableCost(item);
-  const curSp = Number(GAME.sparkles) || 0;
-  if (curSp < cost) return false;
-
-  GAME.sparkles = Math.max(0, curSp - cost);
-  if (!GAME.boutiqueLevels) GAME.boutiqueLevels = {};
-  GAME.boutiqueLevels[itemId] = (GAME.boutiqueLevels[itemId] || 0) + 1;
-  return true;
-}
+import { PERMANENT_PERKS, hasPerk, buyPermanentPerk } from '../data/perks.data.js';
 
 export function renderShop() {
   const container = document.getElementById('shopItemsContainer');
@@ -69,70 +48,53 @@ export function renderShop() {
     openCharacterInventoryModal('hats');
   });
 
-  // 2. REPEATABLE ENDLESS SPARKLE SINKS
-  const repHeader = document.createElement('div');
-  repHeader.className = 'font-game text-xs text-yellow-300 uppercase tracking-wider py-1 border-b border-amber-800/40 flex items-center justify-between';
-  repHeader.innerHTML = `<span>${t('shop.relicsHeader')}</span><span class="text-[9px] text-amber-400 font-normal">${t('shop.relicsCap')}</span>`;
-  container.appendChild(repHeader);
+  // 2. 20 PERMANENT PERKS FOR BREAKTHROUGHS
+  const b = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
+  const perksHeader = document.createElement('div');
+  perksHeader.className = 'font-game text-xs text-yellow-300 uppercase tracking-wider py-1 mt-2 border-b border-amber-800/40 flex items-center justify-between';
+  perksHeader.innerHTML = `<span>🔮 ${t('shop.perksHeader')} (20)</span><span class="text-[9px] text-amber-400 font-normal">Прорыв: ${formatNumber(b)}</span>`;
+  container.appendChild(perksHeader);
 
-  [...BOUTIQUE_REPEATABLES].sort((a, b) => (a.reqForm || 0) - (b.reqForm || 0)).forEach(it => {
-    const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[it.id]) || 0;
-    const cost = getBoutiqueRepeatableCost(it);
-    const maxed = it.max && lvl >= it.max;
-    const unlocked = isShopOfferUnlocked(it.reqForm);
-    const canBuy = unlocked && !maxed && (GAME.sparkles || 0) >= cost;
+  const curSparkles = Number(GAME.sparkles) || 0;
+
+  PERMANENT_PERKS.forEach(perk => {
+    const isUnlocked = b >= perk.reqBreakthrough;
+    const isOwned = hasPerk(perk.id);
+    const canBuy = isUnlocked && !isOwned && curSparkles >= perk.cost;
 
     const row = document.createElement('div');
-    row.className = 'p-2.5 rounded-xl border flex items-center justify-between bg-gradient-to-r from-amber-950/80 via-purple-950/70 to-stone-950 border-yellow-500/50 shadow-sm';
+    row.className = `p-2.5 rounded-xl border flex items-center justify-between transition ${
+      isOwned 
+        ? 'bg-gradient-to-r from-emerald-950/40 to-stone-950 border-emerald-500/40 shadow-sm'
+        : !isUnlocked
+        ? 'bg-stone-950/70 border-stone-800 opacity-60'
+        : 'bg-stone-950 border-yellow-500/40 shadow-sm'
+    }`;
+
     row.innerHTML = `
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">${it.icon}</span>
-        <div>
-          <div class="font-bold text-xs text-yellow-200">
-            ${shopName(it)} <span class="text-yellow-400 font-game text-[11px] font-black">★ Lv.${formatNumber(lvl)}</span>
+      <div class="flex items-center gap-2.5 min-w-0 flex-1 mr-2 text-left">
+        <span class="text-2xl shrink-0">${perk.icon}</span>
+        <div class="min-w-0">
+          <div class="font-bold text-xs ${isOwned ? 'text-yellow-300' : isUnlocked ? 'text-stone-200' : 'text-stone-400'} truncate">
+            ${perk.nameRu || perk.name}
           </div>
-          <div class="text-[10px] text-amber-200/80">${unlocked ? shopDesc(it) : t('shop.unlockForm', { n: formatNumber(it.reqForm), peak: formatNumber(peakForm()) })}</div>
+          <div class="text-[10px] text-stone-400 mt-0.5 line-clamp-2">
+            ${perk.desc}
+          </div>
         </div>
       </div>
-      <div class="shrink-0 ml-2">
-        <button class="buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition ${canBuy ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-bold border-yellow-300 jelly-btn shadow' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${it.id}" ${canBuy ? '' : 'disabled'}>
-          ${!unlocked ? '🔒' : (maxed ? t('shop.max') : `${formatNumber(cost)} ✨`)}
-        </button>
-      </div>
-    `;
-    container.appendChild(row);
-  });
-
-  // 3. EXCLUSIVE ONE-OFF PERKS (WITHOUT HATS)
-  const oneOffHeader = document.createElement('div');
-  oneOffHeader.className = 'font-game text-xs text-amber-400 uppercase tracking-wider py-1 mt-3 border-b border-stone-800 flex items-center justify-between';
-  oneOffHeader.innerHTML = `<span>${t('shop.perksHeader')}</span><span class="text-[9px] text-stone-400 font-normal">${t('shop.perksOnce')}</span>`;
-  container.appendChild(oneOffHeader);
-
-  const perkItems = SHOP_ITEMS.filter(it => it.type !== 'hat').sort((a, b) => (a.reqForm || 0) - (b.reqForm || 0));
-
-  perkItems.forEach(it => {
-    const unlocked = isShopOfferUnlocked(it.reqForm);
-    const canBuy = unlocked && GAME.sparkles >= it.cost && !it.owned;
-
-    const row = document.createElement('div');
-    row.className = `p-2.5 rounded-xl border flex items-center justify-between ${it.cost >= 1000000 ? 'bg-gradient-to-r from-purple-950/90 to-amber-950/90 border-yellow-400 shadow-md' : (it.cost >= 25000 ? 'bg-gradient-to-r from-purple-950/60 to-amber-950/60 border-yellow-500/40' : 'bg-stone-950 border-stone-800')}`;
-    row.innerHTML = `
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">${it.icon}</span>
-        <div>
-          <div class="font-bold text-xs ${it.cost >= 25000 ? 'text-yellow-300' : 'text-stone-200'}">${shopName(it)}</div>
-          <div class="text-[10px] text-stone-400">${unlocked ? shopDesc(it) : t('shop.unlockForm', { n: formatNumber(it.reqForm), peak: formatNumber(peakForm()) })}</div>
-        </div>
-      </div>
-      <div class="shrink-0 ml-2">
-        ${it.owned ? `
-          <span class="text-xs font-bold text-emerald-400">${t('common.owned')} ✓</span>
-        ` : !unlocked ? `
-          <span class="text-xs font-bold text-stone-500">🔒</span>
+      <div class="shrink-0">
+        ${isOwned ? `
+          <span class="text-xs font-bold text-emerald-400 px-2 py-1 rounded-lg bg-emerald-950/50 border border-emerald-500/30">${t('common.owned')} ✓</span>
+        ` : !isUnlocked ? `
+          <span class="text-[11px] font-game font-bold text-stone-400 px-2.5 py-1 rounded-lg bg-stone-900 border border-stone-700">🔒 ${formatNumber(perk.reqBreakthrough)} Прорыв</span>
         ` : `
-          <button class="buy-shop-btn font-game text-xs px-3 py-1.5 rounded-xl border transition ${canBuy ? 'bg-yellow-500 hover:bg-yellow-400 text-stone-950 border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'}" data-id="${it.id}" ${canBuy ? '' : 'disabled'}>
-            ${formatNumber(it.cost)} ✨
+          <button class="buy-shop-perk-btn font-game text-xs px-3 py-1.5 rounded-xl border transition ${
+            canBuy 
+              ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-bold border-yellow-300 jelly-btn shadow' 
+              : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'
+          }" data-id="${perk.id}" ${canBuy ? '' : 'disabled'}>
+            ${formatNumber(perk.cost)} ✨
           </button>
         `}
       </div>
@@ -140,35 +102,22 @@ export function renderShop() {
     container.appendChild(row);
   });
 
-  container.querySelectorAll('.buy-repeatable-btn').forEach(btn => {
+  container.querySelectorAll('.buy-shop-perk-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (buyBoutiqueRepeatable(btn.dataset.id)) {
+      const res = buyPermanentPerk(btn.dataset.id);
+      if (res.success) {
+        showKnifeToast(`✨ Куплен перк «${res.perk.nameRu || res.perk.name}»!`);
         checkAchievements();
         renderShop();
         updateHUD();
         saveLocal();
         requestCloudSync(2000);
-      }
-    });
-  });
-
-  container.querySelectorAll('.buy-shop-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const item = SHOP_ITEMS.find(i => i.id === btn.dataset.id);
-      const curSp = Number(GAME.sparkles) || 0;
-      if (item && isShopOfferUnlocked(item.reqForm) && curSp >= item.cost && !item.owned) {
-        GAME.sparkles = Math.max(0, curSp - item.cost);
-        item.owned = true;
-        checkAchievements();
-        renderShop();
-        updateHUD();
-        saveLocal();
-        requestCloudSync(2000);
+      } else {
+        showKnifeToast(res.msg);
       }
     });
   });
 }
-
 
 export function updateShopButtons() {
   const container = document.getElementById('shopItemsContainer');
@@ -178,33 +127,20 @@ export function updateShopButtons() {
   if (sparkleLabel) sparkleLabel.textContent = `${formatNumber(GAME.sparkles)} ✨`;
 
   const curSparkles = Number(GAME.sparkles) || 0;
+  const b = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
 
-  container.querySelectorAll('.buy-repeatable-btn').forEach(btn => {
-    const it = BOUTIQUE_REPEATABLES.find(i => i.id === btn.dataset.id);
-    if (!it) return;
-    const lvl = (GAME.boutiqueLevels && GAME.boutiqueLevels[it.id]) || 0;
-    const maxed = it.max && lvl >= it.max;
-    const cost = getBoutiqueRepeatableCost(it);
-    const unlocked = isShopOfferUnlocked(it.reqForm);
-    const canBuy = unlocked && !maxed && curSparkles >= cost;
+  container.querySelectorAll('.buy-shop-perk-btn').forEach(btn => {
+    const perk = PERMANENT_PERKS.find(p => p.id === btn.dataset.id);
+    if (!perk) return;
+    const isUnlocked = b >= perk.reqBreakthrough;
+    const isOwned = hasPerk(perk.id);
+    const canBuy = isUnlocked && !isOwned && curSparkles >= perk.cost;
+
     btn.disabled = !canBuy;
     if (canBuy) {
-      btn.className = 'buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-bold border-yellow-300 jelly-btn shadow';
+      btn.className = 'buy-shop-perk-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-bold border-yellow-300 jelly-btn shadow';
     } else {
-      btn.className = 'buy-repeatable-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
-    }
-    btn.textContent = !unlocked ? '🔒' : (maxed ? t('shop.max') : `${formatNumber(cost)} ✨`);
-  });
-
-  container.querySelectorAll('.buy-shop-btn').forEach(btn => {
-    const it = SHOP_ITEMS.find(i => i.id === btn.dataset.id);
-    if (!it) return;
-    const canBuy = isShopOfferUnlocked(it.reqForm) && curSparkles >= it.cost && !it.owned;
-    btn.disabled = !canBuy;
-    if (canBuy) {
-      btn.className = 'buy-shop-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-yellow-500 hover:bg-yellow-400 text-stone-950 font-bold border-yellow-300 jelly-btn shadow';
-    } else {
-      btn.className = 'buy-shop-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
+      btn.className = 'buy-shop-perk-btn font-game text-xs px-3 py-1.5 rounded-xl border transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
     }
   });
 }

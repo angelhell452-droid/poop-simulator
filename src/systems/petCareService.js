@@ -2,6 +2,7 @@ import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { TALENTS } from '../data/talents.data.js';
+import { hasPerk } from '../data/perks.data.js';
 
 function meterHasRoom(value) {
   return Math.round(value) < 100;
@@ -54,8 +55,8 @@ export function ticklePet() {
 }
 
 export function decayNeeds(dt) {
-  const zenMaster = SHOP_ITEMS.find(i => i.id === 'upg_zen_master')?.owned;
-  const baseDecay = zenMaster ? 0.33 : 1.0;
+  const zenMaster = hasPerk('perk_zen_harmony') || hasPerk('upg_zen_master');
+  const baseDecay = zenMaster ? (1 / 3) : 1.0;
   
   // talent_care_duration: продлевает действие баффов Ухода на +5% времени
   const careDurationLvl = TALENTS.find(t => t.id === 'talent_care_duration')?.level || 0;

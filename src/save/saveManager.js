@@ -3,6 +3,7 @@ import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.80';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
+import { PERMANENT_PERKS } from '../data/perks.data.js';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.0.80';
 import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.80';
@@ -38,6 +39,7 @@ export function buildSavePayload() {
     talents: TALENTS.map(t => ({ id: t.id, level: t.level || 0 })),
     achievements: ACHIEVEMENTS.map(a => ({ id: a.id, done: !!a.done })),
     purchasedItems: SHOP_ITEMS.filter(item => item.owned).map(i => i.id),
+    ownedPerks: PERMANENT_PERKS.filter(p => p.owned || (GAME.ownedPerks && GAME.ownedPerks[p.id])).map(p => p.id),
     knifeStats: KNIVES.map(k => ({ id: k.id, statTrak: k.statTrak || 0 })),
     knifeStars: GAME.knifeStars || {},
     hatLevels: GAME.hatLevels || {}
@@ -81,6 +83,8 @@ function wipeRuntimeCatalogs() {
   TALENTS.forEach((row) => { row.level = 0; });
   ACHIEVEMENTS.forEach((row) => { row.done = false; });
   SHOP_ITEMS.forEach((row) => { row.owned = false; });
+  PERMANENT_PERKS.forEach((row) => { row.owned = false; });
+  GAME.ownedPerks = {};
   KNIVES.forEach((row) => {
     row.statTrak = 0;
     row.owned = false;
@@ -251,6 +255,24 @@ export function applySaveDataSafely(rawData) {
     data.purchasedItems.forEach(id => {
       const it = SHOP_ITEMS.find(i => i.id === id);
       if (it) it.owned = true;
+      const perk = PERMANENT_PERKS.find(p => p.id === id || p.legacyId === id);
+      if (perk) {
+        perk.owned = true;
+        if (!GAME.ownedPerks) GAME.ownedPerks = {};
+        GAME.ownedPerks[perk.id] = true;
+      }
+    });
+  }
+
+  if (!GAME.ownedPerks) GAME.ownedPerks = {};
+  if (data.game?.ownedPerks && typeof data.game.ownedPerks === 'object') {
+    GAME.ownedPerks = { ...GAME.ownedPerks, ...data.game.ownedPerks };
+  }
+  if (Array.isArray(data.ownedPerks)) {
+    data.ownedPerks.forEach(id => {
+      GAME.ownedPerks[id] = true;
+      const perk = PERMANENT_PERKS.find(p => p.id === id || p.legacyId === id);
+      if (perk) perk.owned = true;
     });
   }
 

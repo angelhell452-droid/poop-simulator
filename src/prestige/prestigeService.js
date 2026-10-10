@@ -3,6 +3,7 @@ import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { events } from '../core/events.js';
 import { bigPow, gte, mul } from '../utils/big.js?v=5.0.80';
+import { hasPerk } from '../data/perks.data.js';
 
 export function getPrestigeRequirement() {
   const flushes = GAME.flushCount ?? GAME.totalPrestiges ?? 0;
@@ -36,8 +37,9 @@ export function getPrestigeRewardBreakdown() {
   const infFlush = TALENTS.find(t => t.id === 'infinity_flush');
   const flushTalentBonus = 1 + (infFlush ? infFlush.level * 0.06 : 0);
   const vipMult = GAME.vipPass ? 2 : 1;
+  const recycleMult = hasPerk('perk_paper_recycling') ? 1.20 : 1;
 
-  const totalGain = req.isMet ? Math.max(1, Math.round(pack * flushTalentBonus * vipMult)) : 0;
+  const totalGain = req.isMet ? Math.max(1, Math.round(pack * flushTalentBonus * vipMult * recycleMult)) : 0;
   const currentBoostPct = req.flushes * 50;
   const nextBoostPct = (req.flushes + 1) * 50;
   const currentIncomeMult = 1 + req.flushes * 0.5;

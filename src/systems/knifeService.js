@@ -7,6 +7,7 @@ import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { t } from '../i18n/t.js';
 import { knifeName } from '../i18n/localize.js';
 import { TALENTS } from '../data/talents.data.js';
+import { hasPerk } from '../data/perks.data.js';
 
 // Bases ~10× below the old table. Power no longer scales with raw clickMult
 // (godly knives sit at 1e5+ and used to make sharpening/sell impossible or broken).
@@ -98,8 +99,18 @@ export function sharpenKnife(knifeId) {
   const successChance = Math.min(1.0, 0.70 + upgChanceTalent * 0.03);
 
   if (Math.random() > successChance) {
-    events.emit('knife:sharpenFailed', { knife });
-    return { success: false, msg: `Заточка сорвалась (${Math.round(successChance * 100)}% шанс)! Прокачайте талант «Ювелир».` };
+    const curStar = GAME.knifeStars?.[knifeId] || 1;
+    const hasBlessing = hasPerk('perk_blacksmith_blessing');
+    const newStar = hasBlessing ? Math.max(1, curStar - 1) : 1;
+    if (!GAME.knifeStars) GAME.knifeStars = {};
+    GAME.knifeStars[knifeId] = newStar;
+    events.emit('knife:sharpenFailed', { knife, newStar });
+    return {
+      success: false,
+      msg: hasBlessing
+        ? `Заточка сорвалась! Защита «Благословение Кузнеца» сохранила уровень: снижен лишь на -1 (★${newStar}).`
+        : `Заточка сорвалась (${Math.round(successChance * 100)}% шанс)! Звезда ножа сброшена до ★1. Откройте перк «Благословение Кузнеца».`
+    };
   }
 
   if (!GAME.knifeStars) GAME.knifeStars = {};

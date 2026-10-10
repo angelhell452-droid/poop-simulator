@@ -58,8 +58,9 @@ function openPairEchoBonus(at, closedPairs, previewPhase = 0, previewAdd = 0) {
   return bonus;
 }
 
-import { bigPow } from '../utils/big.js?v=5.0.80';
+import { bigPow, mul } from '../utils/big.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
+import { hasPerk } from '../data/perks.data.js';
 
 export function getFlushIncomeMult() {
   const flushes = Math.max(0, GAME.flushCount ?? GAME.totalPrestiges ?? 0);
@@ -72,6 +73,55 @@ export function getBreakthroughIncomeMult() {
   const hackLvl = TALENTS.find(t => t.id === 'talent_exponent_hack')?.level || 0;
   const exp = b + (hackLvl * 0.05);
   return bigPow(1 + b, exp);
+}
+
+/**
+ * Глобальный множитель постоянных перков за Блестяшки.
+ * Перемножает мультипликативно все перки, влияющие на общий пассивный доход.
+ */
+export function getPerksIncomeMult() {
+  let mult = 1.0;
+  if (hasPerk('perk_factory_overclock') || hasPerk('upg_factory_overclock')) mult *= 1.25;
+  if (hasPerk('perk_gold_rush') || hasPerk('upg_goldrush')) mult *= 1.25;
+  if (hasPerk('perk_omniverse_essence') || hasPerk('upg_omniversal_wealth')) mult *= 1.20;
+  return mult;
+}
+
+/**
+ * Сквозная бесконечная цепочка мультипликаторов:
+ * Доход = (База * Таланты * Буст Смывов) * Нож * Буст Прорывов * Реликвии * Шапки/Одежда * Баффы Ухода * Перки
+ */
+export function calculateInfiniteIncomeChain({
+  baseRate = 1,
+  talentsMult = 1,
+  flushMult = null,
+  knifeMult = 1,
+  breakthroughMult = null,
+  relicsMult = 1,
+  gearMult = 1,
+  careMult = 1,
+  perksMult = null
+} = {}) {
+  const flush = flushMult !== null ? flushMult : getFlushIncomeMult();
+  const bMult = breakthroughMult !== null ? breakthroughMult : getBreakthroughIncomeMult();
+  const pMult = perksMult !== null ? perksMult : getPerksIncomeMult();
+
+  // (База * Таланты * Буст Смывов)
+  let result = mul(mul(baseRate, talentsMult), flush);
+  // * Нож
+  result = mul(result, knifeMult);
+  // * Буст Прорывов
+  result = mul(result, bMult);
+  // * Реликвии
+  result = mul(result, relicsMult);
+  // * Шапки/Одежда
+  result = mul(result, gearMult);
+  // * Баффы Ухода
+  result = mul(result, careMult);
+  // * Перки
+  result = mul(result, pMult);
+
+  return result;
 }
 
 /**
