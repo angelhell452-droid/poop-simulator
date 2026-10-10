@@ -13,6 +13,10 @@ export function buyFactory(facId) {
   if (fac.reqStage !== undefined && GAME.evoStage < fac.reqStage) {
     return false;
   }
+  const currentBT = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
+  if (fac.reqBreakthrough !== undefined && currentBT < fac.reqBreakthrough) {
+    return false;
+  }
 
   const info = getAffordableFactoryInfo(fac);
   if (!info.canBuy || info.count <= 0) return false;

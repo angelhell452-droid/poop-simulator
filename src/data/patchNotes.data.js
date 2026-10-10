@@ -2,6 +2,48 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.2.3 PRO',
+    date: '10 Октября 2026',
+    dateEn: 'October 10, 2026',
+    title: 'Патч 5.2.3: Бесконечные Заводы, 45 Тиров и Синхронизация с Кейсами 500+ Прорывов',
+    titleEn: 'Patch 5.2.3: Infinite Factories, 45 Tiers & 500+ Breakthrough Case Sync',
+    badge: 'Патч 5.2.3',
+    badgeEn: 'Patch 5.2.3',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🏭',
+        text: 'Бесконечное Масштабирование Заводов: Линейка заводов расширена до 45 тиров (по 1 тиру на каждый оружейный кейс). Стоимость финального завода достигает ~1e1050 биомассы, а базовый доход — ~1e900 биомассы/сек, создавая идеальный паритет с ножом Апекса (1e1000).',
+        textEn: 'Infinite Factory Scaling: Factories expanded to 45 tiers matching all 45 weapon cases. Final factory cost scales to ~1e1050 biomass and base CPS to ~1e900 biomass/sec, creating perfect parity with the apex knife (1e1000).'
+      },
+      {
+        type: 'feature',
+        icon: '📦',
+        text: 'Независимое Открытие Кейсов: Полностью удалено требование обязательного ножа из предыдущего кейса. Кейсы открываются пачками по 2-3 штуки строго по рубежам Прорывов (0, 1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 75, 150, 225, 300+).',
+        textEn: 'Independent Case Unlocks: Removed requirement for knives from previous cases. Cases unlock in clusters of 2-3 strictly based on Breakthrough milestones (0, 1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 75, 150, 225, 300+).'
+      },
+      {
+        type: 'balance',
+        icon: '🪠',
+        text: 'Двойная Валюта Эндгейм-Кейсов (Тир 5): Кейсы №36–45 требуют одновременно Блестяшки ✨ и Вантузы 🪠 (от 15 до 25 000 🪠) со списанием и кэшбэком обеих валют.',
+        textEn: 'Dual Currency Endgame Cases (Tier 5): Cases #36-45 require both Sparkles ✨ and Plungers 🪠 simultaneously (15 to 25,000 🪠) with full dual deduction and refund support.'
+      },
+      {
+        type: 'balance',
+        icon: '🗡️',
+        text: 'Синхронизированная Синергия Ножей: Штраф -90% теперь рассчитывается по прямой разнице тиров ножа и заводов (штраф применяется, если тир ножа отстает более чем на 2 тира от максимального открытого завода).',
+        textEn: 'Synchronized Knife Synergy: The -90% penalty is now calculated directly based on the tier gap between knife and factory (penalty triggers if knife lags by >2 tiers behind highest factory).'
+      },
+      {
+        type: 'ui',
+        icon: '🪐',
+        text: 'Обновление Фильтров Заводов: Вкладки Тир 1–5 и «Все» позволяют удобно просматривать и покупать все 45 тиров био-заводов с четкими бейджами тиров и требований.',
+        textEn: 'Factory Filter Update: Tiers 1-5 and "All" buttons provide seamless navigation across all 45 bio-factory tiers with clear tier badges and requirements.'
+      }
+    ]
+  },
+  {
     version: 'v5.2.2 PRO',
     date: '10 Октября 2026',
     dateEn: 'October 10, 2026',

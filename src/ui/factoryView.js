@@ -23,9 +23,9 @@ function horizonEpochWindow() {
 }
 
 function factoryVisible(fac) {
-  const tn = fac.tierNumber || 1;
-  if (activeFactoryTier === '4') return tn >= 4;
-  return tn === Number(activeFactoryTier);
+  const tg = fac.tierGroup || 1;
+  if (activeFactoryTier === 'all') return true;
+  return String(tg) === String(activeFactoryTier);
 }
 let paintedFactoryStage = -1;
 
@@ -106,7 +106,13 @@ export function renderFactories() {
 
   visibleFactories.forEach((fac) => {
     const currentCount = fac.count || 0;
-    const isLocked = fac.reqStage !== undefined && (GAME.evoStage || 0) < fac.reqStage;
+    const currentStage = GAME.evoStage || 0;
+    const currentBT = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
+    const reqBT = fac.reqBreakthrough || 0;
+    const reqForm = (fac.reqStage !== undefined ? fac.reqStage + 1 : 1);
+    const needBT = currentBT < reqBT;
+    const needForm = currentStage < (fac.reqStage || 0);
+    const isLocked = needBT || needForm;
 
     if (currentCount === 0 && activeFactoryTier === 'all' && fac.tierNumber !== 5) {
       unownedCount++;
@@ -155,14 +161,23 @@ export function renderFactories() {
 
     let buttonLabel = `${countTxt}: ${formatNumber(facInfo.totalCost)} 💨`;
     if (isLocked) {
-      buttonLabel = t('factory.needForm', { n: formatNumber(fac.reqStage + 1) });
+      buttonLabel = needBT ? `🔒 ${formatNumber(reqBT)} Прорыв` : t('factory.needForm', { n: formatNumber(reqForm) });
     }
 
-    let tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-stone-800 text-stone-300 border border-stone-700">${t('factory.tier1')}</span>`;
-    if (fac.tierNumber === 2) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">${t('factory.tier2')}</span>`;
-    else if (fac.tierNumber === 3) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-purple-950/80 text-purple-300 border border-purple-500/40">${t('factory.tier3')}</span>`;
-    else if (fac.tierNumber === 4) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-amber-950/80 text-yellow-300 border border-yellow-500/50 shadow-[0_0_8px_rgba(234,179,8,0.3)]">${t('factory.tier4')}</span>`;
-    else if (fac.tierNumber === 5) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-emerald-950/80 text-emerald-200 border border-emerald-400/50">🌅 ${t('factory.horizon')}</span>`;
+    const tg = fac.tierGroup || 1;
+    const tn = fac.tierNumber || 1;
+    let tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-stone-800 text-stone-300 border border-stone-700">Т${tn}</span>`;
+    if (tg === 2) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">Т${tn}</span>`;
+    else if (tg === 3) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-purple-950/80 text-purple-300 border border-purple-500/40">Т${tn}</span>`;
+    else if (tg === 4) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-amber-950/80 text-yellow-300 border border-yellow-500/50 shadow-[0_0_8px_rgba(234,179,8,0.3)]">Т${tn}</span>`;
+    else if (tg === 5) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-rose-950/80 text-rose-300 border border-rose-500/50 shadow-[0_0_8px_rgba(244,63,94,0.3)]">Т${tn} 👑</span>`;
+
+    let lockBadge = '';
+    if (needBT) {
+      lockBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-950/80 text-purple-300 border border-purple-700/50 font-bold">🔒 ${formatNumber(reqBT)} Прорыв</span>`;
+    } else if (needForm) {
+      lockBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded bg-red-950/80 text-red-300 border border-red-700/50 font-bold">${t('factory.formBadge', { n: reqForm })}</span>`;
+    }
 
     const row = document.createElement('div');
     row.className = `factory-card p-3 rounded-2xl bg-stone-900 border ${isLocked ? 'border-stone-800/60 opacity-75' : 'border-stone-800 hover:border-amber-600'} transition flex flex-col gap-2 shadow-sm`;
@@ -175,7 +190,7 @@ export function renderFactories() {
               <span class="font-bold text-xs text-stone-200">${factoryName(fac)}</span>
               ${starsHtml}
               ${tierBadge}
-              ${isLocked ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-red-950/80 text-red-300 border border-red-700/50 font-bold">${t('factory.formBadge', { n: fac.reqStage + 1 })}</span>` : ''}
+              ${lockBadge}
             </div>
             <div class="flex items-center gap-2 text-[11px] font-game flex-wrap">
               <button type="button" class="factory-income-btn text-emerald-400 underline decoration-dotted decoration-emerald-700" data-id="${fac.id}" title="${t('factory.incomeTitle')}">${t('hud.perSec', { n: formatNumber(mul(fac.baseCps, currentCount || 1)) })}</button>

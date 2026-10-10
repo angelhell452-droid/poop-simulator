@@ -14,7 +14,7 @@ import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { getKnifeShownBonuses, getKnifeEffectiveClickMult } from '../economy/production.js?v=5.0.83';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.0.80';
-import { isBig } from '../utils/big.js?v=5.0.80';
+import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.0.80';
 let caseAudioEnabled = true;
@@ -61,7 +61,6 @@ export function getCaseLockInfo(caseObj) {
   const targetCase = WEAPON_CASES[index];
   const reqBreakthrough = Math.max(0, Number(targetCase?.reqBreakthrough) || 0);
   const currentBreakthrough = getBreakthroughCount();
-  const hasBreakthrough = currentBreakthrough >= reqBreakthrough;
 
   // relic_gate_of_eternity: Навсегда открывает Кейс №45 (0-indexed 44)
   if ((index === 44 || index === WEAPON_CASES.length - 1) && hasRelic('relic_gate_of_eternity')) {
@@ -74,24 +73,10 @@ export function getCaseLockInfo(caseObj) {
     };
   }
 
-  if (index === 0) {
-    return {
-      isUnlocked: hasBreakthrough,
-      hasPrevKnife: true,
-      hasBreakthrough,
-      prevIndex: 0,
-      reqBreakthrough
-    };
-  }
-
-  const prevCase = WEAPON_CASES[index - 1];
-  const unlocked = GAME.unlockedKnives || [];
-  const hasPrevKnife = !prevCase || !prevCase.pool || prevCase.pool.some(kId => unlocked.includes(kId));
-  const isUnlocked = hasPrevKnife && hasBreakthrough;
-
+  const hasBreakthrough = currentBreakthrough >= reqBreakthrough;
   return {
-    isUnlocked,
-    hasPrevKnife,
+    isUnlocked: hasBreakthrough,
+    hasPrevKnife: true,
     hasBreakthrough,
     prevIndex: index,
     reqBreakthrough
@@ -105,52 +90,43 @@ export function caseIsOpen(caseObj) {
 export function getCaseLockReason(caseObj) {
   const info = getCaseLockInfo(caseObj);
   if (info.isUnlocked) return '';
-
   const reqStr = formatNumber(info.reqBreakthrough);
-  if (!info.hasPrevKnife && !info.hasBreakthrough) {
-    return t('cases.lockNeedBoth', { prev: info.prevIndex, req: reqStr });
-  }
-  if (!info.hasPrevKnife) {
-    return t('cases.lockNeedKnife', { prev: info.prevIndex });
-  }
-  return t('cases.lockNeedBreakthrough', { req: reqStr });
+  return t('cases.lockNeedBreakthrough', { req: reqStr }) || `Требуется ${reqStr} Прорыв`;
 }
 
 export function getCaseLockAlert(caseObj) {
   const idx = getCaseIndex(caseObj);
   const info = getCaseLockInfo(caseObj);
   if (info.isUnlocked) return '';
-
   const reqStr = formatNumber(info.reqBreakthrough);
-  if (!info.hasPrevKnife && !info.hasBreakthrough) {
-    return t('cases.lockedBothAlert', { idx, prev: info.prevIndex, req: reqStr });
-  }
-  if (!info.hasPrevKnife) {
-    return t('cases.lockedKnifeAlert', { idx, prev: info.prevIndex });
-  }
-  return t('cases.lockedBreakthroughAlert', { idx, req: reqStr });
+  return t('cases.lockedBreakthroughAlert', { idx, req: reqStr }) || `Кейс #${idx} заблокирован! Требуется ${reqStr} Прорыв`;
 }
 
 export function caseRollNeed(caseObj, count = 1) {
-  const baseCost = Math.max(0, Number(caseObj?.cost) || 0);
   if (isFirstCaseDiscountAvailable(caseObj)) {
     if (count <= 1) return FIRST_CASE_DISCOUNT_COST;
-    return FIRST_CASE_DISCOUNT_COST + baseCost * (count - 1);
+    const baseCost = caseObj?.cost || 0;
+    return add(FIRST_CASE_DISCOUNT_COST, mul(baseCost, count - 1));
   }
-  return baseCost * count;
+  const baseCost = caseObj?.cost || 0;
+  return mul(baseCost, count);
+}
+
+export function casePlungerNeed(caseObj, count = 1) {
+  const basePlungers = Math.max(0, Number(caseObj?.costPlungers) || 0);
+  return basePlungers * count;
 }
 
 export function missingCaseFunds(caseObj, count = 1) {
   const parts = [];
-  const cost = caseRollNeed(caseObj, count);
-  if (caseObj?.currency === 'plungers') {
-    if ((GAME.transcendPlungers || 0) < cost) {
-      parts.push(`${formatNumber(cost)} 🪠`);
-    }
-  } else {
-    if ((GAME.sparkles || 0) < cost) {
-      parts.push(`${formatNumber(cost)} ✨`);
-    }
+  const sparkleCost = caseRollNeed(caseObj, count);
+  const plungerCost = casePlungerNeed(caseObj, count);
+
+  if (cmp(sparkleCost, 0) > 0 && cmp(GAME.sparkles || 0, sparkleCost) < 0) {
+    parts.push(`${formatNumber(sparkleCost)} ✨`);
+  }
+  if (plungerCost > 0 && (GAME.transcendPlungers || 0) < plungerCost) {
+    parts.push(`${formatNumber(plungerCost)} 🪠`);
   }
   return parts;
 }
@@ -160,38 +136,54 @@ export function canAffordCase(caseObj, count = 1) {
 }
 
 function payForCase(caseObj, count = 1) {
-  const cost = caseRollNeed(caseObj, count);
-  if (caseObj?.currency === 'plungers') {
-    GAME.transcendPlungers = Math.max(0, (GAME.transcendPlungers || 0) - cost);
-  } else {
-    GAME.sparkles = Math.max(0, (GAME.sparkles || 0) - cost);
+  const sparkleCost = caseRollNeed(caseObj, count);
+  const plungerCost = casePlungerNeed(caseObj, count);
+
+  if (cmp(sparkleCost, 0) > 0) {
+    GAME.sparkles = spendBio(GAME.sparkles, sparkleCost);
     if (isFirstCaseDiscountAvailable(caseObj)) {
       GAME.firstCaseDiscountUsed = true;
     }
     // talent_case_cashback: возвращает 1% Блестяшек обратно при покупке любого кейса
     const cashbackLvl = TALENTS.find(t => t.id === 'talent_case_cashback')?.level || 0;
-    if (cashbackLvl > 0 && cost > 0) {
-      const refund = Math.floor(cost * Math.min(0.9, cashbackLvl * 0.01));
-      if (refund > 0) {
-        GAME.sparkles = (GAME.sparkles || 0) + refund;
+    if (cashbackLvl > 0) {
+      const refund = mulFloor(sparkleCost, Math.min(0.9, cashbackLvl * 0.01));
+      if (cmp(refund, 0) > 0) {
+        GAME.sparkles = gainBio(GAME.sparkles, refund);
       }
     }
+  }
+
+  if (plungerCost > 0) {
+    GAME.transcendPlungers = Math.max(0, (GAME.transcendPlungers || 0) - plungerCost);
   }
 }
 
 function refundDuplicate(caseObj) {
-  const baseCost = Math.max(0, Number(caseObj?.cost) || 0);
-  if (caseObj?.currency === 'plungers') {
-    const plungers = baseCost > 0 ? Math.max(1, Math.round(baseCost * 0.4)) : 1;
+  const baseCost = caseObj?.cost || 0;
+  const costPlungers = Number(caseObj?.costPlungers) || 0;
+  if (caseObj?.currency === 'plungers' || (costPlungers > 0 && cmp(baseCost, 0) <= 0)) {
+    const plungers = costPlungers > 0 ? Math.max(1, Math.round(costPlungers * 0.4)) : 1;
     GAME.transcendPlungers = (GAME.transcendPlungers || 0) + plungers;
     return { amount: plungers, isPlungers: true };
   }
-  const sparkles = baseCost > 0 ? Math.max(1, Math.round(baseCost * 0.4)) : 1;
-  GAME.sparkles = (GAME.sparkles || 0) + sparkles;
+  if (costPlungers > 0) {
+    // Dual currency: refund 40% plungers + 40% sparkles
+    const plungers = Math.max(1, Math.round(costPlungers * 0.4));
+    GAME.transcendPlungers = (GAME.transcendPlungers || 0) + plungers;
+    const sparkles = cmp(baseCost, 0) > 0 ? mulFloor(baseCost, 0.4) : 1;
+    GAME.sparkles = gainBio(GAME.sparkles, sparkles);
+    return { amount: `${formatNumber(sparkles)} ✨ + ${formatNumber(plungers)}`, isPlungers: true, isDual: true };
+  }
+  const sparkles = cmp(baseCost, 0) > 0 ? mulFloor(baseCost, 0.4) : 1;
+  GAME.sparkles = gainBio(GAME.sparkles, sparkles);
   return { amount: sparkles, isPlungers: false };
 }
 
 function refundLabel(refund) {
+  if (refund?.isDual) {
+    return `+${refund.amount} 🪠`;
+  }
   const sym = refund?.isPlungers ? '🪠' : '✨';
   return `+${formatNumber(refund?.amount || 1)} ${sym}`;
 }
@@ -200,10 +192,16 @@ export function casePriceHtml(caseObj) {
   if (isFirstCaseDiscountAvailable(caseObj)) {
     return `<span class="line-through text-stone-500 text-[10px] mr-1">${formatNumber(caseObj.cost)}</span><span class="inline-flex items-center gap-1 text-emerald-300 font-black">${formatNumber(FIRST_CASE_DISCOUNT_COST)} ✨</span><span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-1 py-0.2 rounded font-black border border-emerald-500/40 uppercase ml-1 animate-pulse">-50%</span>`;
   }
-  const isPlungers = caseObj?.currency === 'plungers';
-  const sym = isPlungers ? '🪠' : '✨';
-  const col = isPlungers ? 'text-cyan-300' : 'text-yellow-300';
-  return `<span class="inline-flex items-center gap-1 ${col} font-black">${formatNumber(caseObj.cost)} ${sym}</span>`;
+  const costPlungers = Number(caseObj?.costPlungers) || 0;
+  const costSparkles = caseObj?.cost || 0;
+
+  if (caseObj?.currency === 'dual' || (costPlungers > 0 && cmp(costSparkles, 0) > 0)) {
+    return `<span class="inline-flex items-center gap-1 font-black"><span class="text-yellow-300">${formatNumber(costSparkles)} ✨</span><span class="text-stone-400 font-normal">+</span><span class="text-cyan-300">${formatNumber(costPlungers)} 🪠</span></span>`;
+  }
+  if (caseObj?.currency === 'plungers' || costPlungers > 0) {
+    return `<span class="inline-flex items-center gap-1 text-cyan-300 font-black">${formatNumber(costPlungers)} 🪠</span>`;
+  }
+  return `<span class="inline-flex items-center gap-1 text-yellow-300 font-black">${formatNumber(costSparkles)} ✨</span>`;
 }
 
 export function updateCasesTabBadge() {
@@ -927,7 +925,8 @@ export function renderCasesSystem() {
       const hasCurrency3 = isUnlocked && canAffordCase(c, 3);
       const canOpen = isUnlocked && hasCurrency;
       const cIdx = getCaseIndex(c);
-      const lockReason = getCaseLockReason(c) || (cIdx > 1 ? `Нужен нож из #${cIdx - 1}` : 'Заблокирован');
+      const reqBt = Number(c.reqBreakthrough) || 0;
+      const lockReason = getCaseLockReason(c) || (reqBt > 0 ? `Требуется ${formatNumber(reqBt)} Прорыв` : 'Заблокирован');
 
       const lockBadge = !isUnlocked
         ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 ${lockReason}</div>`

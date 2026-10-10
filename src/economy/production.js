@@ -291,17 +291,20 @@ export function getKnifeFactorySynergyMult() {
 
   // Find the highest factory that is unlocked or owned
   const currentStage = GAME.evoStage || 0;
+  const currentBT = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
   let maxFac = null;
   for (let i = FACTORIES.length - 1; i >= 0; i--) {
     const f = FACTORIES[i];
-    if ((f.count && f.count > 0) || (f.reqStage !== undefined && f.reqStage <= currentStage)) {
+    const unlocked = ((f.count && f.count > 0) || ((f.reqStage !== undefined ? f.reqStage <= currentStage : true) && (f.reqBreakthrough !== undefined ? f.reqBreakthrough <= currentBT : true)));
+    if (unlocked) {
       maxFac = f;
       break;
     }
   }
 
   // Tier 1 factories do not trigger advanced knife requirements
-  if (!maxFac || (maxFac.tierNumber || 1) <= 1) {
+  const facTier = maxFac?.tierNumber || 1;
+  if (facTier <= 1) {
     return 1.0;
   }
 
@@ -315,11 +318,9 @@ export function getKnifeFactorySynergyMult() {
     return 1.0;
   }
 
-  const knifeReqForm = knifeCase.reqForm || 0;
-  const facTier = maxFac.tierNumber || 1;
-  const minRequiredKnifeForm = facTier === 2 ? 3500 : facTier === 3 ? 7000 : facTier === 4 ? 11000 : 15000;
-
-  if (knifeReqForm < minRequiredKnifeForm) {
+  const knifeTier = knifeCase.tierNumber || 1;
+  // If player's knife tier is more than 2 tiers behind the current highest factory tier, apply 90% penalty
+  if (knifeTier < facTier - 2) {
     return 0.1; // 90% penalty if knife is from a too old case
   }
 

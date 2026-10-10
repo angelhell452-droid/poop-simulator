@@ -26,7 +26,8 @@ export const WEAPON_CASES = [
       "knife_falchion_safari",
       "knife_huntsman_safari"
     ],
-    "reqBreakthrough": 0
+    "reqBreakthrough": 0,
+    "tierNumber": 1
   },
   {
     "id": "case_bravo",
@@ -55,7 +56,8 @@ export const WEAPON_CASES = [
       "knife_flip_forest",
       "knife_paracord_forest"
     ],
-    "reqBreakthrough": 0
+    "reqBreakthrough": 0,
+    "tierNumber": 2
   },
   {
     "id": "case_weapon_2",
@@ -84,7 +86,8 @@ export const WEAPON_CASES = [
       "knife_shadow_scorched",
       "knife_nomad_safari"
     ],
-    "reqBreakthrough": 0
+    "reqBreakthrough": 0,
+    "tierNumber": 3
   },
   {
     "id": "case_vanguard",
@@ -113,7 +116,8 @@ export const WEAPON_CASES = [
       "knife_flip_night",
       "knife_gut_bluesteel"
     ],
-    "reqBreakthrough": 1
+    "reqBreakthrough": 1,
+    "tierNumber": 4
   },
   {
     "id": "case_chroma_1",
@@ -142,7 +146,8 @@ export const WEAPON_CASES = [
       "knife_falchion_night",
       "knife_navaja_rust"
     ],
-    "reqBreakthrough": 1
+    "reqBreakthrough": 1,
+    "tierNumber": 5
   },
   {
     "id": "case_weapon_3",
@@ -171,7 +176,8 @@ export const WEAPON_CASES = [
       "knife_bowie_stained",
       "knife_stiletto_boreal"
     ],
-    "reqBreakthrough": 1
+    "reqBreakthrough": 1,
+    "tierNumber": 6
   },
   {
     "id": "case_phoenix",
@@ -200,7 +206,8 @@ export const WEAPON_CASES = [
       "knife_falchion_web",
       "knife_karambit_autotronic"
     ],
-    "reqBreakthrough": 1
+    "reqBreakthrough": 2,
+    "tierNumber": 7
   },
   {
     "id": "case_huntsman",
@@ -229,7 +236,8 @@ export const WEAPON_CASES = [
       "knife_karambit_marble",
       "knife_shadow_fade"
     ],
-    "reqBreakthrough": 2
+    "reqBreakthrough": 2,
+    "tierNumber": 8
   },
   {
     "id": "case_breakout",
@@ -258,7 +266,8 @@ export const WEAPON_CASES = [
       "knife_flip_tiger",
       "knife_gut_tiger"
     ],
-    "reqBreakthrough": 2
+    "reqBreakthrough": 2,
+    "tierNumber": 9
   },
   {
     "id": "case_chroma_2",
@@ -287,7 +296,8 @@ export const WEAPON_CASES = [
       "knife_stiletto_crimson",
       "knife_talon_forest"
     ],
-    "reqBreakthrough": 2
+    "reqBreakthrough": 3,
+    "tierNumber": 10
   },
   {
     "id": "case_falchion",
@@ -316,7 +326,8 @@ export const WEAPON_CASES = [
       "knife_bayonet_stained",
       "knife_karambit_emerald"
     ],
-    "reqBreakthrough": 2
+    "reqBreakthrough": 3,
+    "tierNumber": 11
   },
   {
     "id": "case_shadow",
@@ -345,7 +356,8 @@ export const WEAPON_CASES = [
       "knife_skeleton_forest",
       "knife_classic_night"
     ],
-    "reqBreakthrough": 3
+    "reqBreakthrough": 3,
+    "tierNumber": 12
   },
   {
     "id": "case_revolver",
@@ -374,7 +386,8 @@ export const WEAPON_CASES = [
       "knife_nomad_crimson",
       "knife_bayonet_crimson"
     ],
-    "reqBreakthrough": 3
+    "reqBreakthrough": 4,
+    "tierNumber": 13
   },
   {
     "id": "case_wildfire",
@@ -403,7 +416,8 @@ export const WEAPON_CASES = [
       "knife_katana_wood",
       "knife_m9_crimson"
     ],
-    "reqBreakthrough": 4
+    "reqBreakthrough": 4,
+    "tierNumber": 14
   },
   {
     "id": "case_chroma_3",
@@ -432,7 +446,8 @@ export const WEAPON_CASES = [
       "knife_skeleton_slaughter",
       "knife_scythe_crimson"
     ],
-    "reqBreakthrough": 4
+    "reqBreakthrough": 4,
+    "tierNumber": 15
   },
   {
     "id": "case_gamma_1",
@@ -461,7 +476,8 @@ export const WEAPON_CASES = [
       "knife_falchion_fade",
       "knife_flip_fade"
     ],
-    "reqBreakthrough": 5
+    "reqBreakthrough": 5,
+    "tierNumber": 16
   },
   {
     "id": "case_gamma_2",
@@ -490,7 +506,8 @@ export const WEAPON_CASES = [
       "knife_stiletto_fade",
       "knife_karambit_slaughter"
     ],
-    "reqBreakthrough": 6
+    "reqBreakthrough": 5,
+    "tierNumber": 17
   },
   {
     "id": "case_glove",
@@ -519,7 +536,8 @@ export const WEAPON_CASES = [
       "knife_karambit_ruby",
       "knife_survival_fade"
     ],
-    "reqBreakthrough": 8
+    "reqBreakthrough": 5,
+    "tierNumber": 18
   },
   {
     "id": "case_spectrum_1",
@@ -548,7 +566,8 @@ export const WEAPON_CASES = [
       "knife_bayonet_autotronic",
       "knife_bayonet_tiger"
     ],
-    "reqBreakthrough": 10
+    "reqBreakthrough": 10,
+    "tierNumber": 19
   },
   {
     "id": "case_hydra",
@@ -577,7 +596,8 @@ export const WEAPON_CASES = [
       "knife_m9_fade",
       "knife_m9_tiger"
     ],
-    "reqBreakthrough": 12
+    "reqBreakthrough": 10,
+    "tierNumber": 20
   },
   {
     "id": "case_spectrum_2",
@@ -606,7 +626,8 @@ export const WEAPON_CASES = [
       "knife_katana_blood",
       "knife_falchion_marble"
     ],
-    "reqBreakthrough": 15
+    "reqBreakthrough": 10,
+    "tierNumber": 21
   },
   {
     "id": "case_clutch",
@@ -635,7 +656,8 @@ export const WEAPON_CASES = [
       "knife_gut_marble",
       "knife_scythe_fade"
     ],
-    "reqBreakthrough": 18
+    "reqBreakthrough": 15,
+    "tierNumber": 22
   },
   {
     "id": "case_horizon",
@@ -664,7 +686,8 @@ export const WEAPON_CASES = [
       "knife_talon_marble",
       "knife_nomad_bluegem"
     ],
-    "reqBreakthrough": 21
+    "reqBreakthrough": 15,
+    "tierNumber": 23
   },
   {
     "id": "case_dangerzone",
@@ -693,7 +716,8 @@ export const WEAPON_CASES = [
       "knife_butterfly_crimson",
       "knife_butterfly_tiger"
     ],
-    "reqBreakthrough": 24
+    "reqBreakthrough": 15,
+    "tierNumber": 24
   },
   {
     "id": "case_prisma_1",
@@ -722,7 +746,8 @@ export const WEAPON_CASES = [
       "knife_butterfly_marble",
       "knife_butterfly_doppler"
     ],
-    "reqBreakthrough": 27
+    "reqBreakthrough": 20,
+    "tierNumber": 25
   },
   {
     "id": "case_cs20",
@@ -751,7 +776,8 @@ export const WEAPON_CASES = [
       "knife_bayonet_lore",
       "knife_m9_lore"
     ],
-    "reqBreakthrough": 30
+    "reqBreakthrough": 20,
+    "tierNumber": 26
   },
   {
     "id": "case_shattered",
@@ -780,7 +806,8 @@ export const WEAPON_CASES = [
       "knife_m9_emerald",
       "knife_gut_emerald"
     ],
-    "reqBreakthrough": 33
+    "reqBreakthrough": 20,
+    "tierNumber": 27
   },
   {
     "id": "case_prisma_2",
@@ -809,7 +836,8 @@ export const WEAPON_CASES = [
       "knife_bowie_emerald",
       "knife_celestial_karambit"
     ],
-    "reqBreakthrough": 36
+    "reqBreakthrough": 30,
+    "tierNumber": 28
   },
   {
     "id": "case_fracture",
@@ -838,7 +866,8 @@ export const WEAPON_CASES = [
       "knife_shadow_emerald",
       "knife_talon_emerald"
     ],
-    "reqBreakthrough": 39
+    "reqBreakthrough": 30,
+    "tierNumber": 29
   },
   {
     "id": "case_brokenfang",
@@ -867,7 +896,8 @@ export const WEAPON_CASES = [
       "knife_flip_ruby",
       "knife_butterfly_ruby"
     ],
-    "reqBreakthrough": 42
+    "reqBreakthrough": 30,
+    "tierNumber": 30
   },
   {
     "id": "case_snakebite",
@@ -896,7 +926,8 @@ export const WEAPON_CASES = [
       "knife_rainbow_navaja",
       "knife_katana_demon"
     ],
-    "reqBreakthrough": 44
+    "reqBreakthrough": 40,
+    "tierNumber": 31
   },
   {
     "id": "case_riptide",
@@ -925,7 +956,8 @@ export const WEAPON_CASES = [
       "knife_rainbow_flip",
       "knife_rainbow_shadow"
     ],
-    "reqBreakthrough": 46
+    "reqBreakthrough": 40,
+    "tierNumber": 32
   },
   {
     "id": "case_dreams",
@@ -954,7 +986,8 @@ export const WEAPON_CASES = [
       "knife_rainbow_stiletto",
       "knife_rainbow_paracord"
     ],
-    "reqBreakthrough": 48
+    "reqBreakthrough": 40,
+    "tierNumber": 33
   },
   {
     "id": "case_recoil",
@@ -983,7 +1016,8 @@ export const WEAPON_CASES = [
       "knife_rainbow_classic",
       "knife_rainbow_m9"
     ],
-    "reqBreakthrough": 49
+    "reqBreakthrough": 50,
+    "tierNumber": 34
   },
   {
     "id": "case_revolution",
@@ -1012,18 +1046,19 @@ export const WEAPON_CASES = [
       "knife_rainbow_skeleton",
       "knife_rainbow_butterfly"
     ],
-    "reqBreakthrough": 50
+    "reqBreakthrough": 50,
+    "tierNumber": 35
   },
   {
     "id": "case_kilowatt",
     "name": "Кейс «Киловатт»",
     "icon": "⚡",
-    "currency": "plungers",
-    "cost": 15,
+    "currency": "dual",
+    "cost": 100000000000000000000,
     "costPlungers": 15,
     "reqEpoch": 9,
     "reqForm": 127000,
-    "currencySymbol": "🪠",
+    "currencySymbol": "✨ + 🪠",
     "borderClass": "border-yellow-300/80",
     "bgClass": "from-yellow-950 via-stone-900 to-stone-950",
     "desc": "Джекпот 1%: ✨ Bowie Knife | Небесный Комета (Comet Slicer) (210 CPS). Бонус блестяшек ✨ x466.11.",
@@ -1041,18 +1076,19 @@ export const WEAPON_CASES = [
       "knife_celestial_huntsman",
       "knife_celestial_bowie"
     ],
-    "reqBreakthrough": 50
+    "reqBreakthrough": 75,
+    "tierNumber": 36
   },
   {
     "id": "case_neon_matrix",
     "name": "Кейс «Неоновый Омниверс»",
     "icon": "🪐",
-    "currency": "plungers",
-    "cost": 35,
+    "currency": "dual",
+    "cost": 1e+25,
     "costPlungers": 35,
     "reqEpoch": 10,
     "reqForm": 139000,
-    "currencySymbol": "🪠",
+    "currencySymbol": "✨ + 🪠",
     "borderClass": "border-fuchsia-400/80",
     "bgClass": "from-fuchsia-950 via-stone-900 to-stone-950",
     "desc": "Джекпот 1%: ✨ Skeleton | Астральный Скелет (Astral Skeleton) (220 CPS). Бонус блестяшек ✨ x536.03.",
@@ -1070,18 +1106,19 @@ export const WEAPON_CASES = [
       "knife_celestial_m9",
       "knife_celestial_skeleton"
     ],
-    "reqBreakthrough": 55
+    "reqBreakthrough": 75,
+    "tierNumber": 37
   },
   {
     "id": "case_astral_rift",
     "name": "Кейс «Астральный Разлом»",
     "icon": "🌌",
-    "currency": "plungers",
-    "cost": 80,
+    "currency": "dual",
+    "cost": 1e+32,
     "costPlungers": 80,
     "reqEpoch": 10,
     "reqForm": 152000,
-    "currencySymbol": "🪠",
+    "currencySymbol": "✨ + 🪠",
     "borderClass": "border-cyan-300/80",
     "bgClass": "from-cyan-950 via-stone-900 to-stone-950",
     "desc": "Джекпот 1%: ✨ Katana | Небесный Клинок Архангела (Archangel Katana) (230 CPS). Бонус блестяшек ✨ x616.44.",
@@ -1099,18 +1136,19 @@ export const WEAPON_CASES = [
       "knife_celestial_scythe",
       "knife_celestial_katana"
     ],
-    "reqBreakthrough": 60
+    "reqBreakthrough": 75,
+    "tierNumber": 38
   },
   {
     "id": "case_quantum_singularity",
     "name": "Кейс «Квантовая Сингулярность»",
     "icon": "🕳️",
-    "currency": "plungers",
-    "cost": 180,
+    "currency": "dual",
+    "cost": 1e+42,
     "costPlungers": 180,
     "reqEpoch": 10,
     "reqForm": 166000,
-    "currencySymbol": "🪠",
+    "currencySymbol": "✨ + 🪠",
     "borderClass": "border-violet-300/80",
     "bgClass": "from-violet-950 via-stone-900 to-stone-950",
     "desc": "Джекпот 1%: ⚙️ Bayonet | Квантовый Титан (Quantum Titanium) (240 CPS). Бонус блестяшек ✨ x708.9.",
@@ -1128,18 +1166,19 @@ export const WEAPON_CASES = [
       "knife_titanium_huntsman",
       "knife_titanium_bayonet"
     ],
-    "reqBreakthrough": 65
+    "reqBreakthrough": 150,
+    "tierNumber": 39
   },
   {
     "id": "case_omega_pantheon",
     "name": "Кейс «Омега Пантеон»",
     "icon": "🔱",
-    "currency": "plungers",
-    "cost": 400,
+    "currency": "dual",
+    "cost": 1e+55,
     "costPlungers": 400,
     "reqEpoch": 10,
     "reqForm": 182000,
-    "currencySymbol": "🪠",
+    "currencySymbol": "✨ + 🪠",
     "borderClass": "border-amber-300/90",
     "bgClass": "from-amber-950 via-stone-900 to-stone-950",
     "desc": "Джекпот 1%: 👑 Scythe | Коса Бесконечности (Infinity Void Scythe) (250 CPS). Бонус блестяшек ✨ x815.24.",
@@ -1157,18 +1196,19 @@ export const WEAPON_CASES = [
       "knife_titanium_butterfly",
       "knife_godly_scythe"
     ],
-    "reqBreakthrough": 70
+    "reqBreakthrough": 150,
+    "tierNumber": 40
   },
   {
     "id": "case_eternity_apex",
     "name": "Контейнер «Вечность Демиурга»",
     "icon": "👑",
-    "currency": "plungers",
-    "cost": 900,
+    "currency": "dual",
+    "cost": 1e+72,
     "costPlungers": 900,
     "reqEpoch": 10,
     "reqForm": 200000,
-    "currencySymbol": "🪠",
+    "currencySymbol": "✨ + 🪠",
     "borderClass": "border-yellow-200/90",
     "bgClass": "from-yellow-900 via-stone-900 to-stone-950",
     "desc": "Джекпот 1%: ★ Karambit | Dragon Lore (Золотое пламя дракона) (260 CPS). Бонус блестяшек ✨ x937.52.",
@@ -1186,18 +1226,19 @@ export const WEAPON_CASES = [
       "knife_godly_omega",
       "knife_karambit_lore"
     ],
-    "reqBreakthrough": 75
+    "reqBreakthrough": 150,
+    "tierNumber": 41
   },
   {
     "id": "case_cyber_matrix",
     "name": "Контейнер «Кибер-Матрица»",
     "icon": "⚡",
-    "currency": "plungers",
-    "cost": 2000,
+    "currency": "dual",
+    "cost": 1e+95,
     "costPlungers": 2000,
     "reqEpoch": 11,
     "reqForm": 250000,
-    "currencySymbol": "🪠",
+    "currencySymbol": "✨ + 🪠",
     "borderClass": "border-cyan-500/80",
     "bgClass": "from-cyan-950 via-stone-900 to-stone-950",
     "desc": "Джекпот 1%: ★ Butterfly | Кибер-Матрица Омега [Тир 42] (270 CPS). Бонус блестяшек ✨ x2500.",
@@ -1215,18 +1256,19 @@ export const WEAPON_CASES = [
       "knife_secret_42_4",
       "knife_secret_42_5"
     ],
-    "reqBreakthrough": 80
+    "reqBreakthrough": 225,
+    "tierNumber": 42
   },
   {
     "id": "case_abyssal_rift",
     "name": "Контейнер «Бездный Разлом»",
     "icon": "🕳️",
-    "currency": "plungers",
-    "cost": 4500,
+    "currency": "dual",
+    "cost": 1e+130,
     "costPlungers": 4500,
     "reqEpoch": 12,
     "reqForm": 300000,
-    "currencySymbol": "🪠",
+    "currencySymbol": "✨ + 🪠",
     "borderClass": "border-purple-500/80",
     "bgClass": "from-purple-950 via-stone-900 to-stone-950",
     "desc": "Джекпот 1%: ★ Karambit | Глас Бездны [Тир 43] (280 CPS). Бонус блестяшек ✨ x5000.",
@@ -1244,18 +1286,19 @@ export const WEAPON_CASES = [
       "knife_secret_43_4",
       "knife_secret_43_5"
     ],
-    "reqBreakthrough": 85
+    "reqBreakthrough": 225,
+    "tierNumber": 43
   },
   {
     "id": "case_chronos_singularity",
     "name": "Контейнер «Хроно-Сингулярность»",
     "icon": "⏳",
-    "currency": "plungers",
-    "cost": 10000,
+    "currency": "dual",
+    "cost": 1e+180,
     "costPlungers": 10000,
     "reqEpoch": 13,
     "reqForm": 350000,
-    "currencySymbol": "🪠",
+    "currencySymbol": "✨ + 🪠",
     "borderClass": "border-amber-500/80",
     "bgClass": "from-amber-950 via-stone-900 to-stone-950",
     "desc": "Джекпот 1%: ★ M9 Bayonet | Хронос Первоначала [Тир 44] (290 CPS). Бонус блестяшек ✨ x12000.",
@@ -1273,18 +1316,19 @@ export const WEAPON_CASES = [
       "knife_secret_44_4",
       "knife_secret_44_5"
     ],
-    "reqBreakthrough": 90
+    "reqBreakthrough": 300,
+    "tierNumber": 44
   },
   {
     "id": "case_infinity_apex",
     "name": "Контейнер «Апекс Бесконечности»",
     "icon": "👑",
-    "currency": "plungers",
-    "cost": 25000,
+    "currency": "dual",
+    "cost": 1e+250,
     "costPlungers": 25000,
     "reqEpoch": 14,
     "reqForm": 400000,
-    "currencySymbol": "🪠",
+    "currencySymbol": "✨ + 🪠",
     "borderClass": "border-rose-500/90",
     "bgClass": "from-rose-950 via-stone-900 to-stone-950",
     "desc": "Джекпот 1%: ★ Karambit | Абсолютный Венец Вселенной (300 CPS) [Тир 45] (300 CPS). Бонус блестяшек ✨ x50000.",
@@ -1302,6 +1346,7 @@ export const WEAPON_CASES = [
       "knife_secret_45_4",
       "knife_secret_45_5"
     ],
-    "reqBreakthrough": 100
+    "reqBreakthrough": 300,
+    "tierNumber": 45
   }
 ];
