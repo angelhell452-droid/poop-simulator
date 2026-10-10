@@ -25,7 +25,8 @@ export const WEAPON_CASES = [
       "knife_gut_patina",
       "knife_falchion_safari",
       "knife_huntsman_safari"
-    ]
+    ],
+    "reqBreakthrough": 0
   },
   {
     "id": "case_bravo",
@@ -53,7 +54,8 @@ export const WEAPON_CASES = [
       "knife_classic_forest",
       "knife_flip_forest",
       "knife_paracord_forest"
-    ]
+    ],
+    "reqBreakthrough": 0
   },
   {
     "id": "case_weapon_2",
@@ -81,7 +83,8 @@ export const WEAPON_CASES = [
       "knife_paracord_safari",
       "knife_shadow_scorched",
       "knife_nomad_safari"
-    ]
+    ],
+    "reqBreakthrough": 0
   },
   {
     "id": "case_vanguard",
@@ -109,7 +112,8 @@ export const WEAPON_CASES = [
       "knife_survival_boreal",
       "knife_flip_night",
       "knife_gut_bluesteel"
-    ]
+    ],
+    "reqBreakthrough": 1
   },
   {
     "id": "case_chroma_1",
@@ -137,7 +141,8 @@ export const WEAPON_CASES = [
       "knife_shadow_damascus",
       "knife_falchion_night",
       "knife_navaja_rust"
-    ]
+    ],
+    "reqBreakthrough": 1
   },
   {
     "id": "case_weapon_3",
@@ -165,7 +170,8 @@ export const WEAPON_CASES = [
       "knife_karambit_safari",
       "knife_bowie_stained",
       "knife_stiletto_boreal"
-    ]
+    ],
+    "reqBreakthrough": 1
   },
   {
     "id": "case_phoenix",
@@ -193,7 +199,8 @@ export const WEAPON_CASES = [
       "knife_stiletto_damascus",
       "knife_falchion_web",
       "knife_karambit_autotronic"
-    ]
+    ],
+    "reqBreakthrough": 1
   },
   {
     "id": "case_huntsman",
@@ -221,7 +228,8 @@ export const WEAPON_CASES = [
       "knife_paracord_slaughter",
       "knife_karambit_marble",
       "knife_shadow_fade"
-    ]
+    ],
+    "reqBreakthrough": 2
   },
   {
     "id": "case_breakout",
@@ -249,7 +257,8 @@ export const WEAPON_CASES = [
       "knife_bowie_crimson",
       "knife_flip_tiger",
       "knife_gut_tiger"
-    ]
+    ],
+    "reqBreakthrough": 2
   },
   {
     "id": "case_chroma_2",
@@ -277,7 +286,8 @@ export const WEAPON_CASES = [
       "knife_nomad_stained",
       "knife_stiletto_crimson",
       "knife_talon_forest"
-    ]
+    ],
+    "reqBreakthrough": 2
   },
   {
     "id": "case_falchion",
@@ -305,7 +315,8 @@ export const WEAPON_CASES = [
       "knife_karambit_tiger",
       "knife_bayonet_stained",
       "knife_karambit_emerald"
-    ]
+    ],
+    "reqBreakthrough": 2
   },
   {
     "id": "case_shadow",
@@ -333,7 +344,8 @@ export const WEAPON_CASES = [
       "knife_scythe_rust",
       "knife_skeleton_forest",
       "knife_classic_night"
-    ]
+    ],
+    "reqBreakthrough": 3
   },
   {
     "id": "case_revolver",
@@ -361,7 +373,8 @@ export const WEAPON_CASES = [
       "knife_ursus_tiger",
       "knife_nomad_crimson",
       "knife_bayonet_crimson"
-    ]
+    ],
+    "reqBreakthrough": 3
   },
   {
     "id": "case_wildfire",
@@ -389,7 +402,8 @@ export const WEAPON_CASES = [
       "knife_karambit_crimson",
       "knife_katana_wood",
       "knife_m9_crimson"
-    ]
+    ],
+    "reqBreakthrough": 4
   },
   {
     "id": "case_chroma_3",
@@ -417,7 +431,8 @@ export const WEAPON_CASES = [
       "knife_classic_crimson",
       "knife_skeleton_slaughter",
       "knife_scythe_crimson"
-    ]
+    ],
+    "reqBreakthrough": 4
   },
   {
     "id": "case_gamma_1",
@@ -445,7 +460,8 @@ export const WEAPON_CASES = [
       "knife_bowie_fade",
       "knife_falchion_fade",
       "knife_flip_fade"
-    ]
+    ],
+    "reqBreakthrough": 5
   },
   {
     "id": "case_gamma_2",
@@ -473,7 +489,8 @@ export const WEAPON_CASES = [
       "knife_ursus_fade",
       "knife_stiletto_fade",
       "knife_karambit_slaughter"
-    ]
+    ],
+    "reqBreakthrough": 6
   },
   {
     "id": "case_glove",
@@ -501,7 +518,8 @@ export const WEAPON_CASES = [
       "knife_paracord_fade",
       "knife_karambit_ruby",
       "knife_survival_fade"
-    ]
+    ],
+    "reqBreakthrough": 8
   },
   {
     "id": "case_spectrum_1",
@@ -529,7 +547,8 @@ export const WEAPON_CASES = [
       "knife_talon_fade",
       "knife_bayonet_autotronic",
       "knife_bayonet_tiger"
-    ]
+    ],
+    "reqBreakthrough": 10
   },
   {
     "id": "case_hydra",
@@ -557,7 +576,8 @@ export const WEAPON_CASES = [
       "knife_m9_autotronic",
       "knife_m9_fade",
       "knife_m9_tiger"
-    ]
+    ],
+    "reqBreakthrough": 12
   },
   {
     "id": "case_spectrum_2",
@@ -585,7 +605,8 @@ export const WEAPON_CASES = [
       "knife_stiletto_marble",
       "knife_katana_blood",
       "knife_falchion_marble"
-    ]
+    ],
+    "reqBreakthrough": 15
   },
   {
     "id": "case_clutch",
@@ -613,7 +634,8 @@ export const WEAPON_CASES = [
       "knife_flip_marble",
       "knife_gut_marble",
       "knife_scythe_fade"
-    ]
+    ],
+    "reqBreakthrough": 18
   },
   {
     "id": "case_horizon",
@@ -641,7 +663,8 @@ export const WEAPON_CASES = [
       "knife_m9_marble",
       "knife_talon_marble",
       "knife_nomad_bluegem"
-    ]
+    ],
+    "reqBreakthrough": 21
   },
   {
     "id": "case_dangerzone",
@@ -669,7 +692,8 @@ export const WEAPON_CASES = [
       "knife_butterfly_fade",
       "knife_butterfly_crimson",
       "knife_butterfly_tiger"
-    ]
+    ],
+    "reqBreakthrough": 24
   },
   {
     "id": "case_prisma_1",
@@ -697,7 +721,8 @@ export const WEAPON_CASES = [
       "knife_rainbow_karambit",
       "knife_butterfly_marble",
       "knife_butterfly_doppler"
-    ]
+    ],
+    "reqBreakthrough": 27
   },
   {
     "id": "case_cs20",
@@ -725,7 +750,8 @@ export const WEAPON_CASES = [
       "knife_m9_doppler2",
       "knife_bayonet_lore",
       "knife_m9_lore"
-    ]
+    ],
+    "reqBreakthrough": 30
   },
   {
     "id": "case_shattered",
@@ -753,7 +779,8 @@ export const WEAPON_CASES = [
       "knife_flip_emerald",
       "knife_m9_emerald",
       "knife_gut_emerald"
-    ]
+    ],
+    "reqBreakthrough": 33
   },
   {
     "id": "case_prisma_2",
@@ -781,7 +808,8 @@ export const WEAPON_CASES = [
       "knife_katana_printstream",
       "knife_bowie_emerald",
       "knife_celestial_karambit"
-    ]
+    ],
+    "reqBreakthrough": 36
   },
   {
     "id": "case_fracture",
@@ -809,7 +837,8 @@ export const WEAPON_CASES = [
       "knife_ursus_emerald",
       "knife_shadow_emerald",
       "knife_talon_emerald"
-    ]
+    ],
+    "reqBreakthrough": 39
   },
   {
     "id": "case_brokenfang",
@@ -837,7 +866,8 @@ export const WEAPON_CASES = [
       "knife_bayonet_ruby",
       "knife_flip_ruby",
       "knife_butterfly_ruby"
-    ]
+    ],
+    "reqBreakthrough": 42
   },
   {
     "id": "case_snakebite",
@@ -865,7 +895,8 @@ export const WEAPON_CASES = [
       "knife_talon_ruby",
       "knife_rainbow_navaja",
       "knife_katana_demon"
-    ]
+    ],
+    "reqBreakthrough": 44
   },
   {
     "id": "case_riptide",
@@ -893,7 +924,8 @@ export const WEAPON_CASES = [
       "knife_rainbow_falchion",
       "knife_rainbow_flip",
       "knife_rainbow_shadow"
-    ]
+    ],
+    "reqBreakthrough": 46
   },
   {
     "id": "case_dreams",
@@ -921,7 +953,8 @@ export const WEAPON_CASES = [
       "knife_rainbow_ursus",
       "knife_rainbow_stiletto",
       "knife_rainbow_paracord"
-    ]
+    ],
+    "reqBreakthrough": 48
   },
   {
     "id": "case_recoil",
@@ -949,7 +982,8 @@ export const WEAPON_CASES = [
       "knife_rainbow_bayonet",
       "knife_rainbow_classic",
       "knife_rainbow_m9"
-    ]
+    ],
+    "reqBreakthrough": 49
   },
   {
     "id": "case_revolution",
@@ -977,7 +1011,8 @@ export const WEAPON_CASES = [
       "knife_karambit_bluegem",
       "knife_rainbow_skeleton",
       "knife_rainbow_butterfly"
-    ]
+    ],
+    "reqBreakthrough": 50
   },
   {
     "id": "case_kilowatt",
@@ -1005,7 +1040,8 @@ export const WEAPON_CASES = [
       "knife_celestial_ursus",
       "knife_celestial_huntsman",
       "knife_celestial_bowie"
-    ]
+    ],
+    "reqBreakthrough": 50
   },
   {
     "id": "case_neon_matrix",
@@ -1033,7 +1069,8 @@ export const WEAPON_CASES = [
       "knife_celestial_bayonet",
       "knife_celestial_m9",
       "knife_celestial_skeleton"
-    ]
+    ],
+    "reqBreakthrough": 55
   },
   {
     "id": "case_astral_rift",
@@ -1061,7 +1098,8 @@ export const WEAPON_CASES = [
       "knife_celestial_daggers",
       "knife_celestial_scythe",
       "knife_celestial_katana"
-    ]
+    ],
+    "reqBreakthrough": 60
   },
   {
     "id": "case_quantum_singularity",
@@ -1089,7 +1127,8 @@ export const WEAPON_CASES = [
       "knife_titanium_stiletto",
       "knife_titanium_huntsman",
       "knife_titanium_bayonet"
-    ]
+    ],
+    "reqBreakthrough": 65
   },
   {
     "id": "case_omega_pantheon",
@@ -1117,7 +1156,8 @@ export const WEAPON_CASES = [
       "knife_titanium_skeleton",
       "knife_titanium_butterfly",
       "knife_godly_scythe"
-    ]
+    ],
+    "reqBreakthrough": 70
   },
   {
     "id": "case_eternity_apex",
@@ -1145,7 +1185,8 @@ export const WEAPON_CASES = [
       "knife_godly_katana",
       "knife_godly_omega",
       "knife_karambit_lore"
-    ]
+    ],
+    "reqBreakthrough": 75
   },
   {
     "id": "case_cyber_matrix",
@@ -1173,7 +1214,8 @@ export const WEAPON_CASES = [
       "knife_secret_42_3",
       "knife_secret_42_4",
       "knife_secret_42_5"
-    ]
+    ],
+    "reqBreakthrough": 80
   },
   {
     "id": "case_abyssal_rift",
@@ -1201,7 +1243,8 @@ export const WEAPON_CASES = [
       "knife_secret_43_3",
       "knife_secret_43_4",
       "knife_secret_43_5"
-    ]
+    ],
+    "reqBreakthrough": 85
   },
   {
     "id": "case_chronos_singularity",
@@ -1229,7 +1272,8 @@ export const WEAPON_CASES = [
       "knife_secret_44_3",
       "knife_secret_44_4",
       "knife_secret_44_5"
-    ]
+    ],
+    "reqBreakthrough": 90
   },
   {
     "id": "case_infinity_apex",
@@ -1257,6 +1301,7 @@ export const WEAPON_CASES = [
       "knife_secret_45_3",
       "knife_secret_45_4",
       "knife_secret_45_5"
-    ]
+    ],
+    "reqBreakthrough": 100
   }
 ];

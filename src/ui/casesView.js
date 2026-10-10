@@ -46,13 +46,76 @@ export function getCaseIndex(caseObj) {
   return WEAPON_CASES.findIndex(c => c.id === cid) + 1;
 }
 
-export function caseIsOpen(caseObj) {
-  const index = WEAPON_CASES.findIndex(c => c.id === (caseObj?.id || caseObj));
-  if (index <= 0) return true; // Первый кейс открыт всегда
+export function getBreakthroughCount() {
+  return Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
+}
+
+export function getCaseLockInfo(caseObj) {
+  const cid = typeof caseObj === 'string' ? caseObj : caseObj?.id;
+  const index = WEAPON_CASES.findIndex(c => c.id === cid);
+  if (index < 0) {
+    return { isUnlocked: true, hasPrevKnife: true, hasBreakthrough: true, prevIndex: 0, reqBreakthrough: 0 };
+  }
+  const targetCase = WEAPON_CASES[index];
+  const reqBreakthrough = Math.max(0, Number(targetCase?.reqBreakthrough) || 0);
+  const currentBreakthrough = getBreakthroughCount();
+  const hasBreakthrough = currentBreakthrough >= reqBreakthrough;
+
+  if (index === 0) {
+    return {
+      isUnlocked: hasBreakthrough,
+      hasPrevKnife: true,
+      hasBreakthrough,
+      prevIndex: 0,
+      reqBreakthrough
+    };
+  }
+
   const prevCase = WEAPON_CASES[index - 1];
-  if (!prevCase || !prevCase.pool) return true;
   const unlocked = GAME.unlockedKnives || [];
-  return prevCase.pool.some(kId => unlocked.includes(kId));
+  const hasPrevKnife = !prevCase || !prevCase.pool || prevCase.pool.some(kId => unlocked.includes(kId));
+  const isUnlocked = hasPrevKnife && hasBreakthrough;
+
+  return {
+    isUnlocked,
+    hasPrevKnife,
+    hasBreakthrough,
+    prevIndex: index,
+    reqBreakthrough
+  };
+}
+
+export function caseIsOpen(caseObj) {
+  return getCaseLockInfo(caseObj).isUnlocked;
+}
+
+export function getCaseLockReason(caseObj) {
+  const info = getCaseLockInfo(caseObj);
+  if (info.isUnlocked) return '';
+
+  const reqStr = formatNumber(info.reqBreakthrough);
+  if (!info.hasPrevKnife && !info.hasBreakthrough) {
+    return t('cases.lockNeedBoth', { prev: info.prevIndex, req: reqStr });
+  }
+  if (!info.hasPrevKnife) {
+    return t('cases.lockNeedKnife', { prev: info.prevIndex });
+  }
+  return t('cases.lockNeedBreakthrough', { req: reqStr });
+}
+
+export function getCaseLockAlert(caseObj) {
+  const idx = getCaseIndex(caseObj);
+  const info = getCaseLockInfo(caseObj);
+  if (info.isUnlocked) return '';
+
+  const reqStr = formatNumber(info.reqBreakthrough);
+  if (!info.hasPrevKnife && !info.hasBreakthrough) {
+    return t('cases.lockedBothAlert', { idx, prev: info.prevIndex, req: reqStr });
+  }
+  if (!info.hasPrevKnife) {
+    return t('cases.lockedKnifeAlert', { idx, prev: info.prevIndex });
+  }
+  return t('cases.lockedBreakthroughAlert', { idx, req: reqStr });
 }
 
 export function caseRollNeed(caseObj, count = 1) {
@@ -151,8 +214,8 @@ function casesInEpochOrder() {
 
 function assertCaseReady(caseObj, count = 1) {
   if (!caseIsOpen(caseObj)) {
-    const idx = getCaseIndex(caseObj);
-    alert(`Кейс #${idx} заблокирован! Чтобы открыть его, выбейте хотя бы один нож из Кейса #${idx - 1}.`);
+    const alertMsg = getCaseLockAlert(caseObj) || `Кейс #${getCaseIndex(caseObj)} заблокирован! ${getCaseLockReason(caseObj)}`;
+    alert(alertMsg);
     return false;
   }
   const missing = missingCaseFunds(caseObj, count);
@@ -822,7 +885,7 @@ export function renderCasesSystem() {
       const hasCurrency3 = isUnlocked && canAffordCase(c, 3);
       const canOpen = isUnlocked && hasCurrency;
       const cIdx = getCaseIndex(c);
-      const lockReason = cIdx > 1 ? `Нужен нож из #${cIdx - 1}` : 'Заблокирован';
+      const lockReason = getCaseLockReason(c) || (cIdx > 1 ? `Нужен нож из #${cIdx - 1}` : 'Заблокирован');
 
       const lockBadge = !isUnlocked
         ? `<div class="mt-1 text-[9px] font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50">🔒 ${lockReason}</div>`
@@ -1127,7 +1190,7 @@ export function updateCasesButtons() {
     btn.disabled = !canOpen;
 
     const cIdx = getCaseIndex(c);
-    const lockReason = cIdx > 1 ? `Нужен нож из #${cIdx - 1}` : 'Заблокирован';
+    const lockReason = getCaseLockReason(c) || (cIdx > 1 ? `Нужен нож из #${cIdx - 1}` : 'Заблокирован');
     const newText = !isUnlocked
       ? `🔒 ${lockReason}`
       : (isDiscounted && hasCurrency ? `🎁 ${t('cases.openDiscount')}` : (hasCurrency ? t('cases.open') : t('cases.noFunds')));
