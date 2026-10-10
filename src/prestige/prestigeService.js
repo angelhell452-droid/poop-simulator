@@ -6,8 +6,8 @@ import { bigPow, gte, mul } from '../utils/big.js?v=5.0.80';
 
 export function getPrestigeRequirement() {
   const flushes = GAME.flushCount ?? GAME.totalPrestiges ?? 0;
-  // Требование кошелька биомассы: 1000 * 1.5^(Кол-во Смывов)
-  const reqBiomass = mul(1000, bigPow(1.5, flushes));
+  // Требование кошелька биомассы: 50000 * 2.5^(Кол-во Смывов)
+  const reqBiomass = mul(50000, bigPow(2.5, flushes));
   const currentBiomass = GAME.biomass || 0;
   const isMet = gte(currentBiomass, reqBiomass);
 
@@ -38,6 +38,10 @@ export function getPrestigeRewardBreakdown() {
   const vipMult = GAME.vipPass ? 2 : 1;
 
   const totalGain = req.isMet ? Math.max(1, Math.round(pack * flushTalentBonus * vipMult)) : 0;
+  const currentBoostPct = req.flushes * 50;
+  const nextBoostPct = (req.flushes + 1) * 50;
+  const currentIncomeMult = 1 + req.flushes * 0.5;
+  const nextIncomeMult = 1 + (req.flushes + 1) * 0.5;
 
   return {
     ...req,
@@ -45,6 +49,10 @@ export function getPrestigeRewardBreakdown() {
     flushTalentBonus,
     vipMult,
     totalGain,
+    currentBoostPct,
+    nextBoostPct,
+    currentIncomeMult,
+    nextIncomeMult,
     plungerGain: 0
   };
 }

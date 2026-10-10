@@ -61,7 +61,11 @@ export function getTranscendRequirement() {
   const currentCount = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
   const reqLevel = 1000;
   const currentLevel = getBreakthroughExpLevel(GAME.lifetimeBiomassInCurrentCycle || 0);
-  const isMet = currentLevel >= reqLevel;
+  const reqPrestiges = flushesNeededForBridge(currentCount);
+  const currentPrestiges = Math.max(0, Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0);
+  const meetsBiomass = currentLevel >= reqLevel;
+  const meetsPrestiges = currentPrestiges >= reqPrestiges;
+  const isMet = meetsBiomass && meetsPrestiges;
 
   return {
     transcends: currentCount,
@@ -70,15 +74,15 @@ export function getTranscendRequirement() {
     currentLevel,
     reqForm: 1,
     currentForm: 1,
-    reqPrestiges: 0,
-    currentPrestiges: GAME.flushCount || 0,
+    reqPrestiges,
+    currentPrestiges,
     reqRolls: 0,
     currentRolls: GAME.prestigeRolls || 0,
     currentBiomass: GAME.lifetimeBiomassInCurrentCycle || 0,
     meetsStage: true,
-    meetsPrestiges: true,
+    meetsPrestiges,
     meetsRolls: true,
-    meetsBiomass: isMet,
+    meetsBiomass,
     isMet
   };
 }
@@ -103,6 +107,9 @@ export function getTranscendRewardBreakdown() {
   let totalGain = Math.round(basePlungers * (1 + soulBonus + incubatorBonus) * vipMult);
   totalGain = Math.max(1, totalGain);
 
+  const currentMult = currentCount > 0 ? bigPow(1 + currentCount, currentCount) : 1;
+  const nextMult = bigPow(2 + currentCount, 1 + currentCount);
+
   return {
     ...req,
     flushPart: basePlungers,
@@ -114,6 +121,8 @@ export function getTranscendRewardBreakdown() {
     doubleChance,
     vipMult,
     totalGain,
+    currentMult,
+    nextMult,
     nextPlungerRollsNeeded: 0,
     nextPlungerFormsNeeded: 0
   };
