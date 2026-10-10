@@ -4,19 +4,19 @@ import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from '../data/relics.dat
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.80';
-import { bigPow, gte, log10Of, mul } from '../utils/big.js?v=5.0.80';
+import { bigPow, bigPow10, gte, log10Of, mul } from '../utils/big.js?v=5.0.80';
 import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.80';
 
 export const BRIDGE_FLUSHES_NEEDED = 20;
 
 /**
  * Dynamic infinite scaling for flush requirement:
- * ReqFlushes = 20 + Math.floor(GAME.breakthroughCount * 0.5)
+ * ReqFlushes = 20 + Math.floor(GAME.breakthroughCount * 1.5)
  * relic_flush_req_reduction reduces requirement by -3% per level.
  */
 export function flushesNeededForBridge(transcends = (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0)) {
   const done = Math.max(0, Number(transcends) || 0);
-  const base = 20 + Math.floor(done * 0.5);
+  const base = 20 + Math.floor(done * 1.5);
 
   const reductionLvl = getRelicLevel('relic_flush_req_reduction');
   if (reductionLvl > 0) {
@@ -66,9 +66,14 @@ export function getBreakthroughExpLevel(biomass = (GAME.breakthroughProgress ?? 
   return Math.max(0, lvl);
 }
 
+export function getTargetBreakthroughExperience(transcends = (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0)) {
+  const b = Math.max(0, Number(transcends) || 0);
+  return 1000 * (1 + b);
+}
+
 export function getTranscendRequirement() {
   const currentCount = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
-  const reqLevel = 1000;
+  const reqLevel = getTargetBreakthroughExperience(currentCount);
   const currentBio = GAME.breakthroughProgress ?? GAME.lifetimeBiomassInCurrentCycle ?? 0;
   const currentLevel = getBreakthroughExpLevel(currentBio);
   const reqPrestiges = flushesNeededForBridge(currentCount);
@@ -168,10 +173,21 @@ export function executeTranscend() {
     });
   }
 
-  // СБРАСЫВАЕТСЯ ТОЛЬКО ОДОМЕТР ТЕКУЩЕГО ЦИКЛА (для перехода на новые 1000 уровней)
-  // Баланс биомассы, заводы, ножи, таланты, втулки, блестяшки и одежда сохраняются!
-  GAME.lifetimeBiomassInCurrentCycle = 0;
-  GAME.breakthroughProgress = 0;
+  // При нажатии кнопки Прорыва накопленный опыт уменьшается на величину TargetBreakthroughExperience,
+  // а не сбрасывается в абсолютный 0, чтобы излишки опыта сохранялись.
+  const currentLevel = breakdown.currentLevel;
+  const reqLevel = breakdown.reqLevel;
+  const remainingLevel = Math.max(0, currentLevel - reqLevel);
+  if (remainingLevel <= 0) {
+    GAME.lifetimeBiomassInCurrentCycle = 0;
+    GAME.breakthroughProgress = 0;
+  } else {
+    // Обратный расчет биомассы: lvl = Math.floor((logVal - 2) * (1000 / 15)) => logVal = 2 + lvl * 0.015
+    const newLogVal = 2 + remainingLevel * (15 / 1000);
+    const newBiomass = bigPow10(newLogVal);
+    GAME.lifetimeBiomassInCurrentCycle = newBiomass;
+    GAME.breakthroughProgress = newBiomass;
+  }
 
   events.emit('transcend:completed', { gain, breakthroughCount: nextCount });
   return true;

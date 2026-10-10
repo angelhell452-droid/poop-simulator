@@ -142,7 +142,7 @@ export function updateTranscendModalRealtime() {
             </span>
           </div>
           <div class="text-[11px] text-indigo-200">
-            Доступно каждые +1000 уровней опыта биомассы
+            Цель: ${formatNumber(reqLevel)} ур. (+1000 за каждый Прорыв)
           </div>
           <div class="flex items-center justify-between text-xs font-mono font-bold">
             <span class="text-stone-300">Текущий прогресс:</span>
@@ -213,7 +213,7 @@ export function updateTranscendModalRealtime() {
       if (!tb.meetsPrestiges) {
         execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(tb.reqPrestiges)} СМЫВОВ (ЕСТЬ ${formatNumber(tb.currentPrestiges)}) 🔒`;
       } else {
-        execTransBtn.textContent = `ТРЕБУЕТСЯ 1000 УР. ОПЫТА (СЕЙЧАС ${formatNumber(tb.currentLevel)}) 🔒`;
+        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(tb.reqLevel)} УР. ОПЫТА (СЕЙЧАС ${formatNumber(tb.currentLevel)}) 🔒`;
       }
     } else {
       execTransBtn.disabled = gain <= 0;
