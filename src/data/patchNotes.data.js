@@ -2,6 +2,48 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.2.2 PRO',
+    date: '10 Октября 2026',
+    dateEn: 'October 10, 2026',
+    title: 'Патч 5.2.2: Бесконечные Прорывы, Динамический Опыт и Экспонента Смывов',
+    titleEn: 'Patch 5.2.2: Infinite Breakthroughs, Dynamic Exp & Exponential Flush Wall',
+    badge: 'Патч 5.2.2',
+    badgeEn: 'Patch 5.2.2',
+    badgeClass: 'bg-indigo-500/20 text-indigo-200 border-indigo-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🌀',
+        text: 'Суровая Эндгейм-Стена Смывов: Формула требований Смывов переведена на экспоненциально-степенную прогрессию: ReqFlushes = 20 + ⌊B × 4⌋ + ⌊B^1.3⌋ (10-й Прорыв: 79 смывов, 50-й: 381, 100-й: 818, 336-й: 3288 смывов).',
+        textEn: 'Hardcore Endgame Flush Wall: Flush requirement formula upgraded to exponential-power scaling: ReqFlushes = 20 + ⌊B × 4⌋ + ⌊B^1.3⌋ (10th Breakthrough: 79 flushes, 50th: 381, 100th: 818, 336th: 3288 flushes).'
+      },
+      {
+        type: 'balance',
+        icon: '🌌',
+        text: 'Динамический Рост Порога Опыта: Требование опыта биомассы масштабируется на +1000 за каждый совершенный Прорыв: TargetBreakthroughExperience = 1000 × (1 + B). На 336-м Прорыве цель составляет 336k ур.',
+        textEn: 'Dynamic Exp Threshold Scaling: Biomass experience requirement now scales by +1000 per Breakthrough: TargetBreakthroughExperience = 1000 × (1 + B). Reaching Breakthrough #336 now requires 336k levels.'
+      },
+      {
+        type: 'feature',
+        icon: '💾',
+        text: 'Сохранение Излишков Опыта: При совершении Прорыва накопленный опыт больше не сгорает в 0, а точно вычитает требуемый порог, сберегая весь избыточный прогресс игрока для следующего Прорыва.',
+        textEn: 'Excess Experience Preservation: Performing a Breakthrough no longer wipes experience to 0. It subtracts the required target, fully preserving accumulated surplus for the next Breakthrough.'
+      },
+      {
+        type: 'balance',
+        icon: '📈',
+        text: 'Сбалансированная Формула Дохода: Множитель дохода обновлен до (1.5 + 0.1 × B)^B на big.js, обеспечивая честную бесконечную прогрессию без поломки экономики авто-заводов.',
+        textEn: 'Balanced Income Multiplier: Income boost reworked to (1.5 + 0.1 × B)^B on big.js, delivering genuine infinite scaling without breaking factory economy.'
+      },
+      {
+        type: 'ui',
+        icon: '🪠',
+        text: 'Обновление UI Прорыва: Прогресс-бар, динамические цели и подсказки на кнопке Прорыва отображают точные актуальные значения требований опыта и смывов.',
+        textEn: 'Breakthrough UI Refresh: Progress bar, dynamic goals, and button status display exact real-time requirements for both experience and flushes.'
+      }
+    ]
+  },
+  {
     version: 'v5.2.1 PRO',
     date: '10 Октября 2026',
     dateEn: 'October 10, 2026',

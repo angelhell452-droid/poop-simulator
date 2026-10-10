@@ -11,12 +11,12 @@ export const BRIDGE_FLUSHES_NEEDED = 20;
 
 /**
  * Dynamic infinite scaling for flush requirement:
- * ReqFlushes = 20 + Math.floor(GAME.breakthroughCount * 1.5)
+ * ReqFlushes = 20 + Math.floor(GAME.breakthroughCount * 4) + Math.floor(Math.pow(GAME.breakthroughCount, 1.3))
  * relic_flush_req_reduction reduces requirement by -3% per level.
  */
 export function flushesNeededForBridge(transcends = (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0)) {
   const done = Math.max(0, Number(transcends) || 0);
-  const base = 20 + Math.floor(done * 1.5);
+  const base = 20 + Math.floor(done * 4) + Math.floor(Math.pow(done, 1.3));
 
   const reductionLvl = getRelicLevel('relic_flush_req_reduction');
   if (reductionLvl > 0) {
