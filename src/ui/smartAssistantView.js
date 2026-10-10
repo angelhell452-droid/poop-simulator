@@ -10,6 +10,7 @@ import { peakForm, isCasesUnlocked } from '../progression/unlocks.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { gte } from '../utils/big.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
+import { addVisualParticle } from './petCanvasView.js?v=5.0.80';
 import { renderCasesSystem, FIRST_CASE_ID, isFirstCaseDiscountAvailable, canAffordCase, caseIsOpen } from './casesView.js?v=5.0.80';
 import { renderCharacterInventory } from './characterInventoryView.js?v=5.0.80';
 import { t, onLocaleChange } from '../i18n/t.js';

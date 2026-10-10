@@ -18,6 +18,7 @@ import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.80';
 import { t } from '../i18n/t.js';
 import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.0.80';
 import { executeTimeWarp } from './vipShopView.js?v=5.0.80';
+import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
 let ctx = null;
@@ -787,6 +788,7 @@ function queueProp(key, src, options, priority) {
 
 function queueKnife(id, priority) {
   const file = id.replace('knife_', 'knife-').replaceAll('_', '-');
+  if (!AVAILABLE_KNIFE_ART.has(file)) return;
   queueProp(id, `assets/poop/props/${file}.png?v=cut5`, knifeCutOptions(id), priority);
 }
 

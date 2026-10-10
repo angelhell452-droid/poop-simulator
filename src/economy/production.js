@@ -15,6 +15,7 @@ import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.80';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
 import { findBodySkin } from '../data/skins.data.js?v=5.0.80';
 import { add, cmp, isBig, mul } from '../utils/big.js?v=5.0.80';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { horizonIncomeMult } from './horizon.js?v=5.0.80';
 import { BARE_CLICK_CAP } from '../systems/autoclickService.js?v=5.0.80';
 

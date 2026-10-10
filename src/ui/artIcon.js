@@ -1,4 +1,6 @@
-﻿const HAT_ART = {
+import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
+
+const HAT_ART = {
   hat_cap: 'assets/poop/props/hat-cap.png',
   hat_party: 'assets/poop/props/hat-party.png',
   hat_shades: 'assets/poop/props/hat-shades.png',
@@ -16,6 +18,7 @@ let fallbackSeq = 0;
 function knifeArtSrc(knife) {
   if (!knife?.id || !String(knife.id).startsWith('knife_')) return '';
   const file = String(knife.id).replace('knife_', 'knife-').replaceAll('_', '-');
+  if (!AVAILABLE_KNIFE_ART.has(file)) return '';
   return `assets/poop/props/${file}.png?v=cut5`;
 }
 
