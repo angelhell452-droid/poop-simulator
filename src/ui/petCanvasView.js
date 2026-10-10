@@ -1431,6 +1431,7 @@ export function catchGoldenMeteor() {
     const addBio = mul(cur, 31.62);
     GAME.biomass = gainBio(GAME.biomass, addBio);
     GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, addBio);
+    GAME.breakthroughProgress = GAME.lifetimeBiomassInCurrentCycle;
     addVisualParticle('⚡ ГАЛАКТИЧЕСКИЙ ШТОРМ (+100 УР)! ⚡', '#38bdf8', 1.8, 2.5, -2.8);
   }
 

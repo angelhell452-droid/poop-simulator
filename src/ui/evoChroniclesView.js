@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { t, onLocaleChange } from '../i18n/t.js';
@@ -10,7 +10,7 @@ export function renderEvoChronicles() {
   container.innerHTML = '';
 
   const minStage = Math.max(0, GAME.evoStage - 2);
-  const maxStage = Math.min(EVOLUTIONS.length - 1, GAME.evoStage + 8);
+  const maxStage = GAME.evoStage + 8;
 
   for (let i = minStage; i <= maxStage; i++) {
     const ev = EVOLUTIONS[i];

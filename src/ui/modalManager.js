@@ -170,7 +170,7 @@ export function updateTranscendModalRealtime() {
         <!-- 3. Пассивный бесконечный буст -->
         <div class="p-2.5 rounded-xl bg-gradient-to-r from-indigo-950 to-purple-950 border border-cyan-400/40 text-left space-y-1">
           <div class="text-[10px] text-cyan-300 uppercase font-bold tracking-wider">
-            Пассивный бесконечный буст после нажатия: (1 + Прорывы)^Прорывы
+            Пассивный бесконечный буст после нажатия: (1.5 + 0.1 × Прорывы)^Прорывы
           </div>
           <div class="flex items-center justify-between text-xs font-mono">
             <span class="text-stone-400">Множитель дохода:</span>

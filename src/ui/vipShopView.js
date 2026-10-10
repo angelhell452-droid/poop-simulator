@@ -32,6 +32,7 @@ export function executeTimeWarp(hours) {
 
   GAME.biomass = gainBio(GAME.biomass, payout);
   GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, payout);
+  GAME.breakthroughProgress = GAME.lifetimeBiomassInCurrentCycle;
   GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, payout);
   GAME.cycleBiomass = gainBio(GAME.cycleBiomass, payout);
 

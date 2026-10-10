@@ -1,7 +1,7 @@
 import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.80';
 import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
-import { isBig, mul } from '../utils/big.js?v=5.0.80';
+import { isBig, mul, bigPow } from '../utils/big.js?v=5.0.80';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
@@ -74,7 +74,7 @@ export function calcEvolutionMult(i) {
   if (phase.id <= 1) return Math.pow(6, t);
   if (phase.id <= 4) return 6 * Math.pow(2, (phase.id - 2) + t);
   const atEndOfFourth = 6 * Math.pow(2, 3);
-  return atEndOfFourth * Math.pow(1.25, (phase.id - 5) + t);
+  return mul(atEndOfFourth, bigPow(1.25, (phase.id - 5) + t));
 }
 
 function lookForIndex(i) {
@@ -83,6 +83,29 @@ function lookForIndex(i) {
   const base = EPOCH_NAMES[epochIdx % EPOCH_NAMES.length];
   const ent = ENTITIES[epochIdx % ENTITIES.length];
   return { ...base, epoch: `Горизонт: ${ent}` };
+}
+
+export function createEvolutionObject(i) {
+  const ep = lookForIndex(i);
+  const ent = ENTITIES[(i * 3 + Math.floor(i / 7)) % ENTITIES.length];
+  const tier = (i % 100) + 1;
+  const name = (i % 500 === 0) ? 'Владыка' : `${ent} ${tier}`;
+
+  const cost = calcEvolutionCost(i);
+  const mult = calcEvolutionMult(i);
+
+  return {
+    id: i,
+    name: name,
+    epoch: ep.epoch,
+    archetype: ep.archetype || "classic",
+    cost: cost,
+    mult: mult,
+    bgColor: ep.bg,
+    bodyColor: ep.body,
+    aura: ep.aura,
+    desc: `Форма №${formatNumber(i + 1)} — ${name}`
+  };
 }
 
 export function generateEvolutions() {
@@ -115,4 +138,19 @@ export function generateEvolutions() {
   return list;
 }
 
-export const EVOLUTIONS = generateEvolutions();
+const rawEvolutions = generateEvolutions();
+
+export const EVOLUTIONS = new Proxy(rawEvolutions, {
+  get(target, prop) {
+    if (typeof prop === 'string') {
+      const idx = Number(prop);
+      if (Number.isInteger(idx) && idx >= 0) {
+        if (idx < target.length) {
+          return target[idx];
+        }
+        return createEvolutionObject(idx);
+      }
+    }
+    return target[prop];
+  }
+});

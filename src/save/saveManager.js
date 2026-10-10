@@ -208,11 +208,14 @@ export function applySaveDataSafely(rawData) {
 
   // Safety sanitisers
   GAME.biomass = keepBio(GAME.biomass);
-  GAME.lifetimeBiomassInCurrentCycle = keepBio(GAME.lifetimeBiomassInCurrentCycle ?? GAME.cycleBiomass ?? 0);
+  GAME.lifetimeBiomassInCurrentCycle = keepBio(GAME.lifetimeBiomassInCurrentCycle ?? GAME.breakthroughProgress ?? GAME.cycleBiomass ?? 0);
+  GAME.breakthroughProgress = GAME.lifetimeBiomassInCurrentCycle;
   GAME.allTimeBiomass = keepBio(GAME.allTimeBiomass);
   GAME.cycleBiomass = keepBio(GAME.cycleBiomass);
   GAME.breakthroughCount = Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
+  GAME.totalTranscend = GAME.breakthroughCount;
   GAME.flushCount = Math.max(0, Math.floor(Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0));
+  GAME.totalPrestiges = GAME.flushCount;
   GAME.guildTickets = Math.max(0, Math.min(5, Math.floor(Number(GAME.guildTickets) || 0)));
   GAME.clicksTowardsTicket = Math.max(0, Math.floor(Number(GAME.clicksTowardsTicket) || 0));
   GAME.vipPass = Boolean(GAME.vipPass);
@@ -230,11 +233,10 @@ export function applySaveDataSafely(rawData) {
   }
   if (!isFinite(GAME.transcendPlungers) || GAME.transcendPlungers < 0 || GAME.transcendPlungers > 1e308) GAME.transcendPlungers = 0;
   if (!isFinite(GAME.evoStage) || GAME.evoStage < 0) GAME.evoStage = 0;
-  if (GAME.evoStage >= EVOLUTIONS.length) GAME.evoStage = EVOLUTIONS.length - 1;
   if (!GAME.phaseEcho || typeof GAME.phaseEcho !== 'object') GAME.phaseEcho = {};
   if (!Number.isFinite(GAME.flushesThisCycle) || GAME.flushesThisCycle < 0) GAME.flushesThisCycle = 0;
   if (!Number.isFinite(GAME.pairPlungersFromFlushes) || GAME.pairPlungersFromFlushes < 0) GAME.pairPlungersFromFlushes = 0;
-  const phaseCap = maxUnlockedStage(GAME.totalTranscend || 0);
+  const phaseCap = maxUnlockedStage(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
   if (GAME.evoStage > phaseCap) GAME.evoStage = phaseCap;
 
   const stepIdx = Math.max(0, Math.min(18, Math.floor(Number(GAME.tutorialStepIndex ?? ((Number(GAME.currentQuestId) || 1) - 1)) || 0)));

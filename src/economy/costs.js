@@ -28,10 +28,7 @@ export function getAffordableEvoInfo() {
   const omegaDisc = omegaTalent ? (1 - Math.pow(0.98, omegaTalent.level)) : 0;
   const unbreakRaw = (unbreakEvo && unbreakEvo.level > 0) ? (1 - Math.pow(0.985, unbreakEvo.level)) : 0;
 
-  const unlockedCap = Math.min(EVOLUTIONS.length - 1, maxUnlockedStage(GAME.totalTranscend || 0));
-  if (GAME.evoStage >= EVOLUTIONS.length - 1) {
-    return { count: 0, totalCost: 0, canBuy: false, maxReached: true, phaseLocked: false };
-  }
+  const unlockedCap = maxUnlockedStage(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
   if (GAME.evoStage >= unlockedCap) {
     return { count: 0, totalCost: 0, canBuy: false, maxReached: false, phaseLocked: true };
   }

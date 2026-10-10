@@ -10,14 +10,13 @@ import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.80';
 export const BRIDGE_FLUSHES_NEEDED = 20;
 
 /**
- * First breakthrough asks for 20 flushes, the second for 30, and every later one for 40.
+ * Dynamic infinite scaling for flush requirement:
+ * ReqFlushes = 20 + Math.floor(GAME.breakthroughCount * 0.5)
  * relic_flush_req_reduction reduces requirement by -3% per level.
  */
 export function flushesNeededForBridge(transcends = (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0)) {
   const done = Math.max(0, Number(transcends) || 0);
-  let base = 20;
-  if (done === 1) base = 30;
-  else if (done > 1) base = 40;
+  const base = 20 + Math.floor(done * 0.5);
 
   const reductionLvl = getRelicLevel('relic_flush_req_reduction');
   if (reductionLvl > 0) {
@@ -39,7 +38,7 @@ export function plungerFlushCap(transcends = (GAME.breakthroughCount ?? GAME.tot
 
 export function currentBridgePhase() {
   const t = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
-  const pair = Math.min(PHASE_COUNT / 2, 1 + t);
+  const pair = 1 + t;
   return getPhaseByIndex(pair * 2);
 }
 
@@ -59,7 +58,7 @@ export function flushCountsForBridge(phaseId) {
   return (phaseId || 0) >= currentBridgePhase().id;
 }
 
-export function getBreakthroughExpLevel(biomass = GAME.lifetimeBiomassInCurrentCycle || 0) {
+export function getBreakthroughExpLevel(biomass = (GAME.breakthroughProgress ?? GAME.lifetimeBiomassInCurrentCycle ?? 0)) {
   const logVal = log10Of(biomass);
   if (!Number.isFinite(logVal) || logVal <= 2) return 0;
   // Опыт рассчитывается от биомассы текущего цикла: 10^2 -> 0 ур., 10^17 -> 1000 ур.
@@ -70,7 +69,8 @@ export function getBreakthroughExpLevel(biomass = GAME.lifetimeBiomassInCurrentC
 export function getTranscendRequirement() {
   const currentCount = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
   const reqLevel = 1000;
-  const currentLevel = getBreakthroughExpLevel(GAME.lifetimeBiomassInCurrentCycle || 0);
+  const currentBio = GAME.breakthroughProgress ?? GAME.lifetimeBiomassInCurrentCycle ?? 0;
+  const currentLevel = getBreakthroughExpLevel(currentBio);
   const reqPrestiges = flushesNeededForBridge(currentCount);
   const currentPrestiges = Math.max(0, Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0);
   const meetsBiomass = currentLevel >= reqLevel;
@@ -88,7 +88,7 @@ export function getTranscendRequirement() {
     currentPrestiges,
     reqRolls: 0,
     currentRolls: GAME.prestigeRolls || 0,
-    currentBiomass: GAME.lifetimeBiomassInCurrentCycle || 0,
+    currentBiomass: currentBio,
     meetsStage: true,
     meetsPrestiges,
     meetsRolls: true,
@@ -116,9 +116,10 @@ export function getTranscendRewardBreakdown() {
   totalGain = Math.max(1, totalGain);
 
   const boostLvl = getRelicLevel('relic_breakthrough_boost');
-  const baseFactor = 1 + currentCount + (boostLvl * 0.1);
+  const baseFactor = 1.5 + (currentCount * 0.1) + (boostLvl * 0.1);
   const currentMult = currentCount > 0 ? bigPow(baseFactor, currentCount) : 1;
-  const nextMult = bigPow(baseFactor + 1, 1 + currentCount);
+  const nextBase = 1.5 + ((currentCount + 1) * 0.1) + (boostLvl * 0.1);
+  const nextMult = bigPow(nextBase, 1 + currentCount);
 
   return {
     ...req,
@@ -170,6 +171,7 @@ export function executeTranscend() {
   // СБРАСЫВАЕТСЯ ТОЛЬКО ОДОМЕТР ТЕКУЩЕГО ЦИКЛА (для перехода на новые 1000 уровней)
   // Баланс биомассы, заводы, ножи, таланты, втулки, блестяшки и одежда сохраняются!
   GAME.lifetimeBiomassInCurrentCycle = 0;
+  GAME.breakthroughProgress = 0;
 
   events.emit('transcend:completed', { gain, breakthroughCount: nextCount });
   return true;

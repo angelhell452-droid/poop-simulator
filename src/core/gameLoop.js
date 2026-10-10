@@ -41,6 +41,7 @@ export function gameEngineTick() {
   const passiveGained = mul(passivePerSec, dt);
   GAME.biomass = gainBio(GAME.biomass, passiveGained);
   GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, passiveGained);
+  GAME.breakthroughProgress = GAME.lifetimeBiomassInCurrentCycle;
   GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, passiveGained);
   GAME.cycleBiomass = gainBio(GAME.cycleBiomass, passiveGained);
 

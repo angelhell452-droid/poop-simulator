@@ -7,14 +7,14 @@ import { PHASE_COUNT, PHASE_FORMS, CLASSIC_EPOCHS, BANDS } from './phases.consta
 export { PHASE_COUNT, PHASE_FORMS, CLASSIC_EPOCHS, BANDS };
 
 export function phaseCeiling(phaseId) {
-  const n = Math.min(PHASE_COUNT, Math.max(1, phaseId));
+  const n = Math.max(1, phaseId);
   const raw = 1e6 * Math.pow(1000, n - 1);
-  if (Number.isFinite(raw)) return raw;
+  if (Number.isFinite(raw) && raw < 1e308) return raw;
   return bigPow10(6 + 3 * (n - 1));
 }
 
 export function getPhaseByIndex(phaseId) {
-  const id = Math.min(PHASE_COUNT, Math.max(1, phaseId));
+  const id = Math.max(1, phaseId);
   const formStart = (id - 1) * PHASE_FORMS + 1;
   const formEnd = id * PHASE_FORMS;
   const ceiling = phaseCeiling(id);
@@ -33,7 +33,7 @@ export function getPhaseByIndex(phaseId) {
 }
 
 export function getPhaseForForm(form) {
-  const clamped = Math.min(PHASE_COUNT * PHASE_FORMS, Math.max(1, form || 1));
+  const clamped = Math.max(1, form || 1);
   return getPhaseByIndex(Math.floor((clamped - 1) / PHASE_FORMS) + 1);
 }
 
@@ -41,10 +41,10 @@ export function getPhaseForStage(stage) {
   return getPhaseForForm((stage || 0) + 1);
 }
 
-/** Completed transcends. Zero keeps the first pair (forms 1–1000) open. */
+/** Completed transcends. Zero keeps the first pair (forms 1–1000) open. +1000 forms per breakthrough without cap. */
 export function maxUnlockedForm(transcends) {
   const pairs = 1 + Math.max(0, transcends || 0);
-  return Math.min(PHASE_COUNT * PHASE_FORMS, pairs * 1000);
+  return pairs * 1000;
 }
 
 export function maxUnlockedStage(transcends) {

@@ -75,7 +75,7 @@ export function getBreakthroughIncomeMult() {
   const hackLvl = TALENTS.find(t => t.id === 'talent_exponent_hack')?.level || 0;
   const exp = b + (hackLvl * 0.05);
   const boostLvl = getRelicLevel('relic_breakthrough_boost');
-  const base = 1 + b + (boostLvl * 0.1);
+  const base = 1.5 + (b * 0.1) + (boostLvl * 0.1);
   return bigPow(base, exp);
 }
 
@@ -157,7 +157,7 @@ export function getRollsIncomeMult() {
 }
 
 /**
- * Breakthrough infinite scaling: (1 + b)^b multiplier to all income.
+ * Breakthrough infinite scaling: (1.5 + 0.1 * b)^b multiplier to all income.
  */
 export function getPlungersIncomeMult() {
   return getBreakthroughIncomeMult();

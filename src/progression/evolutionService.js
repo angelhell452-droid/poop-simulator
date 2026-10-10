@@ -38,7 +38,7 @@ export function formBiomassCredit() {
 }
 
 export function syncEvolutionToBiomass() {
-  const cap = Math.min(EVOLUTIONS.length - 1, maxUnlockedStage(GAME.totalTranscend || 0));
+  const cap = maxUnlockedStage(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
   const next = stageForEarnedBiomass(formBiomassCredit(), cap);
   if (next === (GAME.evoStage || 0)) return false;
   const before = GAME.evoStage || 0;

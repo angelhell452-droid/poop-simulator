@@ -17,6 +17,7 @@ export function getDefaultGameState() {
 
     biomass: 0,
     lifetimeBiomassInCurrentCycle: 0,
+    breakthroughProgress: 0,
     cycleBiomass: 0,
     allTimeBiomass: 0,
     sparkles: 20,

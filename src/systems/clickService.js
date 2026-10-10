@@ -123,6 +123,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
 
   GAME.biomass = gainBio(GAME.biomass, totalEarned);
   GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, totalEarned);
+  GAME.breakthroughProgress = GAME.lifetimeBiomassInCurrentCycle;
   GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, totalEarned);
   GAME.cycleBiomass = gainBio(GAME.cycleBiomass, totalEarned);
   GAME.totalClicks += clicksToProcess;

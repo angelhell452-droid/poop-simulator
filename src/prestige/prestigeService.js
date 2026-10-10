@@ -78,9 +78,8 @@ export function executePrestige(chosenArchetype = 'balanced') {
   const startTalent = TALENTS.find(t => t.id === 'royal_gold');
   const startBio = startTalent ? startTalent.level * 200 : 0;
 
-  // Обнуление кошелька биомассы и одометра опыта текущего цикла
+  // Обнуление кошелька биомассы и прогресса форм текущего забега
   GAME.biomass = startBio;
-  GAME.lifetimeBiomassInCurrentCycle = 0;
   GAME.cycleBiomass = 0;
   GAME.currentRunPeakGPS = 0;
   GAME.archetype = chosenArchetype;
