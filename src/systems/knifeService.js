@@ -8,6 +8,7 @@ import { t } from '../i18n/t.js';
 import { knifeName } from '../i18n/localize.js';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
+import { getRelicLevel } from '../data/relics.data.js?v=5.0.80';
 
 // Bases ~10× below the old table. Power no longer scales with raw clickMult
 // (godly knives sit at 1e5+ and used to make sharpening/sell impossible or broken).
@@ -96,20 +97,22 @@ export function sharpenKnife(knifeId) {
 
   // talent_upgrade_chance (MAX 10): +3% к шансу успешной заточки ножа (база 70%, на капе 100%)
   const upgChanceTalent = TALENTS.find(t => t.id === 'talent_upgrade_chance')?.level || 0;
-  const successChance = Math.min(1.0, 0.70 + upgChanceTalent * 0.03);
+  const forgeLuckLvl = getRelicLevel('relic_forge_luck');
+  const successChance = Math.min(1.0, 0.70 + upgChanceTalent * 0.03 + forgeLuckLvl * 0.05);
 
   if (Math.random() > successChance) {
     const curStar = GAME.knifeStars?.[knifeId] || 1;
     const hasBlessing = hasPerk('perk_blacksmith_blessing');
-    const newStar = hasBlessing ? Math.max(1, curStar - 1) : 1;
+    const hasProtection = hasBlessing || forgeLuckLvl > 0;
+    const newStar = hasProtection ? Math.max(1, curStar - 1) : 1;
     if (!GAME.knifeStars) GAME.knifeStars = {};
     GAME.knifeStars[knifeId] = newStar;
     events.emit('knife:sharpenFailed', { knife, newStar });
     return {
       success: false,
-      msg: hasBlessing
-        ? `Заточка сорвалась! Защита «Благословение Кузнеца» сохранила уровень: снижен лишь на -1 (★${newStar}).`
-        : `Заточка сорвалась (${Math.round(successChance * 100)}% шанс)! Звезда ножа сброшена до ★1. Откройте перк «Благословение Кузнеца».`
+      msg: hasProtection
+        ? `Заточка сорвалась! Защита «Небесная Кузница» сохранила уровень: снижен лишь на -1 (★${newStar}).`
+        : `Заточка сорвалась (${Math.round(successChance * 100)}% шанс)! Звезда ножа сброшена до ★1. Откройте реликвию «Небесная Кузница Ножей».`
     };
   }
 

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.1.1 PRO</title>
+  <title>Poop Simulator v5.2.0 PRO</title>
   <script>
     tailwind.config = {
       theme: {
@@ -20,7 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.1.1">
+  <link rel="stylesheet" href="styles/main.css?v=5.2.0">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -36,7 +36,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.1.1 PRO</span>
+            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.2.0 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             data-i18n-title="header.bugTitle" title="Сообщить об ошибке">
@@ -110,6 +110,11 @@
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
         data-i18n-title="header.guildTitle" title="Гильдия">
         <span>🛡️</span> <span data-i18n="header.guild">Гильдия</span>
+      </button>
+      <button id="btnLazyBossAttack"
+        class="hidden jelly-btn font-game px-2 py-1 text-xs bg-red-950/80 hover:bg-red-900 border border-red-500/50 text-red-200 rounded-xl flex items-center gap-1 shadow"
+        title="Слить все билеты в Босса">
+        <span>🛋️</span> <span id="lazyBossTicketsCount">0 🎫</span>
       </button>
       <button id="btnLeaderboardModal"
         class="jelly-btn font-game px-2.5 py-1 text-xs flex items-center gap-1"
@@ -702,23 +707,26 @@
               </div>
               <p class="text-[10px] text-indigo-200 mt-0.5" data-i18n="talent.relicIntro">Высшие артефакты автоматизации и космической силы, открываемые за Астральные Вантузы.</p>
             </div>
-            <!-- Tier Filter Sub-Buttons -->
-            <div class="flex items-center gap-1.5 pb-1 overflow-x-auto custom-scroll" id="talentTranscendTierFilters">
+            <!-- Tier Filter Sub-Buttons: Strictly 5 Relic Tiers + All -->
+            <div class="grid grid-cols-6 gap-1 pb-1" id="talentTranscendTierFilters">
               <button
-                class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-700 text-white shadow border border-cyan-400"
+                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-700 text-white shadow border border-cyan-400 text-center"
                 data-tier="all" data-i18n="hud.tierAll">Все</button>
               <button
-                class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800"
-                data-tier="1" data-i18n="hud.tier1">⭐ Тир 1</button>
+                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800 text-center"
+                data-tier="1">🥚 Т1</button>
               <button
-                class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800"
-                data-tier="2" data-i18n="hud.tier2">⚡ Тир 2</button>
+                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800 text-center"
+                data-tier="2">⚡ Т2</button>
               <button
-                class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800"
-                data-tier="3" data-i18n="hud.tier3">🔮 Тир 3</button>
+                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800 text-center"
+                data-tier="3">⚔️ Т3</button>
               <button
-                class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800"
-                data-tier="4" data-i18n="hud.tier4">🌌 Тир 4</button>
+                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 text-center"
+                data-tier="4">🌌 Т4</button>
+              <button
+                class="talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-amber-300 border border-stone-800 text-center"
+                data-tier="5">👑 Т5</button>
             </div>
             <div class="space-y-2 pr-1" id="transcendRelicsContainer"></div>
           </div>

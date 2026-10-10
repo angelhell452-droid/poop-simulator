@@ -1,5 +1,6 @@
 import { GAME } from '../core/state.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
+import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.0.80';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.80';
@@ -8,32 +9,42 @@ import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.80';
 
 export const BRIDGE_FLUSHES_NEEDED = 20;
 
-/** First breakthrough asks for 20 flushes, the second for 30, and every later one for 40. */
-export function flushesNeededForBridge(transcends = GAME.totalTranscend || 0) {
+/**
+ * First breakthrough asks for 20 flushes, the second for 30, and every later one for 40.
+ * relic_flush_req_reduction reduces requirement by -3% per level.
+ */
+export function flushesNeededForBridge(transcends = (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0)) {
   const done = Math.max(0, Number(transcends) || 0);
-  if (done <= 0) return 20;
-  if (done === 1) return 30;
-  return 40;
+  let base = 20;
+  if (done === 1) base = 30;
+  else if (done > 1) base = 40;
+
+  const reductionLvl = getRelicLevel('relic_flush_req_reduction');
+  if (reductionLvl > 0) {
+    const mult = Math.max(0.20, 1 - reductionLvl * 0.03);
+    return Math.max(1, Math.round(base * mult));
+  }
+  return base;
 }
 
-/** Plungers a pair can pay from flushes of its even epoch. Enough for the first level of relics that breakthrough opens. */
-export function plungerFlushCap(transcends = GAME.totalTranscend || 0) {
+/** Plungers a pair can pay from flushes of its even epoch. */
+export function plungerFlushCap(transcends = (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0)) {
   const next = Math.max(1, (Number(transcends) || 0) + 1);
   if (next === 1) return 12;
-  const firsts = TRANSCEND_UPGRADES
-    .filter((row) => (row.reqTranscend || 1) === next)
+  const firsts = RELICS
+    .filter((row) => (row.reqBreakthrough || 1) <= next)
     .reduce((sum, row) => sum + (row.cost || 0), 0);
   return Math.max(8, firsts);
 }
 
 export function currentBridgePhase() {
-  const t = GAME.totalTranscend || 0;
+  const t = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
   const pair = Math.min(PHASE_COUNT / 2, 1 + t);
   return getPhaseByIndex(pair * 2);
 }
 
 export function pairIsClosed(phaseId) {
-  return Math.ceil(Math.max(1, phaseId || 1) / 2) <= (GAME.totalTranscend || 0);
+  return Math.ceil(Math.max(1, phaseId || 1) / 2) <= (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
 }
 
 /** One plunger per flush of the even epoch of the pair that is still open, until the pair cap. */
@@ -47,7 +58,6 @@ export function flushPaysPlunger(phaseId) {
 export function flushCountsForBridge(phaseId) {
   return (phaseId || 0) >= currentBridgePhase().id;
 }
-
 
 export function getBreakthroughExpLevel(biomass = GAME.lifetimeBiomassInCurrentCycle || 0) {
   const logVal = log10Of(biomass);
@@ -95,8 +105,6 @@ export function getTranscendRewardBreakdown() {
 
   const soulTalent = TALENTS.find(t => t.id === 'transcend_soul');
   const soulBonus = soulTalent && soulTalent.level > 0 ? soulTalent.level * 0.08 : 0;
-  const incubator = GAME.transcendUpgrades?.plungerIncubator || 0;
-  const incubatorBonus = incubator * 0.08;
 
   const astralTalent = TALENTS.find(t => t.id === 'astral_splendor');
   const doubleChance = astralTalent && astralTalent.level > 0
@@ -104,11 +112,13 @@ export function getTranscendRewardBreakdown() {
     : 0;
 
   const vipMult = GAME.vipPass ? 2 : 1;
-  let totalGain = Math.round(basePlungers * (1 + soulBonus + incubatorBonus) * vipMult);
+  let totalGain = Math.round(basePlungers * (1 + soulBonus) * vipMult);
   totalGain = Math.max(1, totalGain);
 
-  const currentMult = currentCount > 0 ? bigPow(1 + currentCount, currentCount) : 1;
-  const nextMult = bigPow(2 + currentCount, 1 + currentCount);
+  const boostLvl = getRelicLevel('relic_breakthrough_boost');
+  const baseFactor = 1 + currentCount + (boostLvl * 0.1);
+  const currentMult = currentCount > 0 ? bigPow(baseFactor, currentCount) : 1;
+  const nextMult = bigPow(baseFactor + 1, 1 + currentCount);
 
   return {
     ...req,
@@ -117,7 +127,6 @@ export function getTranscendRewardBreakdown() {
     stagePart: 0,
     basePlungers,
     soulBonus,
-    incubatorBonus,
     doubleChance,
     vipMult,
     totalGain,
@@ -147,6 +156,17 @@ export function executeTranscend() {
   GAME.transcendPlungers = (GAME.transcendPlungers || 0) + gain;
   noteHorizonSpark(nextCount);
 
+  // relic_prestige_factory_keep: Сохраняет 5% за уровень от уровней Авто-заводов текущего мира
+  const keepLvl = getRelicLevel('relic_prestige_factory_keep');
+  if (keepLvl > 0 && Array.isArray(GAME.factories)) {
+    const keepRatio = Math.min(0.25, keepLvl * 0.05);
+    GAME.factories.forEach(f => {
+      if (f && f.count > 0) {
+        f.count = Math.max(1, Math.floor(f.count * keepRatio));
+      }
+    });
+  }
+
   // СБРАСЫВАЕТСЯ ТОЛЬКО ОДОМЕТР ТЕКУЩЕГО ЦИКЛА (для перехода на новые 1000 уровней)
   // Баланс биомассы, заводы, ножи, таланты, втулки, блестяшки и одежда сохраняются!
   GAME.lifetimeBiomassInCurrentCycle = 0;
@@ -155,29 +175,38 @@ export function executeTranscend() {
   return true;
 }
 
-export function buyTranscendUpgrade(upgId) {
-  const upg = TRANSCEND_UPGRADES.find(u => u.id === upgId);
-  if (!upg) return false;
+export function buyRelic(relicId) {
+  const relic = RELICS.find(r => r.id === relicId || r.key === relicId || r.legacyKey === relicId);
+  if (!relic) return false;
 
+  if (!GAME.relics) GAME.relics = {};
   if (!GAME.transcendUpgrades) GAME.transcendUpgrades = {};
 
-  let lvl = typeof GAME.transcendUpgrades[upg.key] === 'boolean'
-    ? (GAME.transcendUpgrades[upg.key] ? 1 : 0)
-    : (GAME.transcendUpgrades[upg.key] || 0);
+  const bCount = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
+  if (relic.reqBreakthrough && bCount < relic.reqBreakthrough) return false;
 
-  if (upg.reqTranscend && (GAME.totalTranscend || 0) < upg.reqTranscend) return false;
-  if (upg.max && lvl >= upg.max) return false;
+  const curLvl = getRelicLevel(relic.id);
+  if (relic.max && curLvl >= relic.max) return false;
 
-  const cost = upg.cost + (lvl * (upg.costStep || 0));
+  const cost = relic.cost;
   if ((GAME.transcendPlungers || 0) < cost) return false;
 
   GAME.transcendPlungers -= cost;
-  if (typeof GAME.transcendUpgrades[upg.key] === 'boolean') {
-    GAME.transcendUpgrades[upg.key] = true;
-  } else {
-    GAME.transcendUpgrades[upg.key] = (GAME.transcendUpgrades[upg.key] || 0) + 1;
+  const nextLvl = curLvl + 1;
+
+  GAME.relics[relic.id] = nextLvl;
+  GAME.relics[relic.key] = nextLvl;
+  GAME.transcendUpgrades[relic.id] = nextLvl;
+  GAME.transcendUpgrades[relic.key] = nextLvl;
+
+  if (relic.legacyKey) {
+    const flagVal = relic.max === 1 ? true : nextLvl;
+    GAME.relics[relic.legacyKey] = flagVal;
+    GAME.transcendUpgrades[relic.legacyKey] = flagVal;
   }
 
-  events.emit('transcend:upgradeBought', { upgrade: upg });
+  events.emit('transcend:upgradeBought', { upgrade: relic, relic, level: nextLvl });
   return true;
 }
+
+export const buyTranscendUpgrade = buyRelic;

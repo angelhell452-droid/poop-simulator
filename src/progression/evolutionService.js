@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { EVOLUTIONS, calcEvolutionCost } from '../data/evolutions.data.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { getAsymptoticDiscountFactor } from '../economy/costs.js?v=5.0.80';
@@ -7,6 +7,7 @@ import { notePeakForm } from './unlocks.js';
 import { maxUnlockedStage } from './phases.data.js?v=5.0.80';
 import { gte, isBig, mulFloor } from '../utils/big.js?v=5.0.80';
 import { evolutionDisplayName, poopSkinDesc, poopSkinName, poopSkinRank } from '../i18n/localize.js';
+import { getRelicLevel } from '../data/relics.data.js';
 
 export function effectiveFormCost(stage) {
   const omegaTalent = TALENTS.find(t => t.id === 'omega_destiny');
@@ -44,6 +45,23 @@ export function syncEvolutionToBiomass() {
   GAME.evoStage = next;
   notePeakForm();
   if (next > before) {
+    // relic_free_rolls: Каждые +100 уровней биомассы в цикле дают +2% шанс мгновенно получить 1 Втулку без Смыва
+    const freeRollsLvl = getRelicLevel('relic_free_rolls');
+    if (freeRollsLvl > 0) {
+      const milestonesPassed = Math.floor(next / 100) - Math.floor(before / 100);
+      if (milestonesPassed > 0) {
+        let rolled = 0;
+        const chance = freeRollsLvl * 0.02;
+        for (let m = 0; m < milestonesPassed; m++) {
+          if (Math.random() < chance) rolled++;
+        }
+        if (rolled > 0) {
+          GAME.prestigeRolls = (GAME.prestigeRolls || 0) + rolled;
+          GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + rolled;
+          events.emit('relic:freeRoll', { count: rolled });
+        }
+      }
+    }
     const target = EVOLUTIONS[next] || EVOLUTIONS[EVOLUTIONS.length - 1];
     events.emit('evolution:success', {
       count: next - before,

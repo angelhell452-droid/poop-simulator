@@ -21,6 +21,7 @@ import { startSocialPulse } from './ui/socialPulse.js?v=5.0.80';
 import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.1.1';
 import { initVipShop } from './ui/vipShopView.js';
 import { hasPerk } from './data/perks.data.js';
+import { getRelicLevel } from './data/relics.data.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.80';
 import { initBeginnerGuideListeners } from './ui/beginnerGuideView.js?v=5.1.0';
 import { initBugReportListeners } from './ui/bugReportView.js?v=5.1.0';
@@ -397,7 +398,15 @@ function checkOfflineProgress() {
     const basePassive = getPassiveIncome();
     const offlineRaw = mul(mul(basePassive, effectiveSeconds), efficiency);
     const offlineBiomass = isBig(offlineRaw) ? offlineRaw : Math.round(offlineRaw);
-    const offlineSparkles = Math.min(500, Math.floor((effectiveSeconds / 180) * (1 + afkTalent * 0.05)));
+    let offlineSparkles = Math.min(500, Math.floor((effectiveSeconds / 180) * (1 + afkTalent * 0.05)));
+
+    // relic_offline_sparkles: Авто-заводы генерируют Блестяшки ✨ в оффлайне со скоростью 5% от активной игры за уровень
+    const relicSparklesLvl = getRelicLevel('relic_offline_sparkles');
+    if (relicSparklesLvl > 0) {
+      const totalFactories = (GAME.factories || []).reduce((acc, f) => acc + (f.count || 0), 0);
+      const factorySparkles = Math.floor((effectiveSeconds / 60) * (totalFactories * 0.01) * (relicSparklesLvl * 0.05));
+      offlineSparkles += Math.max(relicSparklesLvl, factorySparkles);
+    }
 
     // perk_ticket_factory: 1 бесплатный билет гильдии каждые 12 часов оффлайна
     if (hasPerk('perk_ticket_factory') && effectiveSeconds >= 12 * 3600) {

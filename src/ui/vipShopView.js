@@ -5,7 +5,7 @@ import { mul, gainBio } from '../utils/big.js?v=5.0.80';
 import { showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { onLocaleChange } from '../i18n/t.js';
 import { TALENTS } from '../data/talents.data.js';
-import { PERMANENT_PERKS, hasPerk, buyPermanentPerk } from '../data/perks.data.js';
+import { PERMANENT_PERKS, hasPerk, buyPermanentPerk, getPerkCost } from '../data/perks.data.js';
 import { checkAchievements } from '../systems/achievementsService.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
@@ -204,7 +204,8 @@ function renderVipShop() {
           const isUnlocked = b >= perk.reqBreakthrough;
           const isOwned = hasPerk(perk.id);
           const curSparkles = Number(GAME.sparkles) || 0;
-          const canBuy = isUnlocked && !isOwned && curSparkles >= perk.cost;
+          const cost = getPerkCost(perk);
+          const canBuy = isUnlocked && !isOwned && curSparkles >= cost;
 
           if (!isUnlocked) {
             return `
@@ -247,13 +248,13 @@ function renderVipShop() {
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center justify-between">
                     <span class="font-game text-xs font-bold text-yellow-200 truncate">${perk.nameRu || perk.name}</span>
-                    <span class="text-[10px] text-amber-300 font-bold">${formatNumber(perk.cost)} ✨</span>
+                    <span class="text-[10px] text-amber-300 font-bold">${formatNumber(cost)} ✨</span>
                   </div>
                   <div class="text-[10px] text-stone-300 mt-0.5">${perk.desc}</div>
                 </div>
               </div>
               <button type="button" class="btn-buy-vip-perk w-full py-1.5 rounded-xl font-game text-xs font-bold transition flex items-center justify-center gap-1.5 shadow ${canBuy ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 border border-yellow-300 jelly-btn' : 'bg-stone-800 text-stone-500 border border-stone-700 cursor-not-allowed'}" data-id="${perk.id}" ${canBuy ? '' : 'disabled'}>
-                ✨ Купить (${formatNumber(perk.cost)} ✨)
+                ✨ Купить (${formatNumber(cost)} ✨)
               </button>
             </div>
           `;

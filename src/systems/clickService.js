@@ -1,7 +1,8 @@
 import { GAME } from '../core/state.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
-import { getClickPower, getEquippedKnife } from '../economy/production.js?v=5.0.80';
+import { getClickPower, getEquippedKnife, getPassiveIncome } from '../economy/production.js?v=5.0.80';
+import { getRelicLevel } from '../data/relics.data.js?v=5.0.80';
 import { takeClickBudget } from './autoclickService.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { add, gainBio, mul } from '../utils/big.js?v=5.0.80';
@@ -101,6 +102,25 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     totalEarned = mul(totalEarned, 1.20);
   }
 
+  // relic_meta_infinity_multiplier: x2.0 за уровень ко всем кликам/доходу
+  const metaInf = Math.pow(2.0, getRelicLevel('relic_meta_infinity_multiplier'));
+  if (metaInf > 1) {
+    totalEarned = mul(totalEarned, metaInf);
+  }
+
+  // relic_crit_explosion: Каждый 50-й Крит подряд вызывает взрыв, дающий доход за 30 секунд
+  const critExplosionLvl = getRelicLevel('relic_crit_explosion');
+  if (critExplosionLvl > 0 && critsCount > 0) {
+    GAME.consecutiveCrits = (GAME.consecutiveCrits || 0) + critsCount;
+    while (GAME.consecutiveCrits >= 50) {
+      GAME.consecutiveCrits -= 50;
+      const passRate = getPassiveIncome() || 1;
+      const explosionYield = mul(passRate, 30 * critExplosionLvl);
+      totalEarned = add(totalEarned, explosionYield);
+      events.emit('crit:explosion', { yield: explosionYield });
+    }
+  }
+
   GAME.biomass = gainBio(GAME.biomass, totalEarned);
   GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, totalEarned);
   GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, totalEarned);
@@ -112,11 +132,14 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     eqKnife.statTrak = (eqKnife.statTrak || 0) + clicksToProcess;
   }
 
-  // Билеты вклада гильдии: 1 билет за каждые 500 кликов, расширяемый кап talent_ticket_cap
+  // Билеты вклада гильдии: relic_ticket_discount снижает планку с 500 до 400 кликов (0/5)
   const ticketCap = 5 + (TALENTS.find(t => t.id === 'talent_ticket_cap')?.level || 0);
+  const ticketDiscountLvl = getRelicLevel('relic_ticket_discount');
+  const clicksPerTicket = Math.max(400, 500 - ticketDiscountLvl * 20);
+
   GAME.clicksTowardsTicket = (GAME.clicksTowardsTicket || 0) + clicksToProcess;
-  while (GAME.clicksTowardsTicket >= 500) {
-    GAME.clicksTowardsTicket -= 500;
+  while (GAME.clicksTowardsTicket >= clicksPerTicket) {
+    GAME.clicksTowardsTicket -= clicksPerTicket;
     if ((GAME.guildTickets || 0) < ticketCap) {
       GAME.guildTickets = (GAME.guildTickets || 0) + 1;
       events.emit('guild:ticketEarned', { tickets: GAME.guildTickets });
@@ -125,10 +148,11 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
 
   GAME.lastClickTimestamp = Date.now();
 
-  // Combo Heat & Turbo Rush
+  // Combo Heat & Turbo Rush: relic_turbo_duration дает +2 сек за уровень
   const comboTalent = TALENTS.find(t => t.id === 'combo_master');
   const hasRage = hasPerk('perk_rage_catalyst') || hasPerk('upg_comborush');
-  const bonusDuration = (comboTalent ? comboTalent.level * 0.4 : 0) + (hasRage ? 6 : 0);
+  const relicTurboBonus = getRelicLevel('relic_turbo_duration') * 2;
+  const bonusDuration = (comboTalent ? comboTalent.level * 0.4 : 0) + (hasRage ? 6 : 0) + relicTurboBonus;
   const maxTurboDuration = Math.round(12 + bonusDuration);
 
   if (GAME.turboRushTime <= 0) {

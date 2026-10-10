@@ -2,6 +2,54 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.2.0 PRO',
+    date: '10 Октября 2026',
+    dateEn: 'October 10, 2026',
+    title: 'Патч 5.2.0: Реликвии Бесконечности, 5 Тиров Вантузов и Эндгейм-Сингулярность',
+    titleEn: 'Patch 5.2.0: Infinite Relics, 5 Plunger Tiers & Endgame Singularity',
+    badge: 'Патч 5.2.0',
+    badgeEn: 'Patch 5.2.0',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🪠',
+        text: 'Полная Переработка Реликвий: Удалены все плоские дублирующие проценты. Развернута система из 24 уникальных реликвий в 5 Тирах, заблокированных по уровням Прорыва (1, 10, 30, 50, 80 Прорывов).',
+        textEn: 'Complete Relics Overhaul: Removed all flat duplicate percentage bonuses. Deployed 24 unique relics across 5 Tiers locked behind Breakthrough milestones (1, 10, 30, 50, 80 Breakthroughs).'
+      },
+      {
+        type: 'ui',
+        icon: '🔒',
+        text: 'Интерфейс 5 Тиров и Замки Прорыва: Заблокированные Тиры закрыты стильными полупрозрачными плашками «🔒 Требуется X Прорыв». Удобные табы фильтрации по Тирам 1–5.',
+        textEn: '5-Tier UI & Breakthrough Locks: Locked tiers display styled translucent "🔒 Requires Breakthrough X" overlay panels with tabs for Tiers 1–5.'
+      },
+      {
+        type: 'feature',
+        icon: '⚔️',
+        text: 'Боссы и Рейдовые Механики: «Гипер-Ускоритель Заводов» переносит пассивный доход в пулемет по боссам, «Ядовитое Лезвие» накладывает кровотечение, «Врата Вечности» удваивают урон по финальному боссу, а «Благословение Демиурга» дает шанс удвоить награду вантузами.',
+        textEn: 'Boss Combat & Raid Mechanics: "Factory Hyper-Accelerator" converts passive factory CPS to boss damage, "Poison Blade" inflicts bleed, "Gate of Eternity" doubles damage vs final boss, and "Demiurge\'s Blessing" can double plunger loot.'
+      },
+      {
+        type: 'feature',
+        icon: '☄️',
+        text: 'Метеоритные Сингулярности: «Вулканический Спавн» призывает метеоры парами, «Звездный Дождь» превращает их в Квантовые с 2-часовым Варпом времени, а «Галактический Шторм» дает +100 уровней опыта Прорыва.',
+        textEn: 'Meteor Singularities: "Volcanic Spawn" spawns meteors in pairs, "Star Shower" turns meteors into Quantum with 2h Time Warp, and "Galactic Storm" grants +100 Breakthrough exp levels.'
+      },
+      {
+        type: 'balance',
+        icon: '♾️',
+        text: 'Эссенция Бесконечности и Вантузный Капитал: Глобальный мультипликатор x2.0 за уровень ко всему доходу, кликам и урону («Эссенция Бесконечности»), а также мультипликатор биомассы от вантузов банка гильдии («Вантузный Капитал»).',
+        textEn: 'Essence of Infinity & Plunger Capital: Global x2.0 multiplier per level to all income, clicks and boss damage ("Essence of Infinity"), plus biomass bonus scaling with guild bank plungers ("Plunger Capital").'
+      },
+      {
+        type: 'feature',
+        icon: '🤖',
+        text: 'Автоматизация и Комфорт: «Астральный Авто-Уход» держит шкалы ухода на 100%, «Авто-Покупка Заводов» покупает фабрики по MAX, кнопка «Ленивый Босс» позволяет мгновенно слить билеты в босса из шапки игры.',
+        textEn: 'Automation & Comfort: "Astral Auto-Care" locks care bars at 100%, "Auto-Buy Factories" auto-purchases factories via MAX, and "Lazy Boss" button allows instant ticket dumping from the top header.'
+      }
+    ]
+  },
+  {
     version: 'v5.1.1 PRO',
     date: '10 Октября 2026',
     dateEn: 'October 10, 2026',

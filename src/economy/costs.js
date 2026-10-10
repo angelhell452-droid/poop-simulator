@@ -4,6 +4,7 @@ import { TALENTS } from '../data/talents.data.js';
 import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.80';
 import { add, bigPow, div, gte, isBig, log10Of, mul, sub } from '../utils/big.js?v=5.0.80';
 import { hasPerk } from '../data/perks.data.js';
+import { getRelicLevel } from '../data/relics.data.js?v=5.0.80';
 
 /**
  * Asymptotic discount model with soft-cap guarantee.
@@ -83,7 +84,9 @@ export function getAffordableEvoInfo() {
 }
 
 export function getAffordableFactoryInfo(fac) {
-  const r = hasPerk('perk_alchemical_mutation') ? 1.37 : 1.4;
+  const exponentReduction = getRelicLevel('relic_cost_exponent_reduction') * 0.01;
+  const baseR = hasPerk('perk_alchemical_mutation') ? 1.37 : 1.4;
+  const r = Math.max(1.05, baseR - exponentReduction);
   const currentCount = fac.count || 0;
   const isTycoon = GAME.archetype === 'tycoon';
   const discountFactor = getAsymptoticDiscountFactor([isTycoon ? 0.10 : 0], 0.90);

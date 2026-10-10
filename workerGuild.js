@@ -224,7 +224,7 @@ function strikePhase(guild, me, now = Date.now()) {
 
 function blowOf(gear, extra = {}) {
   return {
-    perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars),
+    perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult, gear.bossTalentMult, extra.bossIndex || 1, gear.relics),
     cap: bossClickCap(gear.knifeId, gear.stars),
     form: gear.stage,
     knifeId: gear.knifeId || "",
@@ -297,7 +297,9 @@ async function gearOf(db, playerId) {
       json_extract(save_data, '$.game.hunger') as hunger,
       json_extract(save_data, '$.game.happy') as happy,
       json_extract(save_data, '$.talents') as talentsJson,
-      json_extract(save_data, '$.game.transcendPlungers') as plungers
+      json_extract(save_data, '$.game.transcendPlungers') as plungers,
+      json_extract(save_data, '$.relics') as relicsJson,
+      json_extract(save_data, '$.game.relics') as gameRelicsJson
     FROM player_saves WHERE player_id = ? LIMIT 1
   `).bind(playerId).first();
   const knifeId = textId(row?.knifeId);
@@ -308,13 +310,18 @@ async function gearOf(db, playerId) {
     talents = typeof row?.talentsJson === 'string' ? JSON.parse(row.talentsJson) : (row?.talentsJson || []);
   } catch (_) {}
   const bossTalentMult = getBossTalentMult(talents, row?.plungers || 0);
+  let relics = {};
+  try {
+    relics = jsonValue(row?.relicsJson) || jsonValue(row?.gameRelicsJson) || {};
+  } catch (_) {}
   return {
     stage: Math.max(1, Number(row?.stage) || 1),
     knifeId,
     stars,
     careMult,
     bossTalentMult,
-    talents
+    talents,
+    relics
   };
 }
 
@@ -386,12 +393,39 @@ async function finishAttempt(db, guild, win) {
   }
   const title = win ? "Победа" : "Проигрыш";
   const name = boss?.name || "Босс";
+  const memberRelicsCache = new Map();
+  const hitterIds = [...hitters];
+  if (hitterIds.length > 0 && win) {
+    const marks = hitterIds.map(() => "?").join(",");
+    const { results: saveRows } = await db.prepare(`
+      SELECT player_id as playerId,
+        json_extract(save_data, '$.relics') as relicsJson,
+        json_extract(save_data, '$.game.relics') as gameRelicsJson
+      FROM player_saves WHERE player_id IN (${marks})
+    `).bind(...hitterIds).all();
+    for (const s of saveRows || []) {
+      const rel = jsonValue(s.relicsJson) || jsonValue(s.gameRelicsJson) || {};
+      memberRelicsCache.set(s.playerId, rel);
+    }
+  }
+
   const mailStmts = (members || []).map((member) => {
-    const plungers = win && hitters.has(member.playerId) ? reward.plungers : 0;
+    let plungers = win && hitters.has(member.playerId) ? reward.plungers : 0;
+    let isDoubled = false;
+    if (plungers > 0) {
+      const rel = memberRelicsCache.get(member.playerId) || {};
+      const doubleLvl = Number(rel.relic_double_plungers ?? rel.doublePlungers ?? 0) || 0;
+      if (doubleLvl > 0 && Math.random() < (doubleLvl * 0.02)) {
+        plungers *= 2;
+        isDoubled = true;
+      }
+    }
     const body = !win
       ? `${title}. ${name}, круг ${circle}. Вантузов за проигрыш нет.`
       : plungers > 0
-        ? `${title}. ${name}, круг ${circle}. В письме ${plungers} вантузов за ваш удар.`
+        ? (isDoubled
+            ? `${title}. ${name}, круг ${circle}. Сработало Благословение Демиурга: x2 вантузов! В письме ${plungers} 🪠 за ваш удар.`
+            : `${title}. ${name}, круг ${circle}. В письме ${plungers} вантузов за ваш удар.`)
         : `${title}. ${name}, круг ${circle}. Вы были в гильдии, но не били. Вантузов нет.`;
     return db.prepare(`
       INSERT INTO mail (player_id, kind, title, body, plungers, seen, claimed, created_at)
@@ -955,7 +989,7 @@ async function strike(db, headers, me, reported) {
           myDamage,
           myClicks: clicks,
           myPlungers: settled.result.win && myDamage > 0 ? settled.result.plungers : 0,
-          perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars),
+          perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult, gear.bossTalentMult, guild.boss_index, gear.relics),
           cap: bossClickCap(gear.knifeId, gear.stars)
         }
       }
@@ -991,7 +1025,7 @@ async function strike(db, headers, me, reported) {
             myDamage: await damageOf(db, guild, me),
             myClicks: clicks,
             myPlungers: 0,
-            perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult),
+            perClick: bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult, gear.bossTalentMult, guild.boss_index, gear.relics),
             cap: bossClickCap(gear.knifeId, gear.stars),
             durationMs: STRIKE_MS
           },
@@ -1031,7 +1065,7 @@ async function strike(db, headers, me, reported) {
   const want = Math.max(0, Math.min(Math.floor(reported) || 0, allowed));
   const addClicks = want - clicks;
   if (addClicks > 0) {
-    const power = bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult, gear.bossTalentMult);
+    const power = bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult, gear.bossTalentMult, guild.boss_index, gear.relics);
     const tick = mul(addClicks, power);
     const curHp = parseHp(guild.boss_hp);
     const hp = sub(curHp, tick);
@@ -1091,7 +1125,7 @@ async function contributeTickets(db, headers, me, ticketsCount) {
 
   const count = Math.max(1, Math.min(10, Math.floor(Number(ticketsCount) || 1)));
   const gear = await gearOf(db, me);
-  const power = bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult, gear.bossTalentMult);
+  const power = bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult, gear.bossTalentMult, guild.boss_index, gear.relics);
   const cap = bossClickCap(gear.knifeId, gear.stars);
   const damagePerTicket = bossTicketDamage(power, cap);
   const totalDamage = mul(damagePerTicket, count);

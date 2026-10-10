@@ -13,6 +13,7 @@ import { notePeakForm } from '../progression/unlocks.js';
 import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { isBig, rehydrateBig } from '../utils/big.js?v=5.0.80';
+import { RELICS } from '../data/relics.data.js';
 
 function keepBio(value) {
   const n = rehydrateBig(value);
@@ -40,6 +41,8 @@ export function buildSavePayload() {
     achievements: ACHIEVEMENTS.map(a => ({ id: a.id, done: !!a.done })),
     purchasedItems: SHOP_ITEMS.filter(item => item.owned).map(i => i.id),
     ownedPerks: PERMANENT_PERKS.filter(p => p.owned || (GAME.ownedPerks && GAME.ownedPerks[p.id])).map(p => p.id),
+    relics: GAME.relics || {},
+    transcendUpgrades: GAME.transcendUpgrades || {},
     knifeStats: KNIVES.map(k => ({ id: k.id, statTrak: k.statTrak || 0 })),
     knifeStars: GAME.knifeStars || {},
     hatLevels: GAME.hatLevels || {}
@@ -85,6 +88,10 @@ function wipeRuntimeCatalogs() {
   SHOP_ITEMS.forEach((row) => { row.owned = false; });
   PERMANENT_PERKS.forEach((row) => { row.owned = false; });
   GAME.ownedPerks = {};
+  RELICS.forEach((r) => {
+    if (GAME.relics) GAME.relics[r.id] = 0;
+    if (r.legacyKey && GAME.transcendUpgrades) GAME.transcendUpgrades[r.legacyKey] = 0;
+  });
   KNIVES.forEach((row) => {
     row.statTrak = 0;
     row.owned = false;
@@ -171,10 +178,30 @@ export function applySaveDataSafely(rawData) {
     if (data.game.transcendUpgrades) {
       GAME.transcendUpgrades = { ...GAME.transcendUpgrades, ...data.game.transcendUpgrades };
     }
+    if (data.game.relics) {
+      GAME.relics = { ...GAME.relics, ...data.game.relics };
+    }
+    if (data.relics) {
+      GAME.relics = { ...GAME.relics, ...data.relics };
+    }
+    if (data.transcendUpgrades) {
+      GAME.transcendUpgrades = { ...GAME.transcendUpgrades, ...data.transcendUpgrades };
+    }
     if (data.game.boutiqueLevels) {
       GAME.boutiqueLevels = { ...GAME.boutiqueLevels, ...data.game.boutiqueLevels };
     }
   }
+
+  if (!GAME.relics || typeof GAME.relics !== 'object') GAME.relics = {};
+  if (!GAME.transcendUpgrades || typeof GAME.transcendUpgrades !== 'object') GAME.transcendUpgrades = {};
+  RELICS.forEach((relic) => {
+    let lvl = Number(GAME.relics[relic.id] ?? (relic.legacyKey ? GAME.relics[relic.legacyKey] : undefined) ?? (relic.legacyKey ? GAME.transcendUpgrades[relic.legacyKey] : undefined) ?? GAME.transcendUpgrades[relic.id] ?? 0);
+    lvl = Math.max(0, Math.min(relic.maxLevel, Math.floor(lvl) || 0));
+    GAME.relics[relic.id] = lvl;
+    if (relic.legacyKey) {
+      GAME.transcendUpgrades[relic.legacyKey] = lvl;
+    }
+  });
 
   // Safety sanitisers
   GAME.biomass = keepBio(GAME.biomass);

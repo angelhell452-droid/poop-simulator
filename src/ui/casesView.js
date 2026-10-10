@@ -14,8 +14,8 @@ import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { getKnifeShownBonuses, getKnifeEffectiveClickMult } from '../economy/production.js?v=5.0.83';
 import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.0.80';
-import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.0.80';
 let caseAudioEnabled = true;
 let audioCtx = null;
 let activeRouletteCase = null;
@@ -61,6 +61,17 @@ export function getCaseLockInfo(caseObj) {
   const reqBreakthrough = Math.max(0, Number(targetCase?.reqBreakthrough) || 0);
   const currentBreakthrough = getBreakthroughCount();
   const hasBreakthrough = currentBreakthrough >= reqBreakthrough;
+
+  // relic_gate_of_eternity: Навсегда открывает Кейс №45 (0-indexed 44)
+  if ((index === 44 || index === WEAPON_CASES.length - 1) && hasRelic('relic_gate_of_eternity')) {
+    return {
+      isUnlocked: true,
+      hasPrevKnife: true,
+      hasBreakthrough: true,
+      prevIndex: index,
+      reqBreakthrough: 0
+    };
+  }
 
   if (index === 0) {
     return {
@@ -470,7 +481,8 @@ export function getKnifePoolWithChances(poolKnives, fixedChances = null) {
   if (!poolKnives || poolKnives.length === 0) return [];
 
   const dropLuckLvl = TALENTS.find(t => t.id === 'talent_drop_luck')?.level || 0;
-  const luckBonus = dropLuckLvl * 0.005;
+  const relicCaseLuckLvl = getRelicLevel('relic_case_luck');
+  const luckBonus = dropLuckLvl * 0.005 + relicCaseLuckLvl * 0.015;
 
   const fixedChanceOf = (knife) => {
     let value = fixedChances && Number(fixedChances[knife.id]);

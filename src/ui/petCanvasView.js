@@ -16,6 +16,8 @@ import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progressi
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.80';
 import { t } from '../i18n/t.js';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.0.80';
+import { executeTimeWarp } from './vipShopView.js?v=5.0.80';
 
 let canvas = null;
 let ctx = null;
@@ -1367,9 +1369,8 @@ export function catchGoldenMeteor() {
   const hunterTalent = TALENTS.find(t => t.id === 'meteor_hunter');
   const luckBonus = 1 + Math.min(20, GAME.boutiqueLevels?.golden_luck || 0) * 0.25;
   const hunterBonus = 1 + (hunterTalent ? hunterTalent.level * 0.20 : 0);
-  const stormBonus = 1 + (GAME.transcendUpgrades?.meteorStorm || 0) * 0.40;
   const catcherBonus = (hasPerk('perk_meteor_catcher') || hasPerk('upg_meteor_magnet')) ? 1.25 : 1;
-  const lootMult = hunterBonus * luckBonus * stormBonus * catcherBonus;
+  const lootMult = hunterBonus * luckBonus * catcherBonus;
 
   // perk_sparkle_magnet: на 15 сек +5% крит шанса автокликеру
   if (hasPerk('perk_sparkle_magnet') || hasPerk('upg_magnet')) {
@@ -1414,9 +1415,32 @@ export function catchGoldenMeteor() {
 
   addVisualParticle(label, '#facc15', 1.6, 2.2, -2.5);
 
+  // relic_quantum_meteor: шанс дать бесплатный донатный Варп на 2 часа
+  const quantumLvl = getRelicLevel('relic_quantum_meteor');
+  if (quantumLvl > 0 && Math.random() < quantumLvl * 0.01) {
+    executeTimeWarp(2);
+    addVisualParticle('🌌 КВАНТОВЫЙ ВАРП (2ч)! 🌌', '#c084fc', 1.8, 2.5, -2.8);
+  }
+
+  // relic_meteor_progression_skip: +1% шанс мгновенно дать +100 уровней опыта Прорыва
+  const skipLvl = getRelicLevel('relic_meteor_progression_skip');
+  if (skipLvl > 0 && Math.random() < skipLvl * 0.01) {
+    const cur = GAME.lifetimeBiomassInCurrentCycle || 1;
+    const addBio = mul(cur, 31.62);
+    GAME.biomass = gainBio(GAME.biomass, addBio);
+    GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, addBio);
+    addVisualParticle('⚡ ГАЛАКТИЧЕСКИЙ ШТОРМ (+100 УР)! ⚡', '#38bdf8', 1.8, 2.5, -2.8);
+  }
+
   scheduleNextMeteor();
-  // perk_meteor_echo: 15% шанс на мгновенный спавн второго Метеорита
-  if (hasPerk('perk_meteor_echo') && Math.random() < 0.15) {
+
+  // relic_double_meteors: Метеориты всегда прилетают строго по два
+  if (hasRelic('relic_double_meteors')) {
+    setTimeout(() => {
+      triggerForcedMeteor();
+    }, 450);
+  } else if (hasPerk('perk_meteor_echo') && Math.random() < 0.15) {
+    // perk_meteor_echo: 15% шанс на мгновенный спавн второго Метеорита
     setTimeout(() => {
       triggerForcedMeteor();
       addVisualParticle('☄️ МЕТЕОРИТНОЕ ЭХО! ☄️', '#38bdf8', 1.8, 2.5, -2.8);

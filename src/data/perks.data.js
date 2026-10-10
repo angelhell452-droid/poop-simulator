@@ -1,6 +1,7 @@
 import { GAME } from '../core/state.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { SHOP_ITEMS } from './shop.data.js?v=5.0.80';
+import { getRelicLevel } from './relics.data.js?v=5.0.80';
 
 /**
  * 20 Уникальных Постоянных Перков (Permanent Perks) за Блестяшки ✨
@@ -277,6 +278,16 @@ export function hasPerk(perkId) {
 }
 
 /**
+ * Стоимость перка с учетом скидки реликвии "Алмазный Налог" (-3% за уровень мультипликативно)
+ */
+export function getPerkCost(perk) {
+  const base = Number(perk?.cost) || 0;
+  const discountLvl = getRelicLevel('relic_perk_discount');
+  if (discountLvl <= 0) return base;
+  return Math.max(1, Math.round(base * Math.pow(0.97, discountLvl)));
+}
+
+/**
  * Покупка постоянного перка за Блестяшки
  */
 export function buyPermanentPerk(perkId) {
@@ -292,12 +303,13 @@ export function buyPermanentPerk(perkId) {
     return { success: false, msg: 'Перк уже приобретён!' };
   }
 
+  const cost = getPerkCost(perk);
   const curSparkles = Number(GAME.sparkles) || 0;
-  if (curSparkles < perk.cost) {
-    return { success: false, msg: `Недостаточно Блестяшек (${formatNumber(perk.cost)} ✨)!` };
+  if (curSparkles < cost) {
+    return { success: false, msg: `Недостаточно Блестяшек (${formatNumber(cost)} ✨)!` };
   }
 
-  GAME.sparkles = Math.max(0, curSparkles - perk.cost);
+  GAME.sparkles = Math.max(0, curSparkles - cost);
   perk.owned = true;
   if (!GAME.ownedPerks) GAME.ownedPerks = {};
   GAME.ownedPerks[perk.id] = true;

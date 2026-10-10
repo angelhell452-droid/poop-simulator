@@ -14,6 +14,7 @@ import { triggerPetSquash } from '../ui/petCanvasView.js?v=5.0.80';
 import { getAutoclickCps } from '../systems/autoclickService.js?v=5.0.80';
 import { events } from './events.js';
 import { gainBio, mul } from '../utils/big.js?v=5.0.80';
+import { hasRelic } from '../data/relics.data.js';
 
 let lastTickTime = performance.now();
 let autoEvoTimer = 0;
@@ -72,11 +73,12 @@ export function gameEngineTick() {
     syncEvolutionToBiomass();
   }
 
-  // 3.5 Transcendence Artifact: Auto-Buyer (every 1.2s)
+  // 3.5 Relic / Transcendence Auto-Buyer (every 1.0s)
   autoBuyerTimer += dt;
-  if (autoBuyerTimer >= 1.2) {
+  if (autoBuyerTimer >= 1.0) {
     autoBuyerTimer = 0;
-    if (GAME.transcendUpgrades?.autoBuyer && GAME.autoBuyerEnabled !== false) {
+    const hasAutoBuyer = (hasRelic('relic_auto_buy') || GAME.transcendUpgrades?.autoBuyer) && GAME.autoBuyerEnabled !== false;
+    if (hasAutoBuyer) {
       const unlocked = FACTORIES.filter(fac => fac.reqStage === undefined || GAME.evoStage >= fac.reqStage);
       if (GAME.autoBuyerMode === 'smart') {
         let best = null;

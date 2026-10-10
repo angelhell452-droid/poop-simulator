@@ -8,7 +8,7 @@ import { openCharacterInventoryModal, showKnifeToast } from './characterInventor
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
 import { isBoutiqueUnlocked, peakForm } from '../progression/unlocks.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { PERMANENT_PERKS, hasPerk, buyPermanentPerk } from '../data/perks.data.js';
+import { PERMANENT_PERKS, hasPerk, buyPermanentPerk, getPerkCost } from '../data/perks.data.js';
 
 export function renderShop() {
   const container = document.getElementById('shopItemsContainer');
@@ -60,7 +60,8 @@ export function renderShop() {
   PERMANENT_PERKS.forEach(perk => {
     const isUnlocked = b >= perk.reqBreakthrough;
     const isOwned = hasPerk(perk.id);
-    const canBuy = isUnlocked && !isOwned && curSparkles >= perk.cost;
+    const cost = getPerkCost(perk);
+    const canBuy = isUnlocked && !isOwned && curSparkles >= cost;
 
     const row = document.createElement('div');
     row.className = `p-2.5 rounded-xl border flex items-center justify-between transition ${
@@ -94,7 +95,7 @@ export function renderShop() {
               ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-bold border-yellow-300 jelly-btn shadow' 
               : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed'
           }" data-id="${perk.id}" ${canBuy ? '' : 'disabled'}>
-            ${formatNumber(perk.cost)} ✨
+            ${formatNumber(cost)} ✨
           </button>
         `}
       </div>
@@ -134,7 +135,8 @@ export function updateShopButtons() {
     if (!perk) return;
     const isUnlocked = b >= perk.reqBreakthrough;
     const isOwned = hasPerk(perk.id);
-    const canBuy = isUnlocked && !isOwned && curSparkles >= perk.cost;
+    const cost = getPerkCost(perk);
+    const canBuy = isUnlocked && !isOwned && curSparkles >= cost;
 
     btn.disabled = !canBuy;
     if (canBuy) {

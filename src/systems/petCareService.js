@@ -54,7 +54,15 @@ export function ticklePet() {
   return true;
 }
 
+import { hasRelic } from '../data/relics.data.js?v=5.0.80';
+
 export function decayNeeds(dt) {
+  if (hasRelic('relic_auto_care') || GAME.transcendUpgrades?.autoCare) {
+    GAME.hunger = 100;
+    GAME.clean = 100;
+    GAME.happy = 100;
+    return;
+  }
   const zenMaster = hasPerk('perk_zen_harmony') || hasPerk('upg_zen_master');
   const baseDecay = zenMaster ? (1 / 3) : 1.0;
   
@@ -71,6 +79,12 @@ export function decayNeeds(dt) {
 }
 
 export function runAutoCare() {
+  if (hasRelic('relic_auto_care') || GAME.transcendUpgrades?.autoCare) {
+    GAME.hunger = 100;
+    GAME.clean = 100;
+    GAME.happy = 100;
+    return;
+  }
   if (!GAME.transcendUpgrades?.autoCare) return;
   let triggered = false;
   if (GAME.autoFeed && GAME.hunger < 75) {

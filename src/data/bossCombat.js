@@ -90,7 +90,7 @@ export function getGuildXpBonusMult(talents = null) {
   return 1 + xpLvl * 0.02;
 }
 
-export function bossClickPower(stage, knifeId, stars, careMult = 1, bonusMult = 1) {
+export function bossClickPower(stage, knifeId, stars, careMult = 1, bonusMult = 1, bossIndex = 1, relics = null) {
   const knife = knifeById.get(knifeId);
   const click = knife?.clickMult || 1;
   const starBonus = Math.min(15, Math.max(0, (Number(stars) || 1) - 1));
@@ -100,7 +100,43 @@ export function bossClickPower(stage, knifeId, stars, careMult = 1, bonusMult = 
   const care = Math.max(1, Number(careMult) || 1);
   const carePart = care > 1.001 ? mul(base, care) : base;
   const bonus = Math.max(1, Number(bonusMult) || 1);
-  return bonus > 1.001 ? mul(carePart, bonus) : carePart;
+  let power = bonus > 1.001 ? mul(carePart, bonus) : carePart;
+
+  const getRelicLvl = (id) => {
+    if (relics && typeof relics === 'object') {
+      if (typeof relics[id] === 'number') return relics[id];
+      if (typeof relics[id]?.level === 'number') return relics[id].level;
+    }
+    if (typeof window !== 'undefined' && window.GAME?.relics) {
+      const val = window.GAME.relics[id];
+      if (typeof val === 'number') return val;
+      if (typeof val?.level === 'number') return val.level;
+    }
+    return 0;
+  };
+
+  let relicMult = 1;
+  // relic_factory_to_boss: 1% от пассивного дохода заводов в постоянный урон пулемёта по Боссам за уровень
+  const facToBoss = getRelicLvl('relic_factory_to_boss');
+  if (facToBoss > 0) relicMult *= (1 + facToBoss * 0.01);
+
+  // relic_boss_bleed: Ручные атаки вешают на босса кровотечение, наносящее +2% от твоего урона в сек (15 сек = +30% за уровень)
+  const bleed = getRelicLvl('relic_boss_bleed');
+  if (bleed > 0) relicMult *= (1 + bleed * 0.02 * 15);
+
+  // relic_gate_of_eternity: удваивает урон по финальному боссу
+  const gateOfEternity = getRelicLvl('relic_gate_of_eternity');
+  if (gateOfEternity > 0 && Number(bossIndex) >= 25) relicMult *= 2;
+
+  // relic_meta_infinity_multiplier: глобальный мультипликатор х2.0 ко всему урону за уровень
+  const infinityLvl = getRelicLvl('relic_meta_infinity_multiplier');
+  if (infinityLvl > 0) relicMult *= Math.pow(2, infinityLvl);
+
+  if (relicMult !== 1) {
+    power = mul(power, relicMult);
+  }
+
+  return power;
 }
 
 export function bossTicketDamage(clickPower, cpsCap) {

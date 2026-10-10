@@ -23,6 +23,7 @@ import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5
 import { showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { getConfirmedVip } from '../economy/pace.js';
 import { t, onLocaleChange } from '../i18n/t.js';
+import { hasRelic } from '../data/relics.data.js?v=5.0.80';
 import { archetypeBadge, archetypeDesc, archetypeName, evolutionDisplayDesc, evolutionDisplayName } from '../i18n/localize.js';
 
 const FLUSH_COOLDOWN = 35000;
@@ -301,7 +302,7 @@ export function updateHUD() {
 }
 
 export function updateAutocareUI() {
-  const hasAutoCare = !!GAME.transcendUpgrades?.autoCare;
+  const hasAutoCare = hasRelic('relic_auto_care') || !!GAME.transcendUpgrades?.autoCare;
 
   const updatePill = (btnId, ledId, txtId, isOn) => {
     const btn = document.getElementById(btnId);
@@ -333,7 +334,7 @@ export function updateAutocareUI() {
 
 export function initAutocareListeners() {
   const handleAutoClick = (propName) => {
-    if (!GAME.transcendUpgrades?.autoCare) {
+    if (!hasRelic('relic_auto_care') && !GAME.transcendUpgrades?.autoCare) {
       document.getElementById('transcendModal')?.classList.remove('hidden');
       return;
     }
@@ -435,7 +436,7 @@ function paintProgressTabs() {
 }
 
 export function updateAutomationTogglesUI() {
-  const hasAutoBuyer = !!GAME.transcendUpgrades?.autoBuyer;
+  const hasAutoBuyer = hasRelic('relic_auto_buy') || !!GAME.transcendUpgrades?.autoBuyer;
   const hasAnyAuto = hasAutoBuyer;
 
   const lockedNotice = document.getElementById('transcendAutoLockedNotice');
@@ -470,6 +471,17 @@ export function updateAutomationTogglesUI() {
       : 'auto-buyer-mode-btn w-full text-left px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-stone-200 hover:bg-stone-800 border border-transparent';
   });
 
+  // relic_lazy_boss_attack
+  const lazyBtn = document.getElementById('btnLazyBossAttack');
+  if (lazyBtn) {
+    const hasLazy = hasRelic('relic_lazy_boss_attack');
+    lazyBtn.classList.toggle('hidden', !hasLazy);
+    if (hasLazy) {
+      const tickets = GAME.guildTickets || 0;
+      const cnt = document.getElementById('lazyBossTicketsCount');
+      if (cnt) cnt.textContent = `${formatNumber(tickets)} 🎫`;
+    }
+  }
 }
 
 function paintReady(button, kind) {
@@ -515,6 +527,27 @@ export function initAutomationToggleListeners() {
   });
   document.getElementById('transcendAutoLockedNotice')?.addEventListener('click', () => {
     openTranscendModal();
+  });
+
+  document.getElementById('btnLazyBossAttack')?.addEventListener('click', async () => {
+    const tickets = GAME.guildTickets || 0;
+    if (tickets <= 0) {
+      const { toast } = await import('../utils/toast.js?v=5.0.80');
+      toast('Нет билетов вклада');
+      return;
+    }
+    const { socialRequest } = await import('../save/cloudSync.js?v=5.0.80');
+    const { toast } = await import('../utils/toast.js?v=5.0.80');
+    const data = await socialRequest('guild_ticket', { method: 'POST', body: { tickets } });
+    if (data?.success) {
+      GAME.guildTickets = 0;
+      GAME.guildTicketsContributed = (GAME.guildTicketsContributed || 0) + tickets;
+      toast(`Слито ${tickets} 🎫 в Босса! Урон: ${formatNumber(data.damageDealt)}`);
+      updateHUD();
+      saveLocal();
+    } else {
+      toast(data?.error || 'Босс не активен');
+    }
   });
 }
 

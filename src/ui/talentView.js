@@ -1,10 +1,11 @@
 import { GAME } from '../core/state.js?v=5.0.80';
 import { TALENT_TIERS, TALENTS } from '../data/talents.data.js';
+import { RELIC_TIERS, RELICS, getRelicLevel } from '../data/relics.data.js?v=5.0.80';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { drawPlunger } from '../utils/icons.js?v=5.0.80';
 import { getAffordableTalentInfo, buyTalent } from '../systems/talentService.js';
-import { buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.80';
+import { buyRelic, buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { getRollIcon } from '../utils/icons.js';
@@ -202,59 +203,74 @@ export function renderTranscendRelics() {
   const label = document.getElementById('talentPlungersLabel');
   if (label) label.innerHTML = `${formatNumber(GAME.transcendPlungers || 0)} <span class="plunger-icon"></span>`;
 
-  const transcends = GAME.totalTranscend || 0;
-
-  const tiers = [
-    { tier: 1, name: t('talent.relic1.name'), desc: t('talent.relic1.desc') },
-    { tier: 2, name: t('talent.relic2.name'), desc: t('talent.relic2.desc') },
-    { tier: 3, name: t('talent.relic3.name'), desc: t('talent.relic3.desc') },
-    { tier: 4, name: t('talent.relic4.name'), desc: t('talent.relic4.desc') }
-  ];
+  const currentBreakthroughs = Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
 
   // Update tier filter button styles
   document.querySelectorAll('.talent-transcend-tier-btn').forEach(b => {
-    const isAct = b.dataset.tier === String(activeTranscendTier);
+    const tierVal = b.dataset.tier;
+    const isAct = tierVal === String(activeTranscendTier);
+    const tierNum = Number(tierVal);
+    const tierCfg = RELIC_TIERS.find(t => t.tier === tierNum);
+    const isLocked = tierCfg ? (currentBreakthroughs < tierCfg.reqBreakthrough) : false;
+
     if (isAct) {
-      b.className = 'talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-700 text-white shadow-md border border-cyan-400';
+      b.className = 'talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-700 text-white shadow-md border border-cyan-400 text-center';
+    } else if (isLocked) {
+      b.className = 'talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-500 border border-stone-800 opacity-70 hover:opacity-100 text-center';
     } else {
-      b.className = 'talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800';
+      b.className = 'talent-transcend-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 text-center';
+    }
+
+    if (tierCfg) {
+      b.innerHTML = isLocked ? `🔒 Т${tierNum}` : `${tierCfg.icon} Т${tierNum}`;
+      b.title = isLocked ? `🔒 Требуется ${tierCfg.reqBreakthrough} Прорыв` : tierCfg.name;
     }
   });
 
   const visibleTiers = activeTranscendTier === 'all'
-    ? tiers
-    : tiers.filter(cfg => cfg.tier === Number(activeTranscendTier));
+    ? RELIC_TIERS
+    : RELIC_TIERS.filter(cfg => cfg.tier === Number(activeTranscendTier));
 
   visibleTiers.forEach(tInfo => {
-    const tierUpgrades = TRANSCEND_UPGRADES.filter(u => u.tier === tInfo.tier);
+    const tierUpgrades = RELICS.filter(u => u.tier === tInfo.tier);
     if (tierUpgrades.length === 0) return;
+
+    const isTierLocked = currentBreakthroughs < tInfo.reqBreakthrough;
 
     const tierHeader = document.createElement('div');
     tierHeader.className = 'text-[11px] font-game text-cyan-300 uppercase tracking-wider pt-2.5 pb-1 border-b border-cyan-500/30 flex items-center justify-between';
     tierHeader.innerHTML = `
-      <span>${tInfo.name}</span>
+      <span class="flex items-center gap-1.5 flex-wrap">
+        <span>${tInfo.icon}</span>
+        <span>${tInfo.name}</span>
+        ${isTierLocked ? `<span class="text-[9px] px-2 py-0.5 rounded-full bg-red-950/80 text-red-300 border border-red-500/40 font-normal">🔒 Требуется ${formatNumber(tInfo.reqBreakthrough)} Прорыв</span>` : ''}
+      </span>
       <span class="text-[9px] text-stone-400 font-sans font-normal hidden sm:inline">${tInfo.desc}</span>
     `;
     container.appendChild(tierHeader);
 
+    if (isTierLocked) {
+      const lockBanner = document.createElement('div');
+      lockBanner.className = 'p-3 rounded-2xl bg-indigo-950/40 border border-indigo-900/60 text-center shadow-inner my-1';
+      lockBanner.innerHTML = `
+        <div class="font-game font-bold text-xs text-indigo-300 flex items-center justify-center gap-1.5">
+          <span>🔒</span>
+          <span>Требуется ${formatNumber(tInfo.reqBreakthrough)} Прорыв</span>
+        </div>
+        <div class="text-[10px] text-stone-400 mt-0.5">Совершите Прорыв в окне Смыва Судьбы, чтобы открыть этот Тир реликвий.</div>
+      `;
+      container.appendChild(lockBanner);
+    }
+
     tierUpgrades.forEach(upg => {
-      const isLocked = upg.reqTranscend && (transcends < upg.reqTranscend);
-      let isMax = false;
-      let lvl = 0;
-
-      if (typeof GAME.transcendUpgrades?.[upg.key] === 'boolean') {
-        isMax = !!GAME.transcendUpgrades[upg.key];
-        lvl = isMax ? 1 : 0;
-      } else {
-        lvl = GAME.transcendUpgrades?.[upg.key] || 0;
-        isMax = lvl >= upg.max;
-      }
-
-      const cost = upg.costStep ? (upg.cost + lvl * upg.costStep) : upg.cost;
+      const isLocked = isTierLocked || (currentBreakthroughs < upg.reqBreakthrough);
+      const lvl = getRelicLevel(upg.id);
+      const isMax = lvl >= upg.max;
+      const cost = upg.cost;
       const canBuy = !isLocked && !isMax && ((GAME.transcendPlungers || 0) >= cost);
 
       const lockBadge = isLocked
-        ? `<span class="text-[9px] text-red-400 font-bold block mt-0.5">${t('talent.reqTranscend', { req: formatNumber(upg.reqTranscend), have: formatNumber(transcends) })}</span>`
+        ? `<span class="text-[9px] text-red-400 font-bold block mt-0.5">🔒 Требуется ${formatNumber(upg.reqBreakthrough)} Прорыв (у вас: ${formatNumber(currentBreakthroughs)})</span>`
         : '';
 
       const btnText = isLocked
@@ -266,10 +282,10 @@ export function renderTranscendRelics() {
       row.innerHTML = `
         <div class="pr-2 min-w-0 flex-1">
           <div class="font-bold text-xs flex items-center gap-1.5 flex-wrap ${isLocked ? 'text-stone-400' : 'text-cyan-200'}">
-            <span>${drawPlunger(transcendName(upg))}</span>
+            <span>${drawPlunger(upg.name)}</span>
             <span class="text-yellow-400 font-game text-[11px]">(${formatNumber(lvl)}/${formatNumber(upg.max)})</span>
           </div>
-          <div class="text-[10px] text-stone-300 leading-snug mt-0.5">${transcendDesc(upg)}</div>
+          <div class="text-[10px] text-stone-300 leading-snug mt-0.5">${upg.desc}</div>
           ${lockBadge}
         </div>
         <button class="buy-art-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 transition ${isMax ? 'bg-stone-800 text-stone-500 border-stone-700' : (canBuy ? 'bg-cyan-500 hover:bg-cyan-400 text-stone-950 font-black border-cyan-300 jelly-btn shadow-md' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed')}" data-id="${upg.id}" ${canBuy ? '' : 'disabled'}>
@@ -279,7 +295,7 @@ export function renderTranscendRelics() {
 
       if (canBuy) {
         row.querySelector('.buy-art-btn').addEventListener('click', () => {
-          if (buyTranscendUpgrade(upg.id)) {
+          if (buyRelic(upg.id)) {
             renderTranscendRelics();
             updateHUD();
             saveLocal();
@@ -343,24 +359,16 @@ export function updateTalentButtons() {
 
   // Also update transcend relics buttons in panel
   const transcendButtons = panel.querySelectorAll('.buy-art-btn');
-  const transcends = GAME.totalTranscend || 0;
+  const currentBreakthroughs = Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
   transcendButtons.forEach(btn => {
     const upgId = btn.dataset.id;
-    const upg = TRANSCEND_UPGRADES.find(u => u.id === upgId);
+    const upg = RELICS.find(u => u.id === upgId || u.key === upgId);
     if (!upg) return;
 
-    const isLocked = upg.reqTranscend && (transcends < upg.reqTranscend);
-    let isMax = false;
-    let lvl = 0;
-    if (typeof GAME.transcendUpgrades?.[upg.key] === 'boolean') {
-      isMax = !!GAME.transcendUpgrades[upg.key];
-      lvl = isMax ? 1 : 0;
-    } else {
-      lvl = GAME.transcendUpgrades?.[upg.key] || 0;
-      isMax = lvl >= upg.max;
-    }
-
-    const cost = upg.costStep ? (upg.cost + lvl * upg.costStep) : upg.cost;
+    const isLocked = currentBreakthroughs < upg.reqBreakthrough;
+    const lvl = getRelicLevel(upg.id);
+    const isMax = lvl >= upg.max;
+    const cost = upg.cost;
     const canBuy = !isLocked && !isMax && ((GAME.transcendPlungers || 0) >= cost);
 
     btn.disabled = !canBuy || isMax;

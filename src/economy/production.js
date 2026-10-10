@@ -6,8 +6,7 @@ import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../data/knifeBalance.config.js?v=5.0.83';
 export { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult };
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
-import { dampenGearMult, getCleanIncomeMult, getHungerClickMult, getHappyCritBonus, getIdealMult, getOmniRelicMult, getPlungersIncomeMult, getRiftMult, getRollsIncomeMult, getTutorialClickMult, getTutorialCritBonus, getTutorialIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.80';
+import { dampenGearMult, getCleanIncomeMult, getHungerClickMult, getHappyCritBonus, getIdealMult, getInfinityEssenceMult, getPlungerCapitalMult, getPlungersIncomeMult, getRollsIncomeMult, getTutorialClickMult, getTutorialCritBonus, getTutorialIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.0.80';
 import { hasPerk } from '../data/perks.data.js';
 import { guildPresenceMult } from '../guild/guildPresence.js?v=5.0.80';
 import { ARCHETYPES } from '../progression/archetypes.js';
@@ -121,11 +120,10 @@ function softCap(raw, knee, power) {
 
 function knifeBonusStack(knife, perStar) {
   const knifeStar = getKnifeStar(knife.id);
-  const knifeForgeBoost = 1 + (GAME.transcendUpgrades?.knifeForge || 0) * 0.18;
   const diamondLvl = Math.min(20, GAME.boutiqueLevels?.diamond_sharpening || 0);
   const diamondBoost = 1 + diamondLvl * 0.05;
   const starForge = 1 + talentLevel('star_forge_master') * 0.12;
-  return (1 + Math.max(0, knifeStar - 1) * perStar) * knifeForgeBoost * diamondBoost * starForge;
+  return (1 + Math.max(0, knifeStar - 1) * perStar) * diamondBoost * starForge;
 }
 
 export function getKnifeClickMult(knife) {
@@ -276,25 +274,22 @@ function passiveGlobalLines() {
   const rollsMult = getRollsIncomeMult();
   const cosmicMult = Math.pow(1.20, Math.floor(talentLevel('cosmic_resonance') / 2));
   const plungersMult = getPlungersIncomeMult();
-  const facOverdriveMult = 1 + (GAME.transcendUpgrades?.factoryOverdrive || 0) * 0.20;
   const cleanBuff = getCleanIncomeMult();
   const knifePassiveMult = getKnifePassiveMult(styles.knife);
   let archMult = 1;
   if (GAME.archetype === 'tycoon') archMult = 1.5;
   else if (GAME.archetype === 'balanced') archMult = 1.15;
-  const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.15;
   const omniWealthMult = (hasPerk('perk_omniverse_essence') || hasPerk('upg_omniversal_wealth')) ? 1.2 : 1;
   const crystalLvl = Math.min(20, GAME.boutiqueLevels?.crystal_factory || 0);
   const crystalMult = 1 + crystalLvl * 0.05;
   const sparkLvl = Math.min(12, GAME.boutiqueLevels?.singularity_spark || 0);
   const sparkMult = 1 + sparkLvl * 0.04;
-  const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.12;
   const timeWarpMult = (GAME.totalTranscend >= 5) ? 1.25 : 1;
-  const riftMult = getRiftMult();
   const idealMult = getIdealMult();
-  const omniRelicMult = getOmniRelicMult();
   const late = getLateComboMult();
   const tutIncomeMult = getTutorialIncomeMult();
+  const infinityMult = getInfinityEssenceMult();
+  const capitalMult = getPlungerCapitalMult();
 
   // talent_fed_factory_buff: +2% к доходу Авто-заводов, пока активен бафф «Кормить»
   const fedBuff = (GAME.hunger || 0) > 0 ? (1 + talentLevel('talent_fed_factory_buff') * 0.02) : 1;
@@ -313,17 +308,12 @@ function passiveGlobalLines() {
   pushAboveOne(lines, 'Форма', evo.mult);
   pushAboveOne(lines, 'Мягкость слоёв', softRollsMult);
   pushAboveOne(lines, 'Космический резонанс', cosmicMult);
-  pushAboveOne(lines, 'Омни-множитель', omniRelicMult);
-  pushAboveOne(lines, 'Гипер-ускоритель', facOverdriveMult);
   pushAboveOne(lines, 'Чистота питомца', cleanBuff);
   pushAboveOne(lines, 'Био-топливо (Сытость)', fedBuff);
   pushArchetype(lines, archMult);
-  pushAboveOne(lines, 'Благословение форм', evoBlessingMult);
   pushAboveOne(lines, 'Эссенция омниверса', omniWealthMult);
   pushAboveOne(lines, 'Эссенция сингулярности', sparkMult);
-  pushAboveOne(lines, 'Космическая синергия', cosmicSynergyMult);
   pushAboveOne(lines, 'Разлом времени', timeWarpMult);
-  pushAboveOne(lines, 'Врата вечности', riftMult);
   pushAboveOne(lines, 'Идеальный питомец', idealMult);
   pushAboveOne(lines, 'Собранный билд', late);
   pushAboveOne(lines, 'Темп игры', INCOME_PACE);
@@ -331,13 +321,16 @@ function passiveGlobalLines() {
   pushAboveOne(lines, 'Горизонт', horizonIncomeMult());
   pushAboveOne(lines, 'Гильдия', guildPresenceMult());
   pushAboveOne(lines, 'Бонус обучения', tutIncomeMult);
+  pushAboveOne(lines, 'Эссенция Бесконечности', infinityMult);
+  pushAboveOne(lines, 'Вантузный Капитал', capitalMult);
 
   // Сквозная бесконечная формула: Доход = (База * Таланты * Буст Смывов) * Нож * Буст Прорывов * Реликвии * Шапки/Одежда * Баффы Ухода
   const numProd = turboMult * goldRushMult * overclockMult * styles.butterfly
-    * crystalMult * softRollsMult * cosmicMult * omniRelicMult
-    * facOverdriveMult * cleanBuff * archMult * evoBlessingMult * omniWealthMult
-    * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult * idealMult * late
-    * fedBuff * getIncomePace() * horizonIncomeMult() * guildPresenceMult() * tutIncomeMult;
+    * crystalMult * softRollsMult * cosmicMult
+    * cleanBuff * archMult * omniWealthMult
+    * sparkMult * timeWarpMult * idealMult * late
+    * fedBuff * getIncomePace() * horizonIncomeMult() * guildPresenceMult() * tutIncomeMult
+    * infinityMult * capitalMult;
 
   let product = mul(numProd, rollsMult);
   product = mul(product, plungersMult);
@@ -361,7 +354,6 @@ function clickParts() {
   const hyperMult = 1 + hyperStacks * talentLevel('hyper_click') * 0.02;
 
   const plungersMult = getPlungersIncomeMult();
-  const omniRelicMult = getOmniRelicMult();
   const turboMult = getTurboClickMult();
   const knife = getEquippedKnife();
   const knifeClickMult = getKnifeClickMult(knife);
@@ -374,7 +366,6 @@ function clickParts() {
   if (GAME.archetype === 'clicker') archMult = 1.5;
   else if (GAME.archetype === 'balanced') archMult = 1.15;
 
-  const evoBlessingMult = 1 + (GAME.transcendUpgrades?.evoBlessing || 0) * 0.15;
   const equippedHatItem = GAME.equippedHat ? SHOP_ITEMS.find(i => i.id === GAME.equippedHat) : null;
   const hatLvl = equippedHatItem ? Math.min(15, getHatLevel(equippedHatItem.id)) : 1;
   const hatClickBoost = equippedHatItem ? getHatClickMult(equippedHatItem, hatLvl) : 1;
@@ -382,11 +373,10 @@ function clickParts() {
   const omniWealthMult = (hasPerk('perk_omniverse_essence') || hasPerk('upg_omniversal_wealth')) ? 1.2 : 1;
   const sparkLvl = Math.min(12, GAME.boutiqueLevels?.singularity_spark || 0);
   const sparkMult = 1 + sparkLvl * 0.04;
-  const cosmicSynergyMult = 1 + (GAME.transcendUpgrades?.cosmicSynergy || 0) * 0.12;
-  const riftMult = getRiftMult();
   const idealMult = getIdealMult();
   const late = getLateComboMult();
   const tutClickMult = getTutorialClickMult();
+  const infinityMult = getInfinityEssenceMult();
 
   const gearBits = [];
   pushAboveOne(gearBits, 'Эхо смыва', rollsMult);
@@ -401,16 +391,12 @@ function clickParts() {
   pushAboveOne(lines, 'Космический резонанс', cosmicMult);
   pushAboveOne(lines, 'Синергизм заводов', synergyMult);
   pushAboveOne(lines, 'Гипер-клик', hyperMult);
-  pushAboveOne(lines, 'Омни-множитель', omniRelicMult);
   pushAboveOne(lines, 'Турбо', turboMult);
   pushAboveOne(lines, 'Катана', katanaBonus);
   pushAboveOne(lines, 'Сытость питомца', hungerBuff);
   pushArchetype(lines, archMult);
-  pushAboveOne(lines, 'Благословение форм', evoBlessingMult);
   pushAboveOne(lines, 'Эссенция омниверса', omniWealthMult);
   pushAboveOne(lines, 'Эссенция сингулярности', sparkMult);
-  pushAboveOne(lines, 'Космическая синергия', cosmicSynergyMult);
-  pushAboveOne(lines, 'Врата вечности', riftMult);
   pushAboveOne(lines, 'Идеальный питомец', idealMult);
   pushAboveOne(lines, 'Собранный билд', late);
   pushAboveOne(lines, 'Темп игры', INCOME_PACE);
@@ -418,11 +404,13 @@ function clickParts() {
   pushAboveOne(lines, 'Горизонт', horizonIncomeMult());
   pushAboveOne(lines, 'Гильдия', guildPresenceMult());
   pushAboveOne(lines, 'Бонус обучения', tutClickMult);
+  pushAboveOne(lines, 'Эссенция Бесконечности', infinityMult);
 
   const numProd = hatClickBoost * skinClickMult * softRollsMult * cosmicMult * synergyMult
-    * hyperMult * omniRelicMult * turboMult * katanaBonus * hungerBuff * archMult
-    * evoBlessingMult * omniWealthMult * sparkMult * cosmicSynergyMult * riftMult
-    * idealMult * late * getIncomePace() * horizonIncomeMult() * guildPresenceMult() * tutClickMult;
+    * hyperMult * turboMult * katanaBonus * hungerBuff * archMult
+    * omniWealthMult * sparkMult
+    * idealMult * late * getIncomePace() * horizonIncomeMult() * guildPresenceMult() * tutClickMult
+    * infinityMult;
 
   let product = mul(numProd, rollsMult);
   product = mul(product, plungersMult);

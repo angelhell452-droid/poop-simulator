@@ -62,6 +62,8 @@ import { bigPow, mul } from '../utils/big.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
 
+import { getRelicLevel } from '../data/relics.data.js?v=5.0.80';
+
 export function getFlushIncomeMult() {
   const flushes = Math.max(0, GAME.flushCount ?? GAME.totalPrestiges ?? 0);
   return 1 + 0.5 * flushes;
@@ -72,7 +74,24 @@ export function getBreakthroughIncomeMult() {
   if (b === 0) return 1;
   const hackLvl = TALENTS.find(t => t.id === 'talent_exponent_hack')?.level || 0;
   const exp = b + (hackLvl * 0.05);
-  return bigPow(1 + b, exp);
+  const boostLvl = getRelicLevel('relic_breakthrough_boost');
+  const base = 1 + b + (boostLvl * 0.1);
+  return bigPow(base, exp);
+}
+
+export function getInfinityEssenceMult() {
+  const lvl = getRelicLevel('relic_meta_infinity_multiplier');
+  if (lvl <= 0) return 1.0;
+  return Math.pow(2.0, lvl);
+}
+
+export function getPlungerCapitalMult() {
+  const lvl = getRelicLevel('relic_guild_plunger_scaling');
+  if (lvl <= 0) return 1.0;
+  const bankPlungers = Number(GAME.guildBankPlungers || GAME.transcendPlungers || 0);
+  const millions = Math.floor(bankPlungers / 1000000);
+  if (millions <= 0) return 1.0;
+  return Math.pow(1 + 0.05 * lvl, millions);
 }
 
 /**
@@ -89,7 +108,7 @@ export function getPerksIncomeMult() {
 
 /**
  * Сквозная бесконечная цепочка мультипликаторов:
- * Доход = (База * Таланты * Буст Смывов) * Нож * Буст Прорывов * Реликвии * Шапки/Одежда * Баффы Ухода * Перки
+ * Доход = (База * Таланты * Буст Смывов) * Нож * Буст Прорывов * Реликвии * Шапки/Одежда * Баффы Ухода * Перки * Эссенция Бесконечности * Вантузный Капитал
  */
 export function calculateInfiniteIncomeChain({
   baseRate = 1,
@@ -105,6 +124,8 @@ export function calculateInfiniteIncomeChain({
   const flush = flushMult !== null ? flushMult : getFlushIncomeMult();
   const bMult = breakthroughMult !== null ? breakthroughMult : getBreakthroughIncomeMult();
   const pMult = perksMult !== null ? perksMult : getPerksIncomeMult();
+  const infMult = getInfinityEssenceMult();
+  const capMult = getPlungerCapitalMult();
 
   // (База * Таланты * Буст Смывов)
   let result = mul(mul(baseRate, talentsMult), flush);
@@ -120,6 +141,10 @@ export function calculateInfiniteIncomeChain({
   result = mul(result, careMult);
   // * Перки
   result = mul(result, pMult);
+  // * Эссенция Бесконечности (relic_meta_infinity_multiplier)
+  result = mul(result, infMult);
+  // * Вантузный Капитал (relic_guild_plunger_scaling)
+  result = mul(result, capMult);
 
   return result;
 }
@@ -139,12 +164,11 @@ export function getPlungersIncomeMult() {
 }
 
 export function getOmniRelicMult() {
-  const lvl = Math.min(20, GAME.transcendUpgrades?.omniMult || 0);
-  return 1 + lvl * 0.08;
+  return 1;
 }
 
 export function getRiftMult() {
-  return GAME.transcendUpgrades?.singularityRift ? 1.5 : 1;
+  return 1;
 }
 
 export function isIdealPet() {
