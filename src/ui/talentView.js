@@ -1,5 +1,5 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
-import { TALENTS } from '../data/talents.data.js';
+import { GAME } from '../core/state.js?v=5.0.80';
+import { TALENT_TIERS, TALENTS } from '../data/talents.data.js';
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { drawPlunger } from '../utils/icons.js?v=5.0.80';
@@ -13,7 +13,7 @@ import { t, td, onLocaleChange } from '../i18n/t.js';
 import { talentName, talentDesc, transcendName, transcendDesc } from '../i18n/localize.js';
 
 let activeTalentSubTab = 'flush'; // 'flush' | 'transcend'
-let activeFlushTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
+let activeFlushTier = '1'; // '1' | '2' | '3' | '4' | '5'
 let activeTranscendTier = 'all'; // 'all' | '1' | '2' | '3' | '4'
 
 export function switchTalentSubTab(tabName) {
@@ -78,111 +78,119 @@ export function renderFlushTalents() {
   const label = document.getElementById('talentRollsLabel');
   if (label) label.innerHTML = `${formatNumber(GAME.prestigeRolls)} <span class="roll-icon"></span>`;
 
-  // Update tier filter button styles
+  const currentFlushes = Math.max(0, Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0);
+
+  // Update tier filter button styles and lock markers
   document.querySelectorAll('.talent-flush-tier-btn').forEach(b => {
+    const tierNum = Number(b.dataset.tier);
+    const cfg = TALENT_TIERS.find(t => t.tier === tierNum);
+    const isLocked = currentFlushes < (cfg?.reqFlushes || 0);
     const isAct = b.dataset.tier === String(activeFlushTier);
+
     if (isAct) {
-      b.className = 'talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md border border-purple-400';
+      b.className = 'talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold text-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md border border-purple-400';
+    } else if (isLocked) {
+      b.className = 'talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold text-center bg-stone-900 text-stone-500 border border-stone-800 opacity-70 hover:opacity-100';
     } else {
-      b.className = 'talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800';
+      b.className = 'talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold text-center bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800';
     }
+
+    const tierEmoji = tierNum === 1 ? '🥚' : (tierNum === 2 ? '⚡' : (tierNum === 3 ? '⚔️' : (tierNum === 4 ? '🤖' : '⚛️')));
+    b.innerHTML = isLocked ? `🔒 Т${tierNum}` : `${tierEmoji} Т${tierNum}`;
+    b.title = isLocked ? `🔒 Открывается на ${cfg?.reqFlushes || 0} уровне Смыва` : (cfg?.title || '');
   });
 
   const buyMultiplier = GAME.buyMultiplier || 1;
+  const selectedTier = Number(activeFlushTier) || 1;
+  const activeCfg = TALENT_TIERS.find(t => t.tier === selectedTier) || TALENT_TIERS[0];
+  const tierLocked = currentFlushes < (activeCfg.reqFlushes || 0);
 
-  // Group by Tiers: 1, 2, 3, 4
-  const tierConfigs = [
-    { tier: 1, title: t('talent.tier1.title'), desc: t('talent.tier1.desc') },
-    { tier: 2, title: t('talent.tier2.title'), desc: t('talent.tier2.desc') },
-    { tier: 3, title: t('talent.tier3.title'), desc: t('talent.tier3.desc') },
-    { tier: 4, title: t('talent.tier4.title'), desc: t('talent.tier4.desc') }
-  ];
-
-  const visibleConfigs = activeFlushTier === 'all'
-    ? tierConfigs
-    : tierConfigs.filter(cfg => cfg.tier === Number(activeFlushTier));
-
-  let showedNextLock = false;
-  visibleConfigs.forEach(tInfo => {
-    const tierTalents = TALENTS.filter(tl => tl.tier === tInfo.tier);
-    const openTalents = tierTalents.filter(isTalentVisible);
-    const closedTalents = tierTalents.filter(tl => !isTalentVisible(tl));
-    if (openTalents.length === 0) {
-      if (!showedNextLock && closedTalents.length) {
-        showedNextLock = true;
-        const needFlush = Math.min(...closedTalents.map(tl => tl.reqFlushes || 0));
-        const needTranscend = Math.min(...closedTalents.map(tl => tl.reqTranscend || 0));
-        const lock = document.createElement('div');
-        lock.className = 'p-3 rounded-2xl border border-stone-800 bg-stone-950 text-[11px] text-stone-400';
-        lock.textContent = needTranscend > (GAME.totalTranscend || 0)
-          ? t('talent.lockTranscend', { title: tInfo.title, need: formatNumber(needTranscend), have: formatNumber(GAME.totalTranscend || 0) })
-          : t('talent.lockFlush', { title: tInfo.title, need: formatNumber(needFlush), have: formatNumber(GAME.totalPrestiges || 0) });
-        container.appendChild(lock);
-      }
-      return;
-    }
-
-    const tierHeader = document.createElement('div');
-    tierHeader.className = 'text-[11px] font-game text-yellow-300 uppercase tracking-wider pt-2.5 pb-1 border-b border-yellow-500/30 flex items-center justify-between';
-    tierHeader.innerHTML = `
-      <span>${tInfo.title}</span>
-      <span class="text-[9px] text-stone-400 font-sans font-normal hidden sm:inline">${tInfo.desc}</span>
+  if (tierLocked) {
+    const lockBanner = document.createElement('div');
+    lockBanner.className = 'p-8 my-4 rounded-2xl border border-stone-800 bg-stone-950/90 text-center flex flex-col items-center justify-center gap-2 shadow-lg';
+    lockBanner.innerHTML = `
+      <span class="text-4xl filter drop-shadow">🔒</span>
+      <div class="font-game text-sm text-yellow-300 font-bold tracking-wide">
+        🔒 Открывается на ${formatNumber(activeCfg.reqFlushes)} уровне Смыва
+      </div>
+      <div class="text-xs text-stone-400 mt-1">
+        Текущий уровень Смыва: <span class="text-purple-300 font-bold font-game">${formatNumber(currentFlushes)}</span> / <span class="text-yellow-300 font-bold font-game">${formatNumber(activeCfg.reqFlushes)}</span>
+      </div>
+      <div class="text-[11px] text-stone-500 mt-1 max-w-sm">
+        ${activeCfg.desc}
+      </div>
     `;
-    container.appendChild(tierHeader);
+    container.appendChild(lockBanner);
+    return;
+  }
 
-    openTalents.forEach(tl => {
-      const tlInfo = getAffordableTalentInfo(tl);
-      const maxed = tl.level >= tl.max;
-      const canBuy = tlInfo.canBuy && !maxed;
-      const nextCost = tlInfo.nextCost || tl.cost;
+  // Tier is Unlocked: Header + exactly 5 talents
+  const tierHeader = document.createElement('div');
+  tierHeader.className = 'text-[11px] font-game text-yellow-300 uppercase tracking-wider pt-2 pb-1 border-b border-yellow-500/30 flex items-center justify-between';
+  tierHeader.innerHTML = `
+    <span>${activeCfg.title}</span>
+    <span class="text-[9px] text-stone-400 font-sans font-normal hidden sm:inline">${activeCfg.desc}</span>
+  `;
+  container.appendChild(tierHeader);
 
-      const btnLabel = maxed
-        ? t('common.max')
-        : (buyMultiplier === 'max'
-          ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)`
-          : (buyMultiplier > 1 ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)` : `${formatNumber(tlInfo.totalCost)} 🧻`));
+  const tierTalents = TALENTS.filter(tl => tl.tier === activeCfg.tier);
 
-      let tierBadgeClass = 'bg-stone-800 text-stone-300 border-stone-700';
-      if (tl.tier === 2) tierBadgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40';
-      else if (tl.tier === 3) tierBadgeClass = 'bg-purple-950/80 text-purple-300 border-purple-500/40';
-      else if (tl.tier === 4) tierBadgeClass = 'bg-amber-950/80 text-yellow-300 border-yellow-500/50 shadow-[0_0_8px_rgba(234,179,8,0.3)]';
+  tierTalents.forEach(tl => {
+    const tlInfo = getAffordableTalentInfo(tl);
+    const isInfinite = !Number.isFinite(tl.max);
+    const maxed = !isInfinite && tl.level >= tl.max;
+    const canBuy = tlInfo.canBuy && !maxed;
+    const nextCost = tlInfo.nextCost || tl.cost;
 
-      const row = document.createElement('div');
-      row.className = `flex items-center justify-between p-2.5 rounded-2xl bg-stone-900 border ${tl.tier === 4 ? 'border-amber-500/50 shadow-md' : 'border-purple-900/60'} shadow-sm`;
-      row.innerHTML = `
-        <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
-          <span class="text-2xl shrink-0">${drawPlunger(tl.icon)}</span>
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="font-bold text-xs text-purple-200">${talentName(tl)}</span>
-              <span class="text-[9px] px-1.5 py-0.2 rounded-full border font-bold ${tierBadgeClass}">${td(`talent.tierName.${tl.tier}`, tl.tierName || 'Basic')}</span>
-              <span class="text-yellow-400 font-game text-[11px]">(${formatNumber(tl.level)}/${formatNumber(tl.max)})</span>
-            </div>
-            <div class="text-[10px] text-stone-400 mt-0.5 leading-snug">
-              ${talentDesc(tl)}
-              ${!maxed ? `<span class="text-purple-300 font-semibold font-game ml-1.5 inline-flex items-center gap-0.5">${t('talent.next', { n: formatNumber(nextCost) })} <span class="roll-icon"></span></span>` : ''}
-            </div>
+    const btnLabel = maxed
+      ? t('common.max')
+      : (buyMultiplier === 'max'
+        ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)`
+        : (buyMultiplier > 1 ? `+${formatNumber(tlInfo.count)} (${formatNumber(tlInfo.totalCost)} 🧻)` : `${formatNumber(tlInfo.totalCost)} 🧻`));
+
+    let tierBadgeClass = 'bg-stone-800 text-stone-300 border-stone-700';
+    if (tl.tier === 2) tierBadgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40';
+    else if (tl.tier === 3) tierBadgeClass = 'bg-purple-950/80 text-purple-300 border-purple-500/40';
+    else if (tl.tier === 4) tierBadgeClass = 'bg-cyan-950/80 text-cyan-300 border-cyan-500/40';
+    else if (tl.tier === 5) tierBadgeClass = 'bg-amber-950/80 text-yellow-300 border-yellow-500/50 shadow-[0_0_8px_rgba(234,179,8,0.3)]';
+
+    const maxDisplay = isInfinite ? '∞' : formatNumber(tl.max);
+
+    const row = document.createElement('div');
+    row.className = `flex items-center justify-between p-2.5 rounded-2xl bg-stone-900 border ${tl.tier === 5 ? 'border-amber-500/50 shadow-md' : 'border-purple-900/60'} shadow-sm`;
+    row.innerHTML = `
+      <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+        <span class="text-2xl shrink-0">${drawPlunger(tl.icon)}</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="font-bold text-xs text-purple-200">${talentName(tl)}</span>
+            <span class="text-[9px] px-1.5 py-0.2 rounded-full border font-bold ${tierBadgeClass}">${td(`talent.tierName.${tl.tier}`, tl.tierName || 'Basic')}</span>
+            <span class="text-yellow-400 font-game text-[11px]">(${formatNumber(tl.level)}/${maxDisplay})</span>
+          </div>
+          <div class="text-[10px] text-stone-400 mt-0.5 leading-snug">
+            ${talentDesc(tl)}
+            ${!maxed ? `<span class="text-purple-300 font-semibold font-game ml-1.5 inline-flex items-center gap-0.5">${t('talent.next', { n: formatNumber(nextCost) })} <span class="roll-icon"></span></span>` : ''}
           </div>
         </div>
-        <button class="buy-talent-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 transition ${maxed ? 'bg-stone-800 text-stone-500 border-stone-700' : (canBuy ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-110 text-white border-purple-400 jelly-btn shadow-md' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed')}" data-id="${tl.id}" ${canBuy ? '' : 'disabled'}>
-          ${btnLabel}
-        </button>
-      `;
+      </div>
+      <button class="buy-talent-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 transition ${maxed ? 'bg-stone-800 text-stone-500 border-stone-700' : (canBuy ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-110 text-white border-purple-400 jelly-btn shadow-md' : 'bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed')}" data-id="${tl.id}" ${canBuy ? '' : 'disabled'}>
+        ${btnLabel}
+      </button>
+    `;
 
-      row.querySelector('.buy-talent-btn').addEventListener('click', async () => {
-        if (buyTalent(tl.id)) {
-          renderTalents();
-          const inventory = await import('./characterInventoryView.js?v=5.0.80');
-          const index = await import('./knivesIndexView.js?v=5.0.80');
-          inventory.renderCharacterInventory();
-          index.renderKnivesIndexBook();
-          updateHUD();
-          saveLocal();
-        }
-      });
-
-      container.appendChild(row);
+    row.querySelector('.buy-talent-btn').addEventListener('click', async () => {
+      if (buyTalent(tl.id)) {
+        renderTalents();
+        const inventory = await import('./characterInventoryView.js?v=5.0.80');
+        const index = await import('./knivesIndexView.js?v=5.0.80');
+        inventory.renderCharacterInventory();
+        index.renderKnivesIndexBook();
+        updateHUD();
+        saveLocal();
+      }
     });
+
+    container.appendChild(row);
   });
 }
 
@@ -311,7 +319,8 @@ export function updateTalentButtons() {
     if (!tl) return;
 
     const tlInfo = getAffordableTalentInfo(tl);
-    const maxed = tl.level >= tl.max;
+    const isInfinite = !Number.isFinite(tl.max);
+    const maxed = !isInfinite && tl.level >= tl.max;
     const canBuy = tlInfo.canBuy && !maxed;
 
     const btnLabel = maxed
@@ -324,8 +333,8 @@ export function updateTalentButtons() {
       btn.textContent = btnLabel;
     }
 
-    if (btn.disabled !== !canBuy && !maxed) {
-      btn.disabled = !canBuy;
+    if (btn.disabled !== (!canBuy || maxed)) {
+      btn.disabled = !canBuy || maxed;
       btn.className = canBuy
         ? 'buy-talent-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 transition bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-110 text-white border-purple-400 jelly-btn shadow-md'
         : 'buy-talent-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 transition bg-stone-800 text-stone-500 border-stone-700 cursor-not-allowed';
@@ -354,7 +363,7 @@ export function updateTalentButtons() {
     const cost = upg.costStep ? (upg.cost + lvl * upg.costStep) : upg.cost;
     const canBuy = !isLocked && !isMax && ((GAME.transcendPlungers || 0) >= cost);
 
-    btn.disabled = !canBuy;
+    btn.disabled = !canBuy || isMax;
     if (isMax) {
       btn.textContent = t('common.max');
       btn.className = 'buy-art-btn font-game text-xs px-3 py-1.5 rounded-xl border shrink-0 transition bg-stone-800 text-stone-500 border-stone-700';

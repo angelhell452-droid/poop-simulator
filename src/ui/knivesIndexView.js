@@ -372,7 +372,7 @@ export function renderPerksIndex() {
           <div class="flex items-center justify-between">
             <span class="font-game text-xs font-bold text-yellow-300 truncate">${talentName(tl)}</span>
             <span class="text-[9px] px-1.5 py-0.5 rounded font-black bg-amber-950 text-amber-300 border border-amber-800/50">
-              ${t('hud.lvl', { n: formatNumber(curLvl) })} / ${formatNumber(tl.max)}
+              ${t('hud.lvl', { n: formatNumber(curLvl) })} / ${Number.isFinite(tl.max) ? formatNumber(tl.max) : '∞'}
             </span>
           </div>
           <div class="text-[10px] text-stone-400 mt-0.5">${talentDesc(tl)}</div>

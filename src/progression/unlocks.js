@@ -33,6 +33,7 @@ export function isRelicSectionUnlocked() {
 }
 
 export function isTalentVisible(talent) {
-  if ((GAME.totalPrestiges || 0) < (talent?.reqFlushes || 0)) return false;
+  const flushes = Math.max(0, Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0);
+  if (flushes < (talent?.reqFlushes || 0)) return false;
   return (GAME.totalTranscend || 0) >= (talent?.reqTranscend || 0);
 }

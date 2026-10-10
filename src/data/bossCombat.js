@@ -62,7 +62,35 @@ export function getPetCareBossMult(hunger = 100, clean = 100, happy = 100) {
   return isIdeal ? hBuff * 1.2 : hBuff;
 }
 
-export function bossClickPower(stage, knifeId, stars, careMult = 1) {
+export function getBossTalentMult(talents = null, plungers = 0) {
+  let bossDmgLvl = 0;
+  let plungerScalingLvl = 0;
+  if (Array.isArray(talents)) {
+    bossDmgLvl = talents.find(t => t.id === 'talent_boss_dmg')?.level || 0;
+    plungerScalingLvl = talents.find(t => t.id === 'talent_plunger_scaling')?.level || 0;
+  }
+  const dmgMult = 1 + bossDmgLvl * 0.01;
+  const plungerBonus = 1 + plungerScalingLvl * 0.01 * Math.max(0, Number(plungers) || 0);
+  return dmgMult * plungerBonus;
+}
+
+export function getBossCooldownReductionMs(talents = null) {
+  let cdLvl = 0;
+  if (Array.isArray(talents)) {
+    cdLvl = talents.find(t => t.id === 'talent_boss_cooldown')?.level || 0;
+  }
+  return Math.min(15, cdLvl) * 10 * 60 * 1000;
+}
+
+export function getGuildXpBonusMult(talents = null) {
+  let xpLvl = 0;
+  if (Array.isArray(talents)) {
+    xpLvl = talents.find(t => t.id === 'talent_guild_xp_bonus')?.level || 0;
+  }
+  return 1 + xpLvl * 0.02;
+}
+
+export function bossClickPower(stage, knifeId, stars, careMult = 1, bonusMult = 1) {
   const knife = knifeById.get(knifeId);
   const click = knife?.clickMult || 1;
   const starBonus = Math.min(15, Math.max(0, (Number(stars) || 1) - 1));
@@ -70,7 +98,9 @@ export function bossClickPower(stage, knifeId, stars, careMult = 1) {
   const starMult = 1 + starBonus * 0.15;
   const base = mul(click, formPart * starMult);
   const care = Math.max(1, Number(careMult) || 1);
-  return care > 1.001 ? mul(base, care) : base;
+  const carePart = care > 1.001 ? mul(base, care) : base;
+  const bonus = Math.max(1, Number(bonusMult) || 1);
+  return bonus > 1.001 ? mul(carePart, bonus) : carePart;
 }
 
 export function bossTicketDamage(clickPower, cpsCap) {

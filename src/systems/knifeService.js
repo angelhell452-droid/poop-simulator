@@ -6,6 +6,7 @@ import { events } from '../core/events.js';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { t } from '../i18n/t.js';
 import { knifeName } from '../i18n/localize.js';
+import { TALENTS } from '../data/talents.data.js';
 
 // Bases ~10× below the old table. Power no longer scales with raw clickMult
 // (godly knives sit at 1e5+ and used to make sharpening/sell impossible or broken).
@@ -91,6 +92,15 @@ export function sharpenKnife(knifeId) {
     return { success: false, msg: t('knife.err.needSparkles', { n: formatNumber(costInfo.cost) }) };
   }
   GAME.sparkles -= costInfo.cost;
+
+  // talent_upgrade_chance (MAX 10): +3% к шансу успешной заточки ножа (база 70%, на капе 100%)
+  const upgChanceTalent = TALENTS.find(t => t.id === 'talent_upgrade_chance')?.level || 0;
+  const successChance = Math.min(1.0, 0.70 + upgChanceTalent * 0.03);
+
+  if (Math.random() > successChance) {
+    events.emit('knife:sharpenFailed', { knife });
+    return { success: false, msg: `Заточка сорвалась (${Math.round(successChance * 100)}% шанс)! Прокачайте талант «Ювелир».` };
+  }
 
   if (!GAME.knifeStars) GAME.knifeStars = {};
   GAME.knifeStars[knifeId] = (GAME.knifeStars[knifeId] || 1) + 1;

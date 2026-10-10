@@ -6,14 +6,14 @@ import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.
 import { bigPow, gte, log10Of, mul } from '../utils/big.js?v=5.0.80';
 import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.80';
 
-export const BRIDGE_FLUSHES_NEEDED = 2;
+export const BRIDGE_FLUSHES_NEEDED = 20;
 
-/** First breakthrough asks for 2 flushes, the second for 3, and every later one for 4. */
+/** First breakthrough asks for 20 flushes, the second for 30, and every later one for 40. */
 export function flushesNeededForBridge(transcends = GAME.totalTranscend || 0) {
   const done = Math.max(0, Number(transcends) || 0);
-  if (done <= 0) return 2;
-  if (done === 1) return 3;
-  return 4;
+  if (done <= 0) return 20;
+  if (done === 1) return 30;
+  return 40;
 }
 
 /** Plungers a pair can pay from flushes of its even epoch. Enough for the first level of relics that breakthrough opens. */

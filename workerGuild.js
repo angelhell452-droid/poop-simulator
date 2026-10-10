@@ -1,6 +1,6 @@
 import { sessionUser } from "./workerAdmin.js";
 import { GUILD_BOSSES, bossByIndex, bossReward, guildLevelFromPoints } from "./src/data/bosses.data.js";
-import { bossClickCap, bossClickPower, bossMaxHp, bossTicketDamage, getPetCareBossMult } from "./src/data/bossCombat.js";
+import { bossClickCap, bossClickPower, bossMaxHp, bossTicketDamage, getPetCareBossMult, getBossTalentMult, getBossCooldownReductionMs, getGuildXpBonusMult } from "./src/data/bossCombat.js";
 import { add, sub, mul, cmp, isBig, rehydrateBig } from "./src/utils/big.js";
 
 const MEMBER_CAP = 20;
@@ -295,17 +295,26 @@ async function gearOf(db, playerId) {
       json_extract(save_data, '$.game.knifeStars') as knifeStars,
       json_extract(save_data, '$.game.clean') as clean,
       json_extract(save_data, '$.game.hunger') as hunger,
-      json_extract(save_data, '$.game.happy') as happy
+      json_extract(save_data, '$.game.happy') as happy,
+      json_extract(save_data, '$.talents') as talentsJson,
+      json_extract(save_data, '$.game.transcendPlungers') as plungers
     FROM player_saves WHERE player_id = ? LIMIT 1
   `).bind(playerId).first();
   const knifeId = textId(row?.knifeId);
   const stars = knifeId ? bagNumber(row?.knifeStars, knifeId) : 1;
   const careMult = getPetCareBossMult(row?.hunger ?? 100, row?.clean ?? 100, row?.happy ?? 100);
+  let talents = [];
+  try {
+    talents = typeof row?.talentsJson === 'string' ? JSON.parse(row.talentsJson) : (row?.talentsJson || []);
+  } catch (_) {}
+  const bossTalentMult = getBossTalentMult(talents, row?.plungers || 0);
   return {
     stage: Math.max(1, Number(row?.stage) || 1),
     knifeId,
     stars,
-    careMult
+    careMult,
+    bossTalentMult,
+    talents
   };
 }
 
@@ -1006,11 +1015,14 @@ async function strike(db, headers, me, reported) {
     }
     openMs = now;
     clicks = 0;
+    const gearPre = await gearOf(db, me);
+    const cdReduction = getBossCooldownReductionMs(gearPre.talents);
+    const effectiveCd = Math.max(10 * 60 * 1000, STRIKE_CD_MS - cdReduction);
     await db.prepare(`
       UPDATE guild_members
       SET strike_open_ms = ?, strike_clicks = 0, strike_started_ms = ?, next_strike_ms = ?
       WHERE player_id = ?
-    `).bind(openMs, guild.boss_started_ms, openMs + STRIKE_MS + STRIKE_CD_MS, me).run();
+    `).bind(openMs, guild.boss_started_ms, openMs + STRIKE_MS + effectiveCd, me).run();
   }
   const gear = await gearOf(db, me);
   const cap = bossClickCap(gear.knifeId, gear.stars);
@@ -1019,7 +1031,7 @@ async function strike(db, headers, me, reported) {
   const want = Math.max(0, Math.min(Math.floor(reported) || 0, allowed));
   const addClicks = want - clicks;
   if (addClicks > 0) {
-    const power = bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult);
+    const power = bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult, gear.bossTalentMult);
     const tick = mul(addClicks, power);
     const curHp = parseHp(guild.boss_hp);
     const hp = sub(curHp, tick);
@@ -1077,9 +1089,9 @@ async function contributeTickets(db, headers, me, ticketsCount) {
   let guild = settled.guild;
   if (!Number(guild.boss_index)) return json(headers, { success: false, error: "Босс не вызван" }, 409);
 
-  const count = Math.max(1, Math.min(5, Math.floor(Number(ticketsCount) || 1)));
+  const count = Math.max(1, Math.min(10, Math.floor(Number(ticketsCount) || 1)));
   const gear = await gearOf(db, me);
-  const power = bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult);
+  const power = bossClickPower(gear.stage, gear.knifeId, gear.stars, gear.careMult, gear.bossTalentMult);
   const cap = bossClickCap(gear.knifeId, gear.stars);
   const damagePerTicket = bossTicketDamage(power, cap);
   const totalDamage = mul(damagePerTicket, count);

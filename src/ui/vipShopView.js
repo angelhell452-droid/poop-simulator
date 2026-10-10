@@ -4,6 +4,12 @@ import { getPassiveIncome } from '../economy/production.js?v=5.0.80';
 import { mul, gainBio } from '../utils/big.js?v=5.0.80';
 import { showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { onLocaleChange } from '../i18n/t.js';
+import { TALENTS } from '../data/talents.data.js';
+
+export function getWarpTalentMult() {
+  const warpLvl = TALENTS.find(t => t.id === 'talent_warp_buff')?.level || 0;
+  return 1 + warpLvl * 0.05;
+}
 
 export function getSparklePackYield(base) {
   const b = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
@@ -14,7 +20,8 @@ export function getSparklePackYield(base) {
 export function executeTimeWarp(hours) {
   const h = Number(hours) || 2;
   const rate = getPassiveIncome();
-  const payout = mul(rate, h * 3600);
+  const warpTalentMult = getWarpTalentMult();
+  const payout = mul(mul(rate, h * 3600), warpTalentMult);
 
   GAME.biomass = gainBio(GAME.biomass, payout);
   GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, payout);
@@ -49,10 +56,11 @@ function renderVipShop() {
   const b = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
   const isVip = Boolean(GAME.vipPass);
   const incomeRate = getPassiveIncome();
+  const warpMult = getWarpTalentMult();
 
-  const warp2Yield = mul(incomeRate, 7200);
-  const warp6Yield = mul(incomeRate, 21600);
-  const warp12Yield = mul(incomeRate, 43200);
+  const warp2Yield = mul(mul(incomeRate, 7200), warpMult);
+  const warp6Yield = mul(mul(incomeRate, 21600), warpMult);
+  const warp12Yield = mul(mul(incomeRate, 43200), warpMult);
 
   const packSmall = getSparklePackYield(500);
   const packMedium = getSparklePackYield(2500);

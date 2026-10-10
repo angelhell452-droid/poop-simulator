@@ -20,26 +20,31 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   pendingClicks = allowed;
 
   const basePower = getClickPower();
-  const critTalent = TALENTS.find(t => t.id === 'crit_master');
+  const critChanceTalent = TALENTS.find(t => t.id === 'talent_crit_chance');
+  const critMultTalent = TALENTS.find(t => t.id === 'talent_crit_mult');
+  const critCascadeTalent = TALENTS.find(t => t.id === 'talent_crit_cascade');
+
   const luckLvl = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
   const happyCrit = Math.max(0, (GAME.happy || 0) / 100) * 0.01;
   const clickerCrit = GAME.archetype === 'clicker' ? 0.02 : 0;
-  // Стартовый шанс крита 0.8% (0.008), разгон талантами, одеждой и туториалом
-  let critChance = Math.min(0.75, 0.008 + (critTalent ? critTalent.level * 0.012 : 0) + luckLvl * 0.004 + happyCrit + clickerCrit + (GAME.tutorialCritBonus || 0));
-  // Стартовый множитель крита х4 (в диапазоне х3 – х5), разгон талантами
-  let critMultiplier = 4.0 * (1 + (critTalent ? critTalent.level * 0.35 : 0));
+  // Стартовый шанс крита 0.8% (0.008) +0.2% за ур. talent_crit_chance (макс 50)
+  let critChance = Math.min(0.75, 0.008 + (critChanceTalent ? critChanceTalent.level * 0.002 : 0) + luckLvl * 0.004 + happyCrit + clickerCrit + (GAME.tutorialCritBonus || 0));
+  // Стартовый множитель крита х4 +0.5x за ур. talent_crit_mult (макс 20)
+  let critMultiplier = 4.0 + (critMultTalent ? critMultTalent.level * 0.5 : 0);
 
-  const sparkleTalent = TALENTS.find(t => t.id === 'sparkle_alchemy');
+  // talent_crit_cascade: дает +0.1% шанс на Супер-Крит с множителем x100
+  const cascadeChance = (critCascadeTalent ? critCascadeTalent.level * 0.001 : 0);
+
   const eqKnife = getEquippedKnife();
   const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
-  const sparkleTalentYield = 1 + (sparkleTalent ? sparkleTalent.level * 0.12 : 0);
   const isGambler = GAME.archetype === 'gambler';
   const gamblerMult = isGambler ? 2.0 : 1.0;
-  const sparklesPerProc = Math.max(1, Math.round(knifeSparkleMult * sparkleTalentYield * gamblerMult));
+  const sparklesPerProc = Math.max(1, Math.round(knifeSparkleMult * gamblerMult));
 
   let totalEarned = 0;
   let sparklesEarned = 0;
   let critsCount = 0;
+  let superCritsCount = 0;
 
   const clicksToProcess = pendingClicks;
   pendingClicks = 0;
@@ -50,13 +55,27 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     critsCount = Math.round(expectedCrits + (Math.random() - 0.5) * variance);
     critsCount = Math.max(0, Math.min(clicksToProcess, critsCount));
     const regularClicks = clicksToProcess - critsCount;
-    totalEarned = add(mul(regularClicks, basePower), mul(mul(critsCount, basePower), critMultiplier));
+
+    if (cascadeChance > 0 && critsCount > 0) {
+      superCritsCount = Math.round(critsCount * cascadeChance);
+      if (superCritsCount > critsCount) superCritsCount = critsCount;
+    }
+    const standardCrits = critsCount - superCritsCount;
+
+    let critBio = mul(mul(standardCrits, basePower), critMultiplier);
+    if (superCritsCount > 0) {
+      critBio = add(critBio, mul(mul(superCritsCount, basePower), critMultiplier * 100));
+    }
+    totalEarned = add(mul(regularClicks, basePower), critBio);
     sparklesEarned = critsCount * sparklesPerProc;
   } else {
     for (let i = 0; i < clicksToProcess; i++) {
       const isCrit = Math.random() < critChance;
       if (isCrit) {
-        totalEarned = add(totalEarned, mul(basePower, critMultiplier));
+        const isSuperCrit = cascadeChance > 0 && Math.random() < cascadeChance;
+        const currentMult = isSuperCrit ? critMultiplier * 100 : critMultiplier;
+        if (isSuperCrit) superCritsCount++;
+        totalEarned = add(totalEarned, mul(basePower, currentMult));
         critsCount++;
       } else {
         totalEarned = add(totalEarned, basePower);
@@ -76,11 +95,12 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     eqKnife.statTrak = (eqKnife.statTrak || 0) + clicksToProcess;
   }
 
-  // Билеты вклада гильдии: 1 билет за каждые 500 кликов, жесткий кап 5 шт.
+  // Билеты вклада гильдии: 1 билет за каждые 500 кликов, расширяемый кап talent_ticket_cap
+  const ticketCap = 5 + (TALENTS.find(t => t.id === 'talent_ticket_cap')?.level || 0);
   GAME.clicksTowardsTicket = (GAME.clicksTowardsTicket || 0) + clicksToProcess;
   while (GAME.clicksTowardsTicket >= 500) {
     GAME.clicksTowardsTicket -= 500;
-    if ((GAME.guildTickets || 0) < 5) {
+    if ((GAME.guildTickets || 0) < ticketCap) {
       GAME.guildTickets = (GAME.guildTickets || 0) + 1;
       events.emit('guild:ticketEarned', { tickets: GAME.guildTickets });
     }

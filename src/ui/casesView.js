@@ -15,6 +15,7 @@ import { getKnifeShownBonuses, getKnifeEffectiveClickMult } from '../economy/pro
 import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.0.80';
 import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.80';
+import { TALENTS } from '../data/talents.data.js';
 let caseAudioEnabled = true;
 let audioCtx = null;
 let activeRouletteCase = null;
@@ -154,6 +155,14 @@ function payForCase(caseObj, count = 1) {
     GAME.sparkles = Math.max(0, (GAME.sparkles || 0) - cost);
     if (isFirstCaseDiscountAvailable(caseObj)) {
       GAME.firstCaseDiscountUsed = true;
+    }
+    // talent_case_cashback: возвращает 1% Блестяшек обратно при покупке любого кейса
+    const cashbackLvl = TALENTS.find(t => t.id === 'talent_case_cashback')?.level || 0;
+    if (cashbackLvl > 0 && cost > 0) {
+      const refund = Math.floor(cost * Math.min(0.9, cashbackLvl * 0.01));
+      if (refund > 0) {
+        GAME.sparkles = (GAME.sparkles || 0) + refund;
+      }
     }
   }
 }
@@ -460,9 +469,17 @@ export const KNIFE_RARITY_WEIGHTS = {
 export function getKnifePoolWithChances(poolKnives, fixedChances = null) {
   if (!poolKnives || poolKnives.length === 0) return [];
 
+  const dropLuckLvl = TALENTS.find(t => t.id === 'talent_drop_luck')?.level || 0;
+  const luckBonus = dropLuckLvl * 0.005;
+
   const fixedChanceOf = (knife) => {
-    const value = fixedChances && Number(fixedChances[knife.id]);
-    return Number.isFinite(value) && value > 0 ? value : 0;
+    let value = fixedChances && Number(fixedChances[knife.id]);
+    const isSpecialRarity = (knife.rarity === 'godly' || knife.rarity === 'special' || knife.rarity === 'classified');
+    if (Number.isFinite(value) && value > 0) {
+      if (isSpecialRarity && luckBonus > 0) value += luckBonus;
+      return value;
+    }
+    return 0;
   };
   const fixedKnives = [];
   const regular = [];
@@ -486,7 +503,9 @@ export function getKnifePoolWithChances(poolKnives, fixedChances = null) {
     const MIN_WEIGHT_RATIO = 0.05;
     const rawWeights = regular.map(k => {
       const normalizedPower = getKnifeEffectiveClickMult(k) / minPower;
-      const raw = 1.0 / Math.pow(normalizedPower, CURVE);
+      let raw = 1.0 / Math.pow(normalizedPower, CURVE);
+      const isSpecialRarity = (k.rarity === 'godly' || k.rarity === 'special' || k.rarity === 'classified');
+      if (isSpecialRarity && luckBonus > 0) raw *= (1 + luckBonus * 5);
       return Math.max(raw, MIN_WEIGHT_RATIO);
     });
     const totalWeight = rawWeights.reduce((s, w) => s + w, 0);

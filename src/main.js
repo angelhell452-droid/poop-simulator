@@ -379,19 +379,18 @@ function checkOfflineProgress() {
   const now = Date.now();
   if (GAME.lastActiveTime && now - GAME.lastActiveTime > 45000) {
     const awaySeconds = Math.floor((now - GAME.lastActiveTime) / 1000);
-    const slumberTalent = TALENTS.find(t => t.id === 'afk_slumber');
-    const sovereignTalent = TALENTS.find(t => t.id === 'time_sovereign');
+    const afkTalent = TALENTS.find(t => t.id === 'talent_afk_efficiency')?.level || 0;
     const godArtifact = GAME.transcendUpgrades?.afkCap || 0;
-    const maxHours = 4 + (slumberTalent ? slumberTalent.level * 2 : 0) + godArtifact * 12;
+    const maxHours = 4 + afkTalent * 1 + godArtifact * 12;
     const maxSeconds = maxHours * 3600;
     const effectiveSeconds = Math.min(awaySeconds, maxSeconds);
 
     const boosterActive = SHOP_ITEMS.find(i => i.id === 'upg_afk_booster')?.owned;
-    const efficiency = boosterActive ? 1.0 : Math.min(1, 0.35 + (slumberTalent ? slumberTalent.level * 0.15 : 0) + (sovereignTalent ? sovereignTalent.level * 0.08 : 0));
+    const efficiency = boosterActive ? 1.0 : Math.min(1, 0.35 + afkTalent * 0.05);
     const basePassive = getPassiveIncome();
     const offlineRaw = mul(mul(basePassive, effectiveSeconds), efficiency);
     const offlineBiomass = isBig(offlineRaw) ? offlineRaw : Math.round(offlineRaw);
-    const offlineSparkles = Math.min(500, Math.floor(effectiveSeconds / 180));
+    const offlineSparkles = Math.min(500, Math.floor((effectiveSeconds / 180) * (1 + afkTalent * 0.05)));
 
     if (offlineBiomass > 0 || isBig(offlineBiomass) || offlineSparkles > 0) {
       GAME.biomass = gainBio(GAME.biomass, offlineBiomass);

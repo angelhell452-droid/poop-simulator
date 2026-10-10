@@ -672,23 +672,23 @@
               </div>
               <p class="text-[10px] text-purple-200 mt-0.5" data-i18n="talent.flushIntro">Бонусы сохраняются при Смыве Судьбы навсегда. Развивайте ветви по тирам!</p>
             </div>
-            <!-- Tier Filter Sub-Buttons -->
-            <div class="flex items-center gap-1.5 pb-1 overflow-x-auto custom-scroll" id="talentFlushTierFilters">
+            <!-- Tier Filter Sub-Buttons: Strictly 5 Prestige Tiers -->
+            <div class="grid grid-cols-5 gap-1 pb-1" id="talentFlushTierFilters">
               <button
-                class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow border border-purple-400"
-                data-tier="all" data-i18n="hud.tierAll">Все</button>
+                class="talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow border border-purple-400 text-center"
+                data-tier="1">🥚 Тир 1</button>
               <button
-                class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800"
-                data-tier="1" data-i18n="hud.tier1">⭐ Тир 1</button>
+                class="talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800 text-center"
+                data-tier="2">⚡ Тир 2</button>
               <button
-                class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800"
-                data-tier="2" data-i18n="hud.tier2">⚡ Тир 2</button>
+                class="talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800 text-center"
+                data-tier="3">⚔️ Тир 3</button>
               <button
-                class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800"
-                data-tier="3" data-i18n="hud.tier3">🔮 Тир 3</button>
+                class="talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 text-center"
+                data-tier="4">🤖 Тир 4</button>
               <button
-                class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800"
-                data-tier="4" data-i18n="hud.tier4">🌌 Тир 4</button>
+                class="talent-flush-tier-btn px-1.5 py-1.5 rounded-xl text-[11px] font-game transition font-bold bg-stone-900 text-stone-400 hover:text-amber-300 border border-stone-800 text-center"
+                data-tier="5">⚛️ Тир 5</button>
             </div>
             <div class="space-y-2 pr-1" id="talentsContainer"></div>
           </div>

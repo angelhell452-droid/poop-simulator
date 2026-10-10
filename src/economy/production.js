@@ -53,7 +53,9 @@ export function getEquippedBodySkin() {
 
 export function getSkinClickMult() {
   const skin = getEquippedBodySkin();
-  return skin ? skin.clickMult : 1;
+  const base = skin ? skin.clickMult : 1;
+  const talentBoost = 1 + talentLevel('talent_skin_multiplier') * 0.015;
+  return mul(base, talentBoost);
 }
 
 export function getEquippedKnife() {
@@ -78,7 +80,8 @@ export function getHatClickMult(hat, level) {
   if (!hat) return 1;
   const lvl = Math.min(15, Math.max(1, Number(level) || 1));
   const raw = (hat.clickBoost || 1) * (1 + (lvl - 1) * HAT_LEVEL_STEP);
-  return softCap(raw, HAT_SOFT_KNEE, 0.55);
+  const talentBoost = 1 + talentLevel('talent_skin_multiplier') * 0.015;
+  return mul(softCap(raw, HAT_SOFT_KNEE, 0.55), talentBoost);
 }
 
 const LEGACY_HAT_BOOST = {
@@ -241,18 +244,27 @@ function knifeStyleBonuses() {
 
 function describeFactory(fac, idx, count) {
   const styles = knifeStyleBonuses();
-  const qReplMult = 1 + talentLevel('quantum_replication') * 0.15;
   let knife = 1;
   if (idx < 5) knife = styles.early;
   else if (idx >= 5 && idx < 12) knife = styles.heavy;
-  const quantum = idx >= 10 ? qReplMult : 1;
   const coreOn = !!SHOP_ITEMS.find(i => i.id === 'upg_singularity_core')?.owned;
   const highTier = fac.tier === 'late' || fac.tier === 'endgame' || fac.tier === 'singularity';
   const core = (coreOn && highTier) ? 1.5 : 1;
   const milestone = milestoneMult(count);
-  const raw = mul(mul(mul(count, fac.baseCps), milestone * knife * quantum * core), 1);
-  return { raw, milestone, knife, quantum, core, count, perCopy: fac.baseCps };
-}function passiveGlobalLines() {
+
+  // talent_factory_base: +5 к базовой биомассе в секунду от заводов за уровень
+  const factoryBaseBonus = talentLevel('talent_factory_base') * 5;
+  const effectiveBaseCps = add(fac.baseCps, factoryBaseBonus);
+
+  // talent_factory_meta: +5% к доходу заводов мультипликативно, если уровень завода > 500
+  const metaLvl = talentLevel('talent_factory_meta');
+  const metaMult = (count > 500 && metaLvl > 0) ? Math.pow(1.05, metaLvl) : 1;
+
+  const raw = mul(mul(mul(count, effectiveBaseCps), milestone * knife * core), metaMult);
+  return { raw, milestone, knife, quantum: 1, core, metaMult, count, perCopy: effectiveBaseCps };
+}
+
+function passiveGlobalLines() {
   const styles = knifeStyleBonuses();
   const turboMult = 1 + talentLevel('turbo_pipe') * 0.15;
   const goldRushMult = SHOP_ITEMS.find(i => i.id === 'upg_goldrush')?.owned ? 1.25 : 1;
@@ -282,6 +294,9 @@ function describeFactory(fac, idx, count) {
   const late = getLateComboMult();
   const tutIncomeMult = getTutorialIncomeMult();
 
+  // talent_fed_factory_buff: +2% к доходу Авто-заводов, пока активен бафф «Кормить»
+  const fedBuff = (GAME.hunger || 0) > 0 ? (1 + talentLevel('talent_fed_factory_buff') * 0.02) : 1;
+
   const gearBits = [];
   pushAboveOne(gearBits, 'Эхо смыва', rollsMult);
   pushAboveOne(gearBits, 'Буст Прорывов', plungersMult);
@@ -299,6 +314,7 @@ function describeFactory(fac, idx, count) {
   pushAboveOne(lines, 'Омни-множитель', omniRelicMult);
   pushAboveOne(lines, 'Гипер-ускоритель', facOverdriveMult);
   pushAboveOne(lines, 'Чистота питомца', cleanBuff);
+  pushAboveOne(lines, 'Био-топливо (Сытость)', fedBuff);
   pushArchetype(lines, archMult);
   pushAboveOne(lines, 'Благословение форм', evoBlessingMult);
   pushAboveOne(lines, 'Эссенция омниверса', omniWealthMult);
@@ -319,7 +335,7 @@ function describeFactory(fac, idx, count) {
     * crystalMult * softRollsMult * cosmicMult * omniRelicMult
     * facOverdriveMult * cleanBuff * archMult * evoBlessingMult * omniWealthMult
     * sparkMult * cosmicSynergyMult * timeWarpMult * riftMult * idealMult * late
-    * getIncomePace() * horizonIncomeMult() * guildPresenceMult() * tutIncomeMult;
+    * fedBuff * getIncomePace() * horizonIncomeMult() * guildPresenceMult() * tutIncomeMult;
 
   let product = mul(numProd, rollsMult);
   product = mul(product, plungersMult);
@@ -431,7 +447,8 @@ function multRows(parts) {
 
 export function getClickPower() {
   const parts = clickParts();
-  let basePower = parts.product;
+  const baseBio = 1 + talentLevel('talent_click_base') * 1;
+  let basePower = mul(baseBio, parts.product);
   if (parts.syncRate > 0) {
     basePower = add(basePower, mul(getPassiveIncome(), parts.syncRate));
   }
@@ -441,18 +458,21 @@ export function getClickPower() {
 
 export function getClickBreakdown() {
   const parts = clickParts();
-  const rows = [{ name: 'База клика', text: '1' }, ...multRows(parts)];
+  const baseBio = 1 + talentLevel('talent_click_base') * 1;
+  const rows = [{ name: 'База клика', text: formatNumber(baseBio) }, ...multRows(parts)];
   if (parts.syncRate > 0) {
     rows.push({
       name: 'Бонус от заводов',
       text: `+${formatNumber(mul(getPassiveIncome(), parts.syncRate))} к клику`
     });
   }
-  const critTalent = TALENTS.find(t => t.id === 'crit_master');
+  const critChanceTalent = talentLevel('talent_crit_chance');
+  const critMultTalent = talentLevel('talent_crit_mult');
   const luckLvl = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
   const happyCrit = getHappyCritBonus();
-  const critChance = Math.min(0.75, 0.008 + (critTalent ? critTalent.level * 0.012 : 0) + luckLvl * 0.004 + happyCrit + clickerCrit + getTutorialCritBonus());
-  const critMultiplier = 4.0 * (1 + (critTalent ? critTalent.level * 0.35 : 0));
+  const clickerCrit = GAME.archetype === 'clicker' ? 0.02 : 0;
+  const critChance = Math.min(0.75, 0.008 + critChanceTalent * 0.002 + luckLvl * 0.004 + happyCrit + clickerCrit + getTutorialCritBonus());
+  const critMultiplier = 4.0 + critMultTalent * 0.5;
   rows.push({
     name: 'Крит, отдельно от числа',
     text: `${formatNumber(critChance * 100)}% · x${formatNumber(critMultiplier)}`,
@@ -534,26 +554,22 @@ export function getFactoryBreakdown(facId) {
 export function getActiveBuffsList() {
   const buffs = [];
 
-  // 1. Гипер-Кликер
-  const hyperTalent = TALENTS.find(t => t.id === 'hyper_click');
-  if (hyperTalent && hyperTalent.level > 0) {
-    const maxHyperStacks = 30;
-    const hyperStacks = Math.min(maxHyperStacks, Math.floor((GAME.totalClicks || 0) / 500));
-    if (hyperStacks > 0) {
-      const bonusPct = Math.round(hyperStacks * (hyperTalent.level * 2));
-      buffs.push({
-        id: 'hyper_click',
-        icon: '👆',
-        name: 'Гипер-Клик (Овердрайв)',
-        short: `+${formatNumber(bonusPct)}%`,
-        bonusText: `+${formatNumber(bonusPct)}% к силе клика`,
-        badgeColor: 'bg-amber-950/90 border-yellow-400/80 text-yellow-300 shadow-[0_0_8px_rgba(234,179,8,0.25)]',
-        desc: 'Талант Смыва: +2% к силе клика за каждые 500 кликов (до 30 стаков).',
-        progress: `Накоплено: ${formatNumber(hyperStacks)} из ${formatNumber(maxHyperStacks)} стаков (всего кликов: ${formatNumber(GAME.totalClicks || 0)}). Уровень таланта: ${formatNumber(hyperTalent.level)}.`,
-        source: 'Таланты Смыва (Тир 2)',
-        tip: 'Делайте больше кликов мышкой или развивайте уровень таланта в Древе Втулок.'
-      });
-    }
+  // 1. Био-Топливо (Сытость)
+  const fedTalent = TALENTS.find(t => t.id === 'talent_fed_factory_buff');
+  if (fedTalent && fedTalent.level > 0 && (GAME.hunger || 0) > 0) {
+    const bonusPct = Math.round(fedTalent.level * 2);
+    buffs.push({
+      id: 'fed_factory_buff',
+      icon: '🍗',
+      name: 'Био-Топливо',
+      short: `+${formatNumber(bonusPct)}%`,
+      bonusText: `+${formatNumber(bonusPct)}% к доходу заводов`,
+      badgeColor: 'bg-emerald-950/90 border-emerald-400/80 text-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.25)]',
+      desc: 'Талант: +2% к доходу Авто-заводов, пока активен бафф «Кормить».',
+      progress: `Сытость питомца: ${formatNumber(Math.round(GAME.hunger || 0))}%. Уровень таланта: ${formatNumber(fedTalent.level)}.`,
+      source: 'Таланты Смыва (Тир 3)',
+      tip: 'Кормите питомца, чтобы поддерживать активность бонуса.'
+    });
   }
 
   // 2. Турбо-Ярость (Frenzy)

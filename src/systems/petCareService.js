@@ -1,6 +1,7 @@
 import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.js?v=5.0.80';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { events } from '../core/events.js';
+import { TALENTS } from '../data/talents.data.js';
 
 function meterHasRoom(value) {
   return Math.round(value) < 100;
@@ -54,8 +55,13 @@ export function ticklePet() {
 
 export function decayNeeds(dt) {
   const zenMaster = SHOP_ITEMS.find(i => i.id === 'upg_zen_master')?.owned;
-  const decayMult = zenMaster ? 0.33 : 1.0;
+  const baseDecay = zenMaster ? 0.33 : 1.0;
   
+  // talent_care_duration: продлевает действие баффов Ухода на +5% времени
+  const careDurationLvl = TALENTS.find(t => t.id === 'talent_care_duration')?.level || 0;
+  const durationFactor = 1 + careDurationLvl * 0.05;
+  const decayMult = baseDecay / durationFactor;
+
   GAME.hunger = Math.max(0, GAME.hunger - (0.25 * decayMult * dt));
   GAME.clean = Math.max(0, GAME.clean - (0.2 * decayMult * dt));
   if (GAME.hunger < 25 || GAME.clean < 25) {

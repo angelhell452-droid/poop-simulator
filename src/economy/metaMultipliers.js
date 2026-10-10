@@ -59,6 +59,7 @@ function openPairEchoBonus(at, closedPairs, previewPhase = 0, previewAdd = 0) {
 }
 
 import { bigPow } from '../utils/big.js?v=5.0.80';
+import { TALENTS } from '../data/talents.data.js';
 
 export function getFlushIncomeMult() {
   const flushes = Math.max(0, GAME.flushCount ?? GAME.totalPrestiges ?? 0);
@@ -68,7 +69,9 @@ export function getFlushIncomeMult() {
 export function getBreakthroughIncomeMult() {
   const b = Math.max(0, GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
   if (b === 0) return 1;
-  return bigPow(1 + b, b);
+  const hackLvl = TALENTS.find(t => t.id === 'talent_exponent_hack')?.level || 0;
+  const exp = b + (hackLvl * 0.05);
+  return bigPow(1 + b, exp);
 }
 
 /**

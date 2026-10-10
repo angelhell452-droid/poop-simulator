@@ -66,18 +66,18 @@ export function meteorSparkleProfile(evoStage, transcends, flushes) {
 }
 
 function meteorTalentSparkle() {
-  const hunter = TALENTS.find(t => t.id === 'meteor_hunter');
+  const meteorBonus = TALENTS.find(t => t.id === 'talent_meteor_bonus')?.level || 0;
   const luck = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
   const storm = GAME.transcendUpgrades?.meteorStorm || 0;
-  const stacked = (hunter ? hunter.level : 0) * 0.06 + luck * 0.03 + storm * 0.05;
-  return 1 + Math.min(1.2, stacked);
+  const stacked = meteorBonus * 0.01 + luck * 0.03 + storm * 0.05;
+  return 1 + stacked;
 }
 function scheduleNextMeteor(extraMs = 0) {
-  const hunter = TALENTS.find(t => t.id === 'meteor_hunter');
-  const hunterScale = Math.pow(0.92, hunter ? hunter.level : 0);
+  const spawnTalent = TALENTS.find(t => t.id === 'talent_meteor_spawn')?.level || 0;
+  const spawnScale = 1 / (1 + spawnTalent * 0.05);
   const magnet = SHOP_ITEMS.find(i => i.id === 'upg_meteor_magnet')?.owned ? 0.6 : 1;
   const base = 40000 + Math.random() * 35000 + extraMs;
-  nextMeteorSpawn = Date.now() + Math.max(18000, base * hunterScale * magnet);
+  nextMeteorSpawn = Date.now() + Math.max(12000, base * spawnScale * magnet);
 }
 let listenersInitialized = false;
 
@@ -1388,7 +1388,13 @@ export function catchGoldenMeteor() {
     const eqKnife = getEquippedKnife();
     const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
     const raw = profile.purse * (0.10 + Math.random() * 0.08) * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult;
-    const spGain = Math.max(20, Math.round(raw));
+    let spGain = Math.max(20, Math.round(raw));
+    const tripleTalent = TALENTS.find(t => t.id === 'talent_meteor_triple');
+    const tripleChance = tripleTalent ? tripleTalent.level * 0.001 : 0;
+    if (tripleChance > 0 && Math.random() < tripleChance) {
+      spGain *= 3;
+      addVisualParticle('✨ ЗОЛОТАЯ ИСКРА x3! ✨', '#fde047', 1.8, 2.5, -2.8);
+    }
     GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
     label = t('canvas.meteorSparkleRain', { n: formatNumber(spGain) });
   } else {
@@ -1417,11 +1423,13 @@ export function checkMeteorClick(clientX, clientY) {
   const clickX = clientX - rect.left;
   const clickY = clientY - rect.top;
 
+  const magnetLvl = TALENTS.find(t => t.id === 'talent_meteor_magnet')?.level || 0;
+  const hitboxMult = 1 + magnetLvl * 0.10;
   let nearestShower = -1;
   let nearestDist = Infinity;
   showerMeteors.forEach((meteor, index) => {
     const dist = Math.hypot(clickX - meteor.x, clickY - meteor.y);
-    if (dist < meteor.radius + 14 && dist < nearestDist) {
+    if (dist < (meteor.radius + 14) * hitboxMult && dist < nearestDist) {
       nearestDist = dist;
       nearestShower = index;
     }
@@ -1429,7 +1437,7 @@ export function checkMeteorClick(clientX, clientY) {
 
   if (goldenMeteor.active) {
     const goldenDist = Math.hypot(clickX - goldenMeteor.x, clickY - goldenMeteor.y);
-    if (goldenDist < goldenMeteor.radius + 18 && goldenDist <= nearestDist) {
+    if (goldenDist < (goldenMeteor.radius + 18) * hitboxMult && goldenDist <= nearestDist) {
       catchGoldenMeteor();
       return true;
     }
@@ -1464,8 +1472,13 @@ function tickMeteorShower(drawCtx, w, h) {
     showerNextSpawn = now + 850;
   }
 
+  const magnetLvl = TALENTS.find(t => t.id === 'talent_meteor_magnet')?.level || 0;
   for (let i = showerMeteors.length - 1; i >= 0; i--) {
     const meteor = showerMeteors[i];
+    if (magnetLvl > 0) {
+      meteor.vx += ((w / 2) - meteor.x) * 0.0004 * magnetLvl;
+      meteor.vy += ((h / 2) - meteor.y) * 0.0004 * magnetLvl;
+    }
     meteor.x += meteor.vx;
     meteor.y += meteor.vy;
     meteor.rotation += 0.08;
@@ -1490,7 +1503,16 @@ function catchShowerMeteor(index) {
   showerMeteors.splice(index, 1);
   GAME.meteorsCaught = (GAME.meteorsCaught || 0) + 1;
   const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
-  const sparkGain = Math.max(8, Math.round(profile.purse * (0.012 + Math.random() * 0.010) * profile.localMult * profile.flushBonus * meteorTalentSparkle()));
+  let sparkGain = Math.max(8, Math.round(profile.purse * (0.012 + Math.random() * 0.010) * profile.localMult * profile.flushBonus * meteorTalentSparkle()));
+
+  const tripleTalent = TALENTS.find(t => t.id === 'talent_meteor_triple');
+  const tripleChance = tripleTalent ? tripleTalent.level * 0.001 : 0;
+  const isTriple = tripleChance > 0 && Math.random() < tripleChance;
+  if (isTriple) {
+    sparkGain *= 3;
+    addVisualParticle('✨ ЗОЛОТАЯ ИСКРА x3! ✨', '#fde047', 1.8, 2.5, -2.8);
+  }
+
   GAME.sparkles = (Number(GAME.sparkles) || 0) + sparkGain;
   addVisualParticle(t('canvas.meteorShowerCatch', { n: formatNumber(sparkGain) }), '#fde68a', 1.05);
   checkAchievements();
