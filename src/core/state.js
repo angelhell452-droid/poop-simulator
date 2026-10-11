@@ -96,6 +96,7 @@ export function getDefaultGameState() {
     hasVipPass: false,
     vipPassExpires: 0,
     autoFlushActive: false,
+    autoBreakthroughActive: false,
 
     lastSaveTime: Date.now(),
     lastActiveTime: Date.now(),

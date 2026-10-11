@@ -268,6 +268,49 @@ export function updateTranscendModalRealtime() {
       execTransBtn.textContent = 'СОВЕРШИТЬ АСТРАЛЬНЫЙ ПРОРЫВ! 🌌';
     }
   }
+
+  // VIP Auto-Breakthrough toggle UI
+  const autoBreakthroughBox = document.getElementById('transcendAutoBreakthroughBox');
+  const btnToggleAutoBreakthrough = document.getElementById('btnToggleAutoBreakthrough');
+  const autoBreakthroughToggleState = document.getElementById('autoBreakthroughToggleState');
+  const autoBreakthroughDesc = document.getElementById('autoBreakthroughDesc');
+  const autoBreakthroughVipBadge = document.getElementById('autoBreakthroughVipBadge');
+  const isVip = Boolean(GAME.vipPass || GAME.hasVipPass);
+
+  if (autoBreakthroughBox && btnToggleAutoBreakthrough) {
+    if (!isVip) {
+      GAME.autoBreakthroughActive = false;
+      autoBreakthroughBox.className = 'mb-3 p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between gap-2.5 bg-stone-950/60 border-stone-800 opacity-60';
+      btnToggleAutoBreakthrough.disabled = true;
+      btnToggleAutoBreakthrough.className = 'px-3 py-1.5 rounded-xl font-game text-[11px] font-bold bg-stone-900 text-stone-600 border border-stone-800 cursor-not-allowed';
+      if (autoBreakthroughToggleState) autoBreakthroughToggleState.textContent = '🔒 ВЫКЛ';
+      if (autoBreakthroughDesc) autoBreakthroughDesc.innerHTML = `<span class="text-amber-400 font-bold">${t('transcend.autoVipReq')}</span>`;
+      if (autoBreakthroughVipBadge) autoBreakthroughVipBadge.className = 'text-[9px] bg-stone-800 text-stone-400 px-1.5 py-0.2 rounded font-bold uppercase';
+    } else {
+      const active = Boolean(GAME.autoBreakthroughActive);
+      autoBreakthroughBox.className = active
+        ? 'mb-3 p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between gap-2.5 bg-gradient-to-r from-cyan-950/70 to-purple-950/70 border-cyan-500/70 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
+        : 'mb-3 p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between gap-2.5 bg-indigo-950/50 border-indigo-800/60';
+      btnToggleAutoBreakthrough.disabled = false;
+      btnToggleAutoBreakthrough.className = active
+        ? 'jelly-btn px-3 py-1.5 rounded-xl font-game text-[11px] font-bold transition flex items-center gap-1.5 shadow bg-gradient-to-r from-cyan-500 to-indigo-500 text-stone-950 border border-cyan-300 font-black animate-pulse'
+        : 'jelly-btn px-3 py-1.5 rounded-xl font-game text-[11px] font-bold transition flex items-center gap-1.5 shadow bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-600';
+      if (autoBreakthroughToggleState) autoBreakthroughToggleState.textContent = active ? '✓ ВКЛ' : 'ВЫКЛ';
+      if (autoBreakthroughDesc) autoBreakthroughDesc.textContent = active ? t('transcend.autoDescActive') : t('transcend.autoDescInactive');
+      if (autoBreakthroughVipBadge) autoBreakthroughVipBadge.className = 'text-[9px] bg-gradient-to-r from-yellow-400 to-amber-500 text-stone-950 px-1.5 py-0.2 rounded font-black uppercase shadow-sm';
+    }
+
+    if (!btnToggleAutoBreakthrough._bound) {
+      btnToggleAutoBreakthrough._bound = true;
+      btnToggleAutoBreakthrough.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!Boolean(GAME.vipPass || GAME.hasVipPass)) return;
+        GAME.autoBreakthroughActive = !GAME.autoBreakthroughActive;
+        saveLocal();
+        updateTranscendModalRealtime();
+      });
+    }
+  }
 }
 
 export function openPrestigeModal() {

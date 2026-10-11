@@ -16,6 +16,8 @@ import { events } from './events.js';
 import { gainBio, mul } from '../utils/big.js?v=5.0.80';
 import { hasRelic } from '../data/relics.data.js';
 import { getPrestigeRequirement, executePrestige } from '../prestige/prestigeService.js?v=5.0.80';
+import { getTranscendRewardBreakdown, executeTranscend } from '../prestige/transcendService.js?v=5.0.80';
+import { updateTranscendModalRealtime } from '../ui/modalManager.js?v=5.0.80';
 import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.0.80';
 import { updateHUD } from '../ui/hudView.js?v=5.0.80';
 
@@ -23,6 +25,7 @@ let lastTickTime = performance.now();
 let autoEvoTimer = 0;
 let autoBuyerTimer = 0;
 let autoFlushTimer = 0;
+let autoBreakthroughTimer = 0;
 let autoCareTimer = 0;
 let autoSaveTimer = 0;
 let passiveRollAccumulator = 0;
@@ -121,6 +124,22 @@ export function gameEngineTick() {
       if (pReq.isMet) {
         if (executePrestige(GAME.archetype || 'balanced')) {
           updateHUD();
+        }
+      }
+    }
+  }
+
+  // 3.7 VIP Auto-Breakthrough (every 1.0s)
+  autoBreakthroughTimer += dt;
+  if (autoBreakthroughTimer >= 1.0) {
+    autoBreakthroughTimer = 0;
+    const isVip = Boolean(GAME.vipPass || GAME.hasVipPass);
+    if (isVip && GAME.autoBreakthroughActive) {
+      const tb = getTranscendRewardBreakdown();
+      if (tb.isMet && tb.totalGain > 0) {
+        if (executeTranscend()) {
+          updateHUD();
+          updateTranscendModalRealtime();
         }
       }
     }

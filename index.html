@@ -1340,6 +1340,25 @@
         <span id="relicBranchLabel">🔒 Ветка реликвий откроется после 1 Прорыва</span>
       </button>
 
+      <!-- VIP AUTO-BREAKTHROUGH TOGGLE -->
+      <div id="transcendAutoBreakthroughBox" class="mb-3 p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between gap-2.5 bg-stone-950/60 border-stone-800 opacity-60">
+        <div class="flex items-center gap-2">
+          <span class="text-xl select-none" id="autoBreakthroughIcon">⚡</span>
+          <div>
+            <div class="font-game text-xs font-bold flex items-center gap-1.5" id="autoBreakthroughTitle">
+              <span data-i18n="transcend.autoTitle">Авто-Прорыв</span>
+              <span id="autoBreakthroughVipBadge" class="text-[9px] bg-stone-800 text-stone-400 px-1.5 py-0.2 rounded font-black uppercase">VIP</span>
+            </div>
+            <div class="text-[10px] text-stone-400 leading-tight" id="autoBreakthroughDesc">
+              <span class="text-amber-400 font-bold" data-i18n="transcend.autoVipReq">🔒 Требуется VIP-Пасс Вселенной</span>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="btnToggleAutoBreakthrough" disabled class="px-3 py-1.5 rounded-xl font-game text-[11px] font-bold bg-stone-900 text-stone-600 border border-stone-800 cursor-not-allowed">
+          <span id="autoBreakthroughToggleState">🔒 ВЫКЛ</span>
+        </button>
+      </div>
+
       <button id="btnExecuteTranscend"
         class="w-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:brightness-110 text-white font-game text-sm py-2.5 rounded-2xl shadow-xl disabled:opacity-40 disabled:cursor-not-allowed" data-i18n="modal.doTranscend">
         СОВЕРШИТЬ АСТРАЛЬНЫЙ ПРОРЫВ! 🌌

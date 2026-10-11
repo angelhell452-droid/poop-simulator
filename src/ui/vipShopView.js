@@ -120,22 +120,27 @@ export function renderVipShop() {
         ${isVip ? '<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/50">АКТИВЕН ✓</span>' : '<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40">VIP</span>'}
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
         <div class="p-2 rounded-2xl bg-stone-900/90 border border-stone-800">
           <div class="text-xl mb-0.5">🌠</div>
           <div class="font-bold text-yellow-200 text-[11px]">Автосборщик</div>
-          <div class="text-[9px] text-stone-400">Золотые звезды ловятся мгновенно</div>
+          <div class="text-[9px] text-stone-400">Мгновенный лов звёзд</div>
           <div class="text-[10px] text-amber-300 font-bold mt-1 font-game">☄️ <span id="vipTotalMeteorsVal">${formatNumber(GAME.stats?.totalMeteorsCaught || 0)}</span></div>
         </div>
         <div class="p-2 rounded-2xl bg-stone-900/90 border border-stone-800">
           <div class="text-xl mb-0.5">🧻</div>
           <div class="font-bold text-yellow-200 text-[11px]">x2 Втулки</div>
-          <div class="text-[9px] text-stone-400">Удвоение Втулок за каждый Смыв</div>
+          <div class="text-[9px] text-stone-400">Удвоение за Смыв</div>
         </div>
         <div class="p-2 rounded-2xl bg-stone-900/90 border border-stone-800">
           <div class="text-xl mb-0.5">🪠</div>
           <div class="font-bold text-yellow-200 text-[11px]">x2 Вантузы</div>
-          <div class="text-[9px] text-stone-400">Удвоение Вантузов за Прорыв</div>
+          <div class="text-[9px] text-stone-400">Удвоение за Прорыв</div>
+        </div>
+        <div class="p-2 rounded-2xl bg-stone-900/90 border border-stone-800">
+          <div class="text-xl mb-0.5">⚡</div>
+          <div class="font-bold text-yellow-200 text-[11px]">Авто-Смыв & Прорыв</div>
+          <div class="text-[9px] text-stone-400">Автопилот при готовности</div>
         </div>
       </div>
 

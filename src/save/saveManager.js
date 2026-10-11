@@ -70,6 +70,7 @@ export function buildSavePayload() {
     stats: cleanStats,
     transcendPlungers: plungersStr,
     autoFlushActive: Boolean(GAME.autoFlushActive),
+    autoBreakthroughActive: Boolean(GAME.autoBreakthroughActive),
     relics: cleanRelics,
     transcendUpgrades: cleanTranscendUpgrades,
     feedCount,
@@ -203,6 +204,7 @@ export function wipeRuntimeCatalogs() {
   GAME.vipPass = false;
   GAME.vipPassExpires = 0;
   GAME.autoFlushActive = false;
+  GAME.autoBreakthroughActive = false;
   GAME.tickleCount = 0;
   GAME.currentRunPeakGPS = 0;
   setFeedCount(0);
@@ -357,6 +359,7 @@ export function applySaveDataSafely(rawData) {
   delete GAME.vipLevel;
   GAME.vipPassExpires = Math.max(0, Math.floor(Number(GAME.vipPassExpires) || 0));
   GAME.autoFlushActive = isVipInSave && Boolean(data.autoFlushActive ?? data.game?.autoFlushActive ?? false);
+  GAME.autoBreakthroughActive = isVipInSave && Boolean(data.autoBreakthroughActive ?? data.game?.autoBreakthroughActive ?? false);
   if (!GAME.stats || typeof GAME.stats !== 'object') {
     GAME.stats = { totalMeteorsCaught: 0 };
   }
