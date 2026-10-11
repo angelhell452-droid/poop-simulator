@@ -2409,6 +2409,57 @@
     </div>
   </div>
 
+  <!-- KNIFE SHARPEN WHEEL MODAL -->
+  <div id="knifeSharpenModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 rounded-3xl border-4 border-amber-500/80 max-w-sm sm:max-w-md w-full p-4 sm:p-5 relative shadow-[0_0_50px_rgba(245,158,11,0.25)] flex flex-col items-center gap-3 text-center">
+      <button id="btnCloseSharpenModal" type="button" class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-2xl font-bold leading-none">&times;</button>
+      
+      <!-- Header -->
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">⚔️</span>
+        <h3 class="font-game text-lg sm:text-xl text-yellow-300 font-bold" id="sharpenModalTitle">Заточка Клинка</h3>
+        <span class="text-2xl">✨</span>
+      </div>
+
+      <!-- Knife Info Card -->
+      <div id="sharpenKnifeCard" class="w-full bg-stone-900/90 border border-stone-700/80 rounded-2xl p-2.5 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div id="sharpenKnifeIcon" class="w-10 h-10 shrink-0 flex items-center justify-center text-2xl bg-stone-950 rounded-xl border border-stone-800">🔪</div>
+          <div class="text-left min-w-0">
+            <div id="sharpenKnifeName" class="font-game text-xs font-bold text-yellow-200 truncate">Кинжал</div>
+            <div id="sharpenKnifeStars" class="text-[11px] text-amber-300 font-bold flex items-center gap-1">★1 ➔ ★2</div>
+          </div>
+        </div>
+        <div class="text-right shrink-0">
+          <div id="sharpenChanceBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">70% шанс</div>
+          <div id="sharpenCostBadge" class="text-[10px] text-stone-400 font-mono mt-0.5">500 ✨</div>
+        </div>
+      </div>
+
+      <!-- Wheel Container -->
+      <div class="relative flex flex-col items-center justify-center my-1 select-none">
+        <!-- Top Arrow Pointer -->
+        <div class="absolute -top-3.5 z-20 text-2xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-bounce pointer-events-none">🔻</div>
+        <!-- Canvas Wheel -->
+        <canvas id="sharpenWheelCanvas" width="260" height="260" class="rounded-full shadow-2xl border-4 border-amber-500/70 bg-stone-950"></canvas>
+      </div>
+
+      <!-- Result Banner -->
+      <div id="sharpenResultBanner" class="min-h-[44px] flex flex-col items-center justify-center">
+        <div id="sharpenResultTitle" class="font-game text-base sm:text-lg font-black text-amber-300">Колесо Кузнеца</div>
+        <div id="sharpenResultDesc" class="text-[11px] text-stone-400 font-game">Вращай колесо, чтобы закалить клинок!</div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="w-full flex items-center gap-2">
+        <button id="btnSpinSharpenWheel" type="button" class="w-full jelly-btn bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:brightness-110 text-stone-950 font-game font-black text-xs sm:text-sm py-2.5 rounded-2xl shadow-xl border border-yellow-200 flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <span>🎰</span>
+          <span id="btnSpinSharpenLabel">Заточить за 500 ✨</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="src/main.js?v=5.1.0"></script>
 </body>
 

@@ -7,6 +7,7 @@ import {
   getKnifeStar, getKnifeSharpenCost, getKnifeRecycleReward, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
+import { openSharpenWheelModal } from './sharpenView.js';
 import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.0.80';
 import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.1.0';
 import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
@@ -346,15 +347,7 @@ export function renderCharacterInventory() {
         </div>
       `;
       document.getElementById('btnSharpenEquippedKnife')?.addEventListener('click', () => {
-        const res = sharpenKnife(equippedObj.id);
-        if (res.success) {
-          updateHUD();
-          renderCharacterInventory();
-          saveLocal();
-          showKnifeToast(t('inv.toastSharpened', { name: knifeName(equippedObj), n: formatNumber(res.newStar) }));
-        } else {
-          alert(res.msg);
-        }
+        openSharpenWheelModal(equippedObj.id, false);
       });
       document.getElementById('btnUnequipKnife')?.addEventListener('click', () => {
         GAME.equippedKnife = null;
@@ -583,15 +576,7 @@ function renderKnivesGrid() {
   invContainer.querySelectorAll('.sharpen-knife-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const kid = btn.dataset.id;
-      const res = sharpenKnife(kid);
-      if (res.success) {
-        updateHUD();
-        renderCharacterInventory();
-        saveLocal();
-        showKnifeToast(t('inv.toastSharpenOk', { n: formatNumber(res.newStar) }));
-      } else {
-        alert(res.msg);
-      }
+      openSharpenWheelModal(kid, false);
     });
   });
 

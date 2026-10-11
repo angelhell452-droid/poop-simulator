@@ -2,6 +2,42 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.3.1 PRO',
+    date: '11 Октября 2026',
+    dateEn: 'October 11, 2026',
+    title: 'Патч 5.3.1: ⚠️ ВАЙП Прогрессии, Колесо Фортуны Заточки, Умная Экипировка Ножей и Новый Зал Славы',
+    titleEn: 'Patch 5.3.1: Progression Wipe, Knife Sharpening Wheel of Fortune, Smart Knife Auto-Equip & Hall of Fame Grid',
+    badge: '⚠️ ВАЙП & ОБНОВЛЕНИЕ',
+    badgeEn: 'WIPE & UPDATE',
+    badgeClass: 'bg-amber-500/20 text-yellow-300 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '⚠️',
+        text: 'ВАЙП и Проверка Обновленной Прогрессии: Все скрытые счетчики сброшены. Мы полностью переработали 5 Тиров игры, усложнили требования Смывов для Прорыва и ввели суровую синергию Ножей и Заводов. Ворвись в игру с чистого листа и проверь хардкорный баланс прямо сейчас!',
+        textEn: 'Progression Wipe & Rebalance: Hidden counters reset. Reworked 5 game tiers, heightened flush requirements for breakthrough, and introduced severe knife-factory synergies.'
+      },
+      {
+        type: 'ui',
+        icon: '🏆',
+        text: 'Глобальная Починка Зала Славы: Полный редизайн карточек таблицы лидеров на строгой Grid-сетке. Чистые независимые колонки «Прорывы», «Форма», «Смывы», коронки топ-3, плашка ★ VIP и защита от пустой базы.',
+        textEn: 'Hall of Fame Grid Overhaul: Restructured leaderboard layout on a strict 3-column CSS Grid. Distinct stat blocks for Breakthroughs, Form, and Flushes with full null-safety and crowns.'
+      },
+      {
+        type: 'feature',
+        icon: '🎰',
+        text: 'Колесо Фортуны при Заточке Ножей: Азартная анимация кругового колеса с шансами на успех (зеленый) и провал (красный). Плавное вращение с замедлением и сочный вердикт.',
+        textEn: 'Wheel of Fortune Knife Sharpening: Interactive fortune wheel modal with exact chance sectors, ease-out spin animation, and animated outcome reveals.'
+      },
+      {
+        type: 'feature',
+        icon: '⚔️',
+        text: 'Умный Алгоритм «Одеть лучший нож»: Кнопка рассчитывает реальный клик-урон каждого разблокированного клинка на big.js с учетом уровня заточки звёзд и автоматически надевает сильнейший.',
+        textEn: 'Smart Equip Best Knife: Computes real battle click power taking sharpening star levels and big.js multipliers into account, equipping the optimal blade.'
+      }
+    ]
+  },
+  {
     version: 'v5.3.0 PRO',
     date: '11 Октября 2026',
     dateEn: 'October 11, 2026',

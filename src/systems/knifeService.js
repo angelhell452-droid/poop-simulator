@@ -2,7 +2,8 @@ import { GAME } from '../core/state.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
-import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.80';
+import { getKnifeStar, getHatLevel, getKnifeClickMult } from '../economy/production.js?v=5.0.80';
+import { gt } from '../utils/big.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { t } from '../i18n/t.js';
@@ -100,46 +101,77 @@ export function getKnifeRecycleReward(knifeOrId, explicitStar = null) {
   return { amount, currency, symbol, isAstral };
 }
 
-export function sharpenKnife(knifeId) {
+export function getKnifeSharpenChance(knifeId) {
+  const upgChanceTalent = TALENTS.find(t => t.id === 'talent_upgrade_chance')?.level || 0;
+  const forgeLuckLvl = getRelicLevel('relic_forge_luck');
+  return Math.min(1.0, 0.70 + upgChanceTalent * 0.03 + forgeLuckLvl * 0.05);
+}
+
+export function canSharpenKnife(knifeId) {
+  const knife = KNIVES.find(k => k.id === knifeId);
+  if (!knife) return { can: false, reason: t('knife.err.notFound') };
+
+  const costInfo = getKnifeSharpenCost(knife);
+  if (costInfo.maxReached) {
+    return { can: false, reason: t('knife.err.maxSharpen'), maxReached: true, knife, costInfo };
+  }
+
+  if ((GAME.sparkles || 0) < costInfo.cost) {
+    return { can: false, reason: t('knife.err.needSparkles', { n: formatNumber(costInfo.cost) }), costInfo, knife };
+  }
+
+  return { can: true, knife, costInfo, curStar: getKnifeStar(knifeId) };
+}
+
+export function applyKnifeSharpen(knifeId, isSuccess) {
   const knife = KNIVES.find(k => k.id === knifeId);
   if (!knife) return { success: false, msg: t('knife.err.notFound') };
 
   const costInfo = getKnifeSharpenCost(knife);
-  if (costInfo.maxReached) {
-    return { success: false, msg: t('knife.err.maxSharpen') };
-  }
+  if (costInfo.maxReached) return { success: false, msg: t('knife.err.maxSharpen') };
 
   if ((GAME.sparkles || 0) < costInfo.cost) {
     return { success: false, msg: t('knife.err.needSparkles', { n: formatNumber(costInfo.cost) }) };
   }
-  GAME.sparkles -= costInfo.cost;
 
-  // talent_upgrade_chance (MAX 10): +3% к шансу успешной заточки ножа (база 70%, на капе 100%)
-  const upgChanceTalent = TALENTS.find(t => t.id === 'talent_upgrade_chance')?.level || 0;
+  // Deduct sparkles only upon applying
+  GAME.sparkles = Math.max(0, (GAME.sparkles || 0) - costInfo.cost);
+
+  const curStar = getKnifeStar(knifeId);
   const forgeLuckLvl = getRelicLevel('relic_forge_luck');
-  const successChance = Math.min(1.0, 0.70 + upgChanceTalent * 0.03 + forgeLuckLvl * 0.05);
+  const hasBlessing = hasPerk('perk_blacksmith_blessing');
+  const hasProtection = hasBlessing || forgeLuckLvl > 0;
 
-  if (Math.random() > successChance) {
-    const curStar = GAME.knifeStars?.[knifeId] || 1;
-    const hasBlessing = hasPerk('perk_blacksmith_blessing');
-    const hasProtection = hasBlessing || forgeLuckLvl > 0;
+  if (!GAME.knifeStars) GAME.knifeStars = {};
+
+  if (isSuccess) {
+    const newStar = curStar + 1;
+    GAME.knifeStars[knifeId] = newStar;
+    events.emit('knife:sharpened', { knife, newStar });
+    return { success: true, newStar, knife, cost: costInfo.cost };
+  } else {
     const newStar = hasProtection ? Math.max(1, curStar - 1) : 1;
-    if (!GAME.knifeStars) GAME.knifeStars = {};
     GAME.knifeStars[knifeId] = newStar;
     events.emit('knife:sharpenFailed', { knife, newStar });
     return {
       success: false,
+      newStar,
+      knife,
+      hasProtection,
+      cost: costInfo.cost,
       msg: hasProtection
         ? `Заточка сорвалась! Защита «Небесная Кузница» сохранила уровень: снижен лишь на -1 (★${newStar}).`
-        : `Заточка сорвалась (${Math.round(successChance * 100)}% шанс)! Звезда ножа сброшена до ★1. Откройте реликвию «Небесная Кузница Ножей».`
+        : `Заточка сорвалась! Звезда ножа сброшена до ★1.`
     };
   }
+}
 
-  if (!GAME.knifeStars) GAME.knifeStars = {};
-  GAME.knifeStars[knifeId] = (GAME.knifeStars[knifeId] || 1) + 1;
-
-  events.emit('knife:sharpened', { knife, newStar: GAME.knifeStars[knifeId] });
-  return { success: true, newStar: GAME.knifeStars[knifeId] };
+export function sharpenKnife(knifeId) {
+  const check = canSharpenKnife(knifeId);
+  if (!check.can) return { success: false, msg: check.reason };
+  const chance = getKnifeSharpenChance(knifeId);
+  const isSuccess = Math.random() < chance;
+  return applyKnifeSharpen(knifeId, isSuccess);
 }
 
 export function equipKnife(knifeId) {
@@ -165,17 +197,15 @@ export function getEquippedKnife() {
 export function getBestKnife() {
   if (!GAME.unlockedKnives || GAME.unlockedKnives.length === 0) return null;
   let best = null;
-  let maxScore = -1;
+  let maxClickPower = -1;
 
   for (const kid of GAME.unlockedKnives) {
     const kn = KNIVES.find(k => k.id === kid);
     if (!kn) continue;
     const star = getKnifeStar(kn.id);
-    const clickPower = kn.clickMult * (1 + (star - 1) * 0.35);
-    const passPower = kn.passiveMult * (1 + (star - 1) * 0.25);
-    const score = (clickPower * 1.5) + passPower;
-    if (score > maxScore) {
-      maxScore = score;
+    const clickPower = getKnifeClickMult(kn, star);
+    if (best === null || gt(clickPower, maxClickPower)) {
+      maxClickPower = clickPower;
       best = kn;
     }
   }
