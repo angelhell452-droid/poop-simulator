@@ -1,4 +1,4 @@
-import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.1.0';
+import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.3.2';
 import { NEWS } from '../data/news.data.js?v=5.1.0';
 import { localizePatchNote } from '../data/patchNotesTranslations.js?v=5.1.0';
 import { t, td, dataText, getLocale, onLocaleChange } from '../i18n/t.js';

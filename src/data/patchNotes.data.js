@@ -2,6 +2,36 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.3.2 PRO',
+    date: '11 Октября 2026',
+    dateEn: 'October 11, 2026',
+    title: 'Патч 5.3.2: 🏆 Глобальный Фикс Топ-Ладдера и Разблокировка Облачной Синхронизации',
+    titleEn: 'Patch 5.3.2: Global Hall of Fame Fix & Cloud Sync Unblocking',
+    badge: '🏆 ФИКС ЛАДДЕРА',
+    badgeEn: 'LADDER FIX',
+    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '🏆',
+        text: 'Починка Зала Славы: Исправлена вычитка Прорывов, Смывов, Формы (Пик) и Биомассы из базы данных Cloudflare D1. Статистика реальных игроков теперь корректно отображается вместо нулей.',
+        textEn: 'Hall of Fame Data Fix: Resolved breakthrough count, flush count, form (peak), and biomass reading from Cloudflare D1. Real player statistics now properly display instead of zeroes.'
+      },
+      {
+        type: 'fix',
+        icon: '☁️',
+        text: 'Разблокировка Облачного Сохранения: Устранена серверная ошибка 409 stale_save после вайпа сезона, блокировавшая загрузку прогресса активных игроков в облако.',
+        textEn: 'Cloud Save Unblocked: Resolved server-side 409 stale_save loop following season wipe that blocked active player progress uploads.'
+      },
+      {
+        type: 'ui',
+        icon: '📊',
+        text: 'Умная Сортировка Ладдера: Таблица лидеров теперь строго ранжирует игроков по Прорывам, затем по Форме, затем по Смывам и опыту биомассы.',
+        textEn: 'Smart Leaderboard Sorting: Ranking prioritizes Breakthroughs first, then highest Form, then Flushes and Biomass exp.'
+      }
+    ]
+  },
+  {
     version: 'v5.3.1 PRO',
     date: '11 Октября 2026',
     dateEn: 'October 11, 2026',
