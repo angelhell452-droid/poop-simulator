@@ -2,7 +2,7 @@ import { GAME } from './core/state.js?v=5.0.80';
 import { startGameLoop } from './core/gameLoop.js?v=5.0.80';
 import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.3.3';
 import { saveLocal, saveGame, hardReset } from './save/saveManager.js?v=5.0.80';
-import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.0.80';
+import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.3.5';
 import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.0.80';
 import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.0.80';
 import { renderShop, initShopI18n } from './ui/shopView.js';

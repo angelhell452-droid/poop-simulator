@@ -8,7 +8,7 @@ import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySyne
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.80';
 import { checkAchievements } from '../systems/achievementsService.js?v=5.0.80';
-import { updateHUD } from './hudView.js?v=5.0.80';
+import { updateHUD } from './hudView.js?v=5.3.5';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { requestCloudSync } from '../save/cloudSync.js?v=5.3.3';
 import { events } from '../core/events.js';

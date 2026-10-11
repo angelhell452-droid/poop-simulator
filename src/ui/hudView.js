@@ -68,10 +68,11 @@ function bindRateClicks() {
 
 
 export function updateHUD() {
+  const vip = typeof getConfirmedVip === 'function' ? getConfirmedVip() : 0;
+  const isVip = vip > 0 || Boolean(GAME.vipPass || GAME.hasVipPass);
+
   const vipBadge = document.getElementById('headerVipBadge');
   if (vipBadge) {
-    const vip = getConfirmedVip();
-    const isVip = vip > 0 || Boolean(GAME.vipPass);
     vipBadge.textContent = isVip ? 'VIP' : '';
     vipBadge.classList.toggle('hidden', !isVip);
   }
