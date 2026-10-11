@@ -1,7 +1,7 @@
 import { GAME } from '../core/state.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
-import { getClickPower, getEquippedKnife, getPassiveIncome } from '../economy/production.js?v=5.0.80';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.0.80';
 import { getRelicLevel } from '../data/relics.data.js?v=5.0.80';
 import { takeClickBudget } from './autoclickService.js?v=5.0.80';
 import { events } from '../core/events.js';
@@ -21,6 +21,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   if (allowed <= 0) return null;
   pendingClicks = allowed;
 
+  const isManual = (clickClientX !== null && clickClientX !== undefined);
   const basePower = getClickPower();
   const critChanceTalent = TALENTS.find(t => t.id === 'talent_crit_chance');
   const critMultTalent = TALENTS.find(t => t.id === 'talent_crit_mult');
@@ -97,6 +98,14 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     }
   }
 
+  // Аварийный буст кликов при штрафе ножа:
+  // ЕСЛИ активен штраф ножа (mult == 0.10), то каждый Критический удар при ручном клике
+  // гарантированно начисляет в кошелек +5 Блестяшек ✨
+  const isKnifePenaltyActive = getKnifeFactorySynergyMult() <= 0.10;
+  if (isKnifePenaltyActive && critsCount > 0 && isManual) {
+    sparklesEarned += critsCount * 5;
+  }
+
   // perk_omniverse_essence: глобальный x1.20 ко всему
   if (hasPerk('perk_omniverse_essence') || hasPerk('upg_omniversal_wealth')) {
     totalEarned = mul(totalEarned, 1.20);
@@ -169,7 +178,6 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     GAME.comboHeat = 100;
   }
 
-  const isManual = (clickClientX !== null && clickClientX !== undefined);
   const result = {
     clicks: clicksToProcess,
     totalEarned,

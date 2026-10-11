@@ -4,7 +4,7 @@ import { getEquippedKnife } from '../economy/production.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { hasPerk } from '../data/perks.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult } from '../economy/production.js?v=5.0.80';
+import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.80';
 import { checkAchievements } from '../systems/achievementsService.js?v=5.0.80';
@@ -82,7 +82,12 @@ function scheduleNextMeteor(extraMs = 0) {
   const catcherScale = (hasPerk('perk_meteor_catcher') || hasPerk('upg_meteor_magnet')) ? 0.85 : 1;
   const magnet = SHOP_ITEMS.find(i => i.id === 'upg_meteor_magnet')?.owned ? 0.6 : 1;
   const base = 40000 + Math.random() * 35000 + extraMs;
-  nextMeteorSpawn = Date.now() + Math.max(12000, base * spawnScale * magnet * catcherScale);
+  let delay = Math.max(12000, base * spawnScale * magnet * catcherScale);
+  if (getKnifeFactorySynergyMult() <= 0.10) {
+    // Аварийный буст при штрафе: частота метеоритов временно увеличивается до 1 раза в 45 сек
+    delay = Math.min(delay, 45000);
+  }
+  nextMeteorSpawn = Date.now() + delay;
 }
 let listenersInitialized = false;
 
@@ -1280,16 +1285,22 @@ function renderPetLoop(time) {
       ctx.textBaseline = 'middle';
       ctx.fillText('🌟', 0, 0);
       ctx.restore();
-      }
     }
-  } else if (Date.now() > nextMeteorSpawn) {
-    goldenMeteor.active = true;
-    goldenMeteor.life = 750;
-    const fromLeft = Math.random() < 0.5;
-    goldenMeteor.x = fromLeft ? -30 : w + 30;
-    goldenMeteor.y = 80 + Math.random() * Math.max(120, h * 0.6);
-    goldenMeteor.vx = (fromLeft ? 1 : -1) * (1.1 + Math.random() * 0.9);
-    goldenMeteor.vy = (Math.random() - 0.5) * 0.8;
+  }
+} else {
+  // При активном штрафе ножа ограничиваем время ожидания прилета метеорита до максимум 45 секунд
+    if (getKnifeFactorySynergyMult() <= 0.10 && nextMeteorSpawn > Date.now() + 45000) {
+      nextMeteorSpawn = Date.now() + 45000;
+    }
+    if (Date.now() > nextMeteorSpawn) {
+      goldenMeteor.active = true;
+      goldenMeteor.life = 750;
+      const fromLeft = Math.random() < 0.5;
+      goldenMeteor.x = fromLeft ? -30 : w + 30;
+      goldenMeteor.y = 80 + Math.random() * Math.max(120, h * 0.6);
+      goldenMeteor.vx = (fromLeft ? 1 : -1) * (1.1 + Math.random() * 0.9);
+      goldenMeteor.vy = (Math.random() - 0.5) * 0.8;
+    }
   }
 
   tickMeteorShower(ctx, w, h);

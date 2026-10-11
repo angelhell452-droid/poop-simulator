@@ -2,6 +2,36 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.2.7 PRO',
+    date: '11 Октября 2026',
+    dateEn: 'October 11, 2026',
+    title: 'Патч 5.2.7: Спасение Баланса Формы 3500, SOS-Подсказки и Антикризисный Буст',
+    titleEn: 'Patch 5.2.7: Form 3500 Balance Salvation, SOS Guidance & Crisis Boost',
+    badge: 'Патч 5.2.7',
+    badgeEn: 'Patch 5.2.7',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🛡️',
+        text: 'Иммунитет Тира 1 до Формы 3 500: Штраф ножа переписан и привязан строго к форме питомца (GAME.evoStage), а не к покупке заводов. До формы 3 500 стартовые ножи дают полные 100% мощности заводов (x1.00), исключая любые мертвые зоны.',
+        textEn: 'Tier 1 Immunity up to Form 3,500: Knife penalty is now tied strictly to pet form (GAME.evoStage), not factory unlocks. Starter weapons provide 100% factory efficiency (x1.00) until form 3,500, completely removing deadlock zones.'
+      },
+      {
+        type: 'ui',
+        icon: '🚨',
+        text: 'SOS-Индикатор в Кейсах и Заводах: При включении штрафа ножа вверху вкладок Кейсов и Заводов отображается крупная SOS-плашка с четким решением: перейти в Тир 2 и открыть кейс «Операция Браво» за 1.5k Блестяшек.',
+        textEn: 'SOS Warning in Cases & Factories: When a knife penalty activates, a prominent banner appears at the top of Cases and Factories explaining the situation and guiding directly to Tier 2 Operation Bravo case.'
+      },
+      {
+        type: 'feature',
+        icon: '⚡',
+        text: 'Антикризисный Буст Ручных Кликов: При активном штрафе ножа каждый критический удар от ручного клика гарантированно дает +5 Блестяшек ✨, а метеориты прилетают каждые 45 секунд для быстрого накопления 1.5k на новый нож.',
+        textEn: 'Crisis Click & Meteor Boost: When the knife penalty is active, every manual critical hit grants +5 guaranteed Sparkles ✨, and meteor spawn cooldown is capped at 45 seconds for swift progression.'
+      }
+    ]
+  },
+  {
     version: 'v5.2.6 PRO',
     date: '11 Октября 2026',
     dateEn: 'October 11, 2026',

@@ -291,41 +291,28 @@ function describeFactory(fac, idx, count) {
 
 export function getKnifeFactorySynergyMult() {
   const knife = getEquippedKnife();
-  if (!knife) return 0.1; // 90% penalty without knife
+  if (!knife) return 0.1; // 90% штраф без экипированного ножа
 
-  // Find the highest factory that is unlocked or owned
   const currentStage = GAME.evoStage || 0;
-  const currentBT = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
-  let maxFac = null;
-  for (let i = FACTORIES.length - 1; i >= 0; i--) {
-    const f = FACTORIES[i];
-    const unlocked = ((f.count && f.count > 0) || ((f.reqStage !== undefined ? f.reqStage <= currentStage : true) && (f.reqBreakthrough !== undefined ? f.reqBreakthrough <= currentBT : true)));
-    if (unlocked) {
-      maxFac = f;
-      break;
-    }
-  }
 
-  // Tier 1 factories do not trigger advanced knife requirements
-  const facTier = maxFac?.tierNumber || 1;
-  if (facTier <= 1) {
+  // Если текущая форма игрока меньше 3 500, активируется полный иммунитет Тира 1:
+  // любой надетый нож из первых трех кейсов дает 100% мощности (x1.00)
+  if (currentStage < 3500) {
     return 1.0;
   }
 
-  // Celestial, godly, special or titanium knives always satisfy synergy
-  if (['godly', 'celestial', 'special', 'titanium'].includes(knife.rarity)) {
+  // Ножи редких/божественных тиров всегда удовлетворяют синергии
+  if (['godly', 'celestial', 'special', 'titanium', 'rainbow'].includes(knife.rarity)) {
     return 1.0;
   }
 
   const knifeCase = WEAPON_CASES.find(c => c.pool && c.pool.includes(knife.id));
-  if (!knifeCase) {
-    return 1.0;
-  }
+  const knifeTier = knifeCase?.tierNumber || 1;
 
-  const knifeTier = knifeCase.tierNumber || 1;
-  // If player's knife tier is more than 2 tiers behind the current highest factory tier, apply 90% penalty
-  if (knifeTier < facTier - 2) {
-    return 0.1; // 90% penalty if knife is from a too old case
+  // Штраф -90% (x0.10) включается ТОЛЬКО тогда, когда форма пробивает отметку 3 500,
+  // а игрок все еще сидит со стартовым оружием (Тир 1 из первого кейса)
+  if (knifeTier <= 1) {
+    return 0.1;
   }
 
   return 1.0;

@@ -10,7 +10,7 @@ import { updateHUD } from './hudView.js?v=5.0.80';
 import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult } from '../economy/production.js?v=5.0.83';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.0.83';
 import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.0.80';
 import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.0.80';
@@ -874,7 +874,46 @@ export function openMultipleCases(caseObj, count = 3) {
   showKnifeToast(t('cases.toast3', { name: knifeName(rouletteWinningKnife) }));
 }
 
+export function updateCasesPenaltyBanner() {
+  const panel = document.getElementById('panelCases');
+  if (!panel) return;
+  const isPenalty = getKnifeFactorySynergyMult() <= 0.10;
+  let banner = document.getElementById('casesKnifePenaltyAlert');
+  if (isPenalty) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'casesKnifePenaltyAlert';
+      panel.insertBefore(banner, panel.firstChild);
+    }
+    banner.className = 'p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-red-950 via-rose-950 to-stone-900 border-2 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.35)] text-left space-y-1.5 transition-all mb-2';
+    banner.innerHTML = `
+      <div class="flex items-start gap-2.5">
+        <span class="text-2xl shrink-0 select-none">⚠️</span>
+        <div class="space-y-1 flex-1">
+          <div class="font-game text-xs sm:text-sm font-extrabold text-red-300 tracking-wide leading-snug">
+            ВНИМАНИЕ: Твой нож устарел для текущей формы питомца! Заводы работают всего на 10% мощности.
+          </div>
+          <div class="text-[11px] sm:text-xs text-amber-200 leading-snug font-medium">
+            💡 <b class="text-yellow-300">РЕШЕНИЕ:</b> Перейди во вкладку магазина <button type="button" class="sos-scroll-bravo-btn inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 hover:bg-emerald-500/30 transition font-bold shadow-sm cursor-pointer">[⚡ Тир 2]</button>, открой Кейс <b class="text-yellow-300 font-bold">«Операция Браво»</b> за <span class="text-yellow-300 font-bold">1.5k Блестяшек ✨</span> и экипируй новый нож, чтобы вернуть 100% пассивного дохода!
+          </div>
+        </div>
+      </div>
+    `;
+    banner.querySelector('.sos-scroll-bravo-btn')?.addEventListener('click', () => {
+      const bravoCard = document.querySelector('[data-case="case_bravo"]');
+      if (bravoCard) {
+        bravoCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        bravoCard.classList.add('ring-4', 'ring-yellow-400');
+        setTimeout(() => bravoCard.classList.remove('ring-4', 'ring-yellow-400'), 2000);
+      }
+    });
+  } else if (banner) {
+    banner.remove();
+  }
+}
+
 export function renderCasesSystem() {
+  updateCasesPenaltyBanner();
   const sparklesHeader = document.getElementById('casesSparklesLabel');
   if (sparklesHeader) sparklesHeader.innerHTML = `${formatNumber(GAME.sparkles || 0)} ✨`;
   const rollsLabel = document.getElementById('casesRollsLabel');
@@ -1190,6 +1229,9 @@ export function initCasesListeners() {
     });
   }
 
+  events.on('knife:equipped', () => {
+    updateCasesPenaltyBanner();
+  });
   events.on('prestige:completed', () => {
     checkFirstCaseNotification();
     updateCasesTabBadge();

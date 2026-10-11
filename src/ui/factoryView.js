@@ -6,12 +6,13 @@ import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.0.80';
 import { buyFactory } from '../systems/factoryService.js?v=5.0.80';
 import { updateHUD, openRateBreakdown } from './hudView.js?v=5.0.80';
-import { factoryMilestoneRank, getFactoryBreakdown } from '../economy/production.js?v=5.0.80';
+import { factoryMilestoneRank, getFactoryBreakdown, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.80';
 import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.0.80';
 import { mul } from '../utils/big.js?v=5.0.80';
 import { drawPlunger } from '../utils/icons.js?v=5.0.80';
+import { events } from '../core/events.js';
 
 let activeFactoryTier = '1'; // '1' | '2' | '3' | '4'
 
@@ -30,10 +31,55 @@ function factoryVisible(fac) {
 let paintedFactoryStage = -1;
 let paintedFactoryBT = -1;
 
+export function updateFactoryPenaltyBanner() {
+  const panel = document.getElementById('panelFactories');
+  if (!panel) return;
+  const isPenalty = getKnifeFactorySynergyMult() <= 0.10;
+  let banner = document.getElementById('factoriesKnifePenaltyAlert');
+  if (isPenalty) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'factoriesKnifePenaltyAlert';
+      panel.insertBefore(banner, panel.firstChild);
+    }
+    banner.className = 'p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-red-950 via-rose-950 to-stone-900 border-2 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.35)] text-left space-y-1.5 transition-all mb-2';
+    banner.innerHTML = `
+      <div class="flex items-start gap-2.5">
+        <span class="text-2xl shrink-0 select-none">⚠️</span>
+        <div class="space-y-1 flex-1">
+          <div class="font-game text-xs sm:text-sm font-extrabold text-red-300 tracking-wide leading-snug">
+            ВНИМАНИЕ: Твой нож устарел для текущей формы питомца! Заводы работают всего на 10% мощности.
+          </div>
+          <div class="text-[11px] sm:text-xs text-amber-200 leading-snug font-medium">
+            💡 <b class="text-yellow-300">РЕШЕНИЕ:</b> Перейди во вкладку магазина <button type="button" class="sos-goto-bravo-btn inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 hover:bg-emerald-500/30 transition font-bold shadow-sm cursor-pointer">[⚡ Тир 2]</button>, открой Кейс <b class="text-yellow-300 font-bold">«Операция Браво»</b> за <span class="text-yellow-300 font-bold">1.5k Блестяшек ✨</span> и экипируй новый нож, чтобы вернуть 100% пассивного дохода!
+          </div>
+        </div>
+      </div>
+    `;
+    banner.querySelector('.sos-goto-bravo-btn')?.addEventListener('click', () => {
+      const casesTab = document.querySelector('.dash-tab[data-target="panelCases"]');
+      if (casesTab) casesTab.click();
+      setTimeout(() => {
+        const bravoCard = document.querySelector('[data-case="case_bravo"]');
+        if (bravoCard) {
+          bravoCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          bravoCard.classList.add('ring-4', 'ring-yellow-400');
+          setTimeout(() => bravoCard.classList.remove('ring-4', 'ring-yellow-400'), 2000);
+        }
+      }, 100);
+    });
+  } else if (banner) {
+    banner.remove();
+  }
+}
+
 export function initFactoryListeners() {
   onLocaleChange(() => {
     const container = document.getElementById('factoriesContainer');
     if (container?.offsetParent) renderFactories();
+  });
+  events.on('knife:equipped', () => {
+    updateFactoryPenaltyBanner();
   });
   document.querySelectorAll('.fac-tier-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -51,6 +97,7 @@ export function initFactoryListeners() {
 }
 
 export function renderFactories() {
+  updateFactoryPenaltyBanner();
   const container = document.getElementById('factoriesContainer');
   if (!container) return;
   paintedFactoryStage = GAME.evoStage || 0;
