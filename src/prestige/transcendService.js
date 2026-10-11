@@ -7,6 +7,7 @@ import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.
 import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub, rehydrateBig } from '../utils/big.js?v=5.0.80';
 import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.0.80';
 import { peakForm } from '../progression/unlocks.js?v=5.0.80';
 
 export const BRIDGE_FLUSHES_NEEDED = 10;
@@ -170,6 +171,7 @@ export function executeTranscend() {
   GAME.breakthroughProgress = 0;
 
   saveLocal();
+  requestCloudSync(500);
   events.emit('transcend:completed', { gain, breakthroughCount: nextCount });
   return true;
 }

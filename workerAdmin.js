@@ -252,10 +252,11 @@ async function writePlayerSave(db, playerId, playerName, save, seq) {
   save.adminSeq = seq;
   if (!save.game || typeof save.game !== "object") save.game = {};
   save.game.cloudAdminSeq = seq;
-  const stage = Number(save.game.evoStage !== undefined ? save.game.evoStage + 1 : 1) || 1;
-  const biomass = Number(save.game.allTimeBiomass ?? save.game.biomass) || 0;
-  const sparkles = Number(save.game.sparkles) || 0;
-  const rolls = Number(save.game.prestigeRolls) || 0;
+  const stage = Number(save.game?.peakForm ?? save.peakForm ?? (save.game?.evoStage !== undefined ? save.game.evoStage + 1 : 1)) || 1;
+  const rawBio = save.game?.allTimeBiomass ?? save.game?.biomass ?? save.allTimeBiomass ?? save.biomass ?? 0;
+  const biomass = (typeof rawBio === 'object' && rawBio && rawBio.__big) ? `${rawBio.m}e${rawBio.e}` : (typeof rawBio === 'string' ? rawBio : Number(rawBio) || 0);
+  const sparkles = Number(save.game.sparkles ?? save.sparkles) || 0;
+  const rolls = Number(save.game.prestigeRolls ?? save.prestigeRolls) || 0;
   await db.prepare(`
     INSERT INTO player_saves (player_id, player_name, stage, biomass, sparkles, prestige_currency, save_data, admin_seq, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
@@ -592,8 +593,32 @@ export async function wipeWorldProgress(db) {
 export async function replacementIfSeasonReset(db, playerId, playerName, saveData) {
   const reset = await currentWorldReset(db);
   if (reset <= 0) return null;
-  const clientReset = Number(saveData?.worldReset ?? saveData?.game?.worldReset) || 0;
+
+  let sObj = saveData;
+  while (typeof sObj === 'string') {
+    try {
+      const p = JSON.parse(sObj);
+      if (p && typeof p === 'object') sObj = p;
+      else break;
+    } catch (_) { break; }
+  }
+  const sGame = (sObj && typeof sObj === 'object' && sObj.game) ? sObj.game : (sObj || {});
+  const clientReset = Number(sObj?.worldReset ?? sGame?.worldReset) || 0;
   if (clientReset === reset) return null;
+
+  // Protect real gameplay progress from accidental wipe!
+  const bCount = Number(sGame.breakthroughCount ?? sObj?.breakthroughCount ?? sGame.totalTranscend ?? sObj?.totalTranscend) || 0;
+  const fCount = Number(sGame.flushCount ?? sObj?.flushCount ?? sGame.totalPrestiges ?? sObj?.totalPrestiges) || 0;
+  const stage = Number(sGame.peakForm ?? sObj?.peakForm ?? sGame.stage ?? sObj?.stage) || 1;
+  const hasProgress = bCount > 0 || fCount > 0 || stage > 5;
+
+  if (hasProgress) {
+    if (saveData && typeof saveData === 'object') {
+      saveData.worldReset = reset;
+      if (saveData.game && typeof saveData.game === 'object') saveData.game.worldReset = reset;
+    }
+    return null;
+  }
 
   const row = await db.prepare(`SELECT save_data FROM player_saves WHERE player_id = ? LIMIT 1`).bind(playerId).first();
   if (row) {

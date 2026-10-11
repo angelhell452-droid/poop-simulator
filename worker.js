@@ -175,12 +175,31 @@ async function handleCloudSave(req, env) {
         `).bind(username, passwordHash, finalPlayerId).run();
 
         if (body.saveData) {
-          const sData = body.saveData;
-          const stage = Number(sData?.game?.evoStage !== undefined ? sData.game.evoStage + 1 : sData?.game?.stage) || 1;
-          const biomass = storedBiomass(sData?.game?.allTimeBiomass ?? sData?.game?.biomass);
-          const sparkles = Number(sData?.game?.sparkles) || 0;
-          const prestigeCurrency = Number(sData?.game?.prestigeRolls ?? sData?.game?.prestigeCurrency) || 0;
-          const jsonStr = typeof sData === "string" ? sData : JSON.stringify(sData);
+          let sData = body.saveData;
+          while (typeof sData === "string") {
+            try {
+              const p = JSON.parse(sData);
+              if (p && typeof p === "object") sData = p;
+              else break;
+            } catch (_) { break; }
+          }
+          const sGame = (sData && typeof sData === "object" && sData.game) ? sData.game : (sData || {});
+          const rawPeak = sData?.peakForm ?? sGame?.peakForm;
+          const rawEvo = sGame?.evoStage ?? sData?.evoStage;
+          const rawStage = sGame?.stage ?? sData?.stage ?? 1;
+          let stage = 1;
+          if (rawPeak !== undefined && Number(rawPeak) > 0) {
+            stage = Math.floor(Number(rawPeak));
+          } else if (rawEvo !== undefined && Number(rawEvo) >= 0) {
+            stage = Math.floor(Number(rawEvo)) + 1;
+          } else if (rawStage !== undefined && Number(rawStage) > 0) {
+            stage = Math.floor(Number(rawStage));
+          }
+
+          const biomass = storedBiomass(sGame?.allTimeBiomass ?? sGame?.biomass ?? sData?.allTimeBiomass ?? sData?.biomass);
+          const sparkles = Number(sGame?.sparkles ?? sData?.sparkles) || 0;
+          const prestigeCurrency = Number(sGame?.prestigeRolls ?? sGame?.prestigeCurrency ?? sData?.prestigeRolls) || 0;
+          const jsonStr = JSON.stringify(sData);
 
           await env.DB.prepare(`
             INSERT INTO player_saves (player_id, player_name, stage, biomass, sparkles, prestige_currency, save_data, updated_at)
@@ -335,7 +354,7 @@ async function handleCloudSave(req, env) {
       const sparkles = Number(body.sparkles ?? sGame.sparkles ?? sObj?.sparkles) || 0;
       const prestigeCurrency = Number(body.prestige_currency ?? sGame.prestigeRolls ?? sObj?.prestigeRolls ?? sGame.prestigeCurrency) || 0;
       const name = await displayName(env.DB, playerId, playerName);
-      const jsonStr = typeof saveData === "string" ? saveData : JSON.stringify(saveData);
+      const jsonStr = JSON.stringify(sObj);
 
       await env.DB.prepare(`
         INSERT INTO player_saves (player_id, player_name, stage, biomass, sparkles, prestige_currency, save_data, admin_seq, updated_at)

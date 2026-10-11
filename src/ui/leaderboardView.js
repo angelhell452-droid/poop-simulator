@@ -14,7 +14,7 @@ let lastFetchTime = 0;
 
 export async function fetchLeaderboardFromDb(force = false) {
   const now = Date.now();
-  if (!force && cachedLeaderboard && (now - lastFetchTime < 15000)) {
+  if (!force && cachedLeaderboard && (now - lastFetchTime < 4000)) {
     return cachedLeaderboard;
   }
 
