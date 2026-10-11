@@ -2,6 +2,36 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.2.6 PRO',
+    date: '11 Октября 2026',
+    dateEn: 'October 11, 2026',
+    title: 'Патч 5.2.6: Ускорение 1-го Прорыва и Чистый Рендер Кейсов',
+    titleEn: 'Patch 5.2.6: Accelerated 1st Breakthrough & Pristine Case Display',
+    badge: 'Патч 5.2.6',
+    badgeEn: 'Patch 5.2.6',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🌌',
+        text: 'Ускорение 1-го Прорыва: Снижен порог входа в эндгейм для новичков. Для 1-го Прорыва требуется строго 10 Смывов (вместо 20) и 500 уровней опыта биомассы (вместо 1000). Последующие Прорывы сохраняют хардкорную прогрессию.',
+        textEn: 'Accelerated 1st Breakthrough: Lowered entry barrier for newcomers. 1st Breakthrough requires strictly 10 Flushes (down from 20) and 500 biomass exp levels (down from 1000). Subsequent Breakthroughs maintain standard endgame scaling.'
+      },
+      {
+        type: 'fix',
+        icon: '🗡️',
+        text: 'Чистый Рендер Ножей в Кейсах: В интерфейсе магазина кейсов и рулетке все ножи отображаются строго в девственном виде (0 звезд и базовые характеристики), исключая наложение уровней заточки из инвентаря.',
+        textEn: 'Pristine Knife Showcase in Cases: In cases shop and roulette, knives now strictly render in pristine base form (0 stars & base bonuses), without showing sharpening levels from inventory.'
+      },
+      {
+        type: 'ui',
+        icon: '🏃',
+        text: 'Синхронизация Квеста №16: Условие квеста «Марафонец Смывов» снижено с 20 до 10 смывов, полностью синхронизируясь со смягченным 1-м Прорывом.',
+        textEn: 'Quest #16 Synchronization: "Flush Marathoner" quest prerequisite adjusted from 20 to 10 flushes to align with the first Breakthrough.'
+      }
+    ]
+  },
+  {
     version: 'v5.2.5 PRO',
     date: '11 Октября 2026',
     dateEn: 'October 11, 2026',

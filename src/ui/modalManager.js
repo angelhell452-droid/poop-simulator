@@ -142,7 +142,7 @@ export function updateTranscendModalRealtime() {
             </span>
           </div>
           <div class="text-[11px] text-indigo-200">
-            Цель: ${formatNumber(reqLevel)} ур. (+1000 за каждый Прорыв)
+            Цель: ${formatNumber(reqLevel)} ур. ${currentCount === 0 ? '(1-й Прорыв: 500 ур.)' : '(+1000 за каждый Прорыв)'}
           </div>
           <div class="flex items-center justify-between text-xs font-mono font-bold">
             <span class="text-stone-300">Текущий прогресс:</span>

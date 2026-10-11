@@ -433,14 +433,14 @@ export const TUTORIAL_QUESTS = [
     titleKey: 'tutorial.step16Title',
     fallbackTitle: 'Марафонец Смывов',
     taskKey: 'tutorial.step16Task',
-    fallbackTask: '🎯 Задача: Соверши 20 Смывов унитаза',
+    fallbackTask: '🎯 Задача: Соверши 10 Смывов унитаза',
     rewardDesc: '+10 Втулок',
     beaconSelector: '#currencyPrestigeBox',
-    check: () => (GAME.flushCount || GAME.totalPrestiges || 0) >= 20 || (GAME.breakthroughCount || GAME.totalTranscend || 0) > 0,
+    check: () => (GAME.flushCount || GAME.totalPrestiges || 0) >= 10 || (GAME.breakthroughCount || GAME.totalTranscend || 0) > 0,
     progress: () => {
       const flushes = (GAME.flushCount || GAME.totalPrestiges || 0);
-      const cur = Math.min(20, flushes);
-      return { current: cur, max: 20, label: `Смывы: ${formatNumber(cur)} / 20` };
+      const cur = Math.min(10, flushes);
+      return { current: cur, max: 10, label: `Смывы: ${formatNumber(cur)} / 10` };
     },
     guide: () => {
       openPrestigeModal();
@@ -714,7 +714,7 @@ export function resolveSpotlightTarget(step) {
     }
 
     case 16: {
-      // 16. Марафонец Смывов: Достичь 20-го Уровня Смыва
+      // 16. Марафонец Смывов: Достичь 10-го Уровня Смыва
       const prestModal = document.getElementById('prestigeModal');
       if (prestModal && !prestModal.classList.contains('hidden')) {
         return document.getElementById('btnExecutePrestige') || prestModal;

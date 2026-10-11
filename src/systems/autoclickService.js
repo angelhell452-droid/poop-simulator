@@ -71,13 +71,18 @@ export function isAutoclickUnlocked() {
 }
 
 /** Clicks per second this knife adds to the player's cap. Later cases sit above earlier ones. */
-export function getKnifeCpsBonus(knife) {
+export function getKnifeCpsBonus(knife, explicitStar = null) {
   if (!knife) return 0;
-  const stars = Math.min(15, Math.max(0, getKnifeStar(knife.id) - 1));
+  const starVal = explicitStar !== null ? explicitStar : getKnifeStar(knife.id);
+  const stars = Math.min(15, Math.max(0, starVal - 1));
   if (typeof knife.cpsBonus === 'number') {
     return knife.cpsBonus + stars;
   }
   return caseCpsBase(knife) + stars;
+}
+
+export function getBaseKnifeCpsBonus(knife) {
+  return getKnifeCpsBonus(knife, 1);
 }
 
 const CLICK_SPEED_PRESETS = [10, 20, 30];

@@ -120,35 +120,35 @@ function softCap(raw, knee, power) {
   return knee * Math.pow(raw / knee, power);
 }
 
-function knifeBonusStack(knife, perStar) {
-  const knifeStar = getKnifeStar(knife.id);
+function knifeBonusStack(knife, perStar, explicitStar = null) {
+  const knifeStar = explicitStar !== null ? explicitStar : getKnifeStar(knife.id);
   const diamondLvl = Math.min(20, GAME.boutiqueLevels?.diamond_sharpening || 0);
   const diamondBoost = 1 + diamondLvl * 0.05;
   const starForge = 1 + talentLevel('star_forge_master') * 0.12;
   return (1 + Math.max(0, knifeStar - 1) * perStar) * diamondBoost * starForge;
 }
 
-export function getKnifeClickMult(knife) {
+export function getKnifeClickMult(knife, explicitStar = null) {
   if (!knife) return 1;
   const base = getKnifeEffectiveClickMult(knife);
   const scaled = (KNIFE_BALANCE_CONFIG.softCapEnabled && !isBig(base))
     ? softCap(base, KNIFE_BALANCE_CONFIG.clickKnee, KNIFE_BALANCE_CONFIG.clickPower ?? 0.65)
     : base;
-  return mul(scaled, knifeBonusStack(knife, 0.35));
+  return mul(scaled, knifeBonusStack(knife, 0.35, explicitStar));
 }
 
-export function getKnifePassiveMult(knife) {
+export function getKnifePassiveMult(knife, explicitStar = null) {
   if (!knife) return 1;
   const base = getKnifeEffectivePassiveMult(knife);
   const scaled = (KNIFE_BALANCE_CONFIG.softCapEnabled && !isBig(base))
     ? softCap(base, KNIFE_BALANCE_CONFIG.passiveKnee, KNIFE_BALANCE_CONFIG.passivePower ?? 0.28)
     : base;
-  return mul(scaled, knifeBonusStack(knife, 0.25));
+  return mul(scaled, knifeBonusStack(knife, 0.25, explicitStar));
 }
 
-export function getKnifeShownBonuses(knife) {
-  const clickMult = getKnifeClickMult(knife);
-  const passive = getKnifePassiveMult(knife);
+export function getKnifeShownBonuses(knife, explicitStar = null) {
+  const clickMult = getKnifeClickMult(knife, explicitStar);
+  const passive = getKnifePassiveMult(knife, explicitStar);
   
   let clickPct = 0;
   if (isBig(clickMult)) {
@@ -173,6 +173,10 @@ export function getKnifeShownBonuses(knife) {
     cpsMult: passive,
     sparkleMult: Math.max(1, Number(knife?.sparkleMult) || 1)
   };
+}
+
+export function getBaseKnifeShownBonuses(knife) {
+  return getKnifeShownBonuses(knife, 1);
 }
 
 function lateComboReadiness() {

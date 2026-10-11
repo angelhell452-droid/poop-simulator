@@ -31,13 +31,15 @@ function normalize(mantissa, exponent) {
 }
 
 export function bigPow10(exponent) {
-  const e = Math.floor(Number(exponent) || 0);
-  if (e < 308) {
-    const n = Math.pow(10, e);
+  const exp = Number(exponent) || 0;
+  if (exp < 308 && exp > -308) {
+    const n = Math.pow(10, exp);
     if (Number.isFinite(n)) return n;
   }
+  const e = Math.floor(exp);
+  const m = Math.pow(10, exp - e);
   if (e > EXP_LIMIT) return { __big: true, m: 1, e: EXP_LIMIT };
-  return { __big: true, m: 1, e };
+  return normalize(m, e);
 }
 
 export function rehydrateBig(value) {

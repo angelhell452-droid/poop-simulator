@@ -4,15 +4,14 @@ import { GAME } from '../core/state.js?v=5.0.80';
 import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
-import { getKnifeStar, getKnifeSharpenCost, getEquippedKnife, sharpenKnife } from '../systems/knifeService.js';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { requestCloudSync } from '../save/cloudSync.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getKnifeShownBonuses, getKnifeEffectiveClickMult } from '../economy/production.js?v=5.0.83';
-import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult } from '../economy/production.js?v=5.0.83';
+import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.0.80';
 import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
@@ -595,28 +594,23 @@ export function setupAndRunRouletteTape(caseObj, instantSkip = false) {
     let rColor = 'border-stone-500 bg-stone-900/90';
     let barColor = 'bg-stone-500';
     let badgeColor = 'bg-stone-800 text-stone-300';
-    let starBadge = '';
 
     if (isGodly) {
       rColor = 'border-yellow-400 bg-gradient-to-b from-yellow-950/70 to-purple-950/70 shadow-[0_0_16px_rgba(250,204,21,0.6)]';
       barColor = 'bg-yellow-400';
       badgeColor = 'bg-yellow-400 text-stone-950 font-black';
-      starBadge = '<span class="text-yellow-300 animate-spin-slow">★</span>';
     } else if (isTitanium) {
       rColor = 'border-teal-400 bg-gradient-to-b from-teal-950/60 to-stone-900 shadow-[0_0_14px_rgba(45,212,191,0.5)]';
       barColor = 'bg-teal-400';
       badgeColor = 'bg-teal-400 text-stone-950 font-black';
-      starBadge = '<span class="text-teal-300">⚙️</span>';
     } else if (isCelestial) {
       rColor = 'border-cyan-300 bg-gradient-to-b from-cyan-950/60 to-indigo-950/60 shadow-[0_0_14px_rgba(103,232,249,0.5)]';
       barColor = 'bg-cyan-300';
       badgeColor = 'bg-cyan-400 text-stone-950 font-black';
-      starBadge = '<span class="text-cyan-300">✨</span>';
     } else if (isRainbow) {
       rColor = 'border-amber-300 bg-gradient-to-b from-red-950/40 via-purple-950/40 to-blue-950/40 shadow-[0_0_14px_rgba(244,63,94,0.5)]';
       barColor = 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500';
       badgeColor = 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500 text-white font-black';
-      starBadge = '<span class="text-yellow-300">🌈</span>';
     } else if (isCovert) {
       rColor = 'border-red-500 bg-gradient-to-b from-red-950/40 to-stone-900 shadow-[0_0_12px_rgba(239,68,68,0.4)]';
       barColor = 'bg-red-500';
@@ -643,7 +637,6 @@ export function setupAndRunRouletteTape(caseObj, instantSkip = false) {
       <div class="w-36 h-28 shrink-0 rounded-2xl border-2 ${rColor} p-2 flex flex-col items-center justify-between text-center relative select-none">
         <div class="w-full flex justify-between items-center text-[8px]">
           <span class="font-bold uppercase ${badgeColor} px-1.5 py-0.2 rounded">${knifeRarity(itemKnife)}</span>
-          ${starBadge}
         </div>
         <div class="my-0.5 flex items-center justify-center">${getKnifeImageHtml(itemKnife, 52)}</div>
         <div class="font-game text-[10px] text-yellow-200 truncate w-full px-1">${knifeName(itemKnife)}</div>
@@ -757,16 +750,13 @@ function onRouletteFinished() {
 
   if (!GAME.knifeStars) GAME.knifeStars = {};
   let isDuplicate = false;
-  let star = 1;
   let duplicateRefundText = '';
 
   if (!GAME.unlockedKnives.includes(rouletteWinningKnife.id)) {
     GAME.unlockedKnives.push(rouletteWinningKnife.id);
     GAME.knifeStars[rouletteWinningKnife.id] = 1;
-    star = 1;
   } else {
     isDuplicate = true;
-    star = GAME.knifeStars[rouletteWinningKnife.id] || 1;
     duplicateRefundText = refundLabel(refundDuplicate(activeRouletteCase || { cost: 10, costPlungers: 0 }));
   }
 
@@ -779,7 +769,7 @@ function onRouletteFinished() {
     }
   }
 
-  const shown = getKnifeShownBonuses(rouletteWinningKnife);
+  const shown = getBaseKnifeShownBonuses(rouletteWinningKnife);
   const cbEl = document.getElementById('rouletteResultClickBoost');
   if (cbEl) {
     cbEl.textContent = isBig(shown.clickMult)
@@ -788,7 +778,7 @@ function onRouletteFinished() {
   }
 
   const pbEl = document.getElementById('rouletteResultPassiveBoost');
-  if (pbEl) pbEl.textContent = `+${formatNumber(getKnifeCpsBonus(rouletteWinningKnife))} CPS`;
+  if (pbEl) pbEl.textContent = `+${formatNumber(getBaseKnifeCpsBonus(rouletteWinningKnife))} CPS`;
 
   showKnifeToast(isDuplicate
     ? t('cases.toastDuplicate', { name: knifeName(rouletteWinningKnife), refund: duplicateRefundText })
@@ -864,7 +854,7 @@ export function openMultipleCases(caseObj, count = 3) {
     rarityEl.innerHTML = `<span class="text-amber-300 font-bold">${knifeRarity(rouletteWinningKnife)}</span> • <span class="text-yellow-400 font-bold">${t('cases.opened3Banner')}</span>`;
   }
 
-  const shown = getKnifeShownBonuses(rouletteWinningKnife);
+  const shown = getBaseKnifeShownBonuses(rouletteWinningKnife);
   const cbEl = document.getElementById('rouletteResultClickBoost');
   if (cbEl) {
     cbEl.textContent = isBig(shown.clickMult)
@@ -873,7 +863,7 @@ export function openMultipleCases(caseObj, count = 3) {
   }
 
   const pbEl = document.getElementById('rouletteResultPassiveBoost');
-  if (pbEl) pbEl.textContent = `+${formatNumber(getKnifeCpsBonus(rouletteWinningKnife))} CPS`;
+  if (pbEl) pbEl.textContent = `+${formatNumber(getBaseKnifeCpsBonus(rouletteWinningKnife))} CPS`;
 
   const sbEl = document.getElementById('rouletteResultSparkleBoost');
   if (sbEl) sbEl.textContent = `✨ x${formatNumber(shown.sparkleMult || 1)}`;
@@ -1051,7 +1041,7 @@ export function openCasePreviewModal(caseId) {
 
     poolWithChances.forEach(item => {
       const knife = item.knife;
-      const shown = getKnifeShownBonuses(knife);
+      const shown = getBaseKnifeShownBonuses(knife);
       const clickPct = shown.clickPct;
       const pct = item.chancePercent < 1.0 ? item.chancePercent.toFixed(2) : item.chancePercent.toFixed(1);
 
@@ -1100,7 +1090,7 @@ export function openCasePreviewModal(caseId) {
             <div class="text-[10px] text-stone-400 mt-1 flex items-center gap-2 flex-wrap font-mono">
               <span>${t('cases.click')} <b class="text-emerald-300 font-bold">${clickLabel}</b></span>
               <span class="text-stone-600">•</span>
-              <span>CPS: <b class="text-cyan-300 font-bold">+${formatNumber(getKnifeCpsBonus(knife))}</b></span>
+              <span>CPS: <b class="text-cyan-300 font-bold">+${formatNumber(getBaseKnifeCpsBonus(knife))}</b></span>
               <span class="text-stone-600">•</span>
               <span>✨ <b class="text-yellow-300 font-bold">x${formatNumber(knife.sparkleMult || 1)}</b></span>
             </div>

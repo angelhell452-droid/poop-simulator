@@ -7,16 +7,19 @@ import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.
 import { bigPow, bigPow10, gte, log10Of, mul } from '../utils/big.js?v=5.0.80';
 import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.80';
 
-export const BRIDGE_FLUSHES_NEEDED = 20;
+export const BRIDGE_FLUSHES_NEEDED = 10;
 
 /**
  * Dynamic infinite scaling for flush requirement:
- * ReqFlushes = 20 + Math.floor(GAME.breakthroughCount * 4) + Math.floor(Math.pow(GAME.breakthroughCount, 1.3))
+ * 1st breakthrough (done === 0): strictly 10 flushes.
+ * Subsequent breakthroughs (done > 0): 20 + Math.floor(done * 4) + Math.floor(Math.pow(done, 1.3))
  * relic_flush_req_reduction reduces requirement by -3% per level.
  */
 export function flushesNeededForBridge(transcends = (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0)) {
   const done = Math.max(0, Number(transcends) || 0);
-  const base = 20 + Math.floor(done * 4) + Math.floor(Math.pow(done, 1.3));
+  const base = done === 0
+    ? 10
+    : (20 + Math.floor(done * 4) + Math.floor(Math.pow(done, 1.3)));
 
   const reductionLvl = getRelicLevel('relic_flush_req_reduction');
   if (reductionLvl > 0) {
@@ -68,6 +71,7 @@ export function getBreakthroughExpLevel(biomass = (GAME.breakthroughProgress ?? 
 
 export function getTargetBreakthroughExperience(transcends = (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0)) {
   const b = Math.max(0, Number(transcends) || 0);
+  if (b === 0) return 500;
   return 1000 * (1 + b);
 }
 

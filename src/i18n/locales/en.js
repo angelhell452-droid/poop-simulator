@@ -1371,12 +1371,12 @@ export default {
   'tutorial.step15Done': '💎 Permanent perk acquired!',
 
   'tutorial.step16Title': 'Flush Marathoner',
-  'tutorial.step16Desc': 'Reach Flush Level 20 (Breakthrough prerequisite).',
+  'tutorial.step16Desc': 'Reach Flush Level 10 (Breakthrough prerequisite).',
   'tutorial.step16Reward': 'Core ready for Breakthrough 🌌',
-  'tutorial.step16Done': '🌀 20 flushes completed! Ready for Breakthrough!',
+  'tutorial.step16Done': '🌀 10 flushes completed! Ready for Breakthrough!',
 
   'tutorial.step17Title': 'Grand Breakthrough',
-  'tutorial.step17Desc': 'Accumulate 1000 cycle exp levels and hit Breakthrough.',
+  'tutorial.step17Desc': 'Accumulate 500 cycle exp levels and hit Breakthrough.',
   'tutorial.step17Reward': '+1 Plunger 🪠 + Relics & Guilds',
   'tutorial.step17Done': '🌌 Breakthrough achieved! +1 Plunger!',
 
@@ -1402,7 +1402,7 @@ export default {
   'tutorial.step13Task': '🎯 Objective: Perform your first Flush (Prestige)',
   'tutorial.step14Task': '🎯 Objective: Buy your first Talent for Rolls',
   'tutorial.step15Task': '🎯 Objective: Buy a Permanent Perk in Boutique',
-  'tutorial.step16Task': '🎯 Objective: Reach 20 Flushes',
+  'tutorial.step16Task': '🎯 Objective: Reach 10 Flushes',
   'tutorial.step17Task': '🎯 Objective: Perform a Grand Breakthrough (Transcend)',
   'tutorial.step18Task': '🎯 Objective: Buy a Relic for Plungers'
 };
