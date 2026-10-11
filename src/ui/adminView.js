@@ -1,6 +1,6 @@
 import { GAME } from '../core/state.js?v=5.0.80';
 import { applySaveDataSafely, saveLocal } from '../save/saveManager.js?v=5.0.80';
-import { AUTH_STORAGE_KEY, adminRequest, fetchAdminSession, getStoredAccount, wipeAllCloudSaves, wipeCloudPlayer } from '../save/cloudSync.js?v=5.0.80';
+import { AUTH_STORAGE_KEY, adminRequest, fetchAdminSession, getStoredAccount, wipeAllCloudSaves, wipeCloudPlayer } from '../save/cloudSync.js?v=5.3.3';
 import { STORAGE_KEY, BACKUP_KEY } from '../save/saveManager.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { renderFactories } from './factoryView.js?v=5.0.80';

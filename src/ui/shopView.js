@@ -3,7 +3,7 @@ import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { checkAchievements } from '../systems/achievementsService.js?v=5.0.80';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.80';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.3.3';
 import { openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
 import { isBoutiqueUnlocked, peakForm } from '../progression/unlocks.js';

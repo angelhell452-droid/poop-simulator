@@ -6,7 +6,7 @@ import { bigPow, gte, mul } from '../utils/big.js?v=5.0.80';
 import { hasPerk } from '../data/perks.data.js';
 import { getRelicLevel } from '../data/relics.data.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.80';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.3.3';
 
 export function getPrestigeRequirement() {
   const flushes = GAME.flushCount ?? GAME.totalPrestiges ?? 0;

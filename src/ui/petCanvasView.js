@@ -10,7 +10,7 @@ import { cmp, gainBio, mul } from '../utils/big.js?v=5.0.80';
 import { checkAchievements } from '../systems/achievementsService.js?v=5.0.80';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.80';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.3.3';
 import { events } from '../core/events.js';
 import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';

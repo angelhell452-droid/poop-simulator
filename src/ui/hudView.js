@@ -522,7 +522,7 @@ export function initAutomationToggleListeners() {
       toast('Нет билетов вклада');
       return;
     }
-    const { socialRequest } = await import('../save/cloudSync.js?v=5.0.80');
+    const { socialRequest } = await import('../save/cloudSync.js?v=5.3.3');
     const { toast } = await import('../utils/toast.js?v=5.0.80');
     const data = await socialRequest('guild_ticket', { method: 'POST', body: { tickets } });
     if (data?.success) {

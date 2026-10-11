@@ -5,7 +5,7 @@ import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.0.80';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.3.3';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.0.80';
 import { events } from '../core/events.js';

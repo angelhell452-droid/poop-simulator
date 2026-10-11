@@ -1,5 +1,5 @@
 ﻿import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.80';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.3.3';
 import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';

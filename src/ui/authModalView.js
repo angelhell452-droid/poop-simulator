@@ -1,6 +1,6 @@
 ﻿import { GAME } from '../core/state.js?v=5.0.80';
 import { events } from '../core/events.js';
-import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase, probeCloudServers } from '../save/cloudSync.js?v=5.0.80';
+import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase, probeCloudServers } from '../save/cloudSync.js?v=5.3.3';
 import { updateHUD } from './hudView.js?v=5.0.80';
 import { renderFactories } from './factoryView.js?v=5.0.80';
 import { renderTalents } from './talentView.js?v=5.0.80';

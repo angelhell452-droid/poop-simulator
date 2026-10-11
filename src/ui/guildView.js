@@ -1,6 +1,6 @@
 import { GAME } from '../core/state.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.0.80';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.3.3';
 import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
 import { getPhaseForForm } from '../progression/phases.data.js?v=5.0.80';

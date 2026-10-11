@@ -2,6 +2,30 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.3.3 PRO',
+    date: '11 Октября 2026',
+    dateEn: 'October 11, 2026',
+    title: 'Патч 5.3.3: ⚡ Устранение Ошибки Синхронизации (ReferenceError isBig) и Полная Починка Ладдера',
+    titleEn: 'Patch 5.3.3: Sync ReferenceError Fix & Ladder Data Pipeline Restoration',
+    badge: '⚡ ФИКС СИНХРОНИЗАЦИИ',
+    badgeEn: 'SYNC FIX',
+    badgeClass: 'bg-yellow-500/20 text-yellow-300 border-yellow-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '⚡',
+        text: 'Починка Консольной Ошибки (F12): Устранена критическая ошибка "ReferenceError: isBig is not defined" в cloudSync.js, которая полностью блокировала отправку прогресса в облако каждые 2.5 секунды.',
+        textEn: 'Console Error Resolved: Fixed "ReferenceError: isBig is not defined" in cloudSync.js that completely blocked cloud sync payloads from dispatching.'
+      },
+      {
+        type: 'fix',
+        icon: '🔄',
+        text: 'Мгновенный Синхрон Смывов: Реальные Смывы , Прорывы и Формы теперь бесперебойно улетают на сервер и моментально отражаются в Топе.',
+        textEn: 'Instant Flush Sync: Real Flush count , Breakthroughs, and Forms now upload seamlessly and update the Hall of Fame in real time.'
+      }
+    ]
+  },
+  {
     version: 'v5.3.2 PRO',
     date: '11 Октября 2026',
     dateEn: 'October 11, 2026',
