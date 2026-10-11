@@ -80,7 +80,12 @@ export function updateHUD() {
   if (topBio) topBio.textContent = formatNumber(GAME.biomass);
 
   const topSp = document.getElementById('topSparkles');
-  if (topSp) topSp.textContent = formatNumber(GAME.sparkles);
+  if (topSp) {
+    topSp.textContent = formatNumber(GAME.sparkles);
+    if (isVip && (GAME.vipCollectedSparkles || 0) > 0) {
+      topSp.title = `Блестяшки: ${formatNumber(GAME.sparkles)} (Собрано VIP: +${formatNumber(GAME.vipCollectedSparkles)} ✨)`;
+    }
+  }
   const invSp = document.getElementById('invSparkles');
   if (invSp) invSp.textContent = `${formatNumber(GAME.sparkles)} ✨`;
 

@@ -52,6 +52,35 @@ let showerNextSpawn = 0;
 const SHOWER_CHANCE = 0.18;
 const SHOWER_MS = 12000;
 
+export const vipNotice = {
+  active: false,
+  title: '',
+  subText: '',
+  sparkles: 0,
+  life: 0,
+  maxLife: 2.5,
+  shockwaveRadius: 0,
+  shockwaveMaxRadius: 130
+};
+
+export function triggerVipMeteorNotice(typeText, sparkleGain, extraText = '') {
+  const isVip = Boolean(GAME.vipPass || GAME.hasVipPass);
+  if (!isVip) return;
+  GAME.vipCollectedSparkles = (GAME.vipCollectedSparkles || 0) + sparkleGain;
+
+  if (vipNotice.active && vipNotice.life > 0.4) {
+    vipNotice.sparkles += sparkleGain;
+    vipNotice.life = Math.min(2.8, vipNotice.life + 0.6);
+  } else {
+    vipNotice.active = true;
+    vipNotice.sparkles = sparkleGain;
+    vipNotice.life = 2.5;
+    vipNotice.shockwaveRadius = 15;
+  }
+  vipNotice.title = '👑 VIP АВТОСБОР';
+  vipNotice.subText = `+${formatNumber(vipNotice.sparkles)} ✨` + (extraText ? ` (${extraText})` : ` (${typeText})`);
+}
+
 /**
  * Sparkle purse for a meteor. The frontier epoch sets the size: the open pair
  * after a flush still counts, and the current epoch can only raise it.
@@ -1365,6 +1394,67 @@ function renderPetLoop(time) {
     }
     ctx.globalAlpha = 1.0;
   }
+
+  // 3. PERSISTENT VIP AUTO-COLLECT NOTICE (Never overwritten by autoclicker flood)
+  if (vipNotice.active && vipNotice.life > 0) {
+    vipNotice.life -= 0.016;
+    if (vipNotice.life <= 0) {
+      vipNotice.active = false;
+    } else {
+      const fadeAlpha = Math.min(1, vipNotice.life / 0.4);
+      ctx.save();
+      ctx.globalAlpha = fadeAlpha;
+
+      // Golden expanding shockwave ring around pet
+      if (vipNotice.shockwaveRadius < vipNotice.shockwaveMaxRadius) {
+        vipNotice.shockwaveRadius += 3.8;
+        const waveAlpha = Math.max(0, 1 - (vipNotice.shockwaveRadius / vipNotice.shockwaveMaxRadius)) * fadeAlpha;
+        ctx.save();
+        ctx.globalAlpha = waveAlpha;
+        ctx.strokeStyle = '#fde047';
+        ctx.lineWidth = 3.5;
+        ctx.shadowColor = '#eab308';
+        ctx.shadowBlur = 14;
+        ctx.beginPath();
+        ctx.arc(w / 2, h * 0.48, vipNotice.shockwaveRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // VIP Pill Banner in upper center
+      const bannerW = Math.min(280, w * 0.86);
+      const bannerH = 46;
+      const bannerX = (w - bannerW) / 2;
+      const bannerY = 24;
+
+      ctx.fillStyle = 'rgba(12, 10, 9, 0.94)';
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.95)';
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = 'rgba(234, 179, 8, 0.6)';
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 23);
+      } else {
+        ctx.rect(bannerX, bannerY, bannerW, bannerH);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.shadowBlur = 0;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '800 11px Nunito, sans-serif';
+      ctx.fillStyle = '#fde047';
+      ctx.fillText(vipNotice.title, w / 2, bannerY + 14);
+
+      ctx.font = '900 15px Nunito, sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(vipNotice.subText, w / 2, bannerY + 31);
+
+      ctx.restore();
+    }
+  }
   } catch (err) {
     console.error("renderPetLoop error:", err);
   } finally {
@@ -1409,43 +1499,77 @@ export function catchGoldenMeteor() {
     GAME.sparkleMagnetUntil = Date.now() + 15000;
   }
 
+  // ГАРАНТИРОВАННЫЙ ДРОП БЛЕСТЯШЕК СО ВСЕХ ЗВЕЗДНЫХ МЕТЕОРИТОВ (100% шанс)
+  const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
+  const eqKnife = getEquippedKnife();
+  const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
+  const raw = profile.purse * (0.10 + Math.random() * 0.08) * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult * meteorTalentSparkle();
+  let spGain = Math.max(60, Math.round(raw));
+  const tripleTalent = TALENTS.find(t => t.id === 'talent_meteor_triple');
+  const tripleChance = tripleTalent ? tripleTalent.level * 0.001 : 0;
+  let isTriple = false;
+  if (tripleChance > 0 && Math.random() < tripleChance) {
+    spGain *= 3;
+    isTriple = true;
+    addVisualParticle('✨ ЗОЛОТАЯ ИСКРА x3! ✨', '#fde047', 1.8, 2.5, -2.8);
+  }
+  GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
+
+  // ВТОРИЧНЫЙ СУПЕР-БОНУС МЕТЕОРИТА
   const roll = Math.random();
-  let label = '';
+  let bonusLabel = '';
   if (roll < 0.35) {
     GAME.turboStarMultTime = 12;
     if ((GAME.turboRushTime || 0) <= 0) {
       GAME.comboHeat = 100;
       GAME.turboRushTime = 12;
     }
-    label = t('canvas.meteorStarTurbo', { n: formatNumber(getTurboClickMult()) });
+    bonusLabel = t('canvas.meteorStarTurbo', { n: formatNumber(getTurboClickMult()) });
   } else if (roll < 0.70) {
     const burst = mul(cmp(mul(2500, getClickPower()), mul(getPassiveIncome(), 1200)) >= 0 ? mul(2500, getClickPower()) : mul(getPassiveIncome(), 1200), lootMult);
     GAME.biomass = gainBio(GAME.biomass, burst);
     GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, burst);
     GAME.cycleBiomass = gainBio(GAME.cycleBiomass, burst);
-    label = t('canvas.meteorGoldBurst', { n: formatNumber(burst) });
-  } else if (roll < 0.90) {
-    const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
-    const eqKnife = getEquippedKnife();
-    const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
-    const raw = profile.purse * (0.10 + Math.random() * 0.08) * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult * meteorTalentSparkle();
-    let spGain = Math.max(60, Math.round(raw));
-    const tripleTalent = TALENTS.find(t => t.id === 'talent_meteor_triple');
-    const tripleChance = tripleTalent ? tripleTalent.level * 0.001 : 0;
-    if (tripleChance > 0 && Math.random() < tripleChance) {
-      spGain *= 3;
-      addVisualParticle('✨ ЗОЛОТАЯ ИСКРА x3! ✨', '#fde047', 1.8, 2.5, -2.8);
-    }
-    GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
-    label = t('canvas.meteorSparkleRain', { n: formatNumber(spGain) });
-  } else {
+    bonusLabel = t('canvas.meteorGoldBurst', { n: formatNumber(burst) });
+  } else if (roll < 0.85) {
     const rollMultiplier = 1 + Math.min(1.5, (GAME.totalPrestiges || 0) * 0.02) + Math.min(1.5, (GAME.totalTranscend || 0) * 0.12);
     const rollGain = Math.max(1, Math.min(3, Math.round((1 + Math.random()) * rollMultiplier * Math.min(1.5, lootMult))));
     GAME.prestigeRolls = (GAME.prestigeRolls || 0) + rollGain;
-    label = t('canvas.meteorSacredRoll', { n: formatNumber(rollGain) });
+    bonusLabel = t('canvas.meteorSacredRoll', { n: formatNumber(rollGain) });
+  } else {
+    // Джекпот: дополнительные x2 Блестяшек!
+    GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
+    spGain *= 2;
+    bonusLabel = '✨ МЕТЕОРИТНЫЙ ДЖЕКПОТ x2! ✨';
   }
 
-  addVisualParticle(label, '#facc15', 1.6, 2.2, -2.5);
+  const sparkleLabel = t('canvas.meteorSparkleRain', { n: formatNumber(spGain) });
+  addVisualParticle(sparkleLabel, '#facc15', 1.6, 2.2, -2.5);
+  if (bonusLabel) {
+    addVisualParticle(bonusLabel, '#fde047', 1.4, 2.0, -1.8);
+  }
+
+  // VIP Визуализация автосбора метеорита
+  if (Boolean(GAME.vipPass || GAME.hasVipPass)) {
+    triggerVipMeteorNotice('Звездный Метеорит', spGain, isTriple ? 'x3 Искра' : '');
+    if (canvas) {
+      const w = canvas.width || 360;
+      const h = canvas.height || 480;
+      for (let i = 0; i < 16; i++) {
+        const ang = (Math.PI * 2 / 16) * i + Math.random() * 0.2;
+        const spd = 2.5 + Math.random() * 2.5;
+        sparkParticles.push({
+          x: goldenMeteor.x || (w / 2),
+          y: goldenMeteor.y || (h * 0.3),
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd,
+          r: Math.random() * 3.5 + 2,
+          color: '#fde047',
+          life: 0.85
+        });
+      }
+    }
+  }
 
   // relic_quantum_meteor: шанс дать бесплатный 2-часовой Варп биомассы (+0.5% за ур, до 4% на макс ур)
   const quantumLvl = getRelicLevel('relic_quantum_meteor');
@@ -1601,6 +1725,11 @@ export function catchShowerMeteor(index) {
 
   GAME.sparkles = (Number(GAME.sparkles) || 0) + sparkGain;
   addVisualParticle(t('canvas.meteorShowerCatch', { n: formatNumber(sparkGain) }), '#fde68a', 1.05);
+
+  // VIP Визуализация автосбора звездопада
+  if (Boolean(GAME.vipPass || GAME.hasVipPass)) {
+    triggerVipMeteorNotice('Звездопад', sparkGain, isTriple ? 'x3 Искра' : '');
+  }
   checkAchievements();
   updateHUD();
   saveLocal();

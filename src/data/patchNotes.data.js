@@ -2,6 +2,36 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.3.5 PRO',
+    date: '12 Октября 2026',
+    dateEn: 'October 12, 2026',
+    title: 'Патч 5.3.5: 👑 Прогрессивный Буст Блестяшек и Визуализация VIP-Автосбора',
+    titleEn: 'Patch 5.3.5: Progressive Sparkle Scaling & VIP Auto-Collection Visuals',
+    badge: '👑 VIP & БЛЕСТЯШКИ',
+    badgeEn: 'VIP & SPARKLES',
+    badgeClass: 'bg-amber-500/20 text-yellow-300 border-yellow-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '⚔️',
+        text: 'Прогрессивные Блестяшки с Критов: Дроп Блестяшек за критический клик теперь динамически масштабируется от Прорывов (+25% за Прорыв), текущей Эпохи (+10% за Эпоху) и Звезд заточки ножа (+5% за уровень). Больше никаких 2-4 блестяшек на высоких формах — клики дают достойные десятки и сотни ✨!',
+        textEn: 'Progressive Crit Sparkle Scaling: Sparkle gains per critical strike now dynamically scale with Breakthroughs (+25% per breakthrough), current Epoch (+10% per epoch), and knife sharpen stars (+5% per star).'
+      },
+      {
+        type: 'balance',
+        icon: '🌟',
+        text: '100% Гарантированный Дроп с Метеоритов: Все без исключения Звездные метеориты теперь гарантированно выдают Блестяшки ✨ в дополнение к своим супер-бонусам (Турбо-х4, Взрыв биомассы, Рулоны престижа или джекпот x2).',
+        textEn: '100% Guaranteed Meteor Sparkles: Every Golden Meteor is now guaranteed to shower the player in Sparkles ✨ alongside its secondary super-bonus.'
+      },
+      {
+        type: 'ui',
+        icon: '👑',
+        text: 'Визуализация VIP-Автосбора: При автоматическом поглощении метеоритов VIP-Пассом на экране появляется яркая плашка "👑 VIP АВТОСБОР (+XX.Xk ✨)" и расходится золотая ударная волна поглощения, которую больше не затирает поток автокликера.',
+        textEn: 'VIP Auto-Collection Visuals: Automatic meteor harvesting via VIP Pass now displays a dedicated glowing capsule banner and expanding golden shockwave, immune to autoclicker flood.'
+      }
+    ]
+  },
+  {
     version: 'v5.3.4 PRO',
     date: '11 Октября 2026',
     dateEn: 'October 11, 2026',

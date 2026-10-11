@@ -1,7 +1,8 @@
 import { GAME } from '../core/state.js?v=5.0.80';
 import { TALENTS } from '../data/talents.data.js';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.0.80';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.0.80';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.80';
 import { getRelicLevel } from '../data/relics.data.js?v=5.0.80';
 import { takeClickBudget } from './autoclickService.js?v=5.0.80';
 import { events } from '../core/events.js';
@@ -50,7 +51,17 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
   const isGambler = GAME.archetype === 'gambler';
   const gamblerMult = isGambler ? 2.0 : 1.0;
-  const sparklesPerProc = Math.max(1, Math.round(knifeSparkleMult * gamblerMult));
+
+  // Прогрессивное масштабирование Блестяшек от Прорывов, Эпохи и Звезд ножа:
+  const bCount = Math.max(0, GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
+  const currentEpoch = getPhaseForStage(GAME.evoStage).id;
+  const knifeStar = eqKnife ? getKnifeStar(eqKnife.id) : 1;
+  const breakthroughMult = 1 + bCount * 0.25;
+  const epochMult = 1 + (currentEpoch - 1) * 0.10;
+  const starMult = 1 + Math.max(0, knifeStar - 1) * 0.05;
+  const progScale = breakthroughMult * epochMult * starMult;
+
+  const sparklesPerProc = Math.max(1, Math.round(knifeSparkleMult * gamblerMult * progScale));
 
   let totalEarned = 0;
   let sparklesEarned = 0;
