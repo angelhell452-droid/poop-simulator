@@ -4,8 +4,9 @@ import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from '../data/relics.dat
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.80';
-import { bigPow, bigPow10, gte, log10Of, mul } from '../utils/big.js?v=5.0.80';
+import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub } from '../utils/big.js?v=5.0.80';
 import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.80';
+import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 
 export const BRIDGE_FLUSHES_NEEDED = 10;
 
@@ -193,6 +194,7 @@ export function executeTranscend() {
     GAME.breakthroughProgress = newBiomass;
   }
 
+  saveLocal();
   events.emit('transcend:completed', { gain, breakthroughCount: nextCount });
   return true;
 }
@@ -211,9 +213,11 @@ export function buyRelic(relicId) {
   if (relic.max && curLvl >= relic.max) return false;
 
   const cost = relic.cost;
-  if ((GAME.transcendPlungers || 0) < cost) return false;
+  if (lt(GAME.transcendPlungers || 0, cost)) return false;
 
-  GAME.transcendPlungers -= cost;
+  GAME.transcendPlungers = isBig(GAME.transcendPlungers)
+    ? sub(GAME.transcendPlungers, cost)
+    : Math.max(0, (GAME.transcendPlungers || 0) - cost);
   const nextLvl = curLvl + 1;
 
   GAME.relics[relic.id] = nextLvl;
@@ -226,6 +230,8 @@ export function buyRelic(relicId) {
     GAME.relics[relic.legacyKey] = flagVal;
     GAME.transcendUpgrades[relic.legacyKey] = flagVal;
   }
+
+  saveLocal();
 
   events.emit('transcend:upgradeBought', { upgrade: relic, relic, level: nextLvl });
   return true;

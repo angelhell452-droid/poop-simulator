@@ -26,12 +26,17 @@ export const STORAGE_KEY = 'PoopSim_Pro_Save';
 export const BACKUP_KEY = 'PoopSim_Pro_Backup';
 
 export function buildSavePayload() {
+  const plungersStr = isBig(GAME.transcendPlungers)
+    ? `${GAME.transcendPlungers.m}e${GAME.transcendPlungers.e}`
+    : String(GAME.transcendPlungers || 0);
+
   return {
     saveVersion: GAME.saveVersion || 5,
     saveTimestamp: Date.now(),
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
     worldReset: Number(GAME.worldReset) || 0,
-    game: { ...GAME, lastActiveTime: Date.now() },
+    game: { ...GAME, transcendPlungers: plungersStr, lastActiveTime: Date.now() },
+    transcendPlungers: plungersStr,
     feedCount,
     washCount,
     polishCount,
@@ -57,6 +62,7 @@ export function saveLocal() {
     GAME.biomass = keepBio(GAME.biomass);
     GAME.cycleBiomass = keepBio(GAME.cycleBiomass);
     GAME.allTimeBiomass = keepBio(GAME.allTimeBiomass);
+    GAME.transcendPlungers = keepBio(GAME.transcendPlungers);
     
     const payload = buildSavePayload();
     const json = JSON.stringify(payload);
@@ -66,6 +72,8 @@ export function saveLocal() {
     console.warn('LocalStorage save error:', e);
   }
 }
+
+export const saveGame = saveLocal;
 
 function readStoredAccount() {
   try {
@@ -285,7 +293,11 @@ export function applySaveDataSafely(rawData) {
   if (GAME.transcendCycleRolls === 0 && (GAME.prestigeRolls || 0) > 0) {
     GAME.transcendCycleRolls = GAME.prestigeRolls;
   }
-  if (!isFinite(GAME.transcendPlungers) || GAME.transcendPlungers < 0 || GAME.transcendPlungers > 1e308) GAME.transcendPlungers = 0;
+  const rawPlungers = data.transcendPlungers ?? data.game?.transcendPlungers ?? GAME.transcendPlungers ?? 0;
+  GAME.transcendPlungers = keepBio(rawPlungers);
+  if (!isBig(GAME.transcendPlungers) && (!Number.isFinite(GAME.transcendPlungers) || GAME.transcendPlungers < 0)) {
+    GAME.transcendPlungers = 0;
+  }
   if (!isFinite(GAME.evoStage) || GAME.evoStage < 0) GAME.evoStage = 0;
   if (!GAME.phaseEcho || typeof GAME.phaseEcho !== 'object') GAME.phaseEcho = {};
   if (!Number.isFinite(GAME.flushesThisCycle) || GAME.flushesThisCycle < 0) GAME.flushesThisCycle = 0;

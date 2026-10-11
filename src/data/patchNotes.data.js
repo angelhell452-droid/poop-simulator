@@ -2,6 +2,36 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.2.8 PRO',
+    date: '11 Октября 2026',
+    dateEn: 'October 11, 2026',
+    title: 'Патч 5.2.8: Иммунитет 0-го Прорыва, Вкладки Тиров Кейсов и Надежное Сохранение Вантузов',
+    titleEn: 'Patch 5.2.8: Breakthrough 0 Immunity, Case Tier Tabs & Reliable Plunger Persistence',
+    badge: 'Патч 5.2.8',
+    badgeEn: 'Patch 5.2.8',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '🛡️',
+        text: 'Абсолютный Иммунитет 0-го Прорыва: На новых аккаунтах и до совершения 1-го Прорыва (а также до формы 3 500) штраф ножа гарантированно отключен (x1.00 мощности), исключая ложные красные плашки в начале игры.',
+        textEn: 'Absolute Breakthrough 0 Immunity: Starter accounts with 0 Breakthroughs or below form 3,500 now strictly enjoy 100% factory efficiency with zero false-alarm warnings.'
+      },
+      {
+        type: 'ui',
+        icon: '🧰',
+        text: 'Горизонтальные Вкладки Тиров в Кейсах: Магазин кейсов получил систему переключателей тиров [⭐ Тир 1] [⚡ Тир 2] [🔮 Тир 3] [🌌 Тир 4] [🪐 Тир 5] [🔒 Тир 6-8] [✨ Все], распределяющую 45 кейсов по порционному плану.',
+        textEn: 'Horizontal Tier Filters for Cases: Weapon Cases tab now features a sleek tier filter bar ([⭐ Tier 1] to [🪐 Tier 5]) cleanly categorizing all 45 crates according to progression stages.'
+      },
+      {
+        type: 'save',
+        icon: '💾',
+        text: 'Надежное Сохранение Вантузов: Принудительное автосохранение теперь вызывается мгновенно при покупке и прокачке реликвий, а баланс Вантузов сериализуется через безопасный строковый формат Big.js, защищая от откатов.',
+        textEn: 'Bulletproof Plunger Persistence: Auto-save triggers immediately upon purchasing or upgrading relics, and Plungers balance serializes safely via Big.js string representation to eliminate rollback risks.'
+      }
+    ]
+  },
+  {
     version: 'v5.2.7 PRO',
     date: '11 Октября 2026',
     dateEn: 'October 11, 2026',

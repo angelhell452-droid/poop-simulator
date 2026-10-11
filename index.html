@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.2.7 PRO</title>
+  <title>Poop Simulator v5.2.8 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,7 +20,7 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.2.7">
+  <link rel="stylesheet" href="styles/main.css?v=5.2.8">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -38,7 +38,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.2.7 PRO</span>
+            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.2.8 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             data-i18n-title="header.bugTitle" title="Сообщить об ошибке">
@@ -595,6 +595,31 @@
                 <span class="text-xs">➔</span>
               </div>
             </button>
+          </div>
+
+          <!-- Case Tier Sub-Sections -->
+          <div class="flex items-center gap-1.5 pb-1 overflow-x-auto custom-scroll" id="caseTierFilters">
+            <button
+              class="case-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 shadow border border-yellow-300 shrink-0"
+              data-tier="1">⭐ Тир 1</button>
+            <button
+              class="case-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-emerald-300 border border-stone-800 shrink-0"
+              data-tier="2">⚡ Тир 2</button>
+            <button
+              class="case-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-purple-300 border border-stone-800 shrink-0"
+              data-tier="3">🔮 Тир 3</button>
+            <button
+              class="case-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 shrink-0"
+              data-tier="4">🌌 Тир 4</button>
+            <button
+              class="case-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-rose-300 border border-stone-800 shrink-0"
+              data-tier="5">🪐 Тир 5</button>
+            <button
+              class="case-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-600 border border-stone-800/60 shrink-0 cursor-not-allowed opacity-60"
+              data-tier="placeholder" disabled title="Будущие обновления">🔒 Тир 6-8</button>
+            <button
+              class="case-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800 shrink-0"
+              data-tier="all">✨ Все</button>
           </div>
 
           <!-- Fast Open Toggle & Cases Header -->

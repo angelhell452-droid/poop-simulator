@@ -51,7 +51,7 @@ export function updateFactoryPenaltyBanner() {
             ВНИМАНИЕ: Твой нож устарел для текущей формы питомца! Заводы работают всего на 10% мощности.
           </div>
           <div class="text-[11px] sm:text-xs text-amber-200 leading-snug font-medium">
-            💡 <b class="text-yellow-300">РЕШЕНИЕ:</b> Перейди во вкладку магазина <button type="button" class="sos-goto-bravo-btn inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 hover:bg-emerald-500/30 transition font-bold shadow-sm cursor-pointer">[⚡ Тир 2]</button>, открой Кейс <b class="text-yellow-300 font-bold">«Операция Браво»</b> за <span class="text-yellow-300 font-bold">1.5k Блестяшек ✨</span> и экипируй новый нож, чтобы вернуть 100% пассивного дохода!
+            💡 <b class="text-yellow-300">РЕШЕНИЕ:</b> Перейди во вкладку магазина <button type="button" class="sos-goto-bravo-btn inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 hover:bg-emerald-500/30 transition font-bold shadow-sm cursor-pointer">[⭐ Тир 1]</button>, открой Кейс <b class="text-yellow-300 font-bold">«Операция Браво»</b> за <span class="text-yellow-300 font-bold">1.5k Блестяшек ✨</span> и экипируй новый нож, чтобы вернуть 100% пассивного дохода!
           </div>
         </div>
       </div>
@@ -59,14 +59,18 @@ export function updateFactoryPenaltyBanner() {
     banner.querySelector('.sos-goto-bravo-btn')?.addEventListener('click', () => {
       const casesTab = document.querySelector('.dash-tab[data-target="panelCases"]');
       if (casesTab) casesTab.click();
-      setTimeout(() => {
-        const bravoCard = document.querySelector('[data-case="case_bravo"]');
-        if (bravoCard) {
-          bravoCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          bravoCard.classList.add('ring-4', 'ring-yellow-400');
-          setTimeout(() => bravoCard.classList.remove('ring-4', 'ring-yellow-400'), 2000);
-        }
-      }, 100);
+      import('./casesView.js').then(m => {
+        if (m.activeCaseTier !== undefined) m.activeCaseTier = '1';
+        if (m.renderCasesSystem) m.renderCasesSystem();
+        setTimeout(() => {
+          const bravoCard = document.querySelector('[data-case="case_bravo"]');
+          if (bravoCard) {
+            bravoCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            bravoCard.classList.add('ring-4', 'ring-yellow-400');
+            setTimeout(() => bravoCard.classList.remove('ring-4', 'ring-yellow-400'), 2000);
+          }
+        }, 100);
+      });
     });
   } else if (banner) {
     banner.remove();

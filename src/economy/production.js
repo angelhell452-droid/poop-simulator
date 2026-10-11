@@ -290,16 +290,17 @@ function describeFactory(fac, idx, count) {
 }
 
 export function getKnifeFactorySynergyMult() {
-  const knife = getEquippedKnife();
-  if (!knife) return 0.1; // 90% штраф без экипированного ножа
-
   const currentStage = GAME.evoStage || 0;
+  const btCount = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
 
-  // Если текущая форма игрока меньше 3 500, активируется полный иммунитет Тира 1:
-  // любой надетый нож из первых трех кейсов дает 100% мощности (x1.00)
-  if (currentStage < 3500) {
+  // Если игрок на 0-м Прорыве или текущая форма меньше 3 500, активируется полный иммунитет:
+  // 100% мощности (x1.00), штраф полностью отключен
+  if (btCount === 0 || currentStage < 3500) {
     return 1.0;
   }
+
+  const knife = getEquippedKnife();
+  if (!knife) return 0.1; // 90% штраф без экипированного ножа после формы 3500
 
   // Ножи редких/божественных тиров всегда удовлетворяют синергии
   if (['godly', 'celestial', 'special', 'titanium', 'rainbow'].includes(knife.rarity)) {

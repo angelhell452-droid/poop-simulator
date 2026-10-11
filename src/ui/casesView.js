@@ -28,6 +28,22 @@ let unlockTimeoutId = null;
 let currentWinnerIndex = 48;
 let currentWinningOffset = 0;
 
+export let activeCaseTier = '1';
+
+export function getCaseTierCategory(caseIndexOrObj) {
+  let idx;
+  if (typeof caseIndexOrObj === 'number') {
+    idx = caseIndexOrObj;
+  } else {
+    idx = WEAPON_CASES.findIndex(c => c.id === (caseIndexOrObj?.id || caseIndexOrObj)) + 1;
+  }
+  if (idx <= 3) return 1;
+  if (idx <= 15) return 2;
+  if (idx <= 24) return 3;
+  if (idx <= 33) return 4;
+  return 5;
+}
+
 export const FIRST_CASE_ID = 'case_classic';
 export const FIRST_CASE_DISCOUNT_COST = 10;
 
@@ -894,18 +910,22 @@ export function updateCasesPenaltyBanner() {
             ВНИМАНИЕ: Твой нож устарел для текущей формы питомца! Заводы работают всего на 10% мощности.
           </div>
           <div class="text-[11px] sm:text-xs text-amber-200 leading-snug font-medium">
-            💡 <b class="text-yellow-300">РЕШЕНИЕ:</b> Перейди во вкладку магазина <button type="button" class="sos-scroll-bravo-btn inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 hover:bg-emerald-500/30 transition font-bold shadow-sm cursor-pointer">[⚡ Тир 2]</button>, открой Кейс <b class="text-yellow-300 font-bold">«Операция Браво»</b> за <span class="text-yellow-300 font-bold">1.5k Блестяшек ✨</span> и экипируй новый нож, чтобы вернуть 100% пассивного дохода!
+            💡 <b class="text-yellow-300">РЕШЕНИЕ:</b> Перейди во вкладку магазина <button type="button" class="sos-scroll-bravo-btn inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 hover:bg-emerald-500/30 transition font-bold shadow-sm cursor-pointer">[⭐ Тир 1]</button>, открой Кейс <b class="text-yellow-300 font-bold">«Операция Браво»</b> за <span class="text-yellow-300 font-bold">1.5k Блестяшек ✨</span> и экипируй новый нож, чтобы вернуть 100% пассивного дохода!
           </div>
         </div>
       </div>
     `;
     banner.querySelector('.sos-scroll-bravo-btn')?.addEventListener('click', () => {
-      const bravoCard = document.querySelector('[data-case="case_bravo"]');
-      if (bravoCard) {
-        bravoCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        bravoCard.classList.add('ring-4', 'ring-yellow-400');
-        setTimeout(() => bravoCard.classList.remove('ring-4', 'ring-yellow-400'), 2000);
-      }
+      activeCaseTier = '1';
+      renderCasesSystem();
+      setTimeout(() => {
+        const bravoCard = document.querySelector('[data-case="case_bravo"]');
+        if (bravoCard) {
+          bravoCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          bravoCard.classList.add('ring-4', 'ring-yellow-400');
+          setTimeout(() => bravoCard.classList.remove('ring-4', 'ring-yellow-400'), 2000);
+        }
+      }, 50);
     });
   } else if (banner) {
     banner.remove();
@@ -920,6 +940,17 @@ export function renderCasesSystem() {
   if (rollsLabel) rollsLabel.innerHTML = `${formatNumber(GAME.sparkles || 0)} ✨`;
   const plungersLabel = document.getElementById('casesPlungersLabel');
   if (plungersLabel) plungersLabel.innerHTML = `${formatNumber(GAME.transcendPlungers || 0)} <span class="plunger-icon"></span>`;
+
+  // Update tier filter button styles
+  document.querySelectorAll('.case-tier-btn').forEach(b => {
+    if (b.dataset.tier === 'placeholder') return;
+    const isAct = b.dataset.tier === String(activeCaseTier);
+    if (isAct) {
+      b.className = 'case-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-stone-950 shadow border border-yellow-300 shrink-0';
+    } else {
+      b.className = 'case-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800 shrink-0';
+    }
+  });
 
   const fastChk = document.getElementById('chkFastCaseOpen');
   if (fastChk) {
@@ -947,7 +978,16 @@ export function renderCasesSystem() {
   if (cratesList && !isCasesUnlocked()) {
     cratesList.innerHTML = `<div class="col-span-full p-4 rounded-2xl border border-amber-900/60 bg-stone-950 text-center"><div class="text-2xl mb-1">🔒</div><div class="font-game text-sm text-amber-200">${t('cases.closed')}</div><p class="text-[11px] text-stone-400 mt-1">${t('cases.closedHint', { n: formatNumber(GAME.totalPrestiges || 0) })}</p></div>`;
   } else if (cratesList) {
-    cratesList.innerHTML = casesInEpochOrder().map(c => {
+    const allCases = casesInEpochOrder();
+    const filteredCases = allCases.filter((c, idx) => {
+      if (activeCaseTier === 'all') return true;
+      return String(getCaseTierCategory(idx + 1)) === String(activeCaseTier);
+    });
+
+    if (filteredCases.length === 0) {
+      cratesList.innerHTML = `<div class="col-span-full p-6 rounded-2xl border border-stone-800 bg-stone-950/70 text-center text-stone-400 text-xs">В этом Тире пока нет доступных кейсов</div>`;
+    } else {
+      cratesList.innerHTML = filteredCases.map(c => {
       const isUnlocked = caseIsOpen(c);
       const isDiscounted = isFirstCaseDiscountAvailable(c);
       const hasCurrency = canAffordCase(c, 1);
@@ -1039,13 +1079,14 @@ export function renderCasesSystem() {
       });
     });
 
-    cratesList.querySelectorAll('.case-info-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const cid = btn.dataset.case;
-        openCasePreviewModal(cid);
+      cratesList.querySelectorAll('.case-info-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const cid = btn.dataset.case;
+          openCasePreviewModal(cid);
+        });
       });
-    });
+    }
   }
 
   updateCasesTabBadge();
@@ -1228,6 +1269,14 @@ export function initCasesListeners() {
       if (text) text.textContent = caseAudioEnabled ? t('cases.soundOn') : t('cases.soundOff');
     });
   }
+
+  document.querySelectorAll('.case-tier-btn').forEach(btn => {
+    if (btn.dataset.tier === 'placeholder') return;
+    btn.addEventListener('click', () => {
+      activeCaseTier = btn.dataset.tier;
+      renderCasesSystem();
+    });
+  });
 
   events.on('knife:equipped', () => {
     updateCasesPenaltyBanner();
