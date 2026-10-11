@@ -107,6 +107,9 @@ export function initPatchNotesListeners() {
   document.getElementById('btnPatchNotesModal')?.addEventListener('click', openPatchNotesModal);
   const vTag = document.getElementById('versionTag');
   if (vTag) {
+    if (PATCH_NOTES[0]?.version) {
+      vTag.textContent = PATCH_NOTES[0].version;
+    }
     vTag.style.cursor = 'pointer';
     vTag.title = t('journal.versionTitle');
     vTag.addEventListener('click', openPatchNotesModal);
