@@ -11,7 +11,7 @@ export const TALENTS = [
   {
     id: 'talent_click_base',
     name: 'Генетический Клик',
-    desc: '+1 к базовой биомассе за клик за уровень',
+    desc: '+5% к итоговой силе ручного клика за каждый уровень',
     cost: 10,
     costMult: 1.3,
     level: 0,
@@ -24,7 +24,7 @@ export const TALENTS = [
   {
     id: 'talent_factory_base',
     name: 'Промышленный Сплав',
-    desc: '+5 к базовой биомассе в секунду от заводов за уровень',
+    desc: '+8% к глобальной силе работы абсолютно всех Авто-заводов за уровень',
     cost: 25,
     costMult: 1.35,
     level: 0,
@@ -37,7 +37,7 @@ export const TALENTS = [
   {
     id: 'talent_meteor_bonus',
     name: 'Тяжелый Метеорит',
-    desc: '+1% к объёму Блестяшек ✨ с метеоритов',
+    desc: '+5% к объему получаемых Блестяшек ✨ с каждого метеорита за уровень',
     cost: 100,
     costMult: 1.4,
     level: 0,
@@ -117,7 +117,7 @@ export const TALENTS = [
   {
     id: 'talent_skin_multiplier',
     name: 'Гардероб силы',
-    desc: '+1.5% к пассивным множителям Шапок и Одежды',
+    desc: '+10% к пассивным множителям Шапок и Одежды за уровень',
     cost: 400,
     costMult: 1.34,
     level: 0,
@@ -130,11 +130,11 @@ export const TALENTS = [
   {
     id: 'talent_cashback',
     name: 'Остаточная биомасса',
-    desc: 'Возвращает 0.5% от стоимости завода при покупке',
-    cost: 15,
-    costMult: 1.25,
+    desc: 'Возвращает 1.5% от стоимости завода при покупке за уровень (макс 10 ур. = 15%)',
+    cost: 100,
+    costMult: 1.5,
     level: 0,
-    max: Infinity,
+    max: 10,
     icon: '♻️',
     tier: 2,
     tierName: 'Разгонный',

@@ -63,7 +63,8 @@ export function meteorSparkleProfile(evoStage, transcends, flushes) {
   const phaseId = Math.max(phase.id, unlockedId);
   const span = Math.max(1, phase.formEnd - phase.formStart);
   const local = Math.min(1, Math.max(0, ((evoStage || 0) + 1 - phase.formStart) / span));
-  const purse = 1800 * Math.pow(1.075, phaseId - 1);
+  // Базовый дроп Блестяшек навсегда увеличен ровно в 3 раза (было 1800 -> стало 5400)
+  const purse = 5400 * Math.pow(1.075, phaseId - 1);
   const localMult = 1 + local * 0.5;
   const flushBonus = 1 + ((flushes || 0) / ((flushes || 0) + 20)) * 0.35;
   return { phaseId, purse, localMult, flushBonus };
@@ -73,7 +74,7 @@ function meteorTalentSparkle() {
   const meteorBonus = TALENTS.find(t => t.id === 'talent_meteor_bonus')?.level || 0;
   const luck = Math.min(20, GAME.boutiqueLevels?.golden_luck || 0);
   const storm = GAME.transcendUpgrades?.meteorStorm || 0;
-  const stacked = meteorBonus * 0.01 + luck * 0.03 + storm * 0.05;
+  const stacked = meteorBonus * 0.05 + luck * 0.03 + storm * 0.05;
   return 1 + stacked;
 }
 function scheduleNextMeteor(extraMs = 0) {
@@ -1427,8 +1428,8 @@ export function catchGoldenMeteor() {
     const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
     const eqKnife = getEquippedKnife();
     const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
-    const raw = profile.purse * (0.10 + Math.random() * 0.08) * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult;
-    let spGain = Math.max(20, Math.round(raw));
+    const raw = profile.purse * (0.10 + Math.random() * 0.08) * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult * meteorTalentSparkle();
+    let spGain = Math.max(60, Math.round(raw));
     const tripleTalent = TALENTS.find(t => t.id === 'talent_meteor_triple');
     const tripleChance = tripleTalent ? tripleTalent.level * 0.001 : 0;
     if (tripleChance > 0 && Math.random() < tripleChance) {
@@ -1588,7 +1589,7 @@ export function catchShowerMeteor(index) {
   GAME.meteorsCaught = GAME.stats.totalMeteorsCaught;
   events.emit('stats:meteorCaught', { total: GAME.stats.totalMeteorsCaught });
   const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
-  let sparkGain = Math.max(8, Math.round(profile.purse * (0.012 + Math.random() * 0.010) * profile.localMult * profile.flushBonus * meteorTalentSparkle()));
+  let sparkGain = Math.max(24, Math.round(profile.purse * (0.012 + Math.random() * 0.010) * profile.localMult * profile.flushBonus * meteorTalentSparkle()));
 
   const tripleTalent = TALENTS.find(t => t.id === 'talent_meteor_triple');
   const tripleChance = tripleTalent ? tripleTalent.level * 0.001 : 0;

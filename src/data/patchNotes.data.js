@@ -2,6 +2,36 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.3.4 PRO',
+    date: '11 Октября 2026',
+    dateEn: 'October 11, 2026',
+    title: 'Патч 5.3.4: 🌟 Перебалансировка Дерева Талантов и 3x Буст Блестяшек',
+    titleEn: 'Patch 5.3.4: Talent Tree Rebalance & 3x Sparkle Drop Boost',
+    badge: '🌟 РЕБАЛАНС ТАЛАНТОВ',
+    badgeEn: 'TALENT REBALANCE',
+    badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🧬',
+        text: 'Перевод Тира 1 на Проценты: Таланты Тира 1 больше не дают плоских прибавок. "Генетический Клик" теперь дает +5% к итоговой силе ручного клика за уровень. "Промышленный Сплав" дает +8% к глобальной силе абсолютно всех Авто-заводов за уровень. "Тяжелый Метеорит" усилен до +5% Блестяшек ✨ с каждого метеорита за уровень.',
+        textEn: 'Tier 1 Percentage Overhaul: Removed flat base bonuses. "Genetic Click" now grants +5% to final manual click power per level. "Industrial Alloy" grants +8% to global power of all Auto-factories per level. "Heavy Meteor" boosted to +5% Sparkles ✨ from meteors per level.'
+      },
+      {
+        type: 'balance',
+        icon: '🛡️',
+        text: 'Защита Экономики и Апгрейд Тира 2: Талант "Остаточная биомасса" получил жесткий кап 10 уровней (0/10) и дает +1.5% возврата за уровень (макс. 15%), полностью устраняя уязвимость бесплатных заводов. Талант "Гардероб силы" усилен до +10% к пассивным множителям Шапок и Одежды за уровень.',
+        textEn: 'Economy Safety & Tier 2 Upgrade: "Residual Biomass" capped at 10 levels (0/10) with +1.5% refund per level (max 15%), completely eliminating the free factory exploit. "Wardrobe of Might" boosted to +10% to passive multipliers of Hats and Outfits per level.'
+      },
+      {
+        type: 'balance',
+        icon: '✨',
+        text: 'Глобальный 3x Буст Блестяшек ✨: Базовый объем Блестяшек со всех метеоритов навсегда увеличен ровно в 3 раза по всей игре для окупаемости кейсов и VIP-автосборщика.',
+        textEn: 'Global 3x Sparkle Drop Boost: Base Sparkle volume from all meteors is permanently tripled across the entire game, optimizing case costs and VIP auto-collection.'
+      }
+    ]
+  },
+  {
     version: 'v5.3.3 PRO',
     date: '11 Октября 2026',
     dateEn: 'October 11, 2026',

@@ -56,7 +56,7 @@ export function getEquippedBodySkin() {
 export function getSkinClickMult() {
   const skin = getEquippedBodySkin();
   const base = skin ? skin.clickMult : 1;
-  const talentBoost = 1 + talentLevel('talent_skin_multiplier') * 0.015;
+  const talentBoost = 1 + talentLevel('talent_skin_multiplier') * 0.10;
   return mul(base, talentBoost);
 }
 
@@ -82,7 +82,7 @@ export function getHatClickMult(hat, level) {
   if (!hat) return 1;
   const lvl = Math.min(15, Math.max(1, Number(level) || 1));
   const raw = (hat.clickBoost || 1) * (1 + (lvl - 1) * HAT_LEVEL_STEP);
-  const talentBoost = 1 + talentLevel('talent_skin_multiplier') * 0.015;
+  const talentBoost = 1 + talentLevel('talent_skin_multiplier') * 0.10;
   return mul(softCap(raw, HAT_SOFT_KNEE, 0.55), talentBoost);
 }
 
@@ -277,9 +277,8 @@ function describeFactory(fac, idx, count) {
   const core = (coreOn && highTier) ? 1.5 : 1;
   const milestone = milestoneMult(count);
 
-  // talent_factory_base: +5 к базовой биомассе в секунду от заводов за уровень
-  const factoryBaseBonus = talentLevel('talent_factory_base') * 5;
-  const effectiveBaseCps = add(fac.baseCps, factoryBaseBonus);
+  // talent_factory_base переведён с плоского бонуса на глобальный процентный множитель (+8% за уровень в passiveGlobalLines)
+  const effectiveBaseCps = fac.baseCps;
 
   // talent_factory_meta: +5% к доходу заводов мультипликативно, если уровень завода > 500
   const metaLvl = talentLevel('talent_factory_meta');
@@ -347,6 +346,10 @@ function passiveGlobalLines() {
   const infinityMult = getInfinityEssenceMult();
   const capitalMult = getPlungerCapitalMult();
 
+  // talent_factory_base (Промышленный Сплав): +8% к глобальной силе работы абсолютно всех Авто-заводов за каждый уровень таланта
+  const industrialAlloyLvl = talentLevel('talent_factory_base');
+  const industrialAlloyMult = 1 + industrialAlloyLvl * 0.08;
+
   // talent_fed_factory_buff: +2% к доходу Авто-заводов, пока активен бафф «Кормить»
   const fedBuff = (GAME.hunger || 0) > 0 ? (1 + talentLevel('talent_fed_factory_buff') * 0.02) : 1;
 
@@ -355,6 +358,7 @@ function passiveGlobalLines() {
   pushAboveOne(gearBits, 'Буст Прорывов', plungersMult);
 
   const lines = [];
+  pushAboveOne(lines, 'Промышленный Сплав', industrialAlloyMult);
   pushAboveOne(lines, 'Разгон заводов', turboMult);
   pushAboveOne(lines, 'Золотая лихорадка', goldRushMult);
   pushAboveOne(lines, 'Оверклок заводов', overclockMult);
@@ -387,7 +391,7 @@ function passiveGlobalLines() {
   }
 
   // Сквозная бесконечная формула: Доход = (База * Таланты * Буст Смывов) * Нож * Буст Прорывов * Реликвии * Шапки/Одежда * Баффы Ухода * Синергия Ножа
-  const numProd = turboMult * goldRushMult * overclockMult * styles.butterfly
+  const numProd = industrialAlloyMult * turboMult * goldRushMult * overclockMult * styles.butterfly
     * crystalMult * softRollsMult * cosmicMult
     * cleanBuff * archMult * omniWealthMult
     * sparkMult * timeWarpMult * idealMult * late
@@ -500,7 +504,7 @@ function multRows(parts) {
 
 export function getClickPower() {
   const parts = clickParts();
-  const baseBio = 1 + talentLevel('talent_click_base') * 1;
+  const baseBio = 1;
   let basePower = mul(baseBio, parts.product);
   if (parts.syncRate > 0) {
     basePower = add(basePower, mul(getPassiveIncome(), parts.syncRate));
@@ -509,14 +513,27 @@ export function getClickPower() {
   if (hasPerk('perk_kinetic_core') || hasPerk('upg_quantum_click')) {
     basePower = add(basePower, mul(getPassiveIncome(), 0.05));
   }
+  // talent_click_base (Генетический Клик): +5% к ИТОГОВОЙ силе ручного клика аккаунта за каждый уровень таланта
+  const geneticClickLvl = talentLevel('talent_click_base');
+  if (geneticClickLvl > 0) {
+    basePower = mul(basePower, 1 + geneticClickLvl * 0.05);
+  }
   if (isBig(basePower)) return basePower;
   return Math.max(1, basePower);
 }
 
 export function getClickBreakdown() {
   const parts = clickParts();
-  const baseBio = 1 + talentLevel('talent_click_base') * 1;
-  const rows = [{ name: 'База клика', text: formatNumber(baseBio) }, ...multRows(parts)];
+  const baseBio = 1;
+  const rows = [{ name: 'База клика', text: formatNumber(baseBio) }];
+  const geneticClickLvl = talentLevel('talent_click_base');
+  if (geneticClickLvl > 0) {
+    rows.push({
+      name: 'Генетический Клик',
+      text: `x${formatNumber(1 + geneticClickLvl * 0.05)} (+${geneticClickLvl * 5}%)`
+    });
+  }
+  rows.push(...multRows(parts));
   if (parts.syncRate > 0) {
     rows.push({
       name: 'Бонус от заводов',

@@ -232,3 +232,28 @@ export function dampenGearMult(raw, phaseId) {
   const extra = Math.min(Math.pow(value - knee, 0.72), knee * 1.25);
   return knee + extra;
 }
+
+/**
+ * Множитель таланта "Генетический Клик" (+5% за уровень к итоговой силе ручного клика).
+ */
+export function getGeneticClickTalentMult() {
+  const lvl = TALENTS.find(t => t.id === 'talent_click_base')?.level || 0;
+  return 1 + lvl * 0.05;
+}
+
+/**
+ * Множитель таланта "Промышленный Сплав" (+8% за уровень к глобальной мощности всех авто-заводов).
+ */
+export function getIndustrialAlloyTalentMult() {
+  const lvl = TALENTS.find(t => t.id === 'talent_factory_base')?.level || 0;
+  return 1 + lvl * 0.08;
+}
+
+/**
+ * Множитель таланта "Тяжелый Метеорит" (+5% за уровень к объему получаемых Блестяшек с метеорита).
+ */
+export function getHeavyMeteorTalentMult() {
+  const lvl = TALENTS.find(t => t.id === 'talent_meteor_bonus')?.level || 0;
+  return 1 + lvl * 0.05;
+}
+

@@ -24,10 +24,10 @@ export function buyFactory(facId) {
   GAME.biomass = spendBio(GAME.biomass, info.totalCost);
   fac.count = (fac.count || 0) + info.count;
 
-  // talent_cashback: возвращает 0.5% от стоимости завода при покупке
-  const cashbackLvl = TALENTS.find(t => t.id === 'talent_cashback')?.level || 0;
+  // talent_cashback: возвращает строго 1.5% от стоимости завода при покупке за уровень (макс 10 ур. = 15%)
+  const cashbackLvl = Math.min(10, TALENTS.find(t => t.id === 'talent_cashback')?.level || 0);
   if (cashbackLvl > 0) {
-    const refundPct = Math.min(0.9, cashbackLvl * 0.005);
+    const refundPct = Math.min(0.15, cashbackLvl * 0.015);
     const refund = mul(info.totalCost, refundPct);
     GAME.biomass = gainBio(GAME.biomass, refund);
   }
