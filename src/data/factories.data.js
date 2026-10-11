@@ -22,27 +22,26 @@ export function getFactoryLogCost(tierNumber) {
   if (k === 1) return Math.log10(20);
   if (k === 2) return Math.log10(15000);
   if (k === 3) return Math.log10(1500000);
-  const t = (k - 3) / (45 - 3);
-  const c3 = Math.log10(1500000);
-  const c45 = 1050;
-  return c3 + (c45 - c3) * Math.pow(t, 1.65);
+  if (k === 4) return 8.37;
+  if (k === 5) return 13.0;
+  // Сглаживание экспоненты для Т6+ (шаг +3.75 порядка на тир для сбалансированной закупки через MAX)
+  return 13.0 + (k - 5) * 3.75;
 }
 
 /**
  * Логарифмическая шкала базового дохода завода по тирам.
- * Тир 1 = 80 биомассы/сек.
- * Тир 45 = 1e900 биомассы/сек (идеальный паритет с ножом 1e1000).
- * При tier > 45 формула масштабируется дальше в бесконечность.
+ * Начиная с Т6+ шаг строго +3.40 порядка на тир:
+ * 1 штука нового завода приносит ~4.19x от суммарного дохода 100 штук предыдущего тира (в диапазоне 3-5x).
  */
 export function getFactoryLogCps(tierNumber) {
   const k = Math.max(1, Number(tierNumber) || 1);
   if (k === 1) return Math.log10(80);
   if (k === 2) return Math.log10(1800);
   if (k === 3) return Math.log10(6000);
-  const t = (k - 3) / (45 - 3);
-  const s3 = Math.log10(6000);
-  const s45 = 900;
-  return s3 + (s45 - s3) * Math.pow(t, 1.65);
+  if (k === 4) return 5.66;
+  if (k === 5) return 9.63;
+  // Сглаживание экспоненты для Т6+: 1 шт. нового тира дает ровно 4.186x от 100 шт. предыдущего тира
+  return 9.63 + (k - 5) * 3.40;
 }
 
 export function makeBigFromLog(logVal) {

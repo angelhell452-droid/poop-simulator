@@ -52,33 +52,109 @@ let showerNextSpawn = 0;
 const SHOWER_CHANCE = 0.18;
 const SHOWER_MS = 12000;
 
-export const vipNotice = {
-  active: false,
-  title: '',
-  subText: '',
-  sparkles: 0,
-  life: 0,
-  maxLife: 2.5,
-  shockwaveRadius: 0,
-  shockwaveMaxRadius: 130
-};
+/**
+ * Мягкая пульсация (Scale Bump) кошелька Блестяшек в верхнем HUD при прилете искр
+ */
+export function triggerSparklesBalanceBump() {
+  if (typeof document === 'undefined') return;
+  const el = document.getElementById('sparklesBalance') || document.getElementById('topSparkles')?.parentElement;
+  if (!el) return;
+  el.classList.remove('sparkle-bump');
+  void el.offsetWidth;
+  el.classList.add('sparkle-bump');
+}
 
-export function triggerVipMeteorNotice(typeText, sparkleGain, extraText = '') {
-  const isVip = Boolean(GAME.vipPass || GAME.hasVipPass);
-  if (!isVip) return;
-  GAME.vipCollectedSparkles = (GAME.vipCollectedSparkles || 0) + sparkleGain;
+/**
+ * Эффект Магнитных Искр:
+ * Микровзрыв из 12-15 мелких золотых светящихся искр в точке звезды,
+ * которые по красивой дуге с ускорением (ease-in) улетают прямо в #sparklesBalance.
+ */
+export function spawnMagneticSparkleTrail(canvasX, canvasY) {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-  if (vipNotice.active && vipNotice.life > 0.4) {
-    vipNotice.sparkles += sparkleGain;
-    vipNotice.life = Math.min(2.8, vipNotice.life + 0.6);
-  } else {
-    vipNotice.active = true;
-    vipNotice.sparkles = sparkleGain;
-    vipNotice.life = 2.5;
-    vipNotice.shockwaveRadius = 15;
+  const cvs = canvas || document.getElementById('petCanvas');
+  const rect = cvs ? cvs.getBoundingClientRect() : null;
+  const scaleX = (cvs && cvs.width > 0 && rect) ? (rect.width / cvs.width) : 1;
+  const scaleY = (cvs && cvs.height > 0 && rect) ? (rect.height / cvs.height) : 1;
+
+  const startX = rect ? (rect.left + canvasX * scaleX) : (window.innerWidth / 2);
+  const startY = rect ? (rect.top + canvasY * scaleY) : (window.innerHeight * 0.35);
+
+  const targetEl = document.getElementById('sparklesBalance') || document.getElementById('topSparkles');
+  let targetX = window.innerWidth / 2;
+  let targetY = 32;
+  if (targetEl) {
+    const tRect = targetEl.getBoundingClientRect();
+    targetX = tRect.left + tRect.width / 2;
+    targetY = tRect.top + tRect.height / 2;
   }
-  vipNotice.title = '👑 VIP АВТОСБОР';
-  vipNotice.subText = `+${formatNumber(vipNotice.sparkles)} ✨` + (extraText ? ` (${extraText})` : ` (${typeText})`);
+
+  const sparkCount = 14;
+  let arrivedCount = 0;
+
+  for (let i = 0; i < sparkCount; i++) {
+    const spark = document.createElement('div');
+    spark.className = 'vip-magnetic-spark';
+    const size = Math.round(5 + Math.random() * 4);
+    spark.style.width = `${size}px`;
+    spark.style.height = `${size}px`;
+
+    // Начальный микровзрыв: радиальный разлет
+    const burstAngle = (Math.PI * 2 / sparkCount) * i + (Math.random() - 0.5) * 0.45;
+    const burstDist = 20 + Math.random() * 38;
+    const burstX = startX + Math.cos(burstAngle) * burstDist;
+    const burstY = startY + Math.sin(burstAngle) * burstDist;
+
+    // Контрольная точка изгиба дуги Безье
+    const arcSide = (i % 2 === 0 ? 1 : -1) * (35 + Math.random() * 55);
+    const ctrlX = (burstX + targetX) / 2 + arcSide;
+    const ctrlY = Math.min(burstY, targetY) - (20 + Math.random() * 35);
+
+    spark.style.transform = `translate3d(${burstX}px, ${burstY}px, 0)`;
+    document.body.appendChild(spark);
+
+    const duration = 500 + Math.random() * 200;
+    const delay = Math.random() * 50;
+    const startTime = performance.now() + delay;
+
+    function step(now) {
+      if (now < startTime) {
+        requestAnimationFrame(step);
+        return;
+      }
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / duration);
+
+      // Ускорение притяжения (ease-in квадратичный)
+      const easeT = t * t;
+
+      // Квадратичная кривая Безье к кошельку Блестяшек
+      const inv = 1 - easeT;
+      const curX = inv * inv * burstX + 2 * inv * easeT * ctrlX + easeT * easeT * targetX;
+      const curY = inv * inv * burstY + 2 * inv * easeT * ctrlY + easeT * easeT * targetY;
+
+      const scale = 1 - easeT * 0.4;
+      const opacity = t > 0.82 ? ((1 - t) / 0.18) : 1;
+
+      spark.style.transform = `translate3d(${curX}px, ${curY}px, 0) scale(${scale})`;
+      spark.style.opacity = `${opacity}`;
+
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        if (spark.parentNode) {
+          spark.parentNode.removeChild(spark);
+        }
+        arrivedCount++;
+        // Толчок кошелька при прилете первой и последующих искр
+        if (arrivedCount === 1 || arrivedCount === Math.floor(sparkCount / 2)) {
+          triggerSparklesBalanceBump();
+        }
+      }
+    }
+
+    requestAnimationFrame(step);
+  }
 }
 
 /**
@@ -1394,67 +1470,6 @@ function renderPetLoop(time) {
     }
     ctx.globalAlpha = 1.0;
   }
-
-  // 3. PERSISTENT VIP AUTO-COLLECT NOTICE (Never overwritten by autoclicker flood)
-  if (vipNotice.active && vipNotice.life > 0) {
-    vipNotice.life -= 0.016;
-    if (vipNotice.life <= 0) {
-      vipNotice.active = false;
-    } else {
-      const fadeAlpha = Math.min(1, vipNotice.life / 0.4);
-      ctx.save();
-      ctx.globalAlpha = fadeAlpha;
-
-      // Golden expanding shockwave ring around pet
-      if (vipNotice.shockwaveRadius < vipNotice.shockwaveMaxRadius) {
-        vipNotice.shockwaveRadius += 3.8;
-        const waveAlpha = Math.max(0, 1 - (vipNotice.shockwaveRadius / vipNotice.shockwaveMaxRadius)) * fadeAlpha;
-        ctx.save();
-        ctx.globalAlpha = waveAlpha;
-        ctx.strokeStyle = '#fde047';
-        ctx.lineWidth = 3.5;
-        ctx.shadowColor = '#eab308';
-        ctx.shadowBlur = 14;
-        ctx.beginPath();
-        ctx.arc(w / 2, h * 0.48, vipNotice.shockwaveRadius, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // VIP Pill Banner in upper center, positioned safely below HUD action buttons (y=12..48)
-      const bannerW = Math.min(300, w * 0.88);
-      const bannerH = 48;
-      const bannerX = (w - bannerW) / 2;
-      const bannerY = Math.max(90, Math.round(h * 0.18));
-
-      ctx.fillStyle = 'rgba(12, 10, 9, 0.94)';
-      ctx.strokeStyle = 'rgba(245, 158, 11, 0.95)';
-      ctx.lineWidth = 2.5;
-      ctx.shadowColor = 'rgba(234, 179, 8, 0.6)';
-      ctx.shadowBlur = 14;
-      ctx.beginPath();
-      if (typeof ctx.roundRect === 'function') {
-        ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 24);
-      } else {
-        ctx.rect(bannerX, bannerY, bannerW, bannerH);
-      }
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.shadowBlur = 0;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = '800 11px Nunito, sans-serif';
-      ctx.fillStyle = '#fde047';
-      ctx.fillText(vipNotice.title, w / 2, bannerY + 15);
-
-      ctx.font = '900 15px Nunito, sans-serif';
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(vipNotice.subText, w / 2, bannerY + 33);
-
-      ctx.restore();
-    }
-  }
   } catch (err) {
     console.error("renderPetLoop error:", err);
   } finally {
@@ -1480,6 +1495,10 @@ export function triggerForcedMeteor() {
 }
 
 export function catchGoldenMeteor() {
+  const w = canvas?.width || 360;
+  const h = canvas?.height || 480;
+  const spawnX = (goldenMeteor.x > 0 && goldenMeteor.x < w) ? goldenMeteor.x : (w / 2);
+  const spawnY = (goldenMeteor.y > 0 && goldenMeteor.y < h) ? goldenMeteor.y : (h * 0.35);
   goldenMeteor.active = false;
   if (!GAME.stats || typeof GAME.stats !== 'object') {
     GAME.stats = { totalMeteorsCaught: 0 };
@@ -1549,28 +1568,10 @@ export function catchGoldenMeteor() {
     addVisualParticle(bonusLabel, '#fde047', 1.4, 2.0, -1.8);
   }
 
-  // VIP Визуализация автосбора метеорита
+  // VIP Визуализация автосбора метеорита (Эффект Магнитных Искр в #sparklesBalance)
   if (Boolean(GAME.vipPass || GAME.hasVipPass)) {
-    triggerVipMeteorNotice('Звездный Метеорит', spGain, isTriple ? 'x3 Искра' : '');
-    if (canvas) {
-      const w = canvas.width || 360;
-      const h = canvas.height || 480;
-      const spawnX = (goldenMeteor.x > 0 && goldenMeteor.x < w) ? goldenMeteor.x : (w / 2);
-      const spawnY = (goldenMeteor.y > 0 && goldenMeteor.y < h) ? goldenMeteor.y : (h * 0.35);
-      for (let i = 0; i < 16; i++) {
-        const ang = (Math.PI * 2 / 16) * i + Math.random() * 0.2;
-        const spd = 2.5 + Math.random() * 2.5;
-        sparkParticles.push({
-          x: spawnX,
-          y: spawnY,
-          vx: Math.cos(ang) * spd,
-          vy: Math.sin(ang) * spd,
-          r: Math.random() * 3.5 + 2,
-          color: '#fde047',
-          life: 0.85
-        });
-      }
-    }
+    GAME.vipCollectedSparkles = (GAME.vipCollectedSparkles || 0) + spGain;
+    spawnMagneticSparkleTrail(spawnX, spawnY);
   }
 
   // relic_quantum_meteor: шанс дать бесплатный 2-часовой Варп биомассы (+0.5% за ур, до 4% на макс ур)
@@ -1706,7 +1707,12 @@ function tickMeteorShower(drawCtx, w, h) {
 }
 
 export function catchShowerMeteor(index) {
-  if (!showerMeteors[index]) return;
+  const m = showerMeteors[index];
+  if (!m) return;
+  const w = canvas?.width || 360;
+  const h = canvas?.height || 480;
+  const mx = (m.x > 0 && m.x < w) ? m.x : (w / 2);
+  const my = (m.y > 0 && m.y < h) ? m.y : (h * 0.35);
   showerMeteors.splice(index, 1);
   if (!GAME.stats || typeof GAME.stats !== 'object') {
     GAME.stats = { totalMeteorsCaught: 0 };
@@ -1728,9 +1734,10 @@ export function catchShowerMeteor(index) {
   GAME.sparkles = (Number(GAME.sparkles) || 0) + sparkGain;
   addVisualParticle(t('canvas.meteorShowerCatch', { n: formatNumber(sparkGain) }), '#fde68a', 1.05);
 
-  // VIP Визуализация автосбора звездопада
+  // VIP Визуализация автосбора звездопада (Эффект Магнитных Искр в #sparklesBalance)
   if (Boolean(GAME.vipPass || GAME.hasVipPass)) {
-    triggerVipMeteorNotice('Звездопад', sparkGain, isTriple ? 'x3 Искра' : '');
+    GAME.vipCollectedSparkles = (GAME.vipCollectedSparkles || 0) + sparkGain;
+    spawnMagneticSparkleTrail(mx, my);
   }
   checkAchievements();
   updateHUD();
