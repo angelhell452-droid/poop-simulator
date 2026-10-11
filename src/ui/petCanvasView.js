@@ -1421,11 +1421,11 @@ function renderPetLoop(time) {
         ctx.restore();
       }
 
-      // VIP Pill Banner in upper center
-      const bannerW = Math.min(280, w * 0.86);
-      const bannerH = 46;
+      // VIP Pill Banner in upper center, positioned safely below HUD action buttons (y=12..48)
+      const bannerW = Math.min(300, w * 0.88);
+      const bannerH = 48;
       const bannerX = (w - bannerW) / 2;
-      const bannerY = 24;
+      const bannerY = Math.max(90, Math.round(h * 0.18));
 
       ctx.fillStyle = 'rgba(12, 10, 9, 0.94)';
       ctx.strokeStyle = 'rgba(245, 158, 11, 0.95)';
@@ -1434,7 +1434,7 @@ function renderPetLoop(time) {
       ctx.shadowBlur = 14;
       ctx.beginPath();
       if (typeof ctx.roundRect === 'function') {
-        ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 23);
+        ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 24);
       } else {
         ctx.rect(bannerX, bannerY, bannerW, bannerH);
       }
@@ -1446,11 +1446,11 @@ function renderPetLoop(time) {
       ctx.textBaseline = 'middle';
       ctx.font = '800 11px Nunito, sans-serif';
       ctx.fillStyle = '#fde047';
-      ctx.fillText(vipNotice.title, w / 2, bannerY + 14);
+      ctx.fillText(vipNotice.title, w / 2, bannerY + 15);
 
       ctx.font = '900 15px Nunito, sans-serif';
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(vipNotice.subText, w / 2, bannerY + 31);
+      ctx.fillText(vipNotice.subText, w / 2, bannerY + 33);
 
       ctx.restore();
     }
@@ -1555,12 +1555,14 @@ export function catchGoldenMeteor() {
     if (canvas) {
       const w = canvas.width || 360;
       const h = canvas.height || 480;
+      const spawnX = (goldenMeteor.x > 0 && goldenMeteor.x < w) ? goldenMeteor.x : (w / 2);
+      const spawnY = (goldenMeteor.y > 0 && goldenMeteor.y < h) ? goldenMeteor.y : (h * 0.35);
       for (let i = 0; i < 16; i++) {
         const ang = (Math.PI * 2 / 16) * i + Math.random() * 0.2;
         const spd = 2.5 + Math.random() * 2.5;
         sparkParticles.push({
-          x: goldenMeteor.x || (w / 2),
-          y: goldenMeteor.y || (h * 0.3),
+          x: spawnX,
+          y: spawnY,
           vx: Math.cos(ang) * spd,
           vy: Math.sin(ang) * spd,
           r: Math.random() * 3.5 + 2,
