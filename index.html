@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.2.9 PRO</title>
+  <title>Poop Simulator v5.3.0 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,7 +20,7 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.2.9">
+  <link rel="stylesheet" href="styles/main.css?v=5.3.0">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -715,17 +715,11 @@
                 class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 shrink-0"
                 data-tier="4">🌌 Тир 4</button>
               <button
-                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
-                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 5</button>
+                class="talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-rose-300 border border-stone-800 shrink-0"
+                data-tier="5">🪐 Тир 5</button>
               <button
                 class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
-                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 6</button>
-              <button
-                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
-                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 7</button>
-              <button
-                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
-                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 8</button>
+                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 6-8</button>
             </div>
             <div class="space-y-2 pr-1" id="talentsContainer"></div>
           </div>
@@ -754,17 +748,11 @@
                 class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 shrink-0"
                 data-tier="4">🌌 Тир 4</button>
               <button
-                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
-                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 5</button>
+                class="talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold bg-stone-900 text-stone-400 hover:text-rose-300 border border-stone-800 shrink-0"
+                data-tier="5">🪐 Тир 5</button>
               <button
                 class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
-                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 6</button>
-              <button
-                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
-                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 7</button>
-              <button
-                class="px-2.5 py-1 rounded-xl text-xs font-game font-bold bg-stone-900/60 text-stone-500 border border-stone-800/80 opacity-40 cursor-not-allowed shrink-0 select-none"
-                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 8</button>
+                disabled title="🔒 Откроется в будущих обновлениях">🔒 Тир 6-8</button>
             </div>
             <div class="space-y-2 pr-1" id="transcendRelicsContainer"></div>
           </div>
@@ -1270,6 +1258,25 @@
         </div>
       </div>
 
+      <!-- VIP AUTO-FLUSH TOGGLE -->
+      <div id="prestigeAutoFlushBox" class="mb-3 p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between gap-2.5 bg-stone-950/60 border-stone-800 opacity-60">
+        <div class="flex items-center gap-2">
+          <span class="text-xl select-none" id="autoFlushIcon">⚡</span>
+          <div>
+            <div class="font-game text-xs font-bold flex items-center gap-1.5" id="autoFlushTitle">
+              <span>Авто-Смыв</span>
+              <span id="autoFlushVipBadge" class="text-[9px] bg-stone-800 text-stone-400 px-1.5 py-0.2 rounded font-black uppercase">VIP</span>
+            </div>
+            <div class="text-[10px] text-stone-400 leading-tight" id="autoFlushDesc">
+              <span class="text-amber-400 font-bold">🔒 Требуется VIP-Пасс Вселенной</span>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="btnToggleAutoFlush" disabled class="px-3 py-1.5 rounded-xl font-game text-[11px] font-bold bg-stone-900 text-stone-600 border border-stone-800 cursor-not-allowed">
+          <span id="autoFlushToggleState">🔒 ВЫКЛ</span>
+        </button>
+      </div>
+
       <button id="btnExecutePrestige"
         class="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:brightness-110 text-stone-950 font-game text-sm py-2.5 rounded-2xl shadow-xl disabled:opacity-40 disabled:cursor-not-allowed" data-i18n="modal.doFlush">
         СОВЕРШИТЬ СМЫВ! 🌊
@@ -1293,7 +1300,7 @@
       <div class="bg-indigo-900/60 border border-cyan-400/60 rounded-2xl p-3 my-3 text-left text-xs space-y-1.5">
         <div class="flex flex-col gap-0.5">
           <span class="text-stone-300 text-[10px] uppercase font-bold" data-i18n="prestige.reqLabel">Условие доступа:</span>
-          <div id="transcendReqLabel" class="text-cyan-300 font-bold">1000 уровней опыта биомассы</div>
+          <div id="transcendReqLabel" class="text-cyan-300 font-bold">1000 ур. Формы</div>
         </div>
         <div class="flex justify-between">
           <span class="text-stone-300" data-i18n="transcend.rollsStock">Запас Втулок Судьбы:</span>

@@ -1255,7 +1255,7 @@ function renderPetLoop(time) {
 
   // RENDER GOLDEN METEOR
   if (goldenMeteor.active) {
-    if (GAME.vipPass) {
+    if (GAME.vipPass || GAME.hasVipPass) {
       catchGoldenMeteor();
     } else {
       goldenMeteor.x += goldenMeteor.vx;
@@ -1370,6 +1370,18 @@ function renderPetLoop(time) {
   }
 }
 
+export function autoCollectVipMeteors() {
+  const isVip = Boolean(GAME.vipPass || GAME.hasVipPass);
+  if (!isVip) return;
+
+  if (goldenMeteor.active) {
+    catchGoldenMeteor();
+  }
+  while (showerMeteors.length > 0) {
+    catchShowerMeteor(0);
+  }
+}
+
 export function triggerForcedMeteor() {
   nextMeteorSpawn = Date.now() - 1;
   goldenMeteor.active = false;
@@ -1428,10 +1440,10 @@ export function catchGoldenMeteor() {
 
   addVisualParticle(label, '#facc15', 1.6, 2.2, -2.5);
 
-  // relic_quantum_meteor: шанс дать бесплатный донатный Варп на 2 часа
+  // relic_quantum_meteor: шанс дать бесплатный 2-часовой Варп биомассы (+0.5% за ур, до 4% на макс ур)
   const quantumLvl = getRelicLevel('relic_quantum_meteor');
-  if (quantumLvl > 0 && Math.random() < quantumLvl * 0.01) {
-    executeTimeWarp(2);
+  if (quantumLvl > 0 && Math.random() < quantumLvl * 0.005) {
+    executeTimeWarp(2, true);
     addVisualParticle('🌌 КВАНТОВЫЙ ВАРП (2ч)! 🌌', '#c084fc', 1.8, 2.5, -2.8);
   }
 
@@ -1526,6 +1538,14 @@ function tickMeteorShower(drawCtx, w, h) {
     showerNextSpawn = now + 850;
   }
 
+  // Omnivorous VIP auto-collector: auto-catches all shower / small / event stars instantly!
+  if (Boolean(GAME.vipPass || GAME.hasVipPass)) {
+    while (showerMeteors.length > 0) {
+      catchShowerMeteor(0);
+    }
+    return;
+  }
+
   const magnetLvl = TALENTS.find(t => t.id === 'talent_meteor_magnet')?.level || 0;
   for (let i = showerMeteors.length - 1; i >= 0; i--) {
     const meteor = showerMeteors[i];
@@ -1552,7 +1572,7 @@ function tickMeteorShower(drawCtx, w, h) {
   }
 }
 
-function catchShowerMeteor(index) {
+export function catchShowerMeteor(index) {
   if (!showerMeteors[index]) return;
   showerMeteors.splice(index, 1);
   GAME.meteorsCaught = (GAME.meteorsCaught || 0) + 1;

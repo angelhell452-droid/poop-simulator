@@ -7,6 +7,7 @@ import { takeClickBudget } from './autoclickService.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { add, gainBio, mul } from '../utils/big.js?v=5.0.80';
 import { hasPerk } from '../data/perks.data.js';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.0.80';
 
 export let pendingClicks = 0;
 
@@ -15,6 +16,9 @@ export function addPendingClicks(n = 1) {
 }
 
 export function processBatchedClicks(clickClientX = null, clickClientY = null) {
+  if (GAME.vipPass || GAME.hasVipPass) {
+    autoCollectVipMeteors();
+  }
   if (pendingClicks <= 0) return null;
   const allowed = takeClickBudget(pendingClicks);
   pendingClicks = 0;

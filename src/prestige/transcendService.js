@@ -4,7 +4,7 @@ import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from '../data/relics.dat
 import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.0.80';
-import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub } from '../utils/big.js?v=5.0.80';
+import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub, rehydrateBig } from '../utils/big.js?v=5.0.80';
 import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 
@@ -62,10 +62,14 @@ export function flushCountsForBridge(phaseId) {
   return (phaseId || 0) >= currentBridgePhase().id;
 }
 
-export function getBreakthroughExpLevel(biomass = (GAME.breakthroughProgress ?? GAME.lifetimeBiomassInCurrentCycle ?? 0)) {
-  const logVal = log10Of(biomass);
+export function getBreakthroughExpLevel(biomass = null) {
+  const raw = (biomass !== null && biomass !== undefined)
+    ? biomass
+    : (GAME.lifetimeBiomassInCurrentCycle ?? GAME.breakthroughProgress ?? GAME.cycleBiomass ?? 0);
+  const bio = rehydrateBig(raw);
+  const logVal = log10Of(bio);
   if (!Number.isFinite(logVal) || logVal <= 2) return 0;
-  // Опыт рассчитывается от биомассы текущего цикла: 10^2 -> 0 ур., 10^17 -> 1000 ур.
+  // Форма рассчитывается от биомассы текущего цикла: 10^2 -> 0 ур., 10^17 -> 1000 ур.
   const lvl = Math.floor((logVal - 2) * (1000 / 15));
   return Math.max(0, lvl);
 }
@@ -77,9 +81,9 @@ export function getTargetBreakthroughExperience(transcends = (GAME.breakthroughC
 }
 
 export function getTranscendRequirement() {
-  const currentCount = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
+  const currentCount = Math.max(0, Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0);
   const reqLevel = getTargetBreakthroughExperience(currentCount);
-  const currentBio = GAME.breakthroughProgress ?? GAME.lifetimeBiomassInCurrentCycle ?? 0;
+  const currentBio = rehydrateBig(GAME.lifetimeBiomassInCurrentCycle ?? GAME.breakthroughProgress ?? 0);
   const currentLevel = getBreakthroughExpLevel(currentBio);
   const reqPrestiges = flushesNeededForBridge(currentCount);
   const currentPrestiges = Math.max(0, Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0);
@@ -92,8 +96,8 @@ export function getTranscendRequirement() {
     breakthroughCount: currentCount,
     reqLevel,
     currentLevel,
-    reqForm: 1,
-    currentForm: 1,
+    reqForm: reqLevel,
+    currentForm: currentLevel,
     reqPrestiges,
     currentPrestiges,
     reqRolls: 0,

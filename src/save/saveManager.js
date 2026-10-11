@@ -63,6 +63,7 @@ export function buildSavePayload() {
       lastActiveTime: Date.now()
     },
     transcendPlungers: plungersStr,
+    autoFlushActive: Boolean(GAME.autoFlushActive),
     relics: cleanRelics,
     transcendUpgrades: cleanTranscendUpgrades,
     feedCount,
@@ -192,6 +193,7 @@ export function wipeRuntimeCatalogs() {
   GAME.autoclickerSpeed = 1;
   GAME.vipPass = false;
   GAME.vipPassExpires = 0;
+  GAME.autoFlushActive = false;
   GAME.tickleCount = 0;
   GAME.currentRunPeakGPS = 0;
   setFeedCount(0);
@@ -340,10 +342,12 @@ export function applySaveDataSafely(rawData) {
   GAME.totalPrestiges = GAME.flushCount;
   GAME.guildTickets = Math.max(0, Math.min(5, Math.floor(Number(GAME.guildTickets) || 0)));
   GAME.clicksTowardsTicket = Math.max(0, Math.floor(Number(GAME.clicksTowardsTicket) || 0));
-  GAME.vipPass = Boolean(GAME.vipPass || GAME.hasVipPass);
-  GAME.hasVipPass = GAME.vipPass;
+  const isVipInSave = Boolean(data.vipPass ?? data.game?.vipPass ?? data.hasVipPass ?? data.game?.hasVipPass ?? false);
+  GAME.vipPass = isVipInSave;
+  GAME.hasVipPass = isVipInSave;
   delete GAME.vipLevel;
   GAME.vipPassExpires = Math.max(0, Math.floor(Number(GAME.vipPassExpires) || 0));
+  GAME.autoFlushActive = isVipInSave && Boolean(data.autoFlushActive ?? data.game?.autoFlushActive ?? false);
   GAME.horizonSparks = Math.max(0, Math.floor(Number(GAME.horizonSparks) || 0));
   if (!GAME.horizonUpgrades || typeof GAME.horizonUpgrades !== 'object') GAME.horizonUpgrades = { pace: 0, seal: 0 };
   GAME.horizonUpgrades.pace = Math.max(0, Math.min(5, Math.floor(Number(GAME.horizonUpgrades.pace) || 0)));

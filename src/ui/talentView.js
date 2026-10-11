@@ -96,7 +96,7 @@ export function renderFlushTalents() {
       b.className = 'talent-flush-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold shrink-0 text-center bg-stone-900 text-stone-400 hover:text-yellow-300 border border-stone-800';
     }
 
-    const tierEmoji = tierNum === 1 ? '⭐' : (tierNum === 2 ? '⚡' : (tierNum === 3 ? '🔮' : '🌌'));
+    const tierEmoji = tierNum === 1 ? '⭐' : (tierNum === 2 ? '⚡' : (tierNum === 3 ? '🔮' : (tierNum === 4 ? '🌌' : '🪐')));
     b.innerHTML = isLocked ? `🔒 Тир ${tierNum}` : `${tierEmoji} Тир ${tierNum}`;
     b.title = isLocked ? `🔒 Открывается на ${cfg?.reqFlushes || 0} уровне Смыва` : (cfg?.title || '');
   });
@@ -125,7 +125,7 @@ export function renderFlushTalents() {
     return;
   }
 
-  // Tier is Unlocked: Header + exactly 5 talents
+  // Tier is Unlocked: Header + talents of this tier
   const tierHeader = document.createElement('div');
   tierHeader.className = 'text-[11px] font-game text-yellow-300 uppercase tracking-wider pt-2 pb-1 border-b border-yellow-500/30 flex items-center justify-between';
   tierHeader.innerHTML = `
@@ -134,7 +134,7 @@ export function renderFlushTalents() {
   `;
   container.appendChild(tierHeader);
 
-  const tierTalents = selectedTier === 4 ? TALENTS.filter(tl => tl.tier >= 4) : TALENTS.filter(tl => tl.tier === activeCfg.tier);
+  const tierTalents = TALENTS.filter(tl => tl.tier === activeCfg.tier);
 
   tierTalents.forEach(tl => {
     const tlInfo = getAffordableTalentInfo(tl);
@@ -221,15 +221,13 @@ export function renderTranscendRelics() {
       b.className = 'talent-transcend-tier-btn px-2.5 py-1 rounded-xl text-xs font-game transition font-bold shrink-0 bg-stone-900 text-stone-400 hover:text-cyan-300 border border-stone-800 text-center';
     }
 
-    const tierEmoji = tierNum === 1 ? '⭐' : (tierNum === 2 ? '⚡' : (tierNum === 3 ? '🔮' : '🌌'));
+    const tierEmoji = tierNum === 1 ? '⭐' : (tierNum === 2 ? '⚡' : (tierNum === 3 ? '🔮' : (tierNum === 4 ? '🌌' : '🪐')));
     b.innerHTML = isLocked ? `🔒 Тир ${tierNum}` : `${tierEmoji} Тир ${tierNum}`;
     b.title = isLocked ? `🔒 Требуется ${tierCfg?.reqBreakthrough || 0} Прорыв` : (tierCfg?.name || '');
   });
 
   const selectedRelicTier = Number(activeTranscendTier) || 1;
-  const visibleTiers = selectedRelicTier === 4
-    ? RELIC_TIERS.filter(cfg => cfg.tier >= 4)
-    : RELIC_TIERS.filter(cfg => cfg.tier === selectedRelicTier);
+  const visibleTiers = RELIC_TIERS.filter(cfg => cfg.tier === selectedRelicTier);
 
   visibleTiers.forEach(tInfo => {
     const tierUpgrades = RELICS.filter(u => u.tier === tInfo.tier);

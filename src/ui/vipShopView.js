@@ -20,8 +20,8 @@ export function getSparklePackYield(base) {
   return Math.round(base * scale);
 }
 
-export function executeTimeWarp(hours) {
-  if (!isCreatorOrAdmin()) {
+export function executeTimeWarp(hours, isFreeProc = false) {
+  if (!isFreeProc && !isCreatorOrAdmin()) {
     showKnifeToast('🔒 Варпы доступны только создателю и главному админу!');
     return;
   }

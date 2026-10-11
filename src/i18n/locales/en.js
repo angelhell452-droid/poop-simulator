@@ -1376,7 +1376,7 @@ export default {
   'tutorial.step16Done': '🌀 10 flushes completed! Ready for Breakthrough!',
 
   'tutorial.step17Title': 'Grand Breakthrough',
-  'tutorial.step17Desc': 'Accumulate 500 cycle exp levels and hit Breakthrough.',
+  'tutorial.step17Desc': 'Reach Form level 500 in current cycle and hit Breakthrough.',
   'tutorial.step17Reward': '+1 Plunger 🪠 + Relics & Guilds',
   'tutorial.step17Done': '🌌 Breakthrough achieved! +1 Plunger!',
 

@@ -1,7 +1,9 @@
 import { GAME } from '../core/state.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.0.80';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase } from '../prestige/transcendService.js?v=5.0.80';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase, getBreakthroughExpLevel, getTargetBreakthroughExperience } from '../prestige/transcendService.js?v=5.0.80';
+import { rehydrateBig } from '../utils/big.js?v=5.0.80';
+import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.0.80';
 import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.80';
 
@@ -106,19 +108,67 @@ export function updatePrestigeModalRealtime() {
       execBtn.textContent = `НУЖНО ${formatNumber(b.reqBiomass)} БИОМАССЫ (ЕСТЬ ${formatNumber(b.currentBiomass)}) 🔒`;
     }
   }
+
+  // VIP Auto-Flush toggle UI
+  const autoFlushBox = document.getElementById('prestigeAutoFlushBox');
+  const btnToggleAutoFlush = document.getElementById('btnToggleAutoFlush');
+  const autoFlushToggleState = document.getElementById('autoFlushToggleState');
+  const autoFlushDesc = document.getElementById('autoFlushDesc');
+  const autoFlushVipBadge = document.getElementById('autoFlushVipBadge');
+  const isVip = Boolean(GAME.vipPass || GAME.hasVipPass);
+
+  if (autoFlushBox && btnToggleAutoFlush) {
+    if (!isVip) {
+      GAME.autoFlushActive = false;
+      autoFlushBox.className = 'mb-3 p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between gap-2.5 bg-stone-950/60 border-stone-800 opacity-60';
+      btnToggleAutoFlush.disabled = true;
+      btnToggleAutoFlush.className = 'px-3 py-1.5 rounded-xl font-game text-[11px] font-bold bg-stone-900 text-stone-600 border border-stone-800 cursor-not-allowed';
+      if (autoFlushToggleState) autoFlushToggleState.textContent = '🔒 ВЫКЛ';
+      if (autoFlushDesc) autoFlushDesc.innerHTML = '<span class="text-amber-400 font-bold">🔒 Требуется VIP-Пасс Вселенной</span>';
+      if (autoFlushVipBadge) autoFlushVipBadge.className = 'text-[9px] bg-stone-800 text-stone-400 px-1.5 py-0.2 rounded font-bold uppercase';
+    } else {
+      const active = Boolean(GAME.autoFlushActive);
+      autoFlushBox.className = active
+        ? 'mb-3 p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between gap-2.5 bg-gradient-to-r from-emerald-950/70 to-purple-950/70 border-emerald-500/70 shadow-[0_0_15px_rgba(16,185,129,0.25)]'
+        : 'mb-3 p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between gap-2.5 bg-purple-950/50 border-purple-800/60';
+      btnToggleAutoFlush.disabled = false;
+      btnToggleAutoFlush.className = active
+        ? 'jelly-btn px-3 py-1.5 rounded-xl font-game text-[11px] font-bold transition flex items-center gap-1.5 shadow bg-gradient-to-r from-emerald-500 to-teal-500 text-stone-950 border border-emerald-300 font-black animate-pulse'
+        : 'jelly-btn px-3 py-1.5 rounded-xl font-game text-[11px] font-bold transition flex items-center gap-1.5 shadow bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-600';
+      if (autoFlushToggleState) autoFlushToggleState.textContent = active ? '✓ ВКЛ' : 'ВЫКЛ';
+      if (autoFlushDesc) autoFlushDesc.textContent = active ? 'Авто-Смыв активен: срабатывает каждую секунду при готовности' : 'Нажмите, чтобы включить автоматический Смыв при готовности';
+      if (autoFlushVipBadge) autoFlushVipBadge.className = 'text-[9px] bg-gradient-to-r from-yellow-400 to-amber-500 text-stone-950 px-1.5 py-0.2 rounded font-black uppercase shadow-sm';
+    }
+
+    if (!btnToggleAutoFlush._bound) {
+      btnToggleAutoFlush._bound = true;
+      btnToggleAutoFlush.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!Boolean(GAME.vipPass || GAME.hasVipPass)) return;
+        GAME.autoFlushActive = !GAME.autoFlushActive;
+        saveLocal();
+        updatePrestigeModalRealtime();
+      });
+    }
+  }
 }
 
 export function updateTranscendModalRealtime() {
   const modal = document.getElementById('transcendModal');
   if (!modal || modal.classList.contains('hidden')) return;
 
+  const currentCount = Math.max(0, Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0);
+  const reqLevel = getTargetBreakthroughExperience(currentCount);
+  const liveBio = rehydrateBig(GAME.lifetimeBiomassInCurrentCycle ?? GAME.breakthroughProgress ?? 0);
+  const currentLevel = getBreakthroughExpLevel(liveBio);
+
   const tb = getTranscendRewardBreakdown();
   const gain = tb.totalGain;
-  const currentCount = tb.breakthroughCount ?? 0;
-  const currentLevel = tb.currentLevel ?? 0;
-  const reqLevel = tb.reqLevel ?? 1000;
   const reqPrestiges = tb.reqPrestiges ?? 2;
-  const currentPrestiges = tb.currentPrestiges ?? 0;
+  const currentPrestiges = Math.max(0, Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0);
+  const meetsBiomass = currentLevel >= reqLevel;
+  const meetsPrestiges = currentPrestiges >= reqPrestiges;
+  const isMet = meetsBiomass && meetsPrestiges;
   const pctExp = Math.min(100, Math.max(0, Math.round((currentLevel / reqLevel) * 100)));
 
   const rollsEl = document.getElementById('transcendCurrentRolls');
@@ -133,20 +183,20 @@ export function updateTranscendModalRealtime() {
   if (tReqLabel) {
     tReqLabel.innerHTML = `
       <div class="space-y-2.5">
-        <!-- 1. Условие по опыту биомассы -->
+        <!-- 1. Условие по Форме -->
         <div class="p-2.5 rounded-xl bg-indigo-950/70 border border-cyan-500/30 text-left space-y-1.5">
           <div class="flex items-center justify-between text-xs">
-            <span class="text-cyan-300 font-bold uppercase tracking-wider text-[10px]">Опыт биомассы</span>
-            <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${tb.meetsBiomass ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-              ${tb.meetsBiomass ? '✓ Готово' : '⏳ В процессе'}
+            <span class="text-cyan-300 font-bold uppercase tracking-wider text-[10px]">Форма</span>
+            <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${meetsBiomass ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+              ${meetsBiomass ? '✓ Готово' : '⏳ В процессе'}
             </span>
           </div>
           <div class="text-[11px] text-indigo-200">
             Цель: ${formatNumber(reqLevel)} ур. ${currentCount === 0 ? '(1-й Прорыв: 500 ур.)' : '(+1000 за каждый Прорыв)'}
           </div>
           <div class="flex items-center justify-between text-xs font-mono font-bold">
-            <span class="text-stone-300">Текущий прогресс:</span>
-            <span class="${tb.meetsBiomass ? 'text-emerald-300' : 'text-yellow-300'}">${formatNumber(currentLevel)} / ${formatNumber(reqLevel)} ур.</span>
+            <span class="text-stone-300">Текущая Форма:</span>
+            <span class="${meetsBiomass ? 'text-emerald-300' : 'text-yellow-300'}">${formatNumber(currentLevel)} / ${formatNumber(reqLevel)} ур.</span>
           </div>
           <!-- Progress bar -->
           <div class="w-full bg-stone-900 rounded-full h-2 border border-white/10 overflow-hidden">
@@ -158,8 +208,8 @@ export function updateTranscendModalRealtime() {
         <div class="p-2.5 rounded-xl bg-indigo-950/70 border border-cyan-500/30 text-left space-y-1.5">
           <div class="flex items-center justify-between text-xs">
             <span class="text-cyan-300 font-bold uppercase tracking-wider text-[10px]">Требование Смывов</span>
-            <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${tb.meetsPrestiges ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-              ${tb.meetsPrestiges ? '✓ Выполнено' : 'Нужно ещё ' + formatNumber(Math.max(0, reqPrestiges - currentPrestiges))}
+            <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${meetsPrestiges ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+              ${meetsPrestiges ? '✓ Выполнено' : 'Нужно ещё ' + formatNumber(Math.max(0, reqPrestiges - currentPrestiges))}
             </span>
           </div>
           <div class="text-xs font-semibold text-stone-200 leading-snug">
@@ -208,12 +258,12 @@ export function updateTranscendModalRealtime() {
 
   const execTransBtn = document.getElementById('btnExecuteTranscend');
   if (execTransBtn) {
-    if (!tb.isMet) {
+    if (!isMet) {
       execTransBtn.disabled = true;
-      if (!tb.meetsPrestiges) {
-        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(tb.reqPrestiges)} СМЫВОВ (ЕСТЬ ${formatNumber(tb.currentPrestiges)}) 🔒`;
+      if (!meetsPrestiges) {
+        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(reqPrestiges)} СМЫВОВ (ЕСТЬ ${formatNumber(currentPrestiges)}) 🔒`;
       } else {
-        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(tb.reqLevel)} УР. ОПЫТА (СЕЙЧАС ${formatNumber(tb.currentLevel)}) 🔒`;
+        execTransBtn.textContent = `ТРЕБУЕТСЯ ФОРМА ${formatNumber(reqLevel)} УР. (СЕЙЧАС ${formatNumber(currentLevel)}) 🔒`;
       }
     } else {
       execTransBtn.disabled = gain <= 0;

@@ -2,6 +2,48 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.3.0 PRO',
+    date: '11 Октября 2026',
+    dateEn: 'October 11, 2026',
+    title: 'Патч 5.3.0: Реалтайм-счетчик Прорыва и Формы, Изоляция Т5, Квантовые Варпы для Всех, Всеядный VIP-Автосбор и Авто-Смыв',
+    titleEn: 'Patch 5.3.0: Realtime Breakthrough Form Meter, Tier 5 Isolation, F2P Quantum Warps, Omnivorous Meteor Collector & VIP Auto-Flush',
+    badge: 'Патч 5.3.0',
+    badgeEn: 'Patch 5.3.0',
+    badgeClass: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/40',
+    changes: [
+      {
+        type: 'ui',
+        icon: '🌌',
+        text: 'Реалтайм-счетчик Прорыва и Терминология Формы: Полностью переписана логика рендера окна Прорыва — переменные currentLevel и reqLevel считываются в реальном времени напрямую из стейта без зависаний и округлений. Термин «Опыт биомассы» везде заменён на «Форма» (Evo Stage).',
+        textEn: 'Realtime Breakthrough Form Meter & Terminology: The Breakthrough modal now reads currentLevel and reqLevel dynamically from state in realtime without stale caching or JS rounding. Biomass Exp is replaced everywhere with Form (Evo Stage).'
+      },
+      {
+        type: 'feature',
+        icon: '🪐',
+        text: 'Великое Переселение Тира 5: Квантовые таланты (Блок 5) и Божественные эндгейм-реликвии (80+ Прорывов) полностью изолированы из Тира 4 и перенесены в свои собственные интерактивные вкладки [🪐 Тир 5].',
+        textEn: 'Tier 5 Migration: Quantum talents and Divine endgame relics (80+ Breakthroughs) have been cleanly isolated from Tier 4 into dedicated [🪐 Tier 5] shop tabs.'
+      },
+      {
+        type: 'balance',
+        icon: '🌠',
+        text: 'Квантовые Варпы для Всех Игроков: Устранено ограничение, блокировавшее получение бесплатных 2-часовых варпов реликвии «relic_quantum_meteor» для игроков без VIP. Шанс прока ребалансирован: шаг шанса снижен до +0.5% за уровень (строго 4% на 8-м ур).',
+        textEn: 'Universal Quantum Warps & Rebalance: Removed the VIP lock on free 2-hour Time Warps from the Quantum Meteor relic, making them freely available to all players. Proc chance rebalanced to +0.5% per level (strictly 4% at max level 8).'
+      },
+      {
+        type: 'feature',
+        icon: '🌟',
+        text: 'Всеядный VIP-Автосборщик Метеоров: Автосборщик VIP-Пасса теперь непрерывно и безотказно захватывает любые летающие небесные тела — как стандартные Метеориты, так и мелкие/ивентовые звезды звездного дождя.',
+        textEn: 'Omnivorous VIP Meteor Auto-Collector: The VIP auto-collector now sweeps all celestial bodies on screen, catching standard Golden Meteors as well as small and event shower stars.'
+      },
+      {
+        type: 'feature',
+        icon: '🌊',
+        text: 'Эксклюзивный Авто-Смыв для VIP: В окно Смыва добавлен интерактивный тумблер Авто-Смыва с аппаратной блокировкой для игроков без VIP. При активации игра каждую секунду проверяет готовность Смыва и автоматически перезапускает цикл.',
+        textEn: 'Exclusive VIP Auto-Flush: Added an interactive toggle in the Flush modal with hardware locking for non-VIP accounts. When enabled, the game checks requirements every second and executes automatic Flushes.'
+      }
+    ]
+  },
+  {
     version: 'v5.2.9 PRO',
     date: '11 Октября 2026',
     dateEn: 'October 11, 2026',

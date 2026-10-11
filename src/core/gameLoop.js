@@ -15,10 +15,14 @@ import { getAutoclickCps } from '../systems/autoclickService.js?v=5.0.80';
 import { events } from './events.js';
 import { gainBio, mul } from '../utils/big.js?v=5.0.80';
 import { hasRelic } from '../data/relics.data.js';
+import { getPrestigeRequirement, executePrestige } from '../prestige/prestigeService.js?v=5.0.80';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.0.80';
+import { updateHUD } from '../ui/hudView.js?v=5.0.80';
 
 let lastTickTime = performance.now();
 let autoEvoTimer = 0;
 let autoBuyerTimer = 0;
+let autoFlushTimer = 0;
 let autoCareTimer = 0;
 let autoSaveTimer = 0;
 let passiveRollAccumulator = 0;
@@ -44,6 +48,11 @@ export function gameEngineTick() {
   GAME.breakthroughProgress = GAME.lifetimeBiomassInCurrentCycle;
   GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, passiveGained);
   GAME.cycleBiomass = gainBio(GAME.cycleBiomass, passiveGained);
+
+  // 1.5 Omnivorous VIP Meteor / Star Auto-Collector
+  if (GAME.vipPass || GAME.hasVipPass) {
+    autoCollectVipMeteors();
+  }
 
   // 2. High-Speed Autoclicker Engine
   // Uses a fractional accumulator so we add exactly 1 click at a time,
@@ -97,6 +106,21 @@ export function gameEngineTick() {
       } else {
         for (let i = unlocked.length - 1; i >= 0; i--) {
           if (buyFactory(unlocked[i].id)) break;
+        }
+      }
+    }
+  }
+
+  // 3.6 VIP Auto-Flush (every 1.0s)
+  autoFlushTimer += dt;
+  if (autoFlushTimer >= 1.0) {
+    autoFlushTimer = 0;
+    const isVip = Boolean(GAME.vipPass || GAME.hasVipPass);
+    if (isVip && GAME.autoFlushActive) {
+      const pReq = getPrestigeRequirement();
+      if (pReq.isMet) {
+        if (executePrestige(GAME.archetype || 'balanced')) {
+          updateHUD();
         }
       }
     }
