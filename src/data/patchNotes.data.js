@@ -2,6 +2,36 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.2.9 PRO',
+    date: '11 Октября 2026',
+    dateEn: 'October 11, 2026',
+    title: 'Патч 5.2.9: Ультимативная Защита Реликвий, Десериализация Вантузов и Exit-Save',
+    titleEn: 'Patch 5.2.9: Ultimate Relic Persistence, Plunger Deserialization & Exit-Save Protection',
+    badge: 'Патч 5.2.9',
+    badgeEn: 'Patch 5.2.9',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'save',
+        icon: '🛡️',
+        text: 'Ультимативная Защита Сохранений при Выходе: Внедрены глобальные обработчики beforeunload, pagehide и visibilitychange. Игра мгновенно и безотказно фиксирует стейт в LocalStorage и отправляет финальный слепок в Cloudflare через keepalive/sendBeacon.',
+        textEn: 'Bulletproof Exit-Save System: Global listeners for beforeunload, pagehide, and visibilitychange guarantee immediate persistence to LocalStorage and keepalive/sendBeacon push to Cloudflare Workers upon tab close or reload.'
+      },
+      {
+        type: 'fix',
+        icon: '🔧',
+        text: 'Исправление Десериализации Реликвий и Вантузов: Устранена критическая ошибка сброса уровней в NaN при чтении maxLevel вместо max. Реликвии сохраняются и читаются как чистый ассоциативный объект, а баланс Вантузов конвертируется в Big.js без потерь.',
+        textEn: 'Fixed Relic & Plunger Deserialization: Fixed critical NaN reset bug when clamping relic levels against max property. Relics now deserialize as clean associative dictionaries, and Plungers reliably rehydrate from Big.js strings.'
+      },
+      {
+        type: 'save',
+        icon: '☁️',
+        text: 'Защита от Устаревших Облачных Данных: Алгоритм localIsAhead теперь учитывает общее число прокачанных реликвий и прорывов. Старое облачное сохранение больше никогда не затирает свежекупленные реликвии игрока.',
+        textEn: 'Stale Cloud Overwrite Protection: The localIsAhead algorithm now factors in total relic levels and breakthrough count, permanently preventing stale cloud saves from overwriting newly purchased relics.'
+      }
+    ]
+  },
+  {
     version: 'v5.2.8 PRO',
     date: '11 Октября 2026',
     dateEn: 'October 11, 2026',

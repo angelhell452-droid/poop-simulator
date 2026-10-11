@@ -123,6 +123,10 @@ export function saveStoredAccount(acc) {
 
 function cloudBody() {
   const payload = buildSavePayload();
+  const plungersStr = isBig(GAME.transcendPlungers)
+    ? `${GAME.transcendPlungers.m}e${GAME.transcendPlungers.e}`
+    : String(GAME.transcendPlungers ?? 0);
+
   return JSON.stringify({
     playerId: GAME.playerId,
     playerName: GAME.playerName,
@@ -130,6 +134,7 @@ function cloudBody() {
     biomass: GAME.biomass,
     sparkles: GAME.sparkles,
     prestige_currency: GAME.prestigeRolls,
+    transcendPlungers: plungersStr,
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
     worldReset: Number(GAME.worldReset) || 0,
     saveData: payload
@@ -137,7 +142,7 @@ function cloudBody() {
 }
 
 function saveStamp(parsed) {
-  return Number(parsed?.saveTimestamp) || 0;
+  return Number(parsed?.saveTimestamp ?? parsed?.game?.saveTimestamp ?? parsed?.game?.lastActiveTime) || 0;
 }
 
 function saveSeq(parsed) {
@@ -149,19 +154,52 @@ function factoryCopies(parsed) {
   return parsed.factories.reduce((sum, row) => sum + (Number(row?.count) || 0), 0);
 }
 
+function relicCount(parsed) {
+  const relics = parsed?.relics || parsed?.game?.relics;
+  if (!relics || typeof relics !== 'object') return 0;
+  return Object.values(relics).reduce((sum, v) => sum + (Number(v) || 0), 0);
+}
+
+function breakthroughCount(parsed) {
+  return Number(parsed?.game?.breakthroughCount ?? parsed?.breakthroughCount ?? parsed?.game?.totalTranscend ?? parsed?.totalTranscend) || 0;
+}
+
 function localIsAhead(localParsed, cloudParsed) {
+  if (!cloudParsed) return true;
+  if (!localParsed) return false;
+
   const localStamp = saveStamp(localParsed);
   const cloudStamp = saveStamp(cloudParsed);
-  if (localStamp && cloudStamp && localStamp !== cloudStamp) return localStamp > cloudStamp;
+  if (localStamp && cloudStamp && localStamp !== cloudStamp) {
+    return localStamp > cloudStamp;
+  }
+  if (localStamp && !cloudStamp) return true;
+
   const localGame = localParsed?.game || {};
   const cloudGame = cloudParsed?.game || {};
+
+  // 1. Breakthroughs
+  const localBT = breakthroughCount(localParsed);
+  const cloudBT = breakthroughCount(cloudParsed);
+  if (localBT !== cloudBT) return localBT > cloudBT;
+
+  // 2. Relic levels: if local has bought relics, local must never be overwritten by stale cloud save
+  const localRelics = relicCount(localParsed);
+  const cloudRelics = relicCount(cloudParsed);
+  if (localRelics !== cloudRelics) return localRelics > cloudRelics;
+
+  // 3. Stage
   const localStage = Number(localGame.evoStage) || 0;
   const cloudStage = Number(cloudGame.evoStage) || 0;
   if (localStage !== cloudStage) return localStage > cloudStage;
+
+  // 4. Factory copies
   const localCopies = factoryCopies(localParsed);
   const cloudCopies = factoryCopies(cloudParsed);
   if (localCopies !== cloudCopies) return localCopies > cloudCopies;
-  return cmpBio(localGame.allTimeBiomass, cloudGame.allTimeBiomass) > 0;
+
+  // 5. All-time biomass
+  return cmpBio(localGame.allTimeBiomass, cloudGame.allTimeBiomass) >= 0;
 }
 
 export function flushCloudSave() {
@@ -169,12 +207,19 @@ export function flushCloudSave() {
   const stored = getStoredAccount();
   if (!stored?.sessionToken || !GAME.playerId) return;
   try {
+    const body = cloudBody();
+    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+      try {
+        const blob = new Blob([body], { type: 'application/json' });
+        navigator.sendBeacon(CLOUD_SAVE_ENDPOINT, blob);
+      } catch (_) {}
+    }
     fetch(CLOUD_SAVE_ENDPOINT, {
       method: 'POST',
       headers: authHeaders(),
-      body: cloudBody(),
+      body: body,
       keepalive: true
-    });
+    }).catch(() => {});
   } catch (err) { }
 }
 
@@ -373,11 +418,14 @@ export async function loadFromCloudDatabaseOrLocal() {
         const localSeq = saveSeq(localParsed);
         if (sameSeasonBlank(parsed)) {
           requestCloudSync(800);
-        } else if (cloudSeq > localSeq || !localIsAhead(localParsed, parsed)) {
+        } else if (cloudSeq > localSeq) {
           applySaveDataSafely(parsed);
           saveLocal();
-        } else {
+        } else if (localIsAhead(localParsed, parsed)) {
           requestCloudSync(300);
+        } else {
+          applySaveDataSafely(parsed);
+          saveLocal();
         }
       }
       if (data?.vipLevel != null) setConfirmedVip(data.vipLevel);

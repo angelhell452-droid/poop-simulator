@@ -28,15 +28,43 @@ export const BACKUP_KEY = 'PoopSim_Pro_Backup';
 export function buildSavePayload() {
   const plungersStr = isBig(GAME.transcendPlungers)
     ? `${GAME.transcendPlungers.m}e${GAME.transcendPlungers.e}`
-    : String(GAME.transcendPlungers || 0);
+    : String(GAME.transcendPlungers ?? 0);
+
+  const cleanRelics = {};
+  if (GAME.relics && typeof GAME.relics === 'object') {
+    for (const k in GAME.relics) {
+      const v = Number(GAME.relics[k]);
+      if (Number.isFinite(v) && v > 0) {
+        cleanRelics[k] = v;
+      }
+    }
+  }
+
+  const cleanTranscendUpgrades = {};
+  if (GAME.transcendUpgrades && typeof GAME.transcendUpgrades === 'object') {
+    for (const k in GAME.transcendUpgrades) {
+      const v = Number(GAME.transcendUpgrades[k]);
+      if (Number.isFinite(v) && v > 0) {
+        cleanTranscendUpgrades[k] = v;
+      }
+    }
+  }
 
   return {
     saveVersion: GAME.saveVersion || 5,
     saveTimestamp: Date.now(),
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
     worldReset: Number(GAME.worldReset) || 0,
-    game: { ...GAME, transcendPlungers: plungersStr, lastActiveTime: Date.now() },
+    game: {
+      ...GAME,
+      transcendPlungers: plungersStr,
+      relics: cleanRelics,
+      transcendUpgrades: cleanTranscendUpgrades,
+      lastActiveTime: Date.now()
+    },
     transcendPlungers: plungersStr,
+    relics: cleanRelics,
+    transcendUpgrades: cleanTranscendUpgrades,
     feedCount,
     washCount,
     polishCount,
@@ -49,8 +77,6 @@ export function buildSavePayload() {
     currentQuestId: GAME.currentQuestId || ((GAME.tutorialStepIndex || 0) + 1),
     tutorialStepIndex: GAME.tutorialStepIndex || 0,
     tutorialCompleted: !!GAME.tutorialCompleted,
-    relics: GAME.relics || {},
-    transcendUpgrades: GAME.transcendUpgrades || {},
     knifeStats: KNIVES.map(k => ({ id: k.id, statTrak: k.statTrak || 0 })),
     knifeStars: GAME.knifeStars || {},
     hatLevels: GAME.hatLevels || {}
@@ -255,16 +281,52 @@ export function applySaveDataSafely(rawData) {
     }
   }
 
+  let incomingRelics = {};
+  if (data.relics && typeof data.relics === 'object') {
+    incomingRelics = { ...incomingRelics, ...data.relics };
+  }
+  if (data.game?.relics && typeof data.game.relics === 'object') {
+    incomingRelics = { ...incomingRelics, ...data.game.relics };
+  }
+  if (data.transcendUpgrades && typeof data.transcendUpgrades === 'object') {
+    incomingRelics = { ...incomingRelics, ...data.transcendUpgrades };
+  }
+  if (data.game?.transcendUpgrades && typeof data.game.transcendUpgrades === 'object') {
+    incomingRelics = { ...incomingRelics, ...data.game.transcendUpgrades };
+  }
+
   if (!GAME.relics || typeof GAME.relics !== 'object') GAME.relics = {};
   if (!GAME.transcendUpgrades || typeof GAME.transcendUpgrades !== 'object') GAME.transcendUpgrades = {};
+
+  for (const k in incomingRelics) {
+    const v = Number(incomingRelics[k]);
+    if (Number.isFinite(v) && v >= 0) {
+      GAME.relics[k] = v;
+      GAME.transcendUpgrades[k] = v;
+    }
+  }
+
   RELICS.forEach((relic) => {
-    let lvl = Number(GAME.relics[relic.id] ?? (relic.legacyKey ? GAME.relics[relic.legacyKey] : undefined) ?? (relic.legacyKey ? GAME.transcendUpgrades[relic.legacyKey] : undefined) ?? GAME.transcendUpgrades[relic.id] ?? 0);
-    lvl = Math.max(0, Math.min(relic.maxLevel, Math.floor(lvl) || 0));
+    let lvl = Number(
+      GAME.relics[relic.id] ??
+      GAME.relics[relic.key] ??
+      (relic.legacyKey ? GAME.relics[relic.legacyKey] : undefined) ??
+      (relic.legacyKey ? GAME.transcendUpgrades[relic.legacyKey] : undefined) ??
+      GAME.transcendUpgrades[relic.id] ?? 0
+    );
+    const maxVal = relic.max ?? relic.maxLevel ?? 999;
+    lvl = Math.max(0, Math.min(maxVal, Math.floor(lvl) || 0));
     GAME.relics[relic.id] = lvl;
+    GAME.relics[relic.key] = lvl;
+    GAME.transcendUpgrades[relic.id] = lvl;
     if (relic.legacyKey) {
-      GAME.transcendUpgrades[relic.legacyKey] = lvl;
+      const flagVal = relic.max === 1 ? (lvl > 0) : lvl;
+      GAME.relics[relic.legacyKey] = flagVal;
+      GAME.transcendUpgrades[relic.legacyKey] = flagVal;
     }
   });
+
+  console.log("Loaded Relics from cloud:", GAME.relics);
 
   // Safety sanitisers
   GAME.biomass = keepBio(GAME.biomass);
@@ -294,6 +356,7 @@ export function applySaveDataSafely(rawData) {
     GAME.transcendCycleRolls = GAME.prestigeRolls;
   }
   const rawPlungers = data.transcendPlungers ?? data.game?.transcendPlungers ?? GAME.transcendPlungers ?? 0;
+  console.log("Loaded Plungers from cloud:", rawPlungers);
   GAME.transcendPlungers = keepBio(rawPlungers);
   if (!isBig(GAME.transcendPlungers) && (!Number.isFinite(GAME.transcendPlungers) || GAME.transcendPlungers < 0)) {
     GAME.transcendPlungers = 0;
