@@ -7,6 +7,7 @@ import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.
 import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub, rehydrateBig } from '../utils/big.js?v=5.0.80';
 import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
+import { peakForm } from '../progression/unlocks.js?v=5.0.80';
 
 export const BRIDGE_FLUSHES_NEEDED = 10;
 
@@ -63,15 +64,8 @@ export function flushCountsForBridge(phaseId) {
 }
 
 export function getBreakthroughExpLevel(biomass = null) {
-  const raw = (biomass !== null && biomass !== undefined)
-    ? biomass
-    : (GAME.lifetimeBiomassInCurrentCycle ?? GAME.breakthroughProgress ?? GAME.cycleBiomass ?? 0);
-  const bio = rehydrateBig(raw);
-  const logVal = log10Of(bio);
-  if (!Number.isFinite(logVal) || logVal <= 2) return 0;
-  // Форма рассчитывается от биомассы текущего цикла: 10^2 -> 0 ур., 10^17 -> 1000 ур.
-  const lvl = Math.floor((logVal - 2) * (1000 / 15));
-  return Math.max(0, lvl);
+  // Реальная Форма питомца для Прорыва строго соответствует максимальной достигнутой Форме
+  return peakForm();
 }
 
 export function getTargetBreakthroughExperience(transcends = (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0)) {
@@ -83,13 +77,12 @@ export function getTargetBreakthroughExperience(transcends = (GAME.breakthroughC
 export function getTranscendRequirement() {
   const currentCount = Math.max(0, Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0);
   const reqLevel = getTargetBreakthroughExperience(currentCount);
-  const currentBio = rehydrateBig(GAME.lifetimeBiomassInCurrentCycle ?? GAME.breakthroughProgress ?? 0);
-  const currentLevel = getBreakthroughExpLevel(currentBio);
+  const currentLevel = peakForm();
   const reqPrestiges = flushesNeededForBridge(currentCount);
   const currentPrestiges = Math.max(0, Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0);
-  const meetsBiomass = currentLevel >= reqLevel;
+  const meetsForm = currentLevel >= reqLevel;
   const meetsPrestiges = currentPrestiges >= reqPrestiges;
-  const isMet = meetsBiomass && meetsPrestiges;
+  const isMet = meetsForm && meetsPrestiges;
 
   return {
     transcends: currentCount,
@@ -102,11 +95,12 @@ export function getTranscendRequirement() {
     currentPrestiges,
     reqRolls: 0,
     currentRolls: GAME.prestigeRolls || 0,
-    currentBiomass: currentBio,
+    currentBiomass: GAME.biomass || 0,
     meetsStage: true,
     meetsPrestiges,
     meetsRolls: true,
-    meetsBiomass,
+    meetsBiomass: meetsForm,
+    meetsForm,
     isMet
   };
 }
@@ -171,32 +165,9 @@ export function executeTranscend() {
   GAME.transcendPlungers = (GAME.transcendPlungers || 0) + gain;
   noteHorizonSpark(nextCount);
 
-  // relic_prestige_factory_keep: Сохраняет 5% за уровень от уровней Авто-заводов текущего мира
-  const keepLvl = getRelicLevel('relic_prestige_factory_keep');
-  if (keepLvl > 0 && Array.isArray(GAME.factories)) {
-    const keepRatio = Math.min(0.25, keepLvl * 0.05);
-    GAME.factories.forEach(f => {
-      if (f && f.count > 0) {
-        f.count = Math.max(1, Math.floor(f.count * keepRatio));
-      }
-    });
-  }
-
-  // При нажатии кнопки Прорыва накопленный опыт уменьшается на величину TargetBreakthroughExperience,
-  // а не сбрасывается в абсолютный 0, чтобы излишки опыта сохранялись.
-  const currentLevel = breakdown.currentLevel;
-  const reqLevel = breakdown.reqLevel;
-  const remainingLevel = Math.max(0, currentLevel - reqLevel);
-  if (remainingLevel <= 0) {
-    GAME.lifetimeBiomassInCurrentCycle = 0;
-    GAME.breakthroughProgress = 0;
-  } else {
-    // Обратный расчет биомассы: lvl = Math.floor((logVal - 2) * (1000 / 15)) => logVal = 2 + lvl * 0.015
-    const newLogVal = 2 + remainingLevel * (15 / 1000);
-    const newBiomass = bigPow10(newLogVal);
-    GAME.lifetimeBiomassInCurrentCycle = newBiomass;
-    GAME.breakthroughProgress = newBiomass;
-  }
+  // На Прорыве заводы НЕ сбрасываются ("без сброса заводов!").
+  GAME.lifetimeBiomassInCurrentCycle = 0;
+  GAME.breakthroughProgress = 0;
 
   saveLocal();
   events.emit('transcend:completed', { gain, breakthroughCount: nextCount });

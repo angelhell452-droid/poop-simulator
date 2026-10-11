@@ -157,18 +157,16 @@ export function updateTranscendModalRealtime() {
   const modal = document.getElementById('transcendModal');
   if (!modal || modal.classList.contains('hidden')) return;
 
-  const currentCount = Math.max(0, Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0);
-  const reqLevel = getTargetBreakthroughExperience(currentCount);
-  const liveBio = rehydrateBig(GAME.lifetimeBiomassInCurrentCycle ?? GAME.breakthroughProgress ?? 0);
-  const currentLevel = getBreakthroughExpLevel(liveBio);
-
   const tb = getTranscendRewardBreakdown();
+  const currentCount = tb.breakthroughCount;
+  const reqLevel = tb.reqLevel;
+  const currentLevel = tb.currentLevel;
   const gain = tb.totalGain;
   const reqPrestiges = tb.reqPrestiges ?? 2;
-  const currentPrestiges = Math.max(0, Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0);
-  const meetsBiomass = currentLevel >= reqLevel;
-  const meetsPrestiges = currentPrestiges >= reqPrestiges;
-  const isMet = meetsBiomass && meetsPrestiges;
+  const currentPrestiges = tb.currentPrestiges;
+  const meetsForm = tb.meetsForm ?? (currentLevel >= reqLevel);
+  const meetsPrestiges = tb.meetsPrestiges;
+  const isMet = tb.isMet;
   const pctExp = Math.min(100, Math.max(0, Math.round((currentLevel / reqLevel) * 100)));
 
   const rollsEl = document.getElementById('transcendCurrentRolls');
@@ -187,8 +185,8 @@ export function updateTranscendModalRealtime() {
         <div class="p-2.5 rounded-xl bg-indigo-950/70 border border-cyan-500/30 text-left space-y-1.5">
           <div class="flex items-center justify-between text-xs">
             <span class="text-cyan-300 font-bold uppercase tracking-wider text-[10px]">Форма</span>
-            <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${meetsBiomass ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
-              ${meetsBiomass ? '✓ Готово' : '⏳ В процессе'}
+            <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${meetsForm ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50' : 'bg-stone-800 text-stone-400'}">
+              ${meetsForm ? '✓ Готово' : '⏳ В процессе'}
             </span>
           </div>
           <div class="text-[11px] text-indigo-200">
@@ -196,7 +194,7 @@ export function updateTranscendModalRealtime() {
           </div>
           <div class="flex items-center justify-between text-xs font-mono font-bold">
             <span class="text-stone-300">Текущая Форма:</span>
-            <span class="${meetsBiomass ? 'text-emerald-300' : 'text-yellow-300'}">${formatNumber(currentLevel)} / ${formatNumber(reqLevel)} ур.</span>
+            <span class="${meetsForm ? 'text-emerald-300' : 'text-yellow-300'}">${formatNumber(currentLevel)} / ${formatNumber(reqLevel)} ур.</span>
           </div>
           <!-- Progress bar -->
           <div class="w-full bg-stone-900 rounded-full h-2 border border-white/10 overflow-hidden">
@@ -260,10 +258,10 @@ export function updateTranscendModalRealtime() {
   if (execTransBtn) {
     if (!isMet) {
       execTransBtn.disabled = true;
-      if (!meetsPrestiges) {
-        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(reqPrestiges)} СМЫВОВ (ЕСТЬ ${formatNumber(currentPrestiges)}) 🔒`;
-      } else {
+      if (!meetsForm) {
         execTransBtn.textContent = `ТРЕБУЕТСЯ ФОРМА ${formatNumber(reqLevel)} УР. (СЕЙЧАС ${formatNumber(currentLevel)}) 🔒`;
+      } else if (!meetsPrestiges) {
+        execTransBtn.textContent = `ТРЕБУЕТСЯ ${formatNumber(reqPrestiges)} СМЫВОВ (ЕСТЬ ${formatNumber(currentPrestiges)}) 🔒`;
       }
     } else {
       execTransBtn.disabled = gain <= 0;

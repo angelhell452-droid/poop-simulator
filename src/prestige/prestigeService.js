@@ -4,6 +4,7 @@ import { TALENTS } from '../data/talents.data.js';
 import { events } from '../core/events.js';
 import { bigPow, gte, mul } from '../utils/big.js?v=5.0.80';
 import { hasPerk } from '../data/perks.data.js';
+import { getRelicLevel } from '../data/relics.data.js?v=5.0.80';
 
 export function getPrestigeRequirement() {
   const flushes = GAME.flushCount ?? GAME.totalPrestiges ?? 0;
@@ -84,8 +85,12 @@ export function executePrestige(chosenArchetype = 'balanced') {
   GAME.currentRunPeakGPS = 0;
   GAME.archetype = chosenArchetype;
 
-  // Сброс заводов
-  FACTORIES.forEach(fac => { fac.count = 0; });
+  // Сброс заводов (с сохранением части уровней при наличии реликвии Петля Мёбиуса)
+  const keepLvl = getRelicLevel('relic_prestige_factory_keep');
+  const keepRatio = keepLvl > 0 ? Math.min(0.25, keepLvl * 0.05) : 0;
+  FACTORIES.forEach(fac => {
+    fac.count = (keepRatio > 0 && fac.count > 0) ? Math.max(1, Math.floor(fac.count * keepRatio)) : 0;
+  });
   GAME.clean = 100;
   GAME.hunger = 100;
   GAME.happy = 100;
