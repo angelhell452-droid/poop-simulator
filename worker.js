@@ -274,10 +274,14 @@ async function handleCloudSave(req, env) {
         );
       }
 
-      const owner = await env.DB.prepare(`SELECT username FROM user_accounts WHERE player_id = ? LIMIT 1`).bind(playerId).first();
-      const actor = await sessionUser(env.DB, req);
-      if (!owner || !actor || actor.playerId !== playerId) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
+      const owner = await env.DB.prepare(`SELECT * FROM user_accounts WHERE player_id = ? LIMIT 1`).bind(playerId).first();
+      if (owner) {
+        const actor = await sessionUser(env.DB, req);
+        const validActor = actor && actor.playerId === playerId;
+        const validPassword = body.passwordHash && body.passwordHash === owner.password_hash;
+        if (!validActor && !validPassword) {
+          return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
+        }
       }
 
       const seasonName = await displayName(env.DB, playerId, playerName);

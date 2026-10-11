@@ -134,6 +134,8 @@ function cloudBody() {
   const currentFlushes = Math.max(0, Math.floor(Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0));
   const currentBreakthroughs = Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
 
+  const stored = getStoredAccount();
+
   return JSON.stringify({
     playerId: GAME.playerId,
     playerName: GAME.playerName,
@@ -148,6 +150,7 @@ function cloudBody() {
     transcendPlungers: plungersStr,
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
     worldReset: Number(GAME.worldReset) || 0,
+    passwordHash: stored?.passwordHash || '',
     saveData: payload
   });
 }
@@ -255,15 +258,21 @@ export async function syncToCloudDatabase() {
   saveLocal();
 
   const stored = getStoredAccount();
-  if (!stored?.sessionToken) {
-    if (stored?.username) {
-      setCloudStatus(t('cloud.login'), 'wait');
-      askRelogin();
-    } else {
-      setCloudStatus(t('cloud.local'), 'local');
-    }
-    return;
+  if (stored?.username && stored?.passwordHash && !stored?.sessionToken) {
+    try {
+      const loginRes = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=login`, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'login', username: stored.username, passwordHash: stored.passwordHash })
+      });
+      const loginData = await loginRes.json().catch(() => null);
+      if (loginData?.success && loginData?.sessionToken) {
+        stored.sessionToken = loginData.sessionToken;
+        saveStoredAccount(stored);
+        markSessionLive();
+      }
+    } catch (_) {}
   }
+
   setCloudStatus(t('cloud.saving'), 'save');
 
   const bodyStr = cloudBody();
@@ -272,6 +281,23 @@ export async function syncToCloudDatabase() {
     const res = await cloudFetch(CLOUD_SAVE_ENDPOINT, { method: 'POST', body: bodyStr });
 
     if (res.status === 401) {
+      if (stored?.username && stored?.passwordHash) {
+        try {
+          const loginRes = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=login`, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'login', username: stored.username, passwordHash: stored.passwordHash })
+          });
+          const loginData = await loginRes.json().catch(() => null);
+          if (loginData?.success && loginData?.sessionToken) {
+            stored.sessionToken = loginData.sessionToken;
+            saveStoredAccount(stored);
+            markSessionLive();
+            await cloudFetch(CLOUD_SAVE_ENDPOINT, { method: 'POST', body: bodyStr });
+            setCloudStatus(t('cloud.saved'), 'ok');
+            return;
+          }
+        } catch (_) {}
+      }
       dropDeadSession();
       setCloudStatus(t('cloud.login'), 'wait');
       return;
@@ -390,7 +416,14 @@ export async function loginAccount(username, password) {
       GAME.playerName = data.username;
 
       if (data.saveData && !sameSeasonBlank(data.saveData)) {
-        applySaveDataSafely(data.saveData);
+        const localParsed = readLocalSave();
+        if (localIsAhead(localParsed, data.saveData)) {
+          requestCloudSync(300);
+        } else {
+          applySaveDataSafely(data.saveData);
+        }
+      } else {
+        requestCloudSync(300);
       }
       if (data.vipLevel != null) setConfirmedVip(data.vipLevel);
       saveLocal();
