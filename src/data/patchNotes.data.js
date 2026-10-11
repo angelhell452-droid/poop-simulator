@@ -20,8 +20,8 @@ export const PATCH_NOTES = [
       {
         type: 'fix',
         icon: '🔄',
-        text: 'Мгновенный Синхрон Смывов: Реальные Смывы , Прорывы и Формы теперь бесперебойно улетают на сервер и моментально отражаются в Топе.',
-        textEn: 'Instant Flush Sync: Real Flush count , Breakthroughs, and Forms now upload seamlessly and update the Hall of Fame in real time.'
+        text: 'Мгновенный Синхрон Смывов: Реальные Смывы, Прорывы и Формы теперь бесперебойно улетают на сервер и моментально отражаются в Топе.',
+        textEn: 'Instant Flush Sync: Real Flush count, Breakthroughs, and Forms now upload seamlessly and update the Hall of Fame in real time.'
       }
     ]
   },
