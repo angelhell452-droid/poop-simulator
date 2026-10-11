@@ -94,7 +94,7 @@ export function renderLeaderboardRows(containerEl, leaderboard) {
     const isVip = Boolean(player.hasVipPass || player.vipPass || Number(player.vipLevel) > 0);
 
     const breakthroughsVal = player.breakthroughCount ?? player.transcends ?? player.score ?? 0;
-    const stageVal = player.stage ?? 1;
+    const stageVal = player.peakForm ?? player.stage ?? 1;
     const prestigesVal = player.prestiges ?? player.flushes ?? player.flushCount ?? 0;
 
     const breakthroughs = formatNumber(breakthroughsVal);

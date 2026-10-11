@@ -594,6 +594,21 @@ export async function replacementIfSeasonReset(db, playerId, playerName, saveDat
   if (reset <= 0) return null;
   const clientReset = Number(saveData?.worldReset ?? saveData?.game?.worldReset) || 0;
   if (clientReset === reset) return null;
+
+  const row = await db.prepare(`SELECT save_data FROM player_saves WHERE player_id = ? LIMIT 1`).bind(playerId).first();
+  if (row) {
+    let existing = null;
+    try { existing = JSON.parse(row.save_data); } catch (_) {}
+    const existingReset = Number(existing?.worldReset ?? existing?.game?.worldReset) || 0;
+    if (existingReset === reset) {
+      if (saveData && typeof saveData === 'object') {
+        saveData.worldReset = reset;
+        if (saveData.game && typeof saveData.game === 'object') saveData.game.worldReset = reset;
+      }
+      return null;
+    }
+  }
+
   const name = await displayName(db, playerId, playerName);
   const save = blankProgressSave(playerId, name, reset, 1);
   await writePlayerSave(db, playerId, name, save, 1);
@@ -608,6 +623,11 @@ export async function rejectStaleSave(db, playerId, incomingSeq, headers) {
   if (!row || current <= incomingSeq) return { current };
   let saveData = null;
   try { saveData = JSON.parse(row.save_data); } catch (err) { saveData = null; }
+
+  if (saveData?.resetProgress) {
+    return { current };
+  }
+
   return {
     current,
     response: json(headers, { success: false, error: "stale_save", adminSeq: current, saveData }, 409)

@@ -281,6 +281,13 @@ async function handleCloudSave(req, env) {
       }
 
       const seasonName = await displayName(env.DB, playerId, playerName);
+      const currentReset = await currentWorldReset(env.DB);
+      if (saveData && typeof saveData === "object" && currentReset > 0) {
+        if (!saveData.worldReset) saveData.worldReset = currentReset;
+        if (saveData.game && typeof saveData.game === "object" && !saveData.game.worldReset) {
+          saveData.game.worldReset = currentReset;
+        }
+      }
       const seasonSave = await replacementIfSeasonReset(env.DB, playerId, seasonName, saveData);
       if (seasonSave) {
         return new Response(JSON.stringify({ success: false, error: "stale_save", saveData: seasonSave }), { status: 409, headers });
@@ -289,16 +296,40 @@ async function handleCloudSave(req, env) {
       const incomingSeq = Number(body.adminSeq ?? saveData?.adminSeq ?? saveData?.game?.cloudAdminSeq) || 0;
       const stale = await rejectStaleSave(env.DB, playerId, incomingSeq, headers);
       if (stale.response) return stale.response;
-      const nextSeq = stale.current || 0;
+      const nextSeq = Math.max(incomingSeq, stale.current || 0);
       if (saveData && typeof saveData === "object") {
         saveData.adminSeq = nextSeq;
         if (saveData.game && typeof saveData.game === "object") saveData.game.cloudAdminSeq = nextSeq;
       }
 
-      const stage = Number(saveData?.game?.evoStage !== undefined ? saveData.game.evoStage + 1 : saveData?.game?.stage) || 1;
-      const biomass = storedBiomass(saveData?.game?.allTimeBiomass ?? saveData?.game?.biomass);
-      const sparkles = Number(saveData?.game?.sparkles) || 0;
-      const prestigeCurrency = Number(saveData?.game?.prestigeRolls ?? saveData?.game?.prestigeCurrency) || 0;
+      let sObj = saveData;
+      while (typeof sObj === "string") {
+        try {
+          const parsed = JSON.parse(sObj);
+          if (parsed && typeof parsed === "object") sObj = parsed;
+          else break;
+        } catch (_) {
+          break;
+        }
+      }
+      const sGame = (sObj && typeof sObj === "object" && sObj.game && typeof sObj.game === "object") ? sObj.game : (sObj || {});
+
+      const rawPeak = body.stage ?? sGame.peakForm ?? sObj?.peakForm;
+      const rawEvo = sGame.evoStage ?? sObj?.evoStage;
+      const rawStage = sGame.stage ?? sObj?.stage ?? 1;
+      let stage = 1;
+      if (rawPeak !== undefined && Number(rawPeak) > 0) {
+        stage = Math.floor(Number(rawPeak));
+      } else if (rawEvo !== undefined && Number(rawEvo) >= 0) {
+        stage = Math.floor(Number(rawEvo)) + 1;
+      } else if (rawStage !== undefined && Number(rawStage) > 0) {
+        stage = Math.floor(Number(rawStage));
+      }
+
+      const rawBio = body.biomass ?? sGame.allTimeBiomass ?? sObj?.allTimeBiomass ?? sGame.cycleBiomass ?? sGame.biomass ?? sObj?.biomass ?? 0;
+      const biomass = storedBiomass(rawBio);
+      const sparkles = Number(body.sparkles ?? sGame.sparkles ?? sObj?.sparkles) || 0;
+      const prestigeCurrency = Number(body.prestige_currency ?? sGame.prestigeRolls ?? sObj?.prestigeRolls ?? sGame.prestigeCurrency) || 0;
       const name = await displayName(env.DB, playerId, playerName);
       const jsonStr = typeof saveData === "string" ? saveData : JSON.stringify(saveData);
 
@@ -491,17 +522,20 @@ function byRanking(a, b) {
   if (b._breakthroughs !== a._breakthroughs) {
     return b._breakthroughs - a._breakthroughs;
   }
-  if (b._expLevel !== a._expLevel) {
-    return b._expLevel - a._expLevel;
+  if (b._stage !== a._stage) {
+    return b._stage - a._stage;
   }
   if (b._prestiges !== a._prestiges) {
     return b._prestiges - a._prestiges;
+  }
+  if (b._expLevel !== a._expLevel) {
+    return b._expLevel - a._expLevel;
   }
   return String(a.playerId).localeCompare(String(b.playerId));
 }
 
 function publicLadderEntry(entry) {
-  const { accountName, _breakthroughs, _expLevel, _prestiges, ...rest } = entry;
+  const { accountName, _breakthroughs, _stage, _expLevel, _prestiges, ...rest } = entry;
   return rest;
 }
 
@@ -518,15 +552,37 @@ async function handleLeaderboard(url, env, headers) {
       player_saves.stage,
       player_saves.biomass,
       player_saves.save_data as saveData,
-      CAST(IFNULL(json_extract(player_saves.save_data, '$.game.totalTranscend'), 0) AS INTEGER) as transcends,
-      CAST(IFNULL(json_extract(player_saves.save_data, '$.game.transcendPlungers'), 0) AS INTEGER) as plungers,
-      CAST(IFNULL(json_extract(player_saves.save_data, '$.game.totalPrestiges'), 0) AS INTEGER) as prestiges,
-      CAST(IFNULL(json_extract(player_saves.save_data, '$.game.allTimePrestigeRolls'), 0) AS INTEGER) as rolls,
+      CAST(COALESCE(
+        json_extract(player_saves.save_data, '$.game.breakthroughCount'),
+        json_extract(player_saves.save_data, '$.breakthroughCount'),
+        json_extract(player_saves.save_data, '$.game.totalTranscend'),
+        json_extract(player_saves.save_data, '$.totalTranscend'),
+        0
+      ) AS INTEGER) as transcends,
+      CAST(COALESCE(
+        json_extract(player_saves.save_data, '$.game.transcendPlungers'),
+        json_extract(player_saves.save_data, '$.transcendPlungers'),
+        0
+      ) AS INTEGER) as plungers,
+      CAST(COALESCE(
+        json_extract(player_saves.save_data, '$.game.flushCount'),
+        json_extract(player_saves.save_data, '$.flushCount'),
+        json_extract(player_saves.save_data, '$.game.totalPrestiges'),
+        json_extract(player_saves.save_data, '$.totalPrestiges'),
+        0
+      ) AS INTEGER) as prestiges,
+      CAST(COALESCE(
+        json_extract(player_saves.save_data, '$.game.allTimePrestigeRolls'),
+        json_extract(player_saves.save_data, '$.allTimePrestigeRolls'),
+        0
+      ) AS INTEGER) as rolls,
       CAST(IFNULL(user_accounts.vip_level, 0) AS INTEGER) as vipLevel,
       user_accounts.username as accountName,
       player_saves.updated_at as updatedAt
     FROM player_saves
-    INNER JOIN user_accounts ON user_accounts.player_id = player_saves.player_id
+    LEFT JOIN user_accounts ON user_accounts.player_id = player_saves.player_id
+    ORDER BY transcends DESC, player_saves.stage DESC, player_saves.biomass DESC
+    LIMIT 100
   `).all();
 
   const ranked = (results || []).map((row) => {
@@ -535,14 +591,78 @@ async function handleLeaderboard(url, env, headers) {
       sData = typeof row.saveData === 'string' ? JSON.parse(row.saveData) : row.saveData;
     } catch (_) {}
 
-    const game = sData?.game || {};
-    const breakthroughs = Number(game.breakthroughCount ?? game.totalTranscend ?? row.transcends) || 0;
-    const cycleBio = game.breakthroughProgress ?? game.lifetimeBiomassInCurrentCycle ?? game.allTimeBiomass ?? game.biomass ?? row.biomass ?? 0;
-    const expLevel = Number(game.biomassExpLevel) || calcExpLevel(cycleBio);
+    // Multi-pass unpack in case of double-stringified JSON
+    while (typeof sData === 'string') {
+      try {
+        const nested = JSON.parse(sData);
+        if (nested && typeof nested === 'object') sData = nested;
+        else break;
+      } catch (_) {
+        break;
+      }
+    }
+
+    const sObj = (sData && typeof sData === 'object') ? sData : {};
+    const game = (sObj.game && typeof sObj.game === 'object') ? sObj.game : sObj;
+
+    // 1. Breakthroughs / Transcends
+    const breakthroughs = Number(
+      game.breakthroughCount ??
+      sObj.breakthroughCount ??
+      game.totalTranscend ??
+      sObj.totalTranscend ??
+      game.transcends ??
+      sObj.transcends ??
+      row.transcends ??
+      0
+    ) || 0;
+
+    // 2. Stage / Form (peakForm or evoStage + 1)
+    const rawPeak = game.peakForm ?? sObj.peakForm;
+    const rawEvo = game.evoStage ?? sObj.evoStage;
+    const rawStage = game.stage ?? sObj.stage ?? row.stage;
+    let stage = 1;
+    if (rawPeak !== undefined && Number(rawPeak) > 0) {
+      stage = Math.floor(Number(rawPeak));
+    } else if (rawEvo !== undefined && Number(rawEvo) >= 0) {
+      stage = Math.floor(Number(rawEvo)) + 1;
+    } else if (rawStage !== undefined && Number(rawStage) > 0) {
+      stage = Math.floor(Number(rawStage));
+    }
+
+    // 3. Flushes / Prestiges
+    const prestiges = Number(
+      game.flushCount ??
+      sObj.flushCount ??
+      game.totalPrestiges ??
+      sObj.totalPrestiges ??
+      game.prestiges ??
+      sObj.prestiges ??
+      game.flushes ??
+      sObj.flushes ??
+      row.prestiges ??
+      0
+    ) || 0;
+
+    // 4. Biomass
+    const cycleBio =
+      game.breakthroughProgress ??
+      sObj.breakthroughProgress ??
+      game.allTimeBiomass ??
+      sObj.allTimeBiomass ??
+      game.cycleBiomass ??
+      sObj.cycleBiomass ??
+      game.lifetimeBiomassInCurrentCycle ??
+      sObj.lifetimeBiomassInCurrentCycle ??
+      game.biomass ??
+      sObj.biomass ??
+      row.biomass ??
+      0;
+    const expLevel = Number(game.biomassExpLevel ?? sObj.biomassExpLevel) || calcExpLevel(cycleBio);
     const bioStr = stringifyBiomass(cycleBio || row.biomass);
-    const stage = Number(game.stage ?? row.stage) || 1;
-    const prestiges = Number(game.flushCount ?? game.totalPrestiges ?? row.prestiges) || 0;
-    const plungers = Number(game.transcendPlungers ?? row.plungers) || 0;
+
+    // 5. Plungers
+    const plungers = Number(game.transcendPlungers ?? sObj.transcendPlungers ?? row.plungers) || 0;
 
     const entry = {
       playerId: row.playerId,
@@ -554,13 +674,16 @@ async function handleLeaderboard(url, env, headers) {
       transcends: String(breakthroughs),
       plungers: String(plungers),
       prestiges: String(prestiges),
+      flushes: String(prestiges),
+      flushCount: String(prestiges),
       rolls: String(Number(row.rolls) || 0),
       score: String(breakthroughs),
-      vipPass: Boolean(Number(row.vipLevel) > 0 || game.vipPass || game.hasVipPass),
-      hasVipPass: Boolean(Number(row.vipLevel) > 0 || game.vipPass || game.hasVipPass),
+      vipPass: Boolean(Number(row.vipLevel) > 0 || game.vipPass || game.hasVipPass || sObj.vipPass || sObj.hasVipPass),
+      hasVipPass: Boolean(Number(row.vipLevel) > 0 || game.vipPass || game.hasVipPass || sObj.vipPass || sObj.hasVipPass),
       accountName: row.accountName ? String(row.accountName) : "",
       updatedAt: row.updatedAt,
       _breakthroughs: breakthroughs,
+      _stage: stage,
       _expLevel: expLevel,
       _prestiges: prestiges
     };

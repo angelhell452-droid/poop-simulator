@@ -20,6 +20,10 @@ let sessionPrompted = false;
 
 function sameSeasonBlank(parsed) {
   if (!parsed?.resetProgress) return false;
+  const localParsed = readLocalSave();
+  if (breakthroughCount(localParsed) > 0 || (Number(localParsed?.game?.flushCount ?? localParsed?.flushCount) || 0) > 0) {
+    return true;
+  }
   const season = Number(parsed.worldReset ?? parsed.game?.worldReset) || 0;
   const localSeason = Number(GAME.worldReset) || 0;
   if (!(season > 0 && localSeason === season)) return false;
@@ -126,11 +130,18 @@ function cloudBody() {
   const plungersStr = isBig(GAME.transcendPlungers)
     ? `${GAME.transcendPlungers.m}e${GAME.transcendPlungers.e}`
     : String(GAME.transcendPlungers ?? 0);
+  const currentStage = Math.max(1, Math.floor(Number(GAME.peakForm ?? (GAME.evoStage !== undefined ? GAME.evoStage + 1 : 1)) || 1));
+  const currentFlushes = Math.max(0, Math.floor(Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0));
+  const currentBreakthroughs = Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
 
   return JSON.stringify({
     playerId: GAME.playerId,
     playerName: GAME.playerName,
-    stage: GAME.evoStage + 1,
+    stage: currentStage,
+    peakForm: currentStage,
+    breakthroughCount: currentBreakthroughs,
+    flushCount: currentFlushes,
+    totalPrestiges: currentFlushes,
     biomass: GAME.biomass,
     sparkles: GAME.sparkles,
     prestige_currency: GAME.prestigeRolls,
@@ -268,9 +279,19 @@ export async function syncToCloudDatabase() {
 
     if (res.status === 409) {
       const data = await res.json().catch(() => null);
+      if (data?.adminSeq) {
+        GAME.cloudAdminSeq = Math.max(Number(GAME.cloudAdminSeq) || 0, Number(data.adminSeq));
+      }
+      const cloudReset = Number(data?.saveData?.worldReset ?? data?.saveData?.game?.worldReset) || 0;
+      if (cloudReset > 0) {
+        GAME.worldReset = Math.max(Number(GAME.worldReset) || 0, cloudReset);
+      }
       if (data?.saveData && !sameSeasonBlank(data.saveData)) {
-        applySaveDataSafely(data.saveData);
-        saveLocal();
+        const localParsed = readLocalSave();
+        if (!localIsAhead(localParsed, data.saveData)) {
+          applySaveDataSafely(data.saveData);
+          saveLocal();
+        }
       }
       setCloudStatus(t('cloud.updating'), 'save');
       return;
@@ -416,9 +437,15 @@ export async function loadFromCloudDatabaseOrLocal() {
         const localParsed = readLocalSave();
         const cloudSeq = saveSeq(parsed);
         const localSeq = saveSeq(localParsed);
+        const cloudReset = Number(parsed?.worldReset ?? parsed?.game?.worldReset) || 0;
+        if (cloudReset > 0) GAME.worldReset = Math.max(Number(GAME.worldReset) || 0, cloudReset);
+        if (cloudSeq > 0) GAME.cloudAdminSeq = Math.max(Number(GAME.cloudAdminSeq) || 0, cloudSeq);
+
         if (sameSeasonBlank(parsed)) {
           requestCloudSync(800);
-        } else if (cloudSeq > localSeq) {
+        } else if (parsed?.resetProgress && localIsAhead(localParsed, parsed)) {
+          requestCloudSync(300);
+        } else if (cloudSeq > localSeq && !localIsAhead(localParsed, parsed)) {
           applySaveDataSafely(parsed);
           saveLocal();
         } else if (localIsAhead(localParsed, parsed)) {

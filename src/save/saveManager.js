@@ -53,14 +53,34 @@ export function buildSavePayload() {
   const cleanStats = {
     totalMeteorsCaught: Math.max(0, Math.floor(Number(GAME.stats?.totalMeteorsCaught ?? GAME.meteorsCaught ?? 0)) || 0)
   };
+  const currentFlushes = Math.max(0, Math.floor(Number(GAME.flushCount ?? GAME.totalPrestiges ?? flushCount) || 0));
+  const currentBreakthroughs = Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
+  const currentStage = Math.max(1, Math.floor(Number(GAME.peakForm ?? (GAME.evoStage !== undefined ? GAME.evoStage + 1 : 1)) || 1));
 
   return {
     saveVersion: GAME.saveVersion || 5,
     saveTimestamp: Date.now(),
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
     worldReset: Number(GAME.worldReset) || 0,
+    stage: currentStage,
+    peakForm: currentStage,
+    evoStage: GAME.evoStage ?? 0,
+    breakthroughCount: currentBreakthroughs,
+    totalTranscend: currentBreakthroughs,
+    flushCount: currentFlushes,
+    totalPrestiges: currentFlushes,
+    biomass: GAME.biomass,
+    allTimeBiomass: GAME.allTimeBiomass,
+    sparkles: GAME.sparkles,
+    prestigeRolls: GAME.prestigeRolls,
     game: {
       ...GAME,
+      stage: currentStage,
+      peakForm: currentStage,
+      breakthroughCount: currentBreakthroughs,
+      totalTranscend: currentBreakthroughs,
+      flushCount: currentFlushes,
+      totalPrestiges: currentFlushes,
       stats: cleanStats,
       transcendPlungers: plungersStr,
       relics: cleanRelics,
@@ -76,7 +96,7 @@ export function buildSavePayload() {
     feedCount,
     washCount,
     polishCount,
-    flushCount,
+    flushCount: currentFlushes,
     factories: FACTORIES.map(s => ({ id: s.id, count: s.count || 0 })),
     talents: TALENTS.map(t => ({ id: t.id, level: t.level || 0 })),
     achievements: ACHIEVEMENTS.map(a => ({ id: a.id, done: !!a.done })),
@@ -268,6 +288,15 @@ export function applySaveDataSafely(rawData) {
   if (!data) return;
 
   if (data.resetProgress) wipeRuntimeCatalogs();
+
+  const incomingWorldReset = Number(data.worldReset ?? data.game?.worldReset) || 0;
+  if (incomingWorldReset > 0) {
+    GAME.worldReset = incomingWorldReset;
+  }
+  const incomingSeq = Number(data.adminSeq ?? data.game?.cloudAdminSeq) || 0;
+  if (incomingSeq > (Number(GAME.cloudAdminSeq) || 0)) {
+    GAME.cloudAdminSeq = incomingSeq;
+  }
 
   if (data.game) {
     for (const k in data.game) {
