@@ -1,5 +1,5 @@
 // Cloudflare Worker with Static Assets & D1 Database
-import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, displayName, vipLevelOf } from "./workerAdmin.js";
+import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, currentWorldReset, displayName, vipLevelOf } from "./workerAdmin.js";
 import { ensureFriendSchema, handleFriendGet, handleFriendPost } from "./workerFriends.js";
 import { ensureGuildSchema, handleGuildGet, handleGuildPost, presenceOf, tagsFor } from "./workerGuild.js";
 import { handleSocial } from "./workerSocial.js";
