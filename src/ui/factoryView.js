@@ -28,6 +28,7 @@ function factoryVisible(fac) {
   return String(tg) === String(activeFactoryTier);
 }
 let paintedFactoryStage = -1;
+let paintedFactoryBT = -1;
 
 export function initFactoryListeners() {
   onLocaleChange(() => {
@@ -161,7 +162,13 @@ export function renderFactories() {
 
     let buttonLabel = `${countTxt}: ${formatNumber(facInfo.totalCost)} 💨`;
     if (isLocked) {
-      buttonLabel = needBT ? `🔒 ${formatNumber(reqBT)} Прорыв` : t('factory.needForm', { n: formatNumber(reqForm) });
+      if (needBT && needForm) {
+        buttonLabel = `🔒 ${formatNumber(reqBT)} Прорыв (${t('factory.formBadge', { n: reqForm })})`;
+      } else if (needBT) {
+        buttonLabel = `🔒 ${formatNumber(reqBT)} Прорыв`;
+      } else {
+        buttonLabel = t('factory.needForm', { n: formatNumber(reqForm) });
+      }
     }
 
     const tg = fac.tierGroup || 1;
@@ -173,7 +180,9 @@ export function renderFactories() {
     else if (tg === 5) tierBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-rose-950/80 text-rose-300 border border-rose-500/50 shadow-[0_0_8px_rgba(244,63,94,0.3)]">Т${tn} 👑</span>`;
 
     let lockBadge = '';
-    if (needBT) {
+    if (needBT && needForm) {
+      lockBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-950/80 text-purple-300 border border-purple-700/50 font-bold">🔒 ${formatNumber(reqBT)} Прорыв</span> <span class="text-[9px] px-1.5 py-0.2 rounded bg-red-950/80 text-red-300 border border-red-700/50 font-bold">${t('factory.formBadge', { n: reqForm })}</span>`;
+    } else if (needBT) {
       lockBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-950/80 text-purple-300 border border-purple-700/50 font-bold">🔒 ${formatNumber(reqBT)} Прорыв</span>`;
     } else if (needForm) {
       lockBadge = `<span class="text-[9px] px-1.5 py-0.2 rounded bg-red-950/80 text-red-300 border border-red-700/50 font-bold">${t('factory.formBadge', { n: reqForm })}</span>`;
@@ -226,12 +235,17 @@ export function renderFactories() {
 
     container.appendChild(row);
   });
+
+  paintedFactoryStage = GAME.evoStage || 0;
+  paintedFactoryBT = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
 }
 
 export function updateFactoryButtons() {
   const container = document.getElementById('factoriesContainer');
   if (!container || !container.offsetParent) return;
-  if ((GAME.evoStage || 0) !== paintedFactoryStage) {
+  const currentStage = GAME.evoStage || 0;
+  const currentBT = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
+  if (currentStage !== paintedFactoryStage || currentBT !== paintedFactoryBT) {
     renderFactories();
     return;
   }
@@ -243,7 +257,12 @@ export function updateFactoryButtons() {
     const fac = FACTORIES.find(f => f.id === facId);
     if (!fac) return;
 
-    const isLocked = fac.reqStage !== undefined && (GAME.evoStage || 0) < fac.reqStage;
+    const reqBT = fac.reqBreakthrough || 0;
+    const reqForm = (fac.reqStage !== undefined ? fac.reqStage + 1 : 1);
+    const needBT = currentBT < reqBT;
+    const needForm = currentStage < (fac.reqStage || 0);
+    const isLocked = needBT || needForm;
+
     const facInfo = getAffordableFactoryInfo(fac);
     const canBuy = !isLocked && facInfo.canBuy;
 
@@ -251,9 +270,16 @@ export function updateFactoryButtons() {
       ? t('factory.maxOwned', { n: formatNumber(facInfo.count) })
       : (buyMultiplier > 1 ? `+${formatNumber(facInfo.count)}` : `+1`);
 
-    const newLabel = isLocked
-      ? t('factory.needForm', { n: formatNumber(fac.reqStage + 1) })
-      : `${countTxt}: ${formatNumber(facInfo.totalCost)} 💨`;
+    let newLabel = `${countTxt}: ${formatNumber(facInfo.totalCost)} 💨`;
+    if (isLocked) {
+      if (needBT && needForm) {
+        newLabel = `🔒 ${formatNumber(reqBT)} Прорыв (${t('factory.formBadge', { n: reqForm })})`;
+      } else if (needBT) {
+        newLabel = `🔒 ${formatNumber(reqBT)} Прорыв`;
+      } else {
+        newLabel = t('factory.needForm', { n: formatNumber(reqForm) });
+      }
+    }
 
     if (btn.textContent.trim() !== newLabel) {
       btn.textContent = newLabel;
