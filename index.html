@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.2.4 PRO</title>
+  <title>Poop Simulator v5.2.5 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,7 +20,7 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.2.4">
+  <link rel="stylesheet" href="styles/main.css?v=5.2.5">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -38,7 +38,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.2.4 PRO</span>
+            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.2.5 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             data-i18n-title="header.bugTitle" title="Сообщить об ошибке">
@@ -368,6 +368,7 @@
               <span id="tqQuestIcon" class="text-base shrink-0 animate-bounce">🎒</span>
               <div class="truncate">
                 <span id="tqQuestHeader" class="font-game text-xs text-yellow-300 font-extrabold block truncate">Квест 1/18: Первая слизь</span>
+                <div id="tqQuestTask" class="text-[10px] text-amber-200/90 font-medium truncate mt-0.5">🎯 Задача: Сделай 50 ручных кликов</div>
               </div>
             </div>
             <button id="tqActionBtn" type="button"
@@ -389,18 +390,21 @@
         <div class="absolute top-3 right-3 flex items-center gap-1.5 z-10 select-none">
           <button id="btnCanvasInventory"
             class="canvas-tool jelly-btn"
-            data-i18n-title="hud.inventoryTitle" title="Инвентарь персонажа">
+            data-i18n-title="hud.inventoryTitle" title="Инвентарь персонажа [I]">
             <span>🎒</span>
             <span data-i18n="hud.inventory">Инвентарь</span>
+            <span class="hotkey-hint text-[9px] font-mono text-stone-400 font-normal ml-0.5">[I]</span>
           </button>
           <div class="canvas-split">
-            <button id="btnCanvasPrestige" type="button" class="canvas-tool jelly-btn" data-i18n-title="hud.flushTitle" title="Что такое Смыв">
+            <button id="btnCanvasPrestige" type="button" class="canvas-tool jelly-btn" data-i18n-title="hud.flushTitle" title="Что такое Смыв [T]">
               <span>🌀</span>
               <span data-i18n="hud.flush">Смыв</span>
+              <span class="hotkey-hint text-[9px] font-mono text-stone-400 font-normal ml-0.5">[T]</span>
             </button>
-            <button id="btnCanvasTranscend" type="button" class="canvas-tool jelly-btn" data-i18n-title="hud.transcendTitle" title="Что такое Прорыв">
+            <button id="btnCanvasTranscend" type="button" class="canvas-tool jelly-btn" data-i18n-title="hud.transcendTitle" title="Что такое Прорыв [B]">
               <span class="plunger-icon"></span>
               <span data-i18n="hud.transcend">Прорыв</span>
+              <span class="hotkey-hint text-[9px] font-mono text-stone-400 font-normal ml-0.5">[B]</span>
             </button>
           </div>
         </div>
@@ -478,7 +482,7 @@
       <!-- Nav Tabs (6 Tabs) -->
       <div
         class="dash-tabs grid grid-cols-5 bg-stone-950 border-b border-amber-900/80 text-[10px] sm:text-[11px] font-black shrink-0">
-        <button class="dash-tab py-1.5 text-center bg-amber-700 text-white" data-target="panelFactories" data-i18n="hud.tabFactories">🏭 Заводы</button>
+        <button class="dash-tab py-1.5 text-center bg-amber-700 text-white" data-target="panelFactories" title="Заводы [F]"><span data-i18n="hud.tabFactories">🏭 Заводы</span> <span class="hotkey-hint text-[9px] font-mono text-amber-200/80 font-normal">[F]</span></button>
         <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white relative" data-target="panelCases">
           <span data-i18n="hud.tabCases">🔪 Кейсы</span>
           <span id="casesTabBadge" class="hidden absolute top-1 right-1 flex h-2 w-2">
@@ -486,7 +490,7 @@
             <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
         </button>
-        <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelShop" data-i18n="hud.tabBoutique">💎 Бутик</button>
+        <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelShop" title="Бутик [S]"><span data-i18n="hud.tabBoutique">💎 Бутик</span> <span class="hotkey-hint text-[9px] font-mono text-stone-400/80 font-normal">[S]</span></button>
         <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelTalents" data-i18n="hud.tabTalents">🌟 Таланты</button>
         <button class="dash-tab py-1.5 text-center text-stone-400 hover:text-white" data-target="panelTrophies" data-i18n="hud.tabTrophies">🏆 Подвиги</button>
       </div>

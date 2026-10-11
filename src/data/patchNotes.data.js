@@ -2,6 +2,42 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.2.5 PRO',
+    date: '11 Октября 2026',
+    dateEn: 'October 11, 2026',
+    title: 'Патч 5.2.5: Задачи Квестов, Скидка Заточки, Горячие Клавиши и Единый VIP',
+    titleEn: 'Patch 5.2.5: Quest Tasks, Sharpen Discount, Hotkeys & Unified VIP',
+    badge: 'Патч 5.2.5',
+    badgeEn: 'Patch 5.2.5',
+    badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🎯',
+        text: 'Понятные Задачи Квестов: В плашке обучения теперь выводится четкая цель задания («🎯 Задача: ...») для всех 18 квестов лесенки.',
+        textEn: 'Clear Quest Objectives: Quest banner now displays dynamic task descriptions ("🎯 Objective: ...") across all 18 ladder quests.'
+      },
+      {
+        type: 'balance',
+        icon: '⭐',
+        text: 'Скидка на Квест №7 и Удешевление Заточки Тира 1: Во время активного Квеста №7 первая заточка (+1 звезда) любого ножа принудительно стоит ровно 100 Блестяшек ✨. Базовая стоимость заточки ножей из первых 3 стартовых кейсов навсегда снижена в 3 раза.',
+        textEn: 'Quest #7 Sharpen Promo & 3x Cheaper Tier 1: While Quest #7 is active, the first sharpen (+1 star) on any knife costs strictly 100 Sparkles ✨. Base sharpening cost for all knives from the first 3 cases is permanently reduced by 3x.'
+      },
+      {
+        type: 'feature',
+        icon: '⌨️',
+        text: 'Горячие Клавиши Навигации: Навигация по интерфейсу клавишами: [I] - Инвентарь, [T] - Смыв, [B] - Прорыв, [F] - Заводы, [S] - Бутик, [Esc] - закрытие любого открытого окна. Встроена надежная защита от ввода в чате/полях и подсказки на кнопках.',
+        textEn: 'Navigation Hotkeys: Interface navigation via keyboard: [I] - Inventory, [T] - Flush, [B] - Transcend, [F] - Factories, [S] - Boutique, [Esc] - close modal. Protected against typing in input/chat fields.'
+      },
+      {
+        type: 'ui',
+        icon: '★',
+        text: 'Единый VIP-Пасс Вселенной: Полностью вырезаны старые уровни VIP 1-5. В Топ-Ладдере и профилях теперь отображается стильный премиальный бейдж «★ VIP» без рангов.',
+        textEn: 'Unified Cosmic VIP Pass: Legacy VIP 1-5 tiers purged in favor of a single premium status badge "★ VIP" across leaderboard and profiles.'
+      }
+    ]
+  },
+  {
     version: 'v5.2.4 PRO',
     date: '10 Октября 2026',
     dateEn: 'October 10, 2026',

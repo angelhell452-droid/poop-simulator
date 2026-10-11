@@ -24,6 +24,8 @@ export const TUTORIAL_QUESTS = [
     icon: '👆',
     titleKey: 'tutorial.step1Title',
     fallbackTitle: 'Первая слизь',
+    taskKey: 'tutorial.step1Task',
+    fallbackTask: '🎯 Задача: Сделай 50 ручных кликов',
     rewardDesc: '+300 💨',
     beaconSelector: '#petCanvas',
     check: () => (GAME.totalClicks || 0) >= 50,
@@ -48,6 +50,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🏭',
     titleKey: 'tutorial.step2Title',
     fallbackTitle: 'Автоматизация',
+    taskKey: 'tutorial.step2Task',
+    fallbackTask: '🎯 Задача: Купи первый Авто-завод',
     rewardDesc: '+20 ✨',
     beaconSelector: '.dash-tab[data-target="panelFactories"]',
     check: () => (FACTORIES[0]?.count || 0) > 0 || FACTORIES.some(f => (f.count || 0) > 0),
@@ -73,6 +77,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🧼',
     titleKey: 'tutorial.step3Title',
     fallbackTitle: 'Полный уход',
+    taskKey: 'tutorial.step3Task',
+    fallbackTask: '🎯 Задача: Покорми, помой и пощекочи питомца',
     rewardDesc: '+10 ✨',
     beaconSelector: '#petNeedsStation',
     check: () => {
@@ -105,6 +111,8 @@ export const TUTORIAL_QUESTS = [
     icon: '⚡',
     titleKey: 'tutorial.step4Title',
     fallbackTitle: 'Включить пулемет',
+    taskKey: 'tutorial.step4Task',
+    fallbackTask: '🎯 Задача: Активируй Автокликер (Турбо-х4)',
     rewardDesc: 'Турбо-х4',
     beaconSelector: '#btnToggleAutoclicker',
     check: () => GAME.autoclickerActive === true || (GAME.turboCount || 0) > 0 || GAME.turboUnlocked === true,
@@ -131,6 +139,8 @@ export const TUTORIAL_QUESTS = [
     icon: '📦',
     titleKey: 'tutorial.step5Title',
     fallbackTitle: 'Первый сундук',
+    taskKey: 'tutorial.step5Task',
+    fallbackTask: '🎯 Задача: Открой первый Кейс с ножом',
     rewardDesc: '+20 ✨',
     beaconSelector: '.dash-tab[data-target="panelCases"]',
     check: () => (GAME.casesOpened || 0) >= 1 || (Array.isArray(GAME.unlockedKnives) && GAME.unlockedKnives.length > 0),
@@ -155,6 +165,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🗡️',
     titleKey: 'tutorial.step6Title',
     fallbackTitle: 'Стальной хват',
+    taskKey: 'tutorial.step6Task',
+    fallbackTask: '🎯 Задача: Экипируй нож в Инвентаре',
     rewardDesc: 'CPS Ножа',
     beaconSelector: '#btnCanvasInventory',
     check: () => Boolean(GAME.equippedKnife),
@@ -177,6 +189,8 @@ export const TUTORIAL_QUESTS = [
     icon: '⭐',
     titleKey: 'tutorial.step7Title',
     fallbackTitle: 'Закалка стали',
+    taskKey: 'tutorial.step7Task',
+    fallbackTask: '🎯 Задача: Заточи экипированный нож на +1 звезду',
     rewardDesc: '+50% биомассы на 5 мин',
     beaconSelector: '#btnCanvasInventory',
     check: () => Object.values(GAME.knifeStars || {}).some(s => Number(s) >= 2) || (GAME.equippedKnife && Number(GAME.knifeStars?.[GAME.equippedKnife] || 1) >= 2),
@@ -200,6 +214,8 @@ export const TUTORIAL_QUESTS = [
     icon: '👑',
     titleKey: 'tutorial.step8Title',
     fallbackTitle: 'Стиль и Сила',
+    taskKey: 'tutorial.step8Task',
+    fallbackTask: '🎯 Задача: Купи и надень первую Шапку',
     rewardDesc: '+2% крит',
     beaconSelector: '#btnCanvasInventory',
     check: () => Boolean(GAME.equippedHat) || Object.keys(GAME.hatLevels || {}).length > 0,
@@ -226,6 +242,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🥋',
     titleKey: 'tutorial.step9Title',
     fallbackTitle: 'Новая кожа',
+    taskKey: 'tutorial.step9Task',
+    fallbackTask: '🎯 Задача: Купи и экипируй Одежду (скин)',
     rewardDesc: '☄️ Метеорит',
     beaconSelector: '#btnCanvasInventory',
     check: () => Boolean(GAME.equippedSkin) || (Array.isArray(GAME.ownedSkins) && GAME.ownedSkins.length > 0),
@@ -252,6 +270,8 @@ export const TUTORIAL_QUESTS = [
     icon: '☄️',
     titleKey: 'tutorial.step10Title',
     fallbackTitle: 'Поймай звезду',
+    taskKey: 'tutorial.step10Task',
+    fallbackTask: '🎯 Задача: Поймай прилетевший Метеорит',
     rewardDesc: '+50 ✨',
     beaconSelector: '#petCanvas',
     check: () => (GAME.meteorsCaught || 0) >= 1,
@@ -277,6 +297,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🚀',
     titleKey: 'tutorial.step11Title',
     fallbackTitle: 'Промышленный бум',
+    taskKey: 'tutorial.step11Task',
+    fallbackTask: '🎯 Задача: Купи 50 заводов (используй MAX)',
     rewardDesc: '+25% пассив',
     beaconSelector: '.buy-mult-btn[data-mult="max"]',
     check: () => FACTORIES.reduce((s, f) => s + (f.count || 0), 0) >= 50 || (GAME.flushCount || GAME.totalPrestiges || 0) > 0 || (GAME.breakthroughCount || 0) > 0,
@@ -304,6 +326,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🎯',
     titleKey: 'tutorial.step12Title',
     fallbackTitle: 'Испытание кликом',
+    taskKey: 'tutorial.step12Task',
+    fallbackTask: '🎯 Задача: Сделай 10 000 кликов автокликером',
     rewardDesc: '+100 ✨',
     beaconSelector: '#btnToggleAutoclicker',
     check: () => (GAME.totalClicks || 0) >= 10000 || (GAME.flushCount || GAME.totalPrestiges || 0) > 0 || (GAME.breakthroughCount || 0) > 0,
@@ -329,6 +353,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🌀',
     titleKey: 'tutorial.step13Title',
     fallbackTitle: 'Большой Смыв',
+    taskKey: 'tutorial.step13Task',
+    fallbackTask: '🎯 Задача: Соверши первый Смыв (Prestige)',
     rewardDesc: '+5 Втулок',
     beaconSelector: '#currencyPrestigeBox',
     check: () => (GAME.flushCount || GAME.totalPrestiges || 0) >= 1 || (GAME.breakthroughCount || GAME.totalTranscend || 0) > 0,
@@ -354,6 +380,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🌳',
     titleKey: 'tutorial.step14Title',
     fallbackTitle: 'Скрытый потенциал',
+    taskKey: 'tutorial.step14Task',
+    fallbackTask: '🎯 Задача: Купи первый Талант за Втулки',
     rewardDesc: '+10% клик',
     beaconSelector: '.dash-tab[data-target="panelTalents"]',
     check: () => TALENTS.some(t => (t.level || 0) > 0) || (GAME.breakthroughCount || 0) > 0,
@@ -378,6 +406,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🔮',
     titleKey: 'tutorial.step15Title',
     fallbackTitle: 'Постоянная роскошь',
+    taskKey: 'tutorial.step15Task',
+    fallbackTask: '🎯 Задача: Купи Постоянный Перк в Бутике',
     rewardDesc: 'Вечный Перк',
     beaconSelector: '.dash-tab[data-target="panelShop"]',
     check: () => PERMANENT_PERKS.some(p => p.owned || hasPerk(p.id)) || Object.keys(GAME.ownedPerks || {}).length > 0 || (GAME.breakthroughCount || 0) > 0,
@@ -402,6 +432,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🏃',
     titleKey: 'tutorial.step16Title',
     fallbackTitle: 'Марафонец Смывов',
+    taskKey: 'tutorial.step16Task',
+    fallbackTask: '🎯 Задача: Соверши 20 Смывов унитаза',
     rewardDesc: '+10 Втулок',
     beaconSelector: '#currencyPrestigeBox',
     check: () => (GAME.flushCount || GAME.totalPrestiges || 0) >= 20 || (GAME.breakthroughCount || GAME.totalTranscend || 0) > 0,
@@ -427,6 +459,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🪠',
     titleKey: 'tutorial.step17Title',
     fallbackTitle: 'Великий Прорыв',
+    taskKey: 'tutorial.step17Task',
+    fallbackTask: '🎯 Задача: Соверши Великий Прорыв (Transcend)',
     rewardDesc: '+1 🪠 Вантуз',
     beaconSelector: '#currencyPlungersBox',
     check: () => (GAME.breakthroughCount || GAME.totalTranscend || 0) >= 1,
@@ -451,6 +485,8 @@ export const TUTORIAL_QUESTS = [
     icon: '🏛️',
     titleKey: 'tutorial.step18Title',
     fallbackTitle: 'Древняя Святыня',
+    taskKey: 'tutorial.step18Task',
+    fallbackTask: '🎯 Задача: Купи Реликвию за Вантузы',
     rewardDesc: 'Триумф 🏆',
     beaconSelector: '.dash-tab[data-target="panelTalents"]',
     check: () => RELICS.some(r => hasRelic(r.id)) || Object.values(GAME.relics || {}).some(lvl => Number(lvl) > 0) || Object.values(GAME.transcendUpgrades || {}).some(lvl => Number(lvl) > 0),
@@ -855,6 +891,7 @@ export function updateTutorialQuestWidget() {
 
   const iconEl = document.getElementById('tqQuestIcon');
   const headerEl = document.getElementById('tqQuestHeader');
+  const taskEl = document.getElementById('tqQuestTask');
   const actionBtn = document.getElementById('tqActionBtn');
   const fillEl = document.getElementById('tqProgressFill');
   const progLabel = document.getElementById('tqProgressLabel');
@@ -868,6 +905,14 @@ export function updateTutorialQuestWidget() {
     headerEl.className = isDone
       ? 'font-game text-xs text-emerald-300 font-extrabold block truncate animate-pulse'
       : 'font-game text-xs text-yellow-300 font-extrabold block truncate';
+  }
+
+  if (taskEl) {
+    const taskText = t(currentStep.taskKey) || currentStep.fallbackTask || '';
+    taskEl.textContent = taskText;
+    taskEl.className = isDone
+      ? 'text-[10px] text-emerald-300 font-semibold truncate mt-0.5'
+      : 'text-[10px] text-amber-200/90 font-medium truncate mt-0.5';
   }
 
   const pct = Math.min(100, Math.max(0, (prog.current / prog.max) * 100));

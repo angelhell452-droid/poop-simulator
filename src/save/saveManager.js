@@ -270,7 +270,9 @@ export function applySaveDataSafely(rawData) {
   GAME.totalPrestiges = GAME.flushCount;
   GAME.guildTickets = Math.max(0, Math.min(5, Math.floor(Number(GAME.guildTickets) || 0)));
   GAME.clicksTowardsTicket = Math.max(0, Math.floor(Number(GAME.clicksTowardsTicket) || 0));
-  GAME.vipPass = Boolean(GAME.vipPass);
+  GAME.vipPass = Boolean(GAME.vipPass || GAME.hasVipPass);
+  GAME.hasVipPass = GAME.vipPass;
+  delete GAME.vipLevel;
   GAME.vipPassExpires = Math.max(0, Math.floor(Number(GAME.vipPassExpires) || 0));
   GAME.horizonSparks = Math.max(0, Math.floor(Number(GAME.horizonSparks) || 0));
   if (!GAME.horizonUpgrades || typeof GAME.horizonUpgrades !== 'object') GAME.horizonUpgrades = { pace: 0, seal: 0 };

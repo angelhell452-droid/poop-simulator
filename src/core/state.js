@@ -90,6 +90,7 @@ export function getDefaultGameState() {
     guildTickets: 0,
     clicksTowardsTicket: 0,
     vipPass: false,
+    hasVipPass: false,
     vipPassExpires: 0,
 
     lastSaveTime: Date.now(),

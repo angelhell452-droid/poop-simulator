@@ -27,6 +27,7 @@ import { initTutorialListeners, validateAndAdvanceRetroactiveQuests } from './ui
 import { initBeginnerGuideListeners } from './ui/beginnerGuideView.js?v=5.1.0';
 import { initBugReportListeners } from './ui/bugReportView.js?v=5.1.0';
 import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.1.0';
+import { initHotkeys } from './ui/hotkeys.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
 import { addPendingClicks, processBatchedClicks } from './systems/clickService.js?v=5.0.80';
 import { checkAchievements } from './systems/achievementsService.js?v=5.0.80';
@@ -156,6 +157,7 @@ export async function bootstrap() {
   initBeginnerGuideListeners();
   initBugReportListeners();
   initCharacterInventoryListeners();
+  initHotkeys();
 
   // Secret Click Trophy on Logo
   document.getElementById('logoSecretClick')?.addEventListener('click', () => {

@@ -566,7 +566,7 @@ export async function vipLevelOf(db, playerId) {
       SELECT vip_level as vipLevel FROM user_accounts WHERE player_id = ? LIMIT 1
     `).bind(playerId).first();
     const level = Math.floor(Number(row?.vipLevel) || 0);
-    return Math.max(0, Math.min(5, level));
+    return level > 0 ? 1 : 0;
   } catch (err) {
     return 0;
   }

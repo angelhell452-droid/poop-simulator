@@ -1385,5 +1385,24 @@ export default {
   'tutorial.step18Reward': 'Tutorial Completed! 🏆',
   'tutorial.step18Done': '👑 First relic active! Onboarding completed!',
 
-  'tutorial.allCompleted': '🎉 All 18 steps completed! Onboarding finished!'
+  'tutorial.allCompleted': '🎉 All 18 steps completed! Onboarding finished!',
+
+  'tutorial.step1Task': '🎯 Objective: Make 50 manual clicks',
+  'tutorial.step2Task': '🎯 Objective: Buy 1 Auto-Factory',
+  'tutorial.step3Task': '🎯 Objective: Feed, wash, and tickle your pet',
+  'tutorial.step4Task': '🎯 Objective: Activate Autoclicker (Turbo x4)',
+  'tutorial.step5Task': '🎯 Objective: Open your first Knife Case',
+  'tutorial.step6Task': '🎯 Objective: Equip a knife in Inventory',
+  'tutorial.step7Task': '🎯 Objective: Sharpen equipped knife to +1 star',
+  'tutorial.step8Task': '🎯 Objective: Buy and equip your first Hat',
+  'tutorial.step9Task': '🎯 Objective: Buy and equip an Outfit (skin)',
+  'tutorial.step10Task': '🎯 Objective: Click the flying Meteor',
+  'tutorial.step11Task': '🎯 Objective: Buy 50 factories (use MAX buy)',
+  'tutorial.step12Task': '🎯 Objective: Reach 10,000 clicks with autoclicker',
+  'tutorial.step13Task': '🎯 Objective: Perform your first Flush (Prestige)',
+  'tutorial.step14Task': '🎯 Objective: Buy your first Talent for Rolls',
+  'tutorial.step15Task': '🎯 Objective: Buy a Permanent Perk in Boutique',
+  'tutorial.step16Task': '🎯 Objective: Reach 20 Flushes',
+  'tutorial.step17Task': '🎯 Objective: Perform a Grand Breakthrough (Transcend)',
+  'tutorial.step18Task': '🎯 Objective: Buy a Relic for Plungers'
 };

@@ -217,6 +217,8 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
             expLevel: String(expLevel),
             transcends: String(breakthroughs),
             prestiges: String(prestiges),
+            vipPass: Boolean(game.vipPass || game.hasVipPass || Number(game.vipLevel) > 0),
+            hasVipPass: Boolean(game.vipPass || game.hasVipPass || Number(game.vipLevel) > 0),
             updatedAt: row.updatedAt,
             _b: breakthroughs,
             _e: expLevel,

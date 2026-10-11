@@ -1,5 +1,6 @@
 import { GAME } from '../core/state.js?v=5.0.80';
 import { KNIVES } from '../data/knives.data.js?v=5.0.80';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
 import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
 import { getKnifeStar, getHatLevel } from '../economy/production.js?v=5.0.80';
 import { events } from '../core/events.js';
@@ -9,6 +10,11 @@ import { knifeName } from '../i18n/localize.js';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
 import { getRelicLevel } from '../data/relics.data.js?v=5.0.80';
+
+// Tier 1 knives set from first 3 starter cases
+export const TIER_1_KNIFE_IDS = new Set(
+  (WEAPON_CASES || []).slice(0, 3).flatMap(c => c.pool || [])
+);
 
 // Bases ~10× below the old table. Power no longer scales with raw clickMult
 // (godly knives sit at 1e5+ and used to make sharpening/sell impossible or broken).
@@ -54,10 +60,23 @@ export function getKnifeSharpenCost(knifeOrId, explicitStar = null) {
   const currentStar = explicitStar !== null && explicitStar !== undefined ? explicitStar : getKnifeStar(knife.id);
   if (currentStar >= 25) return { maxReached: true, cost: 0, currency: 'sparkles', symbol: '✨' };
 
-  const baseCost = BASE_RARITY_SPARKLES[knife.rarity] || 50;
+  let baseCost = knife.upgradePrice || BASE_RARITY_SPARKLES[knife.rarity] || 50;
+
+  // Навсегда снизить базовую стоимость заточки (upgradePrice) в 3 раза для ножей из первых 3 стартовых кейсов ("Тир 1")
+  if (TIER_1_KNIFE_IDS.has(knife.id)) {
+    baseCost = Math.max(8, Math.floor(baseCost / 3));
+  }
+
   const powerFactor = sharpenPowerFactor(knife.clickMult);
   const growth = 1.42;
-  const cost = Math.max(50, Math.floor(baseCost * powerFactor * Math.pow(growth, currentStar - 1)));
+  let cost = Math.max(10, Math.floor(baseCost * powerFactor * Math.pow(growth, currentStar - 1)));
+
+  // Внедрить акцию: Если у игрока активен Квест №7, то базовая стоимость самой первой заточки на +1 звезду
+  // для любого текущего ножа принудительно снижается до строго 100 Блестяшек ✨.
+  const isQuest7Active = !GAME.tutorialCompleted && (GAME.tutorialStepIndex === 6 || GAME.currentQuestId === 7);
+  if (isQuest7Active && currentStar === 1) {
+    cost = 100;
+  }
 
   return { maxReached: false, cost, currency: 'sparkles', symbol: '✨' };
 }
