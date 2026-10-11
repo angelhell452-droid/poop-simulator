@@ -52,6 +52,16 @@ async function ensureSchema(db) {
     await ensureFriendSchema(db);
     await ensureGuildSchema(db);
     await ensureAdminSchema(db);
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS system_settings (
+        setting_key TEXT PRIMARY KEY,
+        setting_value TEXT
+      );
+    `).run();
+    await db.prepare(`
+      INSERT OR IGNORE INTO system_settings (setting_key, setting_value)
+      VALUES ('discord_token', 'https://discord.com/api/webhooks/1555324109133578281/2I6OMFH4hZm_QUnSVcceMJtb_3DSyw8aT4vl9zXaC1IknsV9F41768tK5csbj6o7QjYW');
+    `).run();
     mainSchemaReady = true;
   } catch (err) {
     console.warn("Schema initialization notice:", err);
@@ -578,8 +588,26 @@ async function handleBugReport(request, env, headers) {
   if (request.method === "OPTIONS") {
     return new Response(null, { headers });
   }
-  const hook = env.DISCORD_WEBHOOK;
+
+  if (!env || !env.DB) {
+    console.error("⚠️ Серверная ошибка: Ссылка discord_token не найдена в таблице system_settings базы D1");
+    return new Response(JSON.stringify({ success: false, error: "not_configured" }), { status: 503, headers });
+  }
+
+  await ensureSchema(env.DB);
+
+  let hook = null;
+  try {
+    const row = await env.DB.prepare(
+      "SELECT setting_value FROM system_settings WHERE setting_key = 'discord_token'"
+    ).first();
+    hook = row?.setting_value;
+  } catch (err) {
+    console.error("⚠️ Серверная ошибка: Ссылка discord_token не найдена в таблице system_settings базы D1", err);
+  }
+
   if (!hook) {
+    console.error("⚠️ Серверная ошибка: Ссылка discord_token не найдена в таблице system_settings базы D1");
     return new Response(JSON.stringify({ success: false, error: "not_configured" }), { status: 503, headers });
   }
   let body;

@@ -150,3 +150,11 @@ CREATE TABLE IF NOT EXISTS admin_audit (
   detail TEXT NOT NULL,
   created_at TEXT DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS system_settings (
+  setting_key TEXT PRIMARY KEY,
+  setting_value TEXT
+);
+
+INSERT OR IGNORE INTO system_settings (setting_key, setting_value) VALUES ('discord_token', 'https://discord.com/api/webhooks/1555324109133578281/2I6OMFH4hZm_QUnSVcceMJtb_3DSyw8aT4vl9zXaC1IknsV9F41768tK5csbj6o7QjYW');
+

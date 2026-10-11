@@ -2,7 +2,7 @@
 // Forwards player reports to Discord. Webhook URL lives in env DISCORD_WEBHOOK only.
 
 interface Env {
-  DISCORD_WEBHOOK?: string;
+  DB: D1Database;
 }
 
 const headers = {
@@ -18,8 +18,46 @@ export const onRequestOptions = async () => {
 
 export const onRequestPost = async (context: { request: Request; env: Env }) => {
   const { request, env } = context;
-  const hook = env.DISCORD_WEBHOOK;
+
+  if (!env || !env.DB) {
+    console.error("⚠️ Серверная ошибка: Ссылка discord_token не найдена в таблице system_settings базы D1");
+    return new Response(JSON.stringify({ success: false, error: "not_configured" }), {
+      status: 503,
+      headers,
+    });
+  }
+
+  let hook: string | null = null;
+  try {
+    const row = await env.DB.prepare(
+      "SELECT setting_value FROM system_settings WHERE setting_key = 'discord_token'"
+    ).first<{ setting_value: string }>();
+    hook = row?.setting_value || null;
+  } catch (err) {
+    console.error("⚠️ Серверная ошибка: Ссылка discord_token не найдена в таблице system_settings базы D1", err);
+  }
+
   if (!hook) {
+    try {
+      await env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS system_settings (
+          setting_key TEXT PRIMARY KEY,
+          setting_value TEXT
+        );
+      `).run();
+      await env.DB.prepare(`
+        INSERT OR IGNORE INTO system_settings (setting_key, setting_value)
+        VALUES ('discord_token', 'https://discord.com/api/webhooks/1555324109133578281/2I6OMFH4hZm_QUnSVcceMJtb_3DSyw8aT4vl9zXaC1IknsV9F41768tK5csbj6o7QjYW');
+      `).run();
+      const retryRow = await env.DB.prepare(
+        "SELECT setting_value FROM system_settings WHERE setting_key = 'discord_token'"
+      ).first<{ setting_value: string }>();
+      hook = retryRow?.setting_value || null;
+    } catch (_) {}
+  }
+
+  if (!hook) {
+    console.error("⚠️ Серверная ошибка: Ссылка discord_token не найдена в таблице system_settings базы D1");
     return new Response(JSON.stringify({ success: false, error: "not_configured" }), {
       status: 503,
       headers,
