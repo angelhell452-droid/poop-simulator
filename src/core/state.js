@@ -73,6 +73,9 @@ export function getDefaultGameState() {
     turboStarMultTime: 0,
     turboCount: 0,
     meteorsCaught: 0,
+    stats: {
+      totalMeteorsCaught: 0
+    },
     tickleCount: 0,
     tutorialRewardClaimed: false,
     tutorialStepIndex: 0,

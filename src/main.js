@@ -20,6 +20,7 @@ import { initMailView } from './ui/mailView.js?v=5.0.80';
 import { startSocialPulse } from './ui/socialPulse.js?v=5.0.80';
 import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.1.1';
 import { initVipShop } from './ui/vipShopView.js';
+import { initProfileView, renderProfileStats } from './ui/profileView.js';
 import { hasPerk } from './data/perks.data.js';
 import { getRelicLevel } from './data/relics.data.js';
 import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.0.80';
@@ -152,6 +153,7 @@ export async function bootstrap() {
   startSocialPulse();
   initPatchNotesListeners();
   initVipShop();
+  initProfileView();
   initSmartAssistantListeners();
   initTutorialListeners();
   initBeginnerGuideListeners();
@@ -319,6 +321,7 @@ export async function bootstrap() {
     if (inpId) inpId.value = GAME.playerId;
     const inpName = document.getElementById('inpPlayerName');
     if (inpName) inpName.value = getStoredAccount()?.username || GAME.playerName;
+    renderProfileStats();
     document.getElementById('accountModal')?.classList.remove('hidden');
     refreshServerStatus();
   });
@@ -341,6 +344,7 @@ export async function bootstrap() {
   renderCasesSystem();
   updateCasesTabBadge();
   renderCharacterInventory();
+  renderProfileStats();
   validateAndAdvanceRetroactiveQuests();
   updateHUD();
 

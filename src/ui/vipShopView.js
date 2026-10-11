@@ -125,6 +125,7 @@ export function renderVipShop() {
           <div class="text-xl mb-0.5">🌠</div>
           <div class="font-bold text-yellow-200 text-[11px]">Автосборщик</div>
           <div class="text-[9px] text-stone-400">Золотые звезды ловятся мгновенно</div>
+          <div class="text-[10px] text-amber-300 font-bold mt-1 font-game">☄️ <span id="vipTotalMeteorsVal">${formatNumber(GAME.stats?.totalMeteorsCaught || 0)}</span></div>
         </div>
         <div class="p-2 rounded-2xl bg-stone-900/90 border border-stone-800">
           <div class="text-xl mb-0.5">🧻</div>

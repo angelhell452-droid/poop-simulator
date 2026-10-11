@@ -1390,7 +1390,12 @@ export function triggerForcedMeteor() {
 
 export function catchGoldenMeteor() {
   goldenMeteor.active = false;
-  GAME.meteorsCaught = (GAME.meteorsCaught || 0) + 1;
+  if (!GAME.stats || typeof GAME.stats !== 'object') {
+    GAME.stats = { totalMeteorsCaught: 0 };
+  }
+  GAME.stats.totalMeteorsCaught = (Number(GAME.stats.totalMeteorsCaught) || 0) + 1;
+  GAME.meteorsCaught = GAME.stats.totalMeteorsCaught;
+  events.emit('stats:meteorCaught', { total: GAME.stats.totalMeteorsCaught });
 
   const hunterTalent = TALENTS.find(t => t.id === 'meteor_hunter');
   const luckBonus = 1 + Math.min(20, GAME.boutiqueLevels?.golden_luck || 0) * 0.25;
@@ -1576,7 +1581,12 @@ function tickMeteorShower(drawCtx, w, h) {
 export function catchShowerMeteor(index) {
   if (!showerMeteors[index]) return;
   showerMeteors.splice(index, 1);
-  GAME.meteorsCaught = (GAME.meteorsCaught || 0) + 1;
+  if (!GAME.stats || typeof GAME.stats !== 'object') {
+    GAME.stats = { totalMeteorsCaught: 0 };
+  }
+  GAME.stats.totalMeteorsCaught = (Number(GAME.stats.totalMeteorsCaught) || 0) + 1;
+  GAME.meteorsCaught = GAME.stats.totalMeteorsCaught;
+  events.emit('stats:meteorCaught', { total: GAME.stats.totalMeteorsCaught });
   const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
   let sparkGain = Math.max(8, Math.round(profile.purse * (0.012 + Math.random() * 0.010) * profile.localMult * profile.flushBonus * meteorTalentSparkle()));
 

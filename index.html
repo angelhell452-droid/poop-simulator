@@ -978,6 +978,21 @@
         </button>
       </div>
 
+      <!-- Player Profile Stats Card -->
+      <div id="profileStatsCard" class="bg-stone-950 p-3 rounded-2xl border border-stone-800 my-3 space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <span id="profileStatsTitle" class="text-[10px] text-stone-400 font-bold uppercase tracking-wider" data-i18n="profile.statsTitle">Статистика профиля</span>
+          <span class="text-xs">📊</span>
+        </div>
+        <div id="profileTotalMeteorsRow" class="bg-stone-900/90 rounded-xl p-2.5 border border-stone-700/60 flex items-center justify-between hover:border-amber-500/50 transition">
+          <div class="flex items-center gap-2">
+            <span class="text-base select-none">☄️</span>
+            <span id="profileTotalMeteorsLabel" class="text-stone-300 text-[11px] font-semibold" data-i18n="profile.totalMeteorsCaughtLabel">Поймано метеоритов (всего):</span>
+          </div>
+          <span id="profileTotalMeteorsVal" class="text-amber-300 font-game font-bold text-xs">0</span>
+        </div>
+      </div>
+
       <div class="bg-stone-950 p-3 rounded-2xl border border-stone-800 my-3 space-y-2 text-xs" id="langSelectCard">
         <div class="flex items-center justify-between gap-2">
           <label for="localeSelect" class="text-[10px] text-stone-400 font-bold uppercase tracking-wider" data-i18n="lang.label">Язык</label>

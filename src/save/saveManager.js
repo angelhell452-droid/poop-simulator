@@ -50,6 +50,10 @@ export function buildSavePayload() {
     }
   }
 
+  const cleanStats = {
+    totalMeteorsCaught: Math.max(0, Math.floor(Number(GAME.stats?.totalMeteorsCaught ?? GAME.meteorsCaught ?? 0)) || 0)
+  };
+
   return {
     saveVersion: GAME.saveVersion || 5,
     saveTimestamp: Date.now(),
@@ -57,11 +61,13 @@ export function buildSavePayload() {
     worldReset: Number(GAME.worldReset) || 0,
     game: {
       ...GAME,
+      stats: cleanStats,
       transcendPlungers: plungersStr,
       relics: cleanRelics,
       transcendUpgrades: cleanTranscendUpgrades,
       lastActiveTime: Date.now()
     },
+    stats: cleanStats,
     transcendPlungers: plungersStr,
     autoFlushActive: Boolean(GAME.autoFlushActive),
     relics: cleanRelics,
@@ -145,6 +151,9 @@ export function wipeRuntimeCatalogs() {
   GAME.ownedSkins = [];
   GAME.peakForm = 1;
   GAME.meteorsCaught = 0;
+  GAME.stats = {
+    totalMeteorsCaught: 0
+  };
   GAME.turboCount = 0;
   GAME.casesOpened = 0;
   GAME.firstCaseDiscountUsed = false;
@@ -348,6 +357,16 @@ export function applySaveDataSafely(rawData) {
   delete GAME.vipLevel;
   GAME.vipPassExpires = Math.max(0, Math.floor(Number(GAME.vipPassExpires) || 0));
   GAME.autoFlushActive = isVipInSave && Boolean(data.autoFlushActive ?? data.game?.autoFlushActive ?? false);
+  if (!GAME.stats || typeof GAME.stats !== 'object') {
+    GAME.stats = { totalMeteorsCaught: 0 };
+  }
+  const rawStats = data.stats || data.game?.stats || {};
+  const loadedMeteors = Math.max(
+    0,
+    Math.floor(Number(rawStats.totalMeteorsCaught ?? data.meteorsCaught ?? data.game?.meteorsCaught ?? GAME.stats.totalMeteorsCaught ?? GAME.meteorsCaught ?? 0)) || 0
+  );
+  GAME.stats.totalMeteorsCaught = loadedMeteors;
+  GAME.meteorsCaught = loadedMeteors;
   GAME.horizonSparks = Math.max(0, Math.floor(Number(GAME.horizonSparks) || 0));
   if (!GAME.horizonUpgrades || typeof GAME.horizonUpgrades !== 'object') GAME.horizonUpgrades = { pace: 0, seal: 0 };
   GAME.horizonUpgrades.pace = Math.max(0, Math.min(5, Math.floor(Number(GAME.horizonUpgrades.pace) || 0)));
