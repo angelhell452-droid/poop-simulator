@@ -1,14 +1,14 @@
-import { GAME } from '../core/state.js?v=5.0.80';
+﻿import { GAME } from '../core/state.js?v=5.4.0';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.0.80';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.0.80';
-import { getRelicLevel } from '../data/relics.data.js?v=5.0.80';
-import { takeClickBudget } from './autoclickService.js?v=5.0.80';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.0';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.0';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.0';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.0';
+import { takeClickBudget } from './autoclickService.js?v=5.4.0';
 import { events } from '../core/events.js';
-import { add, gainBio, mul } from '../utils/big.js?v=5.0.80';
+import { add, gainBio, mul } from '../utils/big.js?v=5.4.0';
 import { hasPerk } from '../data/perks.data.js';
-import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.0.80';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.0';
 
 export let pendingClicks = 0;
 

@@ -1,9 +1,9 @@
-import { GAME } from '../core/state.js?v=5.0.80';
+﻿import { GAME } from '../core/state.js?v=5.4.0';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.0.80';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.0.80';
-import { KNIVES } from '../data/knives.data.js?v=5.0.80';
-import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.0.80';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.0';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.0';
+import { KNIVES } from '../data/knives.data.js?v=5.4.0';
+import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.4.0';
 import { hasPerk } from '../data/perks.data.js';
 
 export const BARE_CLICK_CAP = 20;

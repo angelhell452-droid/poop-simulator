@@ -1,4 +1,4 @@
-﻿import { GUILD_MAX_LEVEL, guildBonusMult } from '../data/bosses.data.js?v=5.0.80';
+﻿import { GUILD_MAX_LEVEL, guildBonusMult } from '../data/bosses.data.js?v=5.4.0';
 
 let level = 0;
 let tag = '';

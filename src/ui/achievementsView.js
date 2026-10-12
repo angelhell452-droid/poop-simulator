@@ -1,8 +1,8 @@
-﻿import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.0.80';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.0.80';
-import { FACTORIES } from '../data/factories.data.js?v=5.0.80';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
-import { drawPlunger } from '../utils/icons.js?v=5.0.80';
+﻿import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.4.0';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.0';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.0';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.0';
+import { drawPlunger } from '../utils/icons.js?v=5.4.0';
 import { t, td, onLocaleChange } from '../i18n/t.js';
 
 export function renderAchievements() {

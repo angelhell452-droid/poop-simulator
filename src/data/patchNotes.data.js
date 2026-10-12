@@ -1,4 +1,4 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
+﻿import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.0';
 
 export const PATCH_NOTES = [
   {

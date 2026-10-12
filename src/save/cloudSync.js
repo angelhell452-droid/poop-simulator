@@ -1,13 +1,13 @@
-import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.4.0';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.0.80';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.4.0';
 import { setConfirmedVip } from '../economy/pace.js';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.80';
-import { cmp, isBig } from '../utils/big.js?v=5.0.80';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.4.0';
+import { cmp, isBig } from '../utils/big.js?v=5.4.0';
 import { t } from '../i18n/t.js';
-import { canSaveCloud, triggerUpdateNotice, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js?v=5.3.7';
-import { handleSessionInterrupted, showLobby } from '../core/lobbyAuth.js?v=5.3.8';
-import { pauseGameLoop } from '../core/gameLoop.js?v=5.0.80';
+import { canSaveCloud, triggerUpdateNotice, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js?v=5.4.0';
+import { handleSessionInterrupted, showLobby } from '../core/lobbyAuth.js?v=5.4.0';
+import { pauseGameLoop } from '../core/gameLoop.js?v=5.4.0';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
@@ -71,7 +71,9 @@ export async function confirmLiveSession() {
     if (!res.ok) return true;
     const data = await res.json().catch(() => null);
     if (!data || data.online !== true) {
-      askRelogin();
+      // Session is invalid → go to lobby login screen, not the superseded modal
+      const { showLobby: goLobby } = await import('../core/lobbyAuth.js?v=5.4.0');
+      goLobby();
       return false;
     }
     if (data.playerId && stored.playerId && data.playerId !== stored.playerId) {
@@ -595,7 +597,7 @@ async function socialRequestOnce(action, options = {}) {
   });
   let data = null;
   try { data = await res.json(); } catch (err) { data = null; }
-  if (res.status === 401) askRelogin();
+  // 401 on social is normal for unauthenticated users - do NOT trigger session modal
   if (!data || typeof data !== 'object') {
     return socialFail(res.status >= 500
       ? t('cloud.fail500', { code: res.status })
@@ -700,7 +702,7 @@ export async function wipeAllCloudSaves() {
 
 export async function wipePlayerData() {
   try {
-    const { hardReset } = await import('./saveManager.js?v=5.0.80');
+    const { hardReset } = await import('./saveManager.js?v=5.4.0');
     await hardReset();
   } catch (e) {
     try {

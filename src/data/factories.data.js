@@ -1,4 +1,4 @@
-import { WEAPON_CASES } from './cases.data.js?v=5.0.80';
+﻿import { WEAPON_CASES } from './cases.data.js?v=5.4.0';
 
 export const FACTORIES_PER_EPOCH = 1;
 export const CLASSIC_EPOCHS = 45;

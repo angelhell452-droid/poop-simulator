@@ -1,4 +1,4 @@
-/**
+﻿/**
  * knifeIcons.js
  * Централизованный маппинг и векторные рендеры ножей.
  * Поддерживает полноразмерные векторные SVG-модели ножей со скинами
@@ -6,7 +6,7 @@
  */
 
 import { getKnifeVectorSvg } from './knifeVectorRenderer.js';
-import { knifeArtHtml } from '../ui/artIcon.js?v=5.0.17';
+import { knifeArtHtml } from '../ui/artIcon.js?v=5.4.0';
 
 // Базовые иконки по типу ножа (style)
 export const KNIFE_STYLE_ICONS = {

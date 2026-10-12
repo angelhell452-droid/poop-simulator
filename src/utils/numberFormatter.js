@@ -1,4 +1,4 @@
-import { isBig, log10Of, rehydrateBig } from './big.js?v=5.0.80';
+﻿import { isBig, log10Of, rehydrateBig } from './big.js?v=5.4.0';
 
 // Ordinary numbers stay as they were. Bigger values print as 1.23e603.
 export function formatNumber(rawNum, decimals = 2) {

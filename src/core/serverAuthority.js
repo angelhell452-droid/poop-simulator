@@ -5,8 +5,8 @@
  * to prevent database overwrites after wipes and handle graceful patch updates.
  */
 
-import { GAME, getDefaultGameState } from './state.js?v=5.0.80';
-import { wipeRuntimeCatalogs } from '../save/saveManager.js?v=5.0.80';
+import { GAME, getDefaultGameState } from './state.js?v=5.4.0';
+import { wipeRuntimeCatalogs } from '../save/saveManager.js?v=5.4.0';
 
 export const CURRENT_CLIENT_PATCH_VERSION = '5.4.0';
 export const LOCAL_WORLD_RESET_KEY = 'PoopSim_WorldReset';
@@ -263,6 +263,8 @@ function dismissHandshakeErrorScreen() {
   const veil = document.getElementById('bootVeil');
   if (veil) {
     veil.innerHTML = '<span data-i18n="common.loading">Загрузка</span>';
+    veil.style.display = 'none';
+    veil.setAttribute('hidden', '');
   }
 }
 
