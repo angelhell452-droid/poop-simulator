@@ -8,7 +8,7 @@
 import { GAME, getDefaultGameState } from './state.js?v=5.0.80';
 import { wipeRuntimeCatalogs } from '../save/saveManager.js?v=5.0.80';
 
-export const CURRENT_CLIENT_PATCH_VERSION = '5.3.6';
+export const CURRENT_CLIENT_PATCH_VERSION = '5.3.7';
 export const LOCAL_WORLD_RESET_KEY = 'PoopSim_WorldReset';
 export const LOCAL_PATCH_VERSION_KEY = 'PoopSim_PatchVersion';
 

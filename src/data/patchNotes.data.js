@@ -2,6 +2,42 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.3.7 PRO',
+    date: '12 Октября 2026',
+    dateEn: 'October 12, 2026',
+    title: 'Патч 5.3.7: 🛡️ Strict Server Authority, Защита от Вайп-Рассинхрона и Мягкая Перезагрузка',
+    titleEn: 'Patch 5.3.7: Strict Server Authority, Anti-Wipe Desync & Soft Reload Countdown',
+    badge: '🛡️ STRICT AUTHORITY',
+    badgeEn: 'STRICT AUTHORITY',
+    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🛡️',
+        text: 'Strict Server Authority: Внедрена двухфазная валидация версий (worldReset и patchVersion). Полные вайпы базы и штатные патчи теперь изолированы друг от друга.',
+        textEn: 'Strict Server Authority: Two-phase version enforcement (worldReset & patchVersion) isolating global wipes from standard patches.'
+      },
+      {
+        type: 'feature',
+        icon: '📡',
+        text: 'Блокирующий Хэндшейк: Клиент опрашивает сервер ДО инициализации механик и чтения LocalStorage. При обнаружении вайпа старый локальный сейв немедленно очищается без шанса перезаписать базу данных.',
+        textEn: 'Blocking Handshake: Client validates authority prior to save reading. Server wipes trigger instant clean resets without resurrecting stale data.'
+      },
+      {
+        type: 'feature',
+        icon: '⏱️',
+        text: 'Мягкая Перезагрузка (5 минут): Фоновый опрос каждые 60с и при выходе из сна (visibilitychange) выводит плашку обратного отсчёта до обновления. При патче локальный прогресс надёжно сохраняется.',
+        textEn: 'Soft Reload (5 Minutes): Background 60s & visibility watcher alerts players with a countdown. Local progress remains safe during patches.'
+      },
+      {
+        type: 'fix',
+        icon: '🪠',
+        text: 'Исправление Буста Прорывов: Синхронизирована бесконечная формула дохода в движке и модальном окне с полным учётом реликвии "Космический Резонатор" и таланта "Экспоненциальный Взлом".',
+        textEn: 'Breakthrough Boost Sync: Unified formula calculation between engine and modal including Cosmic Resonator relic and Exponential Hack talent.'
+      }
+    ]
+  },
+  {
     version: 'v5.3.6 PRO',
     date: '12 Октября 2026',
     dateEn: 'October 12, 2026',
