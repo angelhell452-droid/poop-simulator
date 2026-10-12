@@ -114,7 +114,13 @@ export async function cloudFetch(path, options = {}) {
     res = await fetch(path.replace(CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT), opts);
   }
   if (res.status === 401 && !path.includes('action=login') && !path.includes('action=register')) {
-    handleSessionInterrupted();
+    try {
+      const clone = res.clone();
+      const data = await clone.json().catch(() => null);
+      if (data?.error === 'session_superseded') {
+        handleSessionInterrupted();
+      }
+    } catch (_) {}
   }
   return res;
 }
@@ -133,7 +139,9 @@ export function saveStoredAccount(acc) {
     if (!acc) {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     } else {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(acc));
+      const existing = getStoredAccount() || {};
+      const merged = { ...existing, ...acc };
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(merged));
     }
   } catch (e) { }
 }
@@ -304,8 +312,11 @@ export async function syncToCloudDatabase() {
     const res = await cloudFetch(CLOUD_SAVE_ENDPOINT, { method: 'POST', body: bodyStr });
 
     if (res.status === 401) {
-      handleSessionInterrupted();
-      setCloudStatus('⚠️ Сессия приостановлена', 'wait');
+      const data = await res.json().catch(() => null);
+      if (data?.error === 'session_superseded') {
+        handleSessionInterrupted();
+        setCloudStatus('⚠️ Сессия приостановлена', 'wait');
+      }
       return;
     }
 

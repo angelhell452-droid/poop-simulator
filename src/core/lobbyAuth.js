@@ -51,20 +51,19 @@ export function startAssetPreloading() {
 // Lobby Visibility Controls
 export function showLobby() {
   const lobby = document.getElementById('lobby');
-  const gameContainer = document.getElementById('game-container');
   if (lobby) lobby.style.display = 'flex';
-  if (gameContainer) gameContainer.style.display = 'none';
   const bootVeil = document.getElementById('bootVeil');
   if (bootVeil) bootVeil.style.display = 'none';
 }
 
 export function hideLobby() {
   const lobby = document.getElementById('lobby');
-  const gameContainer = document.getElementById('game-container');
   if (lobby) lobby.style.display = 'none';
-  if (gameContainer) gameContainer.style.display = 'flex';
   const bootVeil = document.getElementById('bootVeil');
   if (bootVeil) bootVeil.style.display = 'none';
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('resize'));
+  }
 }
 
 // 401 Session Interrupted Handler

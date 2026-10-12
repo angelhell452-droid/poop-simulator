@@ -278,7 +278,7 @@ export function startAuthorityWatcher() {
       const remote = await fetchServerVersions(5000);
       if (!remote) return;
 
-      if (remote.worldReset !== localWorldReset) {
+      if (Number(remote.worldReset) > Number(localWorldReset)) {
         triggerUpdateNotice('wipe', remote);
       } else if (compareSemver(remote.patchVersion, localPatchVersion) > 0) {
         triggerUpdateNotice('patch', remote);

@@ -122,11 +122,12 @@ export function parseCookies(cookieHeader) {
 }
 
 export function extractSessionToken(req) {
-  const cookies = parseCookies(req.headers.get("Cookie"));
-  if (cookies["session_token"]) return cookies["session_token"];
   const raw = req.headers.get("Authorization") || "";
   const match = raw.match(/^Bearer\s+([a-zA-Z0-9_-]{16,64})$/i);
-  return match ? match[1] : "";
+  if (match) return match[1];
+  const cookies = parseCookies(req.headers.get("Cookie"));
+  if (cookies["session_token"]) return cookies["session_token"];
+  return "";
 }
 
 export function makeSessionCookie(token) {
@@ -155,30 +156,41 @@ export async function issueSession(db, username, env = null, playerId = null) {
 }
 
 export async function sessionUser(db, req, env = null) {
-  const token = extractSessionToken(req);
-  if (!token) return null;
-  const tokenHash = await sha256Hex(token);
-  const user = await db.prepare(`
-    SELECT a.username, a.player_id as playerId
-    FROM auth_sessions s
-    JOIN user_accounts a ON a.username = s.username COLLATE NOCASE
-    WHERE s.token_hash = ? AND s.expires_at > datetime('now')
-    LIMIT 1
-  `).bind(tokenHash).first();
+  const raw = req.headers.get("Authorization") || "";
+  const match = raw.match(/^Bearer\s+([a-zA-Z0-9_-]{16,64})$/i);
+  const bearer = match ? match[1] : "";
+  const cookies = parseCookies(req.headers.get("Cookie"));
+  const cookie = cookies["session_token"] || "";
 
-  if (!user) return null;
+  const candidateTokens = [bearer, cookie].filter(Boolean);
+  if (candidateTokens.length === 0) return null;
 
-  // Single-device check via KV
-  if (env && env.SESSIONS_KV && user.playerId) {
-    try {
-      const activeToken = await env.SESSIONS_KV.get(`session_${user.playerId}`);
-      if (activeToken && activeToken !== token) {
-        return null; // Session superseded by another device
-      }
-    } catch (_) {}
+  for (const token of candidateTokens) {
+    const tokenHash = await sha256Hex(token);
+    const user = await db.prepare(`
+      SELECT a.username, a.player_id as playerId
+      FROM auth_sessions s
+      JOIN user_accounts a ON a.username = s.username COLLATE NOCASE
+      WHERE s.token_hash = ? AND s.expires_at > datetime('now')
+      LIMIT 1
+    `).bind(tokenHash).first();
+
+    if (!user) continue;
+
+    // Single-device check via KV
+    if (env && env.SESSIONS_KV && user.playerId) {
+      try {
+        const activeToken = await env.SESSIONS_KV.get(`session_${user.playerId}`);
+        if (activeToken && activeToken !== token) {
+          continue; // Session superseded by another device
+        }
+      } catch (_) {}
+    }
+
+    return user;
   }
 
-  return user;
+  return null;
 }
 
 async function roleOf(env, account) {

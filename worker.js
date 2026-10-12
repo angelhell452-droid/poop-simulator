@@ -346,18 +346,25 @@ async function handleCloudSave(req, env) {
         ""
       ).trim();
 
-      // Enforce World Reset (Wipe) -> 409 Conflict
-      if (Number.isFinite(clientReset) && clientReset !== serverWorldReset) {
+      // Enforce World Reset (Wipe) -> 409 Conflict ONLY if server is strictly ahead of client
+      if (Number.isFinite(clientReset) && serverWorldReset > clientReset) {
         return new Response(
           JSON.stringify({
             success: false,
             error: "world_reset_mismatch",
-            message: "Client worldReset does not match server worldReset. Database wipe is in effect.",
+            message: "Client worldReset is behind server worldReset. Database wipe is in effect.",
             serverWorldReset,
             serverPatchVersion
           }),
           { status: 409, headers }
         );
+      } else if (Number.isFinite(clientReset) && clientReset > serverWorldReset) {
+        // Client has higher worldReset (e.g. database reinit or migration) -> adopt client's worldReset!
+        await env.DB.prepare(`
+          INSERT INTO server_config (config_key, config_value) VALUES ('world_reset', ?)
+          ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
+        `).bind(String(clientReset)).run().catch(() => {});
+        serverWorldReset = clientReset;
       }
 
       // Enforce Patch Version -> 426 Upgrade Required ONLY when server is strictly newer than client
@@ -472,9 +479,9 @@ async function handleCloudSave(req, env) {
       }
 
       if (action === "session") {
-        const user = await sessionUser(env.DB, req);
+        const user = await sessionUser(env.DB, req, env);
         if (!user) {
-          return new Response(JSON.stringify({ online: false }), { status: 401, headers });
+          return new Response(JSON.stringify({ online: false }), { status: 200, headers });
         }
         return new Response(JSON.stringify({
           online: true,

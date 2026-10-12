@@ -86,7 +86,7 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
     }
 
     if (action === "version") {
-      let worldReset = 0;
+      let worldReset = 3;
       let patchVersion = "5.4.0";
       try {
         await env.DB.prepare(`
@@ -100,7 +100,7 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
         `).all();
         if (rows && rows.results) {
           for (const row of rows.results) {
-            if (row.config_key === "world_reset") worldReset = Number(row.config_value) || 0;
+            if (row.config_key === "world_reset") worldReset = Number(row.config_value) || 3;
             if (row.config_key === "patch_version") patchVersion = String(row.config_value || "5.4.0");
           }
         }
