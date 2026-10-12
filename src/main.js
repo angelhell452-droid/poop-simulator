@@ -1,5 +1,6 @@
 import { GAME } from './core/state.js?v=5.0.80';
 import { startGameLoop } from './core/gameLoop.js?v=5.0.80';
+import { performBlockingHandshake, startAuthorityWatcher } from './core/serverAuthority.js';
 import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.3.3';
 import { saveLocal, saveGame, hardReset } from './save/saveManager.js?v=5.0.80';
 import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.3.5';
@@ -130,6 +131,9 @@ export function applyGameModeUI() {
 
 export async function bootstrap() {
   console.log('🚀 Bootstrapping Poop Simulator (Modular Architecture v2)...');
+
+  // Step 2: Strict Server Authority blocking handshake BEFORE reading LocalStorage / big.js mechanics
+  await performBlockingHandshake();
 
   initI18n();
   onLocaleChange(() => updateAutoclickerUI());
@@ -371,6 +375,9 @@ export async function bootstrap() {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') flushCloudSave();
   });
+
+  // 13. Strict Server Authority watcher (60s polling + visibility check)
+  startAuthorityWatcher();
 
   await warmSceneArt();
   showWelcomeGreeting();

@@ -66,6 +66,18 @@ export async function ensureAdminSchema(db) {
       value INTEGER NOT NULL DEFAULT 0
     );
   `).run();
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS server_config (
+      config_key TEXT PRIMARY KEY,
+      config_value TEXT NOT NULL
+    );
+  `).run();
+  await db.prepare(`
+    INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('world_reset', '0');
+  `).run().catch(() => {});
+  await db.prepare(`
+    INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('patch_version', '5.3.6');
+  `).run().catch(() => {});
   adminSchemaReady = true;
 }
 
@@ -371,6 +383,17 @@ export async function handleAdmin(req, env, headers, url) {
     return json(headers, { success: true, username: account.username, playerId: account.playerId }, 200);
   }
 
+  if (action === "admin_set_patch_version") {
+    if (staff.role !== "creator" && staff.role !== "admin") {
+      return json(headers, { success: false, error: "Требуются права администратора." }, 403);
+    }
+    const newVer = String(body.patchVersion || "").trim();
+    if (!newVer) return json(headers, { success: false, error: "Укажите patchVersion." }, 400);
+    const ver = await setServerPatchVersion(env.DB, newVer);
+    await audit(env.DB, staff.user.username, "set_patch_version", "global", { patchVersion: ver });
+    return json(headers, { success: true, patchVersion: ver }, 200);
+  }
+
   if (action === "admin_grant") {
     const targetKey = String(body.targetPlayerId || body.targetUsername || staff.user.playerId).trim();
     const account = await env.DB.prepare(`
@@ -525,9 +548,56 @@ export function blankProgressSave(playerId, playerName, worldReset, seq) {
   };
 }
 
+export async function getServerVersions(db) {
+  try {
+    let rowReset = await db.prepare(`SELECT config_value FROM server_config WHERE config_key = 'world_reset' LIMIT 1`).first().catch(() => null);
+    let rowPatch = await db.prepare(`SELECT config_value FROM server_config WHERE config_key = 'patch_version' LIMIT 1`).first().catch(() => null);
+
+    let worldReset = rowReset ? Number(rowReset.config_value) : null;
+    let patchVersion = rowPatch ? String(rowPatch.config_value) : null;
+
+    if (worldReset === null || Number.isNaN(worldReset)) {
+      const legacyRow = await db.prepare(`SELECT value FROM game_flags WHERE key = 'world_reset' LIMIT 1`).first().catch(() => null);
+      worldReset = legacyRow ? Number(legacyRow.value) || 0 : 0;
+      await db.prepare(`
+        INSERT INTO server_config (config_key, config_value) VALUES ('world_reset', ?)
+        ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
+      `).bind(String(worldReset)).run().catch(() => {});
+    }
+
+    if (!patchVersion) {
+      patchVersion = '5.3.6';
+      await db.prepare(`
+        INSERT INTO server_config (config_key, config_value) VALUES ('patch_version', ?)
+        ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
+      `).bind(patchVersion).run().catch(() => {});
+    }
+
+    return {
+      worldReset: Number(worldReset) || 0,
+      patchVersion: String(patchVersion) || '5.3.6'
+    };
+  } catch (err) {
+    console.error("Error querying server versions:", err);
+    return {
+      worldReset: 0,
+      patchVersion: '5.3.6'
+    };
+  }
+}
+
 export async function currentWorldReset(db) {
-  const row = await db.prepare(`SELECT value FROM game_flags WHERE key = 'world_reset' LIMIT 1`).first();
-  return Number(row?.value) || 0;
+  const versions = await getServerVersions(db);
+  return versions.worldReset;
+}
+
+export async function setServerPatchVersion(db, newVersion) {
+  const versionStr = String(newVersion || '5.3.6').trim();
+  await db.prepare(`
+    INSERT INTO server_config (config_key, config_value) VALUES ('patch_version', ?)
+    ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
+  `).bind(versionStr).run();
+  return versionStr;
 }
 
 export async function wipePlayerProgress(db, playerId) {
@@ -580,11 +650,16 @@ export async function displayName(db, playerId, fallback) {
 }
 
 export async function wipeWorldProgress(db) {
-  const next = (await currentWorldReset(db)) + 1;
+  const versions = await getServerVersions(db);
+  const next = versions.worldReset + 1;
+  await db.prepare(`
+    INSERT INTO server_config (config_key, config_value) VALUES ('world_reset', ?)
+    ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
+  `).bind(String(next)).run();
   await db.prepare(`
     INSERT INTO game_flags (key, value) VALUES ('world_reset', ?)
     ON CONFLICT(key) DO UPDATE SET value = excluded.value
-  `).bind(next).run();
+  `).bind(next).run().catch(() => {});
   await db.prepare(`DELETE FROM player_saves`).run();
   await db.prepare(`DELETE FROM auth_sessions`).run();
   return next;
@@ -603,37 +678,10 @@ export async function replacementIfSeasonReset(db, playerId, playerName, saveDat
     } catch (_) { break; }
   }
   const sGame = (sObj && typeof sObj === 'object' && sObj.game) ? sObj.game : (sObj || {});
-  const clientReset = Number(sObj?.worldReset ?? sGame?.worldReset) || 0;
+  const clientReset = Number(sObj?.clientWorldReset ?? sObj?.worldReset ?? sGame?.worldReset) || 0;
   if (clientReset === reset) return null;
 
-  // Protect real gameplay progress from accidental wipe!
-  const bCount = Number(sGame.breakthroughCount ?? sObj?.breakthroughCount ?? sGame.totalTranscend ?? sObj?.totalTranscend) || 0;
-  const fCount = Number(sGame.flushCount ?? sObj?.flushCount ?? sGame.totalPrestiges ?? sObj?.totalPrestiges) || 0;
-  const stage = Number(sGame.peakForm ?? sObj?.peakForm ?? sGame.stage ?? sObj?.stage) || 1;
-  const hasProgress = bCount > 0 || fCount > 0 || stage > 5;
-
-  if (hasProgress) {
-    if (saveData && typeof saveData === 'object') {
-      saveData.worldReset = reset;
-      if (saveData.game && typeof saveData.game === 'object') saveData.game.worldReset = reset;
-    }
-    return null;
-  }
-
-  const row = await db.prepare(`SELECT save_data FROM player_saves WHERE player_id = ? LIMIT 1`).bind(playerId).first();
-  if (row) {
-    let existing = null;
-    try { existing = JSON.parse(row.save_data); } catch (_) {}
-    const existingReset = Number(existing?.worldReset ?? existing?.game?.worldReset) || 0;
-    if (existingReset === reset) {
-      if (saveData && typeof saveData === 'object') {
-        saveData.worldReset = reset;
-        if (saveData.game && typeof saveData.game === 'object') saveData.game.worldReset = reset;
-      }
-      return null;
-    }
-  }
-
+  // Strict Server Authority: Never resurrect stale local saves over a fresh server wipe!
   const name = await displayName(db, playerId, playerName);
   const save = blankProgressSave(playerId, name, reset, 1);
   await writePlayerSave(db, playerId, name, save, 1);

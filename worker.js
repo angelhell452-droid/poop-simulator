@@ -1,5 +1,4 @@
-// Cloudflare Worker with Static Assets & D1 Database
-import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, currentWorldReset, displayName, vipLevelOf } from "./workerAdmin.js";
+import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, currentWorldReset, getServerVersions, setServerPatchVersion, displayName, vipLevelOf } from "./workerAdmin.js";
 import { ensureFriendSchema, handleFriendGet, handleFriendPost } from "./workerFriends.js";
 import { ensureGuildSchema, handleGuildGet, handleGuildPost, presenceOf, tagsFor } from "./workerGuild.js";
 import { handleSocial } from "./workerSocial.js";
@@ -303,28 +302,6 @@ async function handleCloudSave(req, env) {
         }
       }
 
-      const seasonName = await displayName(env.DB, playerId, playerName);
-      const currentReset = await currentWorldReset(env.DB);
-      if (saveData && typeof saveData === "object" && currentReset > 0) {
-        if (!saveData.worldReset) saveData.worldReset = currentReset;
-        if (saveData.game && typeof saveData.game === "object" && !saveData.game.worldReset) {
-          saveData.game.worldReset = currentReset;
-        }
-      }
-      const seasonSave = await replacementIfSeasonReset(env.DB, playerId, seasonName, saveData);
-      if (seasonSave) {
-        return new Response(JSON.stringify({ success: false, error: "stale_save", saveData: seasonSave }), { status: 409, headers });
-      }
-
-      const incomingSeq = Number(body.adminSeq ?? saveData?.adminSeq ?? saveData?.game?.cloudAdminSeq) || 0;
-      const stale = await rejectStaleSave(env.DB, playerId, incomingSeq, headers);
-      if (stale.response) return stale.response;
-      const nextSeq = Math.max(incomingSeq, stale.current || 0);
-      if (saveData && typeof saveData === "object") {
-        saveData.adminSeq = nextSeq;
-        if (saveData.game && typeof saveData.game === "object") saveData.game.cloudAdminSeq = nextSeq;
-      }
-
       let sObj = saveData;
       while (typeof sObj === "string") {
         try {
@@ -336,6 +313,72 @@ async function handleCloudSave(req, env) {
         }
       }
       const sGame = (sObj && typeof sObj === "object" && sObj.game && typeof sObj.game === "object") ? sObj.game : (sObj || {});
+
+      // 1. Strict Server Authority version verification
+      const { worldReset: serverWorldReset, patchVersion: serverPatchVersion } = await getServerVersions(env.DB);
+
+      const clientReset = Number(
+        body.clientWorldReset ??
+        body.worldReset ??
+        sObj?.clientWorldReset ??
+        sObj?.worldReset ??
+        sGame?.worldReset
+      );
+
+      const clientPatch = String(
+        body.clientPatchVersion ??
+        body.patchVersion ??
+        sObj?.clientPatchVersion ??
+        sObj?.patchVersion ??
+        sGame?.patchVersion ??
+        ""
+      ).trim();
+
+      // Enforce World Reset (Wipe) -> 409 Conflict
+      if (Number.isFinite(clientReset) && clientReset !== serverWorldReset) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "world_reset_mismatch",
+            message: "Client worldReset does not match server worldReset. Database wipe is in effect.",
+            serverWorldReset,
+            serverPatchVersion
+          }),
+          { status: 409, headers }
+        );
+      }
+
+      // Enforce Patch Version -> 426 Upgrade Required
+      if (clientPatch && clientPatch !== serverPatchVersion) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "patch_version_outdated",
+            message: "Client patchVersion is outdated. Please refresh to load the latest patch.",
+            serverWorldReset,
+            serverPatchVersion
+          }),
+          { status: 426, headers }
+        );
+      }
+
+      if (sObj && typeof sObj === "object") {
+        sObj.worldReset = serverWorldReset;
+        sObj.patchVersion = serverPatchVersion;
+        if (sObj.game && typeof sObj.game === "object") {
+          sObj.game.worldReset = serverWorldReset;
+          sObj.game.patchVersion = serverPatchVersion;
+        }
+      }
+
+      const incomingSeq = Number(body.adminSeq ?? sObj?.adminSeq ?? sGame?.cloudAdminSeq) || 0;
+      const stale = await rejectStaleSave(env.DB, playerId, incomingSeq, headers);
+      if (stale.response) return stale.response;
+      const nextSeq = Math.max(incomingSeq, stale.current || 0);
+      if (sObj && typeof sObj === "object") {
+        sObj.adminSeq = nextSeq;
+        if (sObj.game && typeof sObj.game === "object") sObj.game.cloudAdminSeq = nextSeq;
+      }
 
       const rawPeak = body.stage ?? sGame.peakForm ?? sObj?.peakForm;
       const rawEvo = sGame.evoStage ?? sObj?.evoStage;
@@ -385,6 +428,16 @@ async function handleCloudSave(req, env) {
       const url = new URL(req.url);
       const playerId = url.searchParams.get("playerId");
       const action = url.searchParams.get("action");
+
+      if (action === "version" || action === "server_versions") {
+        const versions = await getServerVersions(env.DB);
+        return new Response(JSON.stringify({
+          success: true,
+          worldReset: versions.worldReset,
+          patchVersion: versions.patchVersion,
+          timestamp: Date.now()
+        }), { status: 200, headers });
+      }
 
       if (action === "session") {
         const user = await sessionUser(env.DB, req);
@@ -797,7 +850,19 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    if (url.pathname === "/api/cloud-save" || url.pathname === "/.netlify/functions/cloud-save") {
+    if (url.pathname === "/api/version") {
+      if (request.method === "OPTIONS") return new Response(null, { headers });
+      await ensureSchema(env.DB);
+      const versions = await getServerVersions(env.DB);
+      return new Response(JSON.stringify({
+        success: true,
+        worldReset: versions.worldReset,
+        patchVersion: versions.patchVersion,
+        timestamp: Date.now()
+      }), { status: 200, headers });
+    }
+
+    if (url.pathname === "/api/cloud-save" || url.pathname === "/api/save" || url.pathname === "/.netlify/functions/cloud-save") {
       return handleCloudSave(request, env);
     }
 

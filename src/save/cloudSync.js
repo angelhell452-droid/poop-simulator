@@ -5,6 +5,7 @@ import { setConfirmedVip } from '../economy/pace.js';
 import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.80';
 import { cmp, isBig } from '../utils/big.js?v=5.0.80';
 import { t } from '../i18n/t.js';
+import { canSaveCloud, triggerUpdateNotice, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
@@ -149,7 +150,10 @@ function cloudBody() {
     prestige_currency: GAME.prestigeRolls,
     transcendPlungers: plungersStr,
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
+    clientWorldReset: Number(GAME.worldReset) || 0,
+    clientPatchVersion: String(GAME.patchVersion || CURRENT_CLIENT_PATCH_VERSION),
     worldReset: Number(GAME.worldReset) || 0,
+    patchVersion: String(GAME.patchVersion || CURRENT_CLIENT_PATCH_VERSION),
     passwordHash: stored?.passwordHash || '',
     saveData: payload
   });
@@ -217,6 +221,7 @@ function localIsAhead(localParsed, cloudParsed) {
 }
 
 export function flushCloudSave() {
+  if (!canSaveCloud()) return;
   saveLocal();
   const stored = getStoredAccount();
   if (!stored?.sessionToken || !GAME.playerId) return;
@@ -255,6 +260,7 @@ function setCloudStatus(text, mode) {
 }
 
 export async function syncToCloudDatabase() {
+  if (!canSaveCloud()) return;
   saveLocal();
 
   const stored = getStoredAccount();
@@ -305,6 +311,15 @@ export async function syncToCloudDatabase() {
 
     if (res.status === 409) {
       const data = await res.json().catch(() => null);
+      if (data?.error === 'world_reset_mismatch') {
+        console.warn('🛑 [CloudSync] 409 Conflict: Server worldReset mismatch. Engaging wipe lock.');
+        triggerUpdateNotice('wipe', {
+          worldReset: Number(data.serverWorldReset) || 0,
+          patchVersion: String(data.serverPatchVersion || CURRENT_CLIENT_PATCH_VERSION)
+        });
+        setCloudStatus('⚠️ Вайп сервера', 'wait');
+        return;
+      }
       if (data?.adminSeq) {
         GAME.cloudAdminSeq = Math.max(Number(GAME.cloudAdminSeq) || 0, Number(data.adminSeq));
       }
@@ -320,6 +335,17 @@ export async function syncToCloudDatabase() {
         }
       }
       setCloudStatus(t('cloud.updating'), 'save');
+      return;
+    }
+
+    if (res.status === 426) {
+      const data = await res.json().catch(() => null);
+      console.warn('🚀 [CloudSync] 426 Upgrade Required: Outdated patch version.');
+      triggerUpdateNotice('patch', {
+        worldReset: Number(data?.serverWorldReset) || Number(GAME.worldReset) || 0,
+        patchVersion: String(data?.serverPatchVersion || CURRENT_CLIENT_PATCH_VERSION)
+      });
+      setCloudStatus('🚀 Обновление', 'save');
       return;
     }
 

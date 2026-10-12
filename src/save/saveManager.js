@@ -14,6 +14,7 @@ import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { isBig, rehydrateBig } from '../utils/big.js?v=5.0.80';
 import { RELICS } from '../data/relics.data.js';
+import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js';
 
 function keepBio(value) {
   const n = rehydrateBig(value);
@@ -57,11 +58,17 @@ export function buildSavePayload() {
   const currentBreakthroughs = Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
   const currentStage = Math.max(1, Math.floor(Number(GAME.peakForm ?? (GAME.evoStage !== undefined ? GAME.evoStage + 1 : 1)) || 1));
 
+  const worldResetVal = Number(GAME.worldReset) || 0;
+  const patchVersionVal = String(GAME.patchVersion || CURRENT_CLIENT_PATCH_VERSION);
+
   return {
     saveVersion: GAME.saveVersion || 6,
     saveTimestamp: Date.now(),
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
-    worldReset: Number(GAME.worldReset) || 0,
+    clientWorldReset: worldResetVal,
+    clientPatchVersion: patchVersionVal,
+    worldReset: worldResetVal,
+    patchVersion: patchVersionVal,
     stage: currentStage,
     peakForm: currentStage,
     evoStage: GAME.evoStage ?? 0,
@@ -75,6 +82,10 @@ export function buildSavePayload() {
     prestigeRolls: GAME.prestigeRolls,
     game: {
       ...GAME,
+      clientWorldReset: worldResetVal,
+      clientPatchVersion: patchVersionVal,
+      worldReset: worldResetVal,
+      patchVersion: patchVersionVal,
       stage: currentStage,
       peakForm: currentStage,
       breakthroughCount: currentBreakthroughs,
@@ -112,6 +123,10 @@ export function buildSavePayload() {
 }
 
 export function saveLocal() {
+  if (!canSaveLocal()) {
+    console.warn('[SaveManager] Local save prevented: Wipe is in effect.');
+    return;
+  }
   try {
     GAME.biomass = keepBio(GAME.biomass);
     GAME.cycleBiomass = keepBio(GAME.cycleBiomass);
@@ -128,6 +143,8 @@ export function saveLocal() {
 }
 
 export const saveGame = saveLocal;
+
+registerLocalSaveCallback(saveLocal);
 
 function readStoredAccount() {
   try {
