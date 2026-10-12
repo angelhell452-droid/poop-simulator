@@ -58,7 +58,7 @@ export function buildSavePayload() {
   const currentStage = Math.max(1, Math.floor(Number(GAME.peakForm ?? (GAME.evoStage !== undefined ? GAME.evoStage + 1 : 1)) || 1));
 
   return {
-    saveVersion: GAME.saveVersion || 5,
+    saveVersion: GAME.saveVersion || 6,
     saveTimestamp: Date.now(),
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
     worldReset: Number(GAME.worldReset) || 0,
