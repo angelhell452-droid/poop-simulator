@@ -1,4 +1,4 @@
-﻿import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.4.0';
+import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.4.0';
 import { FACTORIES } from '../data/factories.data.js?v=5.4.0';
 import { TALENTS } from '../data/talents.data.js';
 import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.0';
@@ -14,7 +14,7 @@ import { maxUnlockedStage } from '../progression/phases.data.js?v=5.4.0';
 import { events } from '../core/events.js';
 import { isBig, rehydrateBig } from '../utils/big.js?v=5.4.0';
 import { RELICS } from '../data/relics.data.js';
-import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js?v=5.4.0';
+import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION, LOCAL_PATCH_VERSION_KEY, compareSemver } from '../core/serverAuthority.js?v=5.4.0';
 
 function keepBio(value) {
   const n = rehydrateBig(value);
@@ -64,7 +64,11 @@ export function buildSavePayload() {
   const currentStage = Math.max(1, Math.floor(Number(GAME.peakForm ?? (GAME.evoStage !== undefined ? GAME.evoStage + 1 : 1)) || 1));
 
   const worldResetVal = Number(GAME.worldReset) || 0;
-  const patchVersionVal = String(GAME.patchVersion || CURRENT_CLIENT_PATCH_VERSION);
+  const effectivePatch = (!GAME.patchVersion || compareSemver(CURRENT_CLIENT_PATCH_VERSION, GAME.patchVersion) > 0)
+    ? CURRENT_CLIENT_PATCH_VERSION
+    : String(GAME.patchVersion);
+  GAME.patchVersion = effectivePatch;
+  const patchVersionVal = effectivePatch;
 
   return {
     saveVersion: GAME.saveVersion || 6,
@@ -328,6 +332,9 @@ export function applySaveDataSafely(rawData) {
         GAME[k] = data.game[k];
       }
     }
+    if (!GAME.patchVersion || compareSemver(CURRENT_CLIENT_PATCH_VERSION, GAME.patchVersion) > 0) {
+      GAME.patchVersion = CURRENT_CLIENT_PATCH_VERSION;
+    }
     if (!GAME.gameMode) GAME.gameMode = GAME.girlyMode ? 'girls' : 'boys';
     if (!GAME.archetype) GAME.archetype = 'balanced';
     if (data.game.transcendUpgrades) {
@@ -561,6 +568,13 @@ export function applySaveDataSafely(rawData) {
 
   clampAutoclickerState();
   notePeakForm();
+
+  if (!GAME.patchVersion || compareSemver(CURRENT_CLIENT_PATCH_VERSION, GAME.patchVersion) > 0) {
+    GAME.patchVersion = CURRENT_CLIENT_PATCH_VERSION;
+  }
+  try {
+    localStorage.setItem(LOCAL_PATCH_VERSION_KEY, CURRENT_CLIENT_PATCH_VERSION);
+  } catch (_) {}
 
   events.emit('save:loaded');
 }

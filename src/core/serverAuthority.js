@@ -181,16 +181,17 @@ export async function performBlockingHandshake() {
         localPatchVersion = serverPatchVersion;
       } else {
         // worldReset matches
-        // Only trigger patch if server is strictly newer than local version!
-        if (compareSemver(serverPatchVersion, localPatchVersion) > 0) {
-          console.log(`✨ [StrictAuthority] Patch update detected: ${localPatchVersion} -> ${serverPatchVersion}`);
+        // Only trigger patch if server is strictly newer than local client code!
+        if (compareSemver(serverPatchVersion, CURRENT_CLIENT_PATCH_VERSION) > 0) {
+          console.log(`✨ [StrictAuthority] Patch update detected: ${CURRENT_CLIENT_PATCH_VERSION} -> ${serverPatchVersion}`);
           try {
             localStorage.setItem(LOCAL_PATCH_VERSION_KEY, String(serverPatchVersion));
           } catch (_) {}
           localPatchVersion = serverPatchVersion;
         } else {
           // Local client is already equal or newer than server
-          serverPatchVersion = localPatchVersion;
+          serverPatchVersion = CURRENT_CLIENT_PATCH_VERSION;
+          localPatchVersion = CURRENT_CLIENT_PATCH_VERSION;
         }
 
         try {
@@ -199,7 +200,7 @@ export async function performBlockingHandshake() {
         } catch (_) {}
 
         GAME.worldReset = serverWorldReset;
-        GAME.patchVersion = localPatchVersion;
+        GAME.patchVersion = CURRENT_CLIENT_PATCH_VERSION;
       }
 
       isHandshakeComplete = true;
@@ -282,7 +283,7 @@ export function startAuthorityWatcher() {
 
       if (Number(remote.worldReset) > Number(localWorldReset)) {
         triggerUpdateNotice('wipe', remote);
-      } else if (compareSemver(remote.patchVersion, localPatchVersion) > 0) {
+      } else if (compareSemver(remote.patchVersion, CURRENT_CLIENT_PATCH_VERSION) > 0) {
         triggerUpdateNotice('patch', remote);
       }
     } catch (err) {
@@ -305,16 +306,21 @@ export function startAuthorityWatcher() {
  */
 export function triggerUpdateNotice(type, remote) {
   if (isNoticeActive) return;
-  isNoticeActive = true;
 
-  if (type === 'wipe') {
-    isWipePending = true;
-    console.warn('🛑 [StrictAuthority] WIPE DETECTED! All local and cloud saves disabled.');
-  } else {
+  if (type === 'patch') {
+    if (compareSemver(remote?.patchVersion, CURRENT_CLIENT_PATCH_VERSION) <= 0) {
+      console.log('ℹ️ [StrictAuthority] Client code is already up-to-date (' + CURRENT_CLIENT_PATCH_VERSION + '). Skipping notice.');
+      GAME.patchVersion = CURRENT_CLIENT_PATCH_VERSION;
+      return;
+    }
     isPatchPending = true;
     console.warn('🚀 [StrictAuthority] PATCH DETECTED! Cloud saves disabled, local saves remain active.');
+  } else {
+    isWipePending = true;
+    console.warn('🛑 [StrictAuthority] WIPE DETECTED! All local and cloud saves disabled.');
   }
 
+  isNoticeActive = true;
   serverWorldReset = remote.worldReset;
   serverPatchVersion = remote.patchVersion;
 
@@ -322,6 +328,7 @@ export function triggerUpdateNotice(type, remote) {
 }
 
 function createCountdownBanner(type) {
+  if (document.getElementById('authorityUpdateBanner')) return;
   const isWipe = type === 'wipe';
   let secondsLeft = 300; // 5 minutes
 

@@ -508,8 +508,11 @@ export async function handleAdmin(req, env, headers, url) {
 export function blankProgressSave(playerId, playerName, worldReset, seq) {
   const name = playerName || "Игрок";
   return {
-    saveVersion: 5,
+    saveVersion: 6,
     worldReset,
+    clientWorldReset: worldReset,
+    patchVersion: '5.4.0',
+    clientPatchVersion: '5.4.0',
     adminSeq: seq,
     resetProgress: true,
     feedCount: 0,
@@ -526,6 +529,8 @@ export function blankProgressSave(playerId, playerName, worldReset, seq) {
     game: {
       playerId,
       playerName: name,
+      patchVersion: '5.4.0',
+      clientPatchVersion: '5.4.0',
       biomass: 0,
       cycleBiomass: 0,
       allTimeBiomass: 0,

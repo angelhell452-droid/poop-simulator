@@ -5,7 +5,7 @@ import { setConfirmedVip } from '../economy/pace.js';
 import { setGuildPresence } from '../guild/guildPresence.js?v=5.4.0';
 import { cmp, isBig } from '../utils/big.js?v=5.4.0';
 import { t } from '../i18n/t.js';
-import { canSaveCloud, triggerUpdateNotice, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js?v=5.4.0';
+import { canSaveCloud, triggerUpdateNotice, CURRENT_CLIENT_PATCH_VERSION, compareSemver } from '../core/serverAuthority.js?v=5.4.0';
 import { handleSessionInterrupted, showLobby } from '../core/lobbyAuth.js?v=5.4.0';
 import { pauseGameLoop } from '../core/gameLoop.js?v=5.4.0';
 
@@ -158,6 +158,10 @@ function cloudBody() {
   const currentBreakthroughs = Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
 
   const stored = getStoredAccount();
+  const effectivePatch = (!GAME.patchVersion || compareSemver(CURRENT_CLIENT_PATCH_VERSION, GAME.patchVersion) > 0)
+    ? CURRENT_CLIENT_PATCH_VERSION
+    : String(GAME.patchVersion);
+  GAME.patchVersion = effectivePatch;
 
   return JSON.stringify({
     playerId: GAME.playerId,
@@ -173,9 +177,9 @@ function cloudBody() {
     transcendPlungers: plungersStr,
     adminSeq: Number(GAME.cloudAdminSeq) || 0,
     clientWorldReset: Number(GAME.worldReset) || 0,
-    clientPatchVersion: String(GAME.patchVersion || CURRENT_CLIENT_PATCH_VERSION),
+    clientPatchVersion: effectivePatch,
     worldReset: Number(GAME.worldReset) || 0,
-    patchVersion: String(GAME.patchVersion || CURRENT_CLIENT_PATCH_VERSION),
+    patchVersion: effectivePatch,
     passwordHash: stored?.passwordHash || '',
     last_updated: Date.now(),
     saveData: payload
@@ -362,13 +366,22 @@ export async function syncToCloudDatabase() {
 
     if (res.status === 426) {
       const data = await res.json().catch(() => null);
-      console.warn('🚀 [CloudSync] 426 Upgrade Required: Outdated patch version.');
-      triggerUpdateNotice('patch', {
-        worldReset: Number(data?.serverWorldReset) || Number(GAME.worldReset) || 0,
-        patchVersion: String(data?.serverPatchVersion || CURRENT_CLIENT_PATCH_VERSION)
-      });
-      setCloudStatus('🚀 Обновление', 'save');
-      return;
+      const serverPatch = String(data?.serverPatchVersion || CURRENT_CLIENT_PATCH_VERSION);
+      if (compareSemver(serverPatch, CURRENT_CLIENT_PATCH_VERSION) > 0) {
+        console.warn('🚀 [CloudSync] 426 Upgrade Required: Outdated patch version.', serverPatch);
+        triggerUpdateNotice('patch', {
+          worldReset: Number(data?.serverWorldReset) || Number(GAME.worldReset) || 0,
+          patchVersion: serverPatch
+        });
+        setCloudStatus('🚀 Обновление', 'save');
+        return;
+      } else {
+        GAME.patchVersion = CURRENT_CLIENT_PATCH_VERSION;
+        saveLocal();
+        console.info('🔄 [CloudSync] Re-aligned client patch to', CURRENT_CLIENT_PATCH_VERSION);
+        requestCloudSync(400);
+        return;
+      }
     }
 
     if (res.ok) {
