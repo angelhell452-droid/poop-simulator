@@ -177,6 +177,25 @@ export function updateTranscendModalRealtime() {
     plungersEl.innerHTML = `+${formatNumber(gain)} <span class="plunger-icon"></span> Вантузов`;
   }
 
+  const nb = tb.nextBoost || {};
+  const cb = tb.curBoost || {};
+  const hasRelicBoost = (nb.boostLvl || 0) > 0;
+  const hasTalentHack = (nb.hackLvl || 0) > 0;
+
+  let modifierBadgesHtml = '';
+  if (hasRelicBoost || hasTalentHack) {
+    const badges = [];
+    if (hasRelicBoost) {
+      badges.push(`<span class="inline-flex items-center gap-1 text-[10px] text-amber-300 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-500/30">🪐 База +${formatNumber(nb.baseBonus)} (Резонатор ур. ${formatNumber(nb.boostLvl)})</span>`);
+    }
+    if (hasTalentHack) {
+      badges.push(`<span class="inline-flex items-center gap-1 text-[10px] text-purple-300 bg-purple-950/60 px-1.5 py-0.5 rounded border border-purple-500/30">🔮 Степень +${formatNumber(nb.expBonus)} (Взлом ур. ${formatNumber(nb.hackLvl)})</span>`);
+    }
+    modifierBadgesHtml = `<div class="flex flex-wrap gap-1.5 pt-0.5">${badges.join('')}</div>`;
+  }
+
+  const nextCalcFormula = `(${formatNumber(nb.base || 1.5)})^${formatNumber(nb.exp || 1)}`;
+
   const tReqLabel = document.getElementById('transcendReqLabel');
   if (tReqLabel) {
     tReqLabel.innerHTML = `
@@ -215,14 +234,35 @@ export function updateTranscendModalRealtime() {
           </div>
         </div>
 
-        <!-- 3. Пассивный бесконечный буст -->
-        <div class="p-2.5 rounded-xl bg-gradient-to-r from-indigo-950 to-purple-950 border border-cyan-400/40 text-left space-y-1">
-          <div class="text-[10px] text-cyan-300 uppercase font-bold tracking-wider">
-            Пассивный бесконечный буст после нажатия: (1.5 + 0.1 × Прорывы)^Прорывы
+        <!-- 3. Бесконечный буст дохода от Прорывов -->
+        <div class="p-2.5 rounded-xl bg-gradient-to-r from-indigo-950 to-purple-950 border border-cyan-400/40 text-left space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-cyan-300 font-bold uppercase tracking-wider text-[10px]">Бесконечный буст дохода от Прорывов</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 font-mono">
+              (База)^Степень
+            </span>
           </div>
-          <div class="flex items-center justify-between text-xs font-mono">
-            <span class="text-stone-400">Множитель дохода:</span>
-            <span class="text-white font-bold">x${formatNumber(tb.currentMult)} ➔ <b class="text-emerald-300 font-extrabold text-sm">x${formatNumber(tb.nextMult)}</b></span>
+
+          <div class="text-[11px] text-indigo-200 leading-snug space-y-1">
+            <div class="text-[10px] text-stone-300">
+              Базовая формула: <span class="font-mono text-cyan-200 font-bold">(1.5 + 0.1 × Прорывы)^Прорывы</span>
+            </div>
+            ${modifierBadgesHtml}
+            <div class="text-[10px] text-stone-300">
+              Формула шага #${formatNumber(currentCount + 1)}: <span class="font-mono text-emerald-300 font-bold">${nextCalcFormula}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs font-mono pt-1.5 border-t border-cyan-500/20">
+            <div class="space-y-0.5">
+              <span class="text-stone-400 text-[10px] block">Активен сейчас (#${formatNumber(currentCount)}):</span>
+              <span class="text-white font-bold text-xs">x${formatNumber(tb.currentMult)}</span>
+            </div>
+            <span class="text-cyan-400 font-bold text-sm">➔</span>
+            <div class="text-right space-y-0.5">
+              <span class="text-stone-400 text-[10px] block">После Прорыва (#${formatNumber(currentCount + 1)}):</span>
+              <span class="text-emerald-300 font-extrabold text-sm">x${formatNumber(tb.nextMult)}</span>
+            </div>
           </div>
         </div>
       </div>

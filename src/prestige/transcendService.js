@@ -9,6 +9,7 @@ import { noteHorizonSpark } from '../economy/horizon.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
 import { requestCloudSync } from '../save/cloudSync.js?v=5.3.3';
 import { peakForm } from '../progression/unlocks.js?v=5.0.80';
+import { getBreakthroughBoostDetails } from '../economy/metaMultipliers.js?v=5.0.80';
 
 export const BRIDGE_FLUSHES_NEEDED = 10;
 
@@ -124,11 +125,10 @@ export function getTranscendRewardBreakdown() {
   let totalGain = Math.round(basePlungers * (1 + soulBonus) * vipMult);
   totalGain = Math.max(1, totalGain);
 
-  const boostLvl = getRelicLevel('relic_breakthrough_boost');
-  const baseFactor = 1.5 + (currentCount * 0.1) + (boostLvl * 0.1);
-  const currentMult = currentCount > 0 ? bigPow(baseFactor, currentCount) : 1;
-  const nextBase = 1.5 + ((currentCount + 1) * 0.1) + (boostLvl * 0.1);
-  const nextMult = bigPow(nextBase, 1 + currentCount);
+  const curBoost = getBreakthroughBoostDetails(currentCount);
+  const nextBoost = getBreakthroughBoostDetails(currentCount + 1);
+  const currentMult = curBoost.mult;
+  const nextMult = nextBoost.mult;
 
   return {
     ...req,
@@ -142,6 +142,8 @@ export function getTranscendRewardBreakdown() {
     totalGain,
     currentMult,
     nextMult,
+    curBoost,
+    nextBoost,
     nextPlungerRollsNeeded: 0,
     nextPlungerFormsNeeded: 0
   };

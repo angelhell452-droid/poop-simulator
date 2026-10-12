@@ -69,14 +69,32 @@ export function getFlushIncomeMult() {
   return 1 + 0.5 * flushes;
 }
 
-export function getBreakthroughIncomeMult() {
-  const b = Math.max(0, GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
-  if (b === 0) return 1;
+export function getBreakthroughBoostDetails(count = null) {
+  const b = count !== null ? Math.max(0, count) : Math.max(0, GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
   const hackLvl = TALENTS.find(t => t.id === 'talent_exponent_hack')?.level || 0;
-  const exp = b + (hackLvl * 0.05);
+  const expBonus = hackLvl * 0.05;
+  const exp = b + expBonus;
   const boostLvl = getRelicLevel('relic_breakthrough_boost');
-  const base = 1.5 + (b * 0.1) + (boostLvl * 0.1);
-  return bigPow(base, exp);
+  const baseBonus = boostLvl * 0.1;
+  const base = 1.5 + (b * 0.1) + baseBonus;
+  const mult = b === 0 ? 1 : bigPow(base, exp);
+
+  return {
+    breakthroughs: b,
+    base,
+    rawBase: 1.5 + (b * 0.1),
+    boostLvl,
+    baseBonus,
+    exp,
+    rawExp: b,
+    hackLvl,
+    expBonus,
+    mult
+  };
+}
+
+export function getBreakthroughIncomeMult() {
+  return getBreakthroughBoostDetails().mult;
 }
 
 export function getInfinityEssenceMult() {
