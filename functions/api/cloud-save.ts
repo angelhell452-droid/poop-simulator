@@ -85,6 +85,29 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
       return new Response(JSON.stringify({ success: true, wiped: "all" }), { status: 200, headers });
     }
 
+    if (action === "version") {
+      let worldReset = 0;
+      let patchVersion = "5.3.7";
+      try {
+        await env.DB.prepare(`
+          CREATE TABLE IF NOT EXISTS server_config (
+            config_key TEXT PRIMARY KEY,
+            config_value TEXT NOT NULL
+          );
+        `).run();
+        const rows: any = await env.DB.prepare(`
+          SELECT config_key, config_value FROM server_config WHERE config_key IN ('world_reset', 'patch_version')
+        `).all();
+        if (rows && rows.results) {
+          for (const row of rows.results) {
+            if (row.config_key === "world_reset") worldReset = Number(row.config_value) || 0;
+            if (row.config_key === "patch_version") patchVersion = String(row.config_value || "5.3.7");
+          }
+        }
+      } catch (_) {}
+      return new Response(JSON.stringify({ success: true, worldReset, patchVersion, timestamp: Date.now() }), { status: 200, headers });
+    }
+
     if (req.method === "POST") {
       const body: any = await req.json();
 

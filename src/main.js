@@ -1,6 +1,6 @@
 import { GAME } from './core/state.js?v=5.0.80';
 import { startGameLoop } from './core/gameLoop.js?v=5.0.80';
-import { performBlockingHandshake, startAuthorityWatcher } from './core/serverAuthority.js';
+import { performBlockingHandshake, startAuthorityWatcher } from './core/serverAuthority.js?v=5.3.7';
 import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.3.3';
 import { saveLocal, saveGame, hardReset } from './save/saveManager.js?v=5.0.80';
 import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.3.5';

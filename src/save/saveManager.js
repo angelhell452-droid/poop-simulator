@@ -14,7 +14,7 @@ import { maxUnlockedStage } from '../progression/phases.data.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { isBig, rehydrateBig } from '../utils/big.js?v=5.0.80';
 import { RELICS } from '../data/relics.data.js';
-import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js';
+import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js?v=5.3.7';
 
 function keepBio(value) {
   const n = rehydrateBig(value);

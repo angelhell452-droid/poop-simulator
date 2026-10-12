@@ -5,7 +5,7 @@ import { setConfirmedVip } from '../economy/pace.js';
 import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.80';
 import { cmp, isBig } from '../utils/big.js?v=5.0.80';
 import { t } from '../i18n/t.js';
-import { canSaveCloud, triggerUpdateNotice, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js';
+import { canSaveCloud, triggerUpdateNotice, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js?v=5.3.7';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
