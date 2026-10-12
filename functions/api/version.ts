@@ -20,7 +20,7 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
   const { env } = context;
 
   let worldReset = 0;
-  let patchVersion = "5.3.7";
+  let patchVersion = "5.4.0";
 
   if (env && env.DB) {
     try {
@@ -34,7 +34,7 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
         INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('world_reset', '0');
       `).run().catch(() => {});
       await env.DB.prepare(`
-        INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('patch_version', '5.3.7');
+        INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('patch_version', '5.4.0');
       `).run().catch(() => {});
 
       const rows: any = await env.DB.prepare(`
@@ -46,7 +46,7 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
           if (row.config_key === "world_reset") {
             worldReset = Number(row.config_value) || 0;
           } else if (row.config_key === "patch_version") {
-            patchVersion = String(row.config_value || "5.3.7");
+            patchVersion = String(row.config_value || "5.4.0");
           }
         }
       }

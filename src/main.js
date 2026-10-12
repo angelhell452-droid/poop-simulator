@@ -1,6 +1,7 @@
 import { GAME } from './core/state.js?v=5.0.80';
 import { startGameLoop } from './core/gameLoop.js?v=5.0.80';
 import { performBlockingHandshake, startAuthorityWatcher } from './core/serverAuthority.js?v=5.3.7';
+import { initLobbyAuth, checkAutoLogin } from './core/lobbyAuth.js?v=5.3.8';
 import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.3.3';
 import { saveLocal, saveGame, hardReset } from './save/saveManager.js?v=5.0.80';
 import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.3.5';
@@ -485,9 +486,18 @@ if (typeof window !== 'undefined') {
   });
 }
 
+async function startApp() {
+  initLobbyAuth(bootstrap);
+  const loggedIn = await checkAutoLogin(bootstrap);
+  if (!loggedIn) {
+    const bootVeil = document.getElementById('bootVeil');
+    if (bootVeil) bootVeil.style.display = 'none';
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bootstrap);
+  document.addEventListener('DOMContentLoaded', startApp);
 } else {
-  bootstrap();
+  startApp();
 }
 

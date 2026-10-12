@@ -6,6 +6,8 @@ import { setGuildPresence } from '../guild/guildPresence.js?v=5.0.80';
 import { cmp, isBig } from '../utils/big.js?v=5.0.80';
 import { t } from '../i18n/t.js';
 import { canSaveCloud, triggerUpdateNotice, CURRENT_CLIENT_PATCH_VERSION } from '../core/serverAuthority.js?v=5.3.7';
+import { handleSessionInterrupted, showLobby } from '../core/lobbyAuth.js?v=5.3.8';
+import { pauseGameLoop } from '../core/gameLoop.js?v=5.0.80';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
@@ -93,16 +95,26 @@ export async function hashPassword(password) {
 
 export function authHeaders(extra = {}) {
   const headers = { 'Content-Type': 'application/json', ...extra };
-  const token = getStoredAccount()?.sessionToken;
+  const stored = getStoredAccount();
+  const token = stored?.sessionToken;
   if (token) headers.Authorization = `Bearer ${token}`;
+  const uid = stored?.playerId || GAME.playerId;
+  if (uid) headers['X-User-Id'] = uid;
   return headers;
 }
 
-async function cloudFetch(path, options = {}) {
-  const opts = { ...options, headers: authHeaders(options.headers || {}) };
+export async function cloudFetch(path, options = {}) {
+  const opts = {
+    credentials: 'include',
+    ...options,
+    headers: authHeaders(options.headers || {})
+  };
   let res = await fetch(path, opts);
   if (!res.ok && res.status === 404 && path.startsWith(CLOUD_SAVE_ENDPOINT)) {
     res = await fetch(path.replace(CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT), opts);
+  }
+  if (res.status === 401 && !path.includes('action=login') && !path.includes('action=register')) {
+    handleSessionInterrupted();
   }
   return res;
 }
@@ -155,6 +167,7 @@ function cloudBody() {
     worldReset: Number(GAME.worldReset) || 0,
     patchVersion: String(GAME.patchVersion || CURRENT_CLIENT_PATCH_VERSION),
     passwordHash: stored?.passwordHash || '',
+    last_updated: Date.now(),
     saveData: payload
   });
 }
@@ -291,25 +304,8 @@ export async function syncToCloudDatabase() {
     const res = await cloudFetch(CLOUD_SAVE_ENDPOINT, { method: 'POST', body: bodyStr });
 
     if (res.status === 401) {
-      if (stored?.username && stored?.passwordHash) {
-        try {
-          const loginRes = await cloudFetch(`${CLOUD_SAVE_ENDPOINT}?action=login`, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'login', username: stored.username, passwordHash: stored.passwordHash })
-          });
-          const loginData = await loginRes.json().catch(() => null);
-          if (loginData?.success && loginData?.sessionToken) {
-            stored.sessionToken = loginData.sessionToken;
-            saveStoredAccount(stored);
-            markSessionLive();
-            await cloudFetch(CLOUD_SAVE_ENDPOINT, { method: 'POST', body: bodyStr });
-            setCloudStatus(t('cloud.saved'), 'ok');
-            return;
-          }
-        } catch (_) {}
-      }
-      dropDeadSession();
-      setCloudStatus(t('cloud.login'), 'wait');
+      handleSessionInterrupted();
+      setCloudStatus('⚠️ Сессия приостановлена', 'wait');
       return;
     }
 
@@ -322,6 +318,15 @@ export async function syncToCloudDatabase() {
           patchVersion: String(data.serverPatchVersion || CURRENT_CLIENT_PATCH_VERSION)
         });
         setCloudStatus('⚠️ Вайп сервера', 'wait');
+        return;
+      }
+      if (data?.error === 'conflict_outdated' || data?.serverSave) {
+        console.warn('⚠️ [CloudSync] 409 Conflict: Incoming save timestamp is older than server save. Overwriting local state with server save.');
+        if (data.serverSave) {
+          applySaveDataSafely(data.serverSave);
+          saveLocal();
+        }
+        setCloudStatus('Синхронизировано с сервером', 'ok');
         return;
       }
       if (data?.adminSeq) {
@@ -469,10 +474,12 @@ export async function loginAccount(username, password) {
 
 export function logoutAccount() {
   saveStoredAccount(null);
-  // Reset playerId to a new guest id so they don't overwrite previous account
-  GAME.playerId = 'guest_' + Math.random().toString(36).substring(2, 10);
-  GAME.playerName = `${t('common.guest')} #` + GAME.playerId.substring(GAME.playerId.length - 4);
-  saveLocal();
+  GAME.playerId = '';
+  GAME.playerName = '';
+  if (typeof window !== 'undefined') {
+    pauseGameLoop();
+    showLobby();
+  }
 }
 
 export async function loadFromCloudDatabaseOrLocal() {

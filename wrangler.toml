@@ -17,3 +17,7 @@ database_id = "a871d75b-228f-4dad-8bbb-0a9784b300b9"
 [[services]]
 binding = "SOCIAL"
 service = "poop-simulator-social"
+
+[[kv_namespaces]]
+binding = "SESSIONS_KV"
+id = "38799c47da284f7a9b36b2c079f1e479"

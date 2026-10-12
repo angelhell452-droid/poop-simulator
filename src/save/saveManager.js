@@ -23,6 +23,11 @@ function keepBio(value) {
   return n;
 }
 
+export function getIsolatedStorageKey(userId = null) {
+  const uid = userId || GAME.playerId || 'guest';
+  return `saveGame_${uid}`;
+}
+
 export const STORAGE_KEY = 'PoopSim_Pro_Save';
 export const BACKUP_KEY = 'PoopSim_Pro_Backup';
 
@@ -135,6 +140,8 @@ export function saveLocal() {
     
     const payload = buildSavePayload();
     const json = JSON.stringify(payload);
+    const isolatedKey = getIsolatedStorageKey();
+    localStorage.setItem(isolatedKey, json);
     localStorage.setItem(STORAGE_KEY, json);
     localStorage.setItem(BACKUP_KEY, json);
   } catch (e) {
@@ -560,7 +567,8 @@ export function applySaveDataSafely(rawData) {
 
 export function readLocalSave() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_KEY);
+    const isolatedKey = getIsolatedStorageKey();
+    const raw = localStorage.getItem(isolatedKey) || localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch (e) {
     return null;
@@ -569,7 +577,8 @@ export function readLocalSave() {
 
 export function loadLocal() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_KEY);
+    const isolatedKey = getIsolatedStorageKey();
+    const raw = localStorage.getItem(isolatedKey) || localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_KEY);
     if (raw) {
       applySaveDataSafely(JSON.parse(raw));
       return true;

@@ -202,7 +202,24 @@ export function gameEngineTick() {
   events.emit('tick', { dt, liveCps, passivePerSec });
 }
 
+let isLoopPaused = false;
+
+export function pauseGameLoop() {
+  isLoopPaused = true;
+}
+
+export function resumeGameLoop() {
+  lastTickTime = performance.now();
+  isLoopPaused = false;
+}
+
+export function isGameLoopPaused() {
+  return isLoopPaused;
+}
+
 export function startGameLoop() {
   lastTickTime = performance.now();
-  setInterval(gameEngineTick, 100);
+  setInterval(() => {
+    if (!isLoopPaused) gameEngineTick();
+  }, 100);
 }

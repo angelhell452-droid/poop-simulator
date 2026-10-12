@@ -1,11 +1,12 @@
-import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, currentWorldReset, getServerVersions, setServerPatchVersion, displayName, vipLevelOf } from "./workerAdmin.js";
+import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, currentWorldReset, getServerVersions, setServerPatchVersion, displayName, vipLevelOf, makeSessionCookie } from "./workerAdmin.js";
 import { ensureFriendSchema, handleFriendGet, handleFriendPost } from "./workerFriends.js";
 import { ensureGuildSchema, handleGuildGet, handleGuildPost, presenceOf, tagsFor } from "./workerGuild.js";
 import { handleSocial } from "./workerSocial.js";
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-User-Id",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Content-Type": "application/json",
 };
@@ -61,6 +62,9 @@ async function ensureSchema(db) {
       INSERT OR IGNORE INTO system_settings (setting_key, setting_value)
       VALUES ('discord_token', 'https://discord.com/api/webhooks/1555324109133578281/2I6OMFH4hZm_QUnSVcceMJtb_3DSyw8aT4vl9zXaC1IknsV9F41768tK5csbj6o7QjYW');
     `).run();
+    try {
+      await db.prepare(`ALTER TABLE player_saves ADD COLUMN last_updated INTEGER NOT NULL DEFAULT 0`).run();
+    } catch (_) {}
     mainSchemaReady = true;
   } catch (err) {
     console.warn("Schema initialization notice:", err);
@@ -214,14 +218,16 @@ async function handleCloudSave(req, env) {
           `).bind(finalPlayerId, username, stage, biomass, sparkles, prestigeCurrency, jsonStr).run();
         }
 
-        const sessionToken = await issueSession(env.DB, username);
+        const sessionToken = await issueSession(env.DB, username, env, finalPlayerId);
+        const respHeaders = new Headers(headers);
+        respHeaders.append("Set-Cookie", makeSessionCookie(sessionToken));
         return new Response(JSON.stringify({
           success: true,
           username,
           playerId: finalPlayerId,
           sessionToken,
           message: "Аккаунт успешно создан!"
-        }), { status: 200, headers });
+        }), { status: 200, headers: respHeaders });
       }
 
       // Action: Login user account
@@ -262,17 +268,20 @@ async function handleCloudSave(req, env) {
           }
         }
 
-        const sessionToken = await issueSession(env.DB, account.username);
+        const sessionToken = await issueSession(env.DB, account.username, env, account.player_id);
         const vipLevel = await vipLevelOf(env.DB, account.player_id);
+        const respHeaders = new Headers(headers);
+        respHeaders.append("Set-Cookie", makeSessionCookie(sessionToken));
         return new Response(JSON.stringify({
           success: true,
           username: account.username,
           playerId: account.player_id,
           saveData: parsedSave,
+          last_updated: Number(saveRow?.last_updated) || 0,
           sessionToken,
           vipLevel,
           message: "Вход выполнен успешно!"
-        }), { status: 200, headers });
+        }), { status: 200, headers: respHeaders });
       }
 
       const friendAction = action || body.action;
@@ -294,11 +303,14 @@ async function handleCloudSave(req, env) {
 
       const owner = await env.DB.prepare(`SELECT * FROM user_accounts WHERE player_id = ? LIMIT 1`).bind(playerId).first();
       if (owner) {
-        const actor = await sessionUser(env.DB, req);
+        const actor = await sessionUser(env.DB, req, env);
         const validActor = actor && actor.playerId === playerId;
         const validPassword = body.passwordHash && body.passwordHash === owner.password_hash;
         if (!validActor && !validPassword) {
-          return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
+          return new Response(JSON.stringify({
+            error: "session_superseded",
+            message: "Соединение приостановлено: выполнен вход с другого устройства"
+          }), { status: 401, headers });
         }
       }
 
@@ -399,9 +411,23 @@ async function handleCloudSave(req, env) {
       const name = await displayName(env.DB, playerId, playerName);
       const jsonStr = JSON.stringify(sObj);
 
+      // Conflict Resolution: reject if incoming timestamp < existing timestamp in D1
+      const incomingTimestamp = Number(body.last_updated ?? sObj?.last_updated ?? sGame?.last_updated) || Date.now();
+      const existingSave = await env.DB.prepare(`SELECT last_updated, save_data FROM player_saves WHERE player_id = ? LIMIT 1`).bind(playerId).first();
+      const existingTimestamp = Number(existingSave?.last_updated) || 0;
+      if (incomingTimestamp < existingTimestamp) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: "conflict_outdated",
+          message: "Серверное сохранение новее локального",
+          serverTimestamp: existingTimestamp,
+          serverSave: existingSave?.save_data ? (typeof existingSave.save_data === 'string' ? JSON.parse(existingSave.save_data) : existingSave.save_data) : null
+        }), { status: 409, headers });
+      }
+
       await env.DB.prepare(`
-        INSERT INTO player_saves (player_id, player_name, stage, biomass, sparkles, prestige_currency, save_data, admin_seq, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        INSERT INTO player_saves (player_id, player_name, stage, biomass, sparkles, prestige_currency, save_data, last_updated, admin_seq, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
         ON CONFLICT(player_id) DO UPDATE SET
           player_name = excluded.player_name,
           stage = excluded.stage,
@@ -409,14 +435,15 @@ async function handleCloudSave(req, env) {
           sparkles = excluded.sparkles,
           prestige_currency = excluded.prestige_currency,
           save_data = excluded.save_data,
+          last_updated = excluded.last_updated,
           admin_seq = excluded.admin_seq,
           updated_at = datetime('now')
-      `).bind(playerId, name, stage, biomass, sparkles, prestigeCurrency, jsonStr, nextSeq).run();
+      `).bind(playerId, name, stage, biomass, sparkles, prestigeCurrency, jsonStr, incomingTimestamp, nextSeq).run();
 
       return new Response(
         JSON.stringify({
           success: true,
-          timestamp: Date.now(),
+          timestamp: incomingTimestamp,
           playerName: name,
           stage,
         }),

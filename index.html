@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.3.7 PRO</title>
+  <title>Poop Simulator v5.4.0 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,7 +20,7 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.3.7">
+  <link rel="stylesheet" href="styles/main.css?v=5.4.0">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -28,6 +28,56 @@
   <!-- TUTORIAL SPOTLIGHT OVERLAY (Black 0.6 backdrop) -->
   <div id="tutorialSpotlightOverlay" class="fixed inset-0 bg-black/60 z-[850] transition-opacity duration-300 hidden pointer-events-auto"></div>
 
+  <!-- 1. FULLSCREEN LOBBY -->
+  <div id="lobby" class="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+    <div class="lobby-card w-full max-w-sm sm:max-w-md p-6 sm:p-8 rounded-3xl text-center shadow-2xl relative overflow-hidden">
+      <div class="lobby-logo-wrapper mb-6">
+        <div class="text-5xl sm:text-6xl mb-2 animate-bounce select-none">💩</div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wide text-emerald-400 drop-shadow">POOP SIMULATOR</h1>
+        <p class="text-xs sm:text-sm text-stone-400 mt-1">Войдите в аккаунт или зарегистрируйтесь для игры</p>
+      </div>
+
+      <form id="lobbyAuthForm" class="flex flex-col gap-3.5 text-left" autocomplete="on">
+        <div>
+          <label for="lobbyUsername" class="block text-[11px] font-bold text-stone-300 uppercase tracking-wider mb-1">Имя игрока / Логин</label>
+          <input type="text" id="lobbyUsername" name="username" placeholder="Придумайте никнейм" required minlength="3" maxlength="32" class="w-full px-4 py-2.5 rounded-xl bg-stone-950/80 border border-stone-700 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 text-white placeholder-stone-500 text-sm outline-none transition" />
+        </div>
+
+        <div>
+          <label for="lobbyPassword" class="block text-[11px] font-bold text-stone-300 uppercase tracking-wider mb-1">Пароль</label>
+          <input type="password" id="lobbyPassword" name="password" placeholder="••••••••" required minlength="4" class="w-full px-4 py-2.5 rounded-xl bg-stone-950/80 border border-stone-700 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 text-white placeholder-stone-500 text-sm outline-none transition" />
+        </div>
+
+        <div id="lobbyAuthError" class="hidden text-xs text-center p-2 rounded-xl bg-red-950/80 border border-red-500 text-red-300"></div>
+
+        <div class="grid grid-cols-2 gap-3 mt-2">
+          <button type="button" id="btnLobbyLogin" class="jelly-btn py-2.5 px-4 rounded-full font-extrabold text-sm bg-gradient-to-r from-emerald-500 to-teal-400 hover:brightness-110 text-stone-950 shadow-lg border border-emerald-300 transition">
+            Войти
+          </button>
+          <button type="button" id="btnLobbyRegister" class="jelly-btn py-2.5 px-4 rounded-full font-extrabold text-sm bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-600 transition">
+            Регистрация
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. SESSION SUPERSEDED MODAL (401 Error) -->
+  <div id="sessionModal" class="session-modal-veil fixed inset-0 z-[2000] hidden flex items-center justify-center p-4">
+    <div class="session-modal-card w-full max-w-sm p-6 sm:p-7 rounded-3xl text-center shadow-2xl relative">
+      <div class="text-4xl mb-3 animate-pulse select-none">⚠️</div>
+      <h3 class="text-lg font-black text-amber-400 mb-1.5 uppercase tracking-wide">Сессия приостановлена</h3>
+      <p class="text-xs text-stone-300 mb-5 leading-relaxed">
+        Соединение приостановлено: выполнен вход с другого устройства.
+      </p>
+      <button id="btnSessionReconnect" type="button" class="w-full jelly-btn py-2.5 px-4 rounded-full font-extrabold text-xs uppercase bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-stone-950 shadow-lg border border-yellow-200 transition">
+        Переподключиться
+      </button>
+    </div>
+  </div>
+
+  <!-- GAME CONTAINER (display: none by default) -->
+  <div id="game-container" style="display: none;" class="flex-1 flex flex-col min-h-0 w-full relative">
   <!-- TOP APP HEADER -->
   <header
     class="bg-amber-950 text-amber-50 shadow-xl px-3 sm:px-4 py-1.5 border-b-2 sm:border-b-4 border-amber-900 z-30 flex flex-wrap items-center justify-between gap-2 shrink-0">
@@ -38,7 +88,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.3.7 PRO</span>
+            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.4.0 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             data-i18n-title="header.bugTitle" title="Сообщить об ошибке">
@@ -2485,8 +2535,9 @@
       </div>
     </div>
   </div>
+  </div> <!-- end #game-container -->
 
-  <script type="module" src="src/main.js?v=5.3.7"></script>
+  <script type="module" src="src/main.js?v=5.4.0"></script>
 </body>
 
 </html>

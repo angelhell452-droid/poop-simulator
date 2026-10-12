@@ -76,7 +76,7 @@ export async function ensureAdminSchema(db) {
     INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('world_reset', '0');
   `).run().catch(() => {});
   await db.prepare(`
-    INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('patch_version', '5.3.7');
+    INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('patch_version', '5.4.0');
   `).run().catch(() => {});
   adminSchemaReady = true;
 }
@@ -108,34 +108,77 @@ function newSessionToken() {
   return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function bearerToken(req) {
+export function parseCookies(cookieHeader) {
+  const list = {};
+  if (!cookieHeader) return list;
+  cookieHeader.split(";").forEach((cookie) => {
+    let [name, ...rest] = cookie.split("=");
+    name = name?.trim();
+    if (!name) return;
+    const value = rest.join("=").trim();
+    list[name] = decodeURIComponent(value);
+  });
+  return list;
+}
+
+export function extractSessionToken(req) {
+  const cookies = parseCookies(req.headers.get("Cookie"));
+  if (cookies["session_token"]) return cookies["session_token"];
   const raw = req.headers.get("Authorization") || "";
-  const match = raw.match(/^Bearer\s+([a-f0-9]{64})$/i);
+  const match = raw.match(/^Bearer\s+([a-zA-Z0-9_-]{16,64})$/i);
   return match ? match[1] : "";
 }
 
-export async function issueSession(db, username) {
+export function makeSessionCookie(token) {
+  return `session_token=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`;
+}
+
+function bearerToken(req) {
+  return extractSessionToken(req);
+}
+
+export async function issueSession(db, username, env = null, playerId = null) {
   await db.prepare(`DELETE FROM auth_sessions WHERE username = ? COLLATE NOCASE`).bind(username).run();
-  const token = newSessionToken();
+  const token = typeof crypto.randomUUID === "function" ? crypto.randomUUID() : newSessionToken();
   const tokenHash = await sha256Hex(token);
   const expires = new Date(Date.now() + SESSION_MS).toISOString().slice(0, 19).replace("T", " ");
   await db.prepare(`
     INSERT INTO auth_sessions (token_hash, username, expires_at) VALUES (?, ?, ?)
   `).bind(tokenHash, username, expires).run();
+
+  if (env && env.SESSIONS_KV && playerId) {
+    try {
+      await env.SESSIONS_KV.put(`session_${playerId}`, token, { expirationTtl: 2592000 });
+    } catch (_) {}
+  }
   return token;
 }
 
-export async function sessionUser(db, req) {
-  const token = bearerToken(req);
+export async function sessionUser(db, req, env = null) {
+  const token = extractSessionToken(req);
   if (!token) return null;
   const tokenHash = await sha256Hex(token);
-  return db.prepare(`
+  const user = await db.prepare(`
     SELECT a.username, a.player_id as playerId
     FROM auth_sessions s
     JOIN user_accounts a ON a.username = s.username COLLATE NOCASE
     WHERE s.token_hash = ? AND s.expires_at > datetime('now')
     LIMIT 1
   `).bind(tokenHash).first();
+
+  if (!user) return null;
+
+  // Single-device check via KV
+  if (env && env.SESSIONS_KV && user.playerId) {
+    try {
+      const activeToken = await env.SESSIONS_KV.get(`session_${user.playerId}`);
+      if (activeToken && activeToken !== token) {
+        return null; // Session superseded by another device
+      }
+    } catch (_) {}
+  }
+
+  return user;
 }
 
 async function roleOf(env, account) {
@@ -566,7 +609,7 @@ export async function getServerVersions(db) {
     }
 
     if (!patchVersion) {
-      patchVersion = '5.3.7';
+      patchVersion = '5.4.0';
       await db.prepare(`
         INSERT INTO server_config (config_key, config_value) VALUES ('patch_version', ?)
         ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
@@ -575,13 +618,13 @@ export async function getServerVersions(db) {
 
     return {
       worldReset: Number(worldReset) || 0,
-      patchVersion: String(patchVersion) || '5.3.7'
+      patchVersion: String(patchVersion) || '5.4.0'
     };
   } catch (err) {
     console.error("Error querying server versions:", err);
     return {
       worldReset: 0,
-      patchVersion: '5.3.7'
+      patchVersion: '5.4.0'
     };
   }
 }
@@ -592,7 +635,7 @@ export async function currentWorldReset(db) {
 }
 
 export async function setServerPatchVersion(db, newVersion) {
-  const versionStr = String(newVersion || '5.3.7').trim();
+  const versionStr = String(newVersion || '5.4.0').trim();
   await db.prepare(`
     INSERT INTO server_config (config_key, config_value) VALUES ('patch_version', ?)
     ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value

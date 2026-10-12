@@ -2,6 +2,42 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.4.0 PRO',
+    date: '12 Октября 2026',
+    dateEn: 'October 12, 2026',
+    title: 'Патч 5.4.0: 🔐 Полноэкранное Лобби, Single-Device KV и Защита Сейвов',
+    titleEn: 'Patch 5.4.0: Fullscreen Lobby, Single-Device KV Sessions & Anti-Wipe Authority',
+    badge: '🔐 SINGLE DEVICE & LOBBY',
+    badgeEn: 'SINGLE DEVICE & LOBBY',
+    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🚪',
+        text: 'Полноэкранное Лобби: Полностью удалён гостевой режим. Вход и регистрация теперь встречают игрока на стильном стартовом экране с фоновой предзагрузкой ассетов.',
+        textEn: 'Fullscreen Lobby: Guest mode fully eliminated. Clean lobby handles authentication while preloading assets in the background.'
+      },
+      {
+        type: 'feature',
+        icon: '📱',
+        text: 'Один аккаунт — одно устройство: Cloudflare KV хранит активную сессию (UUIDv4 HttpOnly Cookie). Вход со второго устройства безопасно приостанавливает сессию на первом.',
+        textEn: 'One Account — One Device: Cloudflare KV tracks active UUIDv4 sessions. Concurrent logins pause stale devices with instant reconnect support.'
+      },
+      {
+        type: 'feature',
+        icon: '⚠️',
+        text: 'Модальное окно 401 Interrupted: При входе с другого устройства игра мягко ставится на паузу с возможностью мгновенного переподключения без перезагрузки (F5).',
+        textEn: '401 Interrupted Modal: Graceful blur modal allowing seamless one-click reconnect without page reload.'
+      },
+      {
+        type: 'fix',
+        icon: '🛡️',
+        text: 'Абсолютная защита сейвов: Ключи LocalStorage изолированы по ID игрока (saveGame_${user_id}). Клиент загружает облачный сейв первым и защищён от перезаписи через last_updated 409 Conflict.',
+        textEn: 'Ironclad Save Protection: User-isolated LocalStorage keys, server-first save authority, and timestamp-based 409 Conflict protection.'
+      }
+    ]
+  },
+  {
     version: 'v5.3.7 PRO',
     date: '12 Октября 2026',
     dateEn: 'October 12, 2026',
