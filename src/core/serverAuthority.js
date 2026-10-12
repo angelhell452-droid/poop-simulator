@@ -101,9 +101,11 @@ export async function performBlockingHandshake() {
   return new Promise((resolve) => {
     async function attempt() {
       // 1. Read existing local versions from localStorage
+      let hasStoredReset = false;
       try {
         const storedReset = localStorage.getItem(LOCAL_WORLD_RESET_KEY);
-        localWorldReset = storedReset !== null ? (Number(storedReset) || 0) : 0;
+        hasStoredReset = storedReset !== null;
+        localWorldReset = hasStoredReset ? (Number(storedReset) || 0) : 0;
         const storedPatch = localStorage.getItem(LOCAL_PATCH_VERSION_KEY);
         localPatchVersion = storedPatch ? String(storedPatch).trim() : CURRENT_CLIENT_PATCH_VERSION;
       } catch (_) {
@@ -123,14 +125,26 @@ export async function performBlockingHandshake() {
         return;
       }
 
-      serverWorldReset = remote.worldReset;
-      serverPatchVersion = remote.patchVersion;
+      serverWorldReset = Number(remote.worldReset) || 0;
+      serverPatchVersion = String(remote.patchVersion || CURRENT_CLIENT_PATCH_VERSION);
 
-      // 3. Evaluate Wipe vs Patch
-      if (serverWorldReset !== localWorldReset) {
-        console.warn(`🚨 [StrictAuthority] World reset mismatch! Server: ${serverWorldReset}, Local: ${localWorldReset}. Executing full wipe.`);
+      // 3. Evaluate Wipe vs Patch vs First-Time Adoption
+      if (!hasStoredReset) {
+        // First run on new client version: adoption, NOT a wipe!
+        console.log(`🔒 [StrictAuthority] Initialized tracking: worldReset=${serverWorldReset}, patch=${serverPatchVersion}`);
         try {
-          localStorage.clear();
+          localStorage.setItem(LOCAL_WORLD_RESET_KEY, String(serverWorldReset));
+          localStorage.setItem(LOCAL_PATCH_VERSION_KEY, String(serverPatchVersion));
+        } catch (_) {}
+        localWorldReset = serverWorldReset;
+        localPatchVersion = serverPatchVersion;
+        GAME.worldReset = serverWorldReset;
+        GAME.patchVersion = serverPatchVersion;
+      } else if (serverWorldReset > localWorldReset) {
+        // Real server-side world reset triggered!
+        console.warn(`🚨 [StrictAuthority] Server world wipe detected! Server: ${serverWorldReset}, Local: ${localWorldReset}.`);
+        try {
+          localStorage.removeItem('PoopSim_Save'); // ONLY wipe game progress, preserve PoopSim_User_Account and settings!
           localStorage.setItem(LOCAL_WORLD_RESET_KEY, String(serverWorldReset));
           localStorage.setItem(LOCAL_PATCH_VERSION_KEY, String(serverPatchVersion));
         } catch (_) {}
@@ -139,6 +153,8 @@ export async function performBlockingHandshake() {
         const fresh = getDefaultGameState();
         fresh.worldReset = serverWorldReset;
         fresh.patchVersion = serverPatchVersion;
+        if (GAME.playerId) fresh.playerId = GAME.playerId;
+        if (GAME.playerName) fresh.playerName = GAME.playerName;
         Object.assign(GAME, fresh);
 
         localWorldReset = serverWorldReset;

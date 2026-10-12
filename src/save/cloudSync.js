@@ -186,13 +186,6 @@ function localIsAhead(localParsed, cloudParsed) {
   if (!cloudParsed) return true;
   if (!localParsed) return false;
 
-  const localStamp = saveStamp(localParsed);
-  const cloudStamp = saveStamp(cloudParsed);
-  if (localStamp && cloudStamp && localStamp !== cloudStamp) {
-    return localStamp > cloudStamp;
-  }
-  if (localStamp && !cloudStamp) return true;
-
   const localGame = localParsed?.game || {};
   const cloudGame = cloudParsed?.game || {};
 
@@ -206,9 +199,9 @@ function localIsAhead(localParsed, cloudParsed) {
   const cloudRelics = relicCount(cloudParsed);
   if (localRelics !== cloudRelics) return localRelics > cloudRelics;
 
-  // 3. Stage
-  const localStage = Number(localGame.evoStage) || 0;
-  const cloudStage = Number(cloudGame.evoStage) || 0;
+  // 3. Stage & Peak Form
+  const localStage = Math.max(Number(localGame.peakForm) || 0, Number(localGame.evoStage) || 0);
+  const cloudStage = Math.max(Number(cloudGame.peakForm) || 0, Number(cloudGame.evoStage) || 0);
   if (localStage !== cloudStage) return localStage > cloudStage;
 
   // 4. Factory copies
@@ -217,7 +210,18 @@ function localIsAhead(localParsed, cloudParsed) {
   if (localCopies !== cloudCopies) return localCopies > cloudCopies;
 
   // 5. All-time biomass
-  return cmpBio(localGame.allTimeBiomass, cloudGame.allTimeBiomass) >= 0;
+  const cmpBioRes = cmpBio(localGame.allTimeBiomass, cloudGame.allTimeBiomass);
+  if (cmpBioRes !== 0) return cmpBioRes > 0;
+
+  // 6. Tie-breaker: timestamps only if progression is completely identical
+  const localStamp = saveStamp(localParsed);
+  const cloudStamp = saveStamp(cloudParsed);
+  if (localStamp && cloudStamp && localStamp !== cloudStamp) {
+    return localStamp > cloudStamp;
+  }
+  if (localStamp && !cloudStamp) return true;
+
+  return false;
 }
 
 export function flushCloudSave() {
