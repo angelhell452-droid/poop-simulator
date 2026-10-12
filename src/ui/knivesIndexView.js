@@ -18,6 +18,7 @@ import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.0.80';
 import { t, td, onLocaleChange } from '../i18n/t.js';
 import { isBig } from '../utils/big.js?v=5.0.80';
 import { knifeName, knifeRarity, caseName, shopName, shopDesc, factoryName, talentName, talentDesc } from '../i18n/localize.js';
+import { getRarityMeta } from '../data/knifeRarities.config.js';
 
 // Быстрый поиск кейса для ножа
 const KNIFE_CASE_MAP = new Map();
@@ -153,19 +154,8 @@ export function renderKnivesIndexBook() {
     const caseInfo = rawCaseInfo || { icon: '📦' };
     const caseLabel = rawCaseInfo ? caseName(rawCaseInfo.source) : t('knives.collection');
 
-    const rarityColors = {
-      common: 'border-stone-600 bg-stone-900/60 text-stone-400',
-      rare: 'border-sky-500 bg-sky-950/40 text-sky-400',
-      very_rare: 'border-indigo-500 bg-indigo-950/40 text-indigo-400',
-      epic: 'border-purple-500 bg-purple-950/40 text-purple-400',
-      classified: 'border-pink-500 bg-pink-950/40 text-pink-400',
-      covert: 'border-red-500 bg-red-950/40 text-red-400',
-      rainbow: 'border-yellow-400 bg-gradient-to-br from-red-950/40 via-purple-950/40 to-blue-950/40 text-yellow-300',
-      celestial: 'border-cyan-400 bg-cyan-950/50 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.2)]',
-      godly: 'border-amber-400 bg-amber-950/60 text-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.3)] animate-pulse'
-    };
-
-    const colorClass = rarityColors[knife.rarity] || 'border-stone-700 bg-stone-900 text-stone-400';
+    const meta = getRarityMeta(knife.rarity);
+    const colorClass = `${meta.borderClass} ${meta.bgClass} ${meta.shadowClass} ${meta.cssClass}`;
     const shown = getKnifeShownBonuses(knife);
     const clickPct = shown.clickPct;
     const clickBonusText = isBig(shown.clickMult)
@@ -180,6 +170,7 @@ export function renderKnivesIndexBook() {
         <div class="flex flex-col items-center text-center w-full">
           <div class="my-0.5 flex justify-center items-center select-none h-14">${getKnifeImageHtml(knife, 50)}</div>
           <div class="font-game text-xs font-bold text-yellow-100 line-clamp-1 w-full text-center px-1" title="${knifeName(knife)}">${knifeName(knife)}</div>
+          <span class="mt-0.5 text-[8px] font-bold uppercase ${meta.badgeClass} px-1.5 py-0.2 rounded">${knifeRarity(knife)}</span>
           <div class="mt-1 text-[8.5px] font-bold text-amber-300/90 bg-stone-950/80 px-2 py-0.5 rounded-full border border-amber-500/30 truncate max-w-full inline-flex items-center gap-1 shadow-sm" title="${t('knives.dropsFromTitle', { name: caseLabel })}">
             <span>${caseInfo.icon}</span> <span class="truncate">${caseLabel}</span>
           </div>

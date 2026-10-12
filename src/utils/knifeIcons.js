@@ -1,4 +1,4 @@
-﻿/**
+/**
  * knifeIcons.js
  * Централизованный маппинг и векторные рендеры ножей.
  * Поддерживает полноразмерные векторные SVG-модели ножей со скинами
@@ -35,19 +35,27 @@ export const KNIFE_STYLE_ICONS = {
 
 // Цветовые CSS-классы для рамки/свечения по редкости
 export const KNIFE_RARITY_GLOW_CLASS = {
-  common: 'knife-rarity-common',
-  'mil-spec': 'knife-rarity-milspec',
-  rare: 'knife-rarity-rare',
-  very_rare: 'knife-rarity-very-rare',
-  restricted: 'knife-rarity-very-rare',
-  epic: 'knife-rarity-epic',
-  classified: 'knife-rarity-classified',
-  covert: 'knife-rarity-covert',
-  rainbow: 'knife-rarity-rainbow',
-  celestial: 'knife-rarity-celestial',
-  titanium: 'knife-rarity-titanium',
-  special: 'knife-rarity-special',
-  godly: 'knife-rarity-godly',
+  common: 'rarity-common',
+  uncommon: 'rarity-uncommon',
+  rare: 'rarity-rare',
+  mythical: 'rarity-mythical',
+  epic: 'rarity-epic',
+  legendary: 'rarity-legendary',
+  covert: 'rarity-covert',
+  rainbow: 'rarity-rainbow',
+  godly: 'rarity-godly',
+  titanium: 'rarity-titanium',
+  cosmic: 'rarity-cosmic',
+  quantum: 'rarity-quantum',
+  impossible: 'rarity-impossible',
+  absolute: 'rarity-absolute',
+  // legacy aliases for backwards compatibility
+  'mil-spec': 'rarity-common',
+  very_rare: 'rarity-mythical',
+  restricted: 'rarity-mythical',
+  classified: 'rarity-epic',
+  celestial: 'rarity-cosmic',
+  special: 'rarity-godly',
 };
 
 /**

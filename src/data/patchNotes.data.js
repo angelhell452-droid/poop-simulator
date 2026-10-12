@@ -2,6 +2,48 @@ import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.0.86';
 
 export const PATCH_NOTES = [
   {
+    version: 'v5.3.6 PRO',
+    date: '12 Октября 2026',
+    dateEn: 'October 12, 2026',
+    title: 'Патч 5.3.6: 🗡️ Глобальная Система Редкостей, Джекпот 1% и Карусель x3',
+    titleEn: 'Patch 5.3.6: Global Weapon Rarity Overhaul, 1% Jackpot & Multi-Open Carousel',
+    badge: '🗡️ ГЛОБАЛЬНЫЕ РЕДКОСТИ',
+    badgeEn: 'GLOBAL RARITY',
+    badgeClass: 'bg-yellow-500/20 text-yellow-300 border-yellow-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🌌',
+        text: '14 Глобальных Редкостей: Ножи классифицируются по абсолютной силе (Обычный → Необычный → Редкий → Мифический → Эпический → Легендарный → Тайный → Радужный → Божественный → Титановый → Космический → Квантовый → Невозможный → Абсолютный) с уникальными CSS-анимациями (золотое пламя, глитч, кислотная пульсация, неоновое ядро, жидкий металл).',
+        textEn: '14 Global Rarities: All 225 knives are now ranked by absolute power across 14 tiers with rich custom shader effects.'
+      },
+      {
+        type: 'ui',
+        icon: '🔥',
+        text: 'Пульсирующий Джекпот (1%): Дроп 1% в каждом кейсе получил статус Джекпота с динамическим внешним свечением под цвет редкости и яркой плашкой "🔥 ДЖЕКПОТ (1%)".',
+        textEn: 'Pulsing 1% Jackpot: The 1% drop in every case is now marked as Jackpot with dynamic pulsing aura and glowing badge.'
+      },
+      {
+        type: 'ui',
+        icon: '🎠',
+        text: 'Карусель наград при Мульти-открытии (x3): Окно победы при открытии 3 кейсов получило удобный слайдер с кнопками ◀/▶ и точками навигации для детального просмотра и экипировки любого из полученных ножей.',
+        textEn: 'Multi-Open Carousel (x3): Victory modal now features interactive carousel arrows and dots to inspect all 3 won blades.'
+      },
+      {
+        type: 'balance',
+        icon: '✨',
+        text: 'Буст множителей и гладкий CPS: Множители блестяшек и клика увеличены в среднем на +50% начиная со 2-го Тира кейсов. Правило перекрытия статов (50% дроп n-го кейса превосходит 13% дроп предыдущего) соблюдено на 100%.',
+        textEn: 'Stat Rebalance & Overlap Guarantee: Sparkle and click multipliers boosted by +50% from Tier 2 up, with strict 50% >= 13% stat handoffs.'
+      },
+      {
+        type: 'fix',
+        icon: '🐛',
+        text: 'Устранение плато 99.9k: Исправлено искусственное плато клик-бонуса — теперь сила клика плавно и бесконечно масштабируется через Big.js без ограничений.',
+        textEn: '99.9k Click Cap Fixed: Knife click multipliers scale infinitely via Big.js without hardcoded caps.'
+      }
+    ]
+  },
+  {
     version: 'v5.3.5 PRO',
     date: '12 Октября 2026',
     dateEn: 'October 12, 2026',

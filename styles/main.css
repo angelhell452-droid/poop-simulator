@@ -761,74 +761,235 @@ body.girly-mode {
   --accent-ink: #4a2434;
 }
 
-/* WEAPON CASE RARITY COLOR STYLES */
+/* 14 GLOBAL WEAPON CASE RARITY STYLES */
 .rarity-common,
 .rarity-mil-spec {
-  border-color: #94a3b8 !important;
-  background: linear-gradient(135deg, rgba(148, 163, 184, 0.15), rgba(15, 23, 42, 0.95));
+  border-color: #a8a29e !important;
+  background: linear-gradient(135deg, rgba(168, 162, 158, 0.16), rgba(15, 23, 42, 0.95));
+  box-shadow: 0 0 10px rgba(168, 162, 158, 0.2);
+}
+
+.rarity-uncommon {
+  border-color: #4ade80 !important;
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(15, 23, 42, 0.95));
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.28);
 }
 
 .rarity-rare {
   border-color: #38bdf8 !important;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(15, 23, 42, 0.95));
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(15, 23, 42, 0.95));
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
 }
 
+.rarity-mythical,
 .rarity-very_rare,
 .rarity-restricted {
-  border-color: #6366f1 !important;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(15, 23, 42, 0.95));
-  box-shadow: 0 0 14px rgba(99, 102, 241, 0.35);
-}
-
-.rarity-epic {
   border-color: #a855f7 !important;
   background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(15, 23, 42, 0.95));
   box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
 }
 
+.rarity-epic,
 .rarity-classified {
   border-color: #ec4899 !important;
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.28), rgba(15, 23, 42, 0.95));
   box-shadow: 0 0 18px rgba(236, 72, 153, 0.45);
 }
 
-.rarity-covert {
-  border-color: #ef4444 !important;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(15, 23, 42, 0.95));
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+/* 6. Легендарный (янтарный/золотой) */
+.rarity-legendary {
+  border-color: #f59e0b !important;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.32), rgba(180, 83, 9, 0.2), rgba(15, 23, 42, 0.96));
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.55);
 }
 
-@keyframes rainbowShiftAnim {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
+/* 7. Тайный (кроваво-красный) */
+.rarity-covert {
+  border-color: #ef4444 !important;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(153, 27, 27, 0.25), rgba(15, 23, 42, 0.96));
+  box-shadow: 0 0 22px rgba(239, 68, 68, 0.6);
+}
+
+/* 8. Радужный (анимация переливающегося градиента) */
+@keyframes rainbowFlowGradient {
+  0% { background-position: 0% 50%; filter: hue-rotate(0deg); }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; filter: hue-rotate(360deg); }
 }
 
 .rarity-rainbow {
-  border-color: #fde047 !important;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(59, 130, 246, 0.25), rgba(34, 197, 94, 0.25));
-  animation: rainbowShiftAnim 5s linear infinite;
-  box-shadow: 0 0 22px rgba(244, 63, 94, 0.55);
+  border-color: #f43f5e !important;
+  background: linear-gradient(115deg, rgba(239, 68, 68, 0.35), rgba(245, 158, 11, 0.3), rgba(34, 197, 94, 0.3), rgba(59, 130, 246, 0.35), rgba(168, 85, 247, 0.35)) !important;
+  background-size: 250% 250% !important;
+  animation: rainbowFlowGradient 6s ease infinite !important;
+  box-shadow: 0 0 22px rgba(244, 63, 94, 0.6);
 }
 
-.rarity-celestial {
-  border-color: #67e8f9 !important;
-  background: linear-gradient(135deg, rgba(103, 232, 249, 0.35), rgba(15, 23, 42, 0.98), rgba(250, 204, 21, 0.2));
-  box-shadow: 0 0 24px rgba(103, 232, 249, 0.65);
-}
-
-.rarity-titanium {
-  border-color: #2dd4bf !important;
-  background: linear-gradient(135deg, rgba(45, 212, 191, 0.3), rgba(24, 24, 27, 0.98), rgba(71, 85, 105, 0.4));
-  box-shadow: 0 0 24px rgba(45, 212, 191, 0.65);
+/* 9. Божественный (белое ядро с неоново-голубым свечением) */
+@keyframes godlyCorePulse {
+  0%, 100% {
+    box-shadow: 0 0 24px rgba(6, 182, 212, 0.75), inset 0 0 12px rgba(255, 255, 255, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 34px rgba(6, 182, 212, 0.95), 0 0 12px #fff, inset 0 0 20px rgba(255, 255, 255, 0.85);
+  }
 }
 
 .rarity-godly,
 .rarity-special {
-  border-color: #ffd700 !important;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.45), rgba(147, 51, 234, 0.4), rgba(0, 0, 0, 0.98));
-  box-shadow: 0 0 28px rgba(255, 215, 0, 0.85);
-  animation: pulseGlow 1.4s infinite ease-in-out;
+  border-color: #67e8f9 !important;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.32) 0%, rgba(6, 182, 212, 0.35) 45%, rgba(15, 23, 42, 0.98) 100%) !important;
+  animation: godlyCorePulse 2s ease-in-out infinite !important;
+}
+
+/* 10. Титановый (серебряный металлик с жестким бликом) */
+@keyframes titaniumSheen {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.rarity-titanium {
+  border-color: #e2e8f0 !important;
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.8) 0%, rgba(148, 163, 184, 0.4) 25%, rgba(255, 255, 255, 0.8) 50%, rgba(100, 116, 139, 0.4) 75%, rgba(30, 41, 59, 0.95) 100%) !important;
+  background-size: 200% 200% !important;
+  animation: titaniumSheen 4s ease infinite !important;
+  box-shadow: 0 0 24px rgba(226, 232, 240, 0.7), inset 0 0 10px rgba(255, 255, 255, 0.7);
+}
+
+/* 11. Космический (звездный фон/глитч) */
+@keyframes cosmicGlitch {
+  0%, 100% {
+    box-shadow: 0 0 24px rgba(129, 140, 248, 0.7), inset 0 0 10px rgba(99, 102, 241, 0.4);
+    transform: translate(0, 0);
+  }
+  92% {
+    box-shadow: 0 0 24px rgba(129, 140, 248, 0.7);
+    transform: translate(0, 0);
+  }
+  94% {
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.9);
+    transform: translate(-1px, 1px);
+  }
+  96% {
+    box-shadow: 0 0 32px rgba(56, 189, 248, 0.9);
+    transform: translate(1px, -1px);
+  }
+  98% {
+    transform: translate(0, 0);
+  }
+}
+
+.rarity-cosmic,
+.rarity-celestial {
+  border-color: #818cf8 !important;
+  background: radial-gradient(ellipse at 35% 35%, rgba(129, 140, 248, 0.42) 0%, rgba(67, 56, 202, 0.28) 45%, rgba(10, 10, 26, 0.98) 100%) !important;
+  animation: cosmicGlitch 3.5s ease-in-out infinite !important;
+}
+
+/* 12. Квантовый (пульсирующий кислотно-зеленый) */
+@keyframes quantumPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 18px rgba(132, 204, 22, 0.75), inset 0 0 8px rgba(132, 204, 22, 0.3);
+    border-color: #84cc16;
+  }
+  50% {
+    box-shadow: 0 0 32px rgba(132, 204, 22, 0.95), 0 0 45px rgba(74, 222, 128, 0.4), inset 0 0 16px rgba(132, 204, 22, 0.6);
+    border-color: #bef264;
+  }
+}
+
+.rarity-quantum {
+  border-color: #84cc16 !important;
+  background: linear-gradient(135deg, rgba(132, 204, 22, 0.35), rgba(20, 83, 45, 0.35), rgba(15, 23, 42, 0.98)) !important;
+  animation: quantumPulseGlow 1.6s ease-in-out infinite !important;
+}
+
+/* 13. Невозможный (CSS-помехи/glitch) */
+@keyframes impossibleGlitchAnim {
+  0%, 100% {
+    clip-path: inset(0 0 0 0);
+    box-shadow: 0 0 28px rgba(192, 38, 211, 0.8);
+    border-color: #c026d3;
+  }
+  20% {
+    clip-path: inset(2% 0 3% 0);
+    box-shadow: -2px 0 30px rgba(236, 72, 153, 0.9), 2px 0 30px rgba(6, 182, 212, 0.9);
+  }
+  40% {
+    clip-path: inset(0 0 0 0);
+  }
+  60% {
+    clip-path: inset(4% 0 1% 0);
+    box-shadow: 2px 0 32px rgba(217, 70, 239, 0.95);
+  }
+  80% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.rarity-impossible {
+  border-color: #c026d3 !important;
+  background: linear-gradient(135deg, rgba(192, 38, 211, 0.38), rgba(225, 29, 72, 0.28), rgba(15, 23, 42, 0.98)) !important;
+  animation: impossibleGlitchAnim 2.2s steps(4, end) infinite !important;
+}
+
+/* 14. Абсолютный (ослепительное золотое пламя) */
+@keyframes absoluteFlameGlow {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(250, 204, 21, 0.9), 0 0 50px rgba(234, 88, 12, 0.5), inset 0 0 16px rgba(253, 224, 71, 0.6);
+    border-color: #fde047;
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(250, 204, 21, 1), 0 0 75px rgba(234, 88, 12, 0.8), inset 0 0 26px rgba(255, 255, 255, 0.85);
+    border-color: #ffffff;
+  }
+}
+
+.rarity-absolute {
+  border-color: #fde047 !important;
+  background: radial-gradient(circle at 50% 115%, rgba(250, 204, 21, 0.55) 0%, rgba(234, 88, 12, 0.4) 40%, rgba(15, 23, 42, 0.98) 100%) !important;
+  animation: absoluteFlameGlow 1.6s ease-in-out infinite !important;
+}
+
+/* JACKPOT 1% PULSING GLOW & BADGE (TASK 2) */
+@keyframes jackpotPulseGlow {
+  0% {
+    box-shadow: 0 0 14px var(--jackpot-color, rgba(250, 204, 21, 0.6)), inset 0 0 6px var(--jackpot-color, rgba(250, 204, 21, 0.25));
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 30px var(--jackpot-color, rgba(250, 204, 21, 0.95)), 0 0 50px var(--jackpot-color, rgba(250, 204, 21, 0.45)), inset 0 0 14px var(--jackpot-color, rgba(250, 204, 21, 0.45));
+    transform: scale(1.02);
+  }
+}
+
+.jackpot-slot {
+  position: relative;
+  animation: jackpotPulseGlow 1.5s ease-in-out infinite alternate !important;
+}
+
+.jackpot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: linear-gradient(135deg, #ef4444, #f59e0b);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: var(--radius-full, 9999px);
+  border: 1.5px solid #fef08a;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.8), 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 10;
+  animation: jackpotBadgeBounce 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes jackpotBadgeBounce {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-2px) scale(1.05); }
 }
 
 /* Universal SVG Plunger Icon (Zero missing glyphs / Tofu boxes across all OS) */

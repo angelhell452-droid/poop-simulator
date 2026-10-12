@@ -18,6 +18,7 @@ import { checkAchievements } from '../systems/achievementsService.js?v=5.0.80';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.0.80';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
+import { getRarityMeta } from '../data/knifeRarities.config.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
 import { hatArtHtml } from './artIcon.js?v=5.0.17';
 import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.0.80';
@@ -420,13 +421,15 @@ function renderKnivesGrid() {
   // Rarity filter
   if (knifeFilterRarity !== 'all') {
     if (knifeFilterRarity === 'godly') {
-      filteredKnives = filteredKnives.filter(k => ['godly', 'special', 'celestial', 'titanium', 'rainbow'].includes(k.rarity));
+      filteredKnives = filteredKnives.filter(k => ['godly', 'special', 'celestial', 'titanium', 'rainbow', 'cosmic', 'quantum', 'impossible', 'absolute'].includes(k.rarity));
     } else if (knifeFilterRarity === 'covert') {
-      filteredKnives = filteredKnives.filter(k => k.rarity === 'covert');
+      filteredKnives = filteredKnives.filter(k => k.rarity === 'covert' || k.rarity === 'legendary');
     } else if (knifeFilterRarity === 'classified') {
-      filteredKnives = filteredKnives.filter(k => k.rarity === 'classified');
+      filteredKnives = filteredKnives.filter(k => k.rarity === 'classified' || k.rarity === 'epic');
     } else if (knifeFilterRarity === 'common') {
-      filteredKnives = filteredKnives.filter(k => !['godly', 'special', 'celestial', 'titanium', 'rainbow', 'covert', 'classified'].includes(k.rarity));
+      filteredKnives = filteredKnives.filter(k => ['common', 'uncommon', 'rare', 'mythical'].includes(k.rarity));
+    } else {
+      filteredKnives = filteredKnives.filter(k => k.rarity === knifeFilterRarity);
     }
   }
 
@@ -468,18 +471,9 @@ function renderKnivesGrid() {
     const recyclePrice = recycle.amount;
     const isInfoOpen = activeInfoCardId === kn.id;
 
-    let rarityBorder = 'border-stone-700 bg-stone-950';
-    let rarityBadge = 'bg-stone-800 text-stone-300';
-    if (['godly', 'special', 'celestial', 'titanium', 'rainbow'].includes(kn.rarity)) {
-      rarityBorder = 'border-yellow-400/90 bg-stone-900/95 shadow-[0_0_12px_rgba(250,204,21,0.2)]';
-      rarityBadge = 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50';
-    } else if (kn.rarity === 'covert') {
-      rarityBorder = 'border-red-500/80 bg-stone-900/95 shadow-[0_0_10px_rgba(239,68,68,0.2)]';
-      rarityBadge = 'bg-red-500/20 text-red-300 border border-red-500/50';
-    } else if (kn.rarity === 'classified') {
-      rarityBorder = 'border-pink-500/70 bg-stone-900/95';
-      rarityBadge = 'bg-pink-500/20 text-pink-300 border border-pink-500/50';
-    }
+    const meta = getRarityMeta(kn.rarity);
+    const rarityBorder = `${meta.borderClass} ${meta.bgClass} ${meta.shadowClass} ${meta.cssClass}`;
+    const rarityBadge = meta.badgeClass;
 
     const card = document.createElement('div');
     card.className = `p-2 sm:p-2.5 rounded-2xl border-2 transition relative flex flex-col justify-between ${isEq ? 'border-emerald-400 ring-2 ring-emerald-500/40 bg-stone-900' : rarityBorder}`;

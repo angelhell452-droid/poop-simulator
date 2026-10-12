@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.3.5 PRO</title>
+  <title>Poop Simulator v5.3.6 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,7 +20,7 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.3.5">
+  <link rel="stylesheet" href="styles/main.css?v=5.3.6">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
@@ -38,7 +38,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.3.5 PRO</span>
+            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.3.6 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             data-i18n-title="header.bugTitle" title="Сообщить об ошибке">
@@ -1545,37 +1545,49 @@
             id="knifeRarityFiltersBar">
             <button
               class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-yellow-500 text-stone-950 font-black border border-yellow-400"
-              data-rarity="all" data-i18n="index.rarityAll">Все (202)</button>
+              data-rarity="all">Все (225)</button>
             <button
               class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-stone-800 text-stone-300 border border-stone-600 hover:border-stone-400"
-              data-rarity="common" data-i18n="index.rarity.common">Обычный (20)</button>
+              data-rarity="common">Обычный</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-emerald-950 text-emerald-300 border border-emerald-500/70 hover:border-emerald-400"
+              data-rarity="uncommon">Необычный</button>
             <button
               class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-sky-950 text-sky-300 border border-sky-500/70 hover:border-sky-400"
-              data-rarity="rare" data-i18n="index.rarity.rare">Редкий (25)</button>
-            <button
-              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-indigo-950 text-indigo-300 border border-indigo-500/70 hover:border-indigo-400"
-              data-rarity="very_rare" data-i18n="index.rarity.very_rare">Очень редкий (25)</button>
+              data-rarity="rare">Редкий</button>
             <button
               class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-purple-950 text-purple-300 border border-purple-500/70 hover:border-purple-400"
-              data-rarity="epic" data-i18n="index.rarity.epic">Эпичный (30)</button>
+              data-rarity="mythical">Мифический</button>
             <button
               class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-pink-950 text-pink-300 border border-pink-500/70 hover:border-pink-400"
-              data-rarity="classified" data-i18n="index.rarity.classified">Засекреченный (25)</button>
+              data-rarity="epic">Эпический</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-amber-950 text-amber-300 border border-amber-500/70 hover:border-amber-400"
+              data-rarity="legendary">Легендарный</button>
             <button
               class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-red-950 text-red-300 border border-red-500/70 hover:border-red-400"
-              data-rarity="covert" data-i18n="index.rarity.covert">Тайный (25)</button>
+              data-rarity="covert">Тайный</button>
             <button
               class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-gradient-to-r from-red-900/60 via-purple-900/60 to-blue-900/60 text-yellow-300 border border-yellow-400 hover:brightness-125"
-              data-rarity="rainbow" data-i18n="index.rarity.rainbow">Радужный (20)</button>
+              data-rarity="rainbow">Радужный</button>
             <button
-              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-cyan-950 text-cyan-300 border border-cyan-400 hover:brightness-125"
-              data-rarity="celestial" data-i18n="index.rarity.celestial">Небесный (15)</button>
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-cyan-950 text-cyan-300 border border-cyan-400 hover:brightness-125 font-bold"
+              data-rarity="godly">Божественный</button>
             <button
-              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-teal-950 text-teal-300 border border-teal-400 hover:brightness-125"
-              data-rarity="titanium" data-i18n="index.rarity.titanium">Титановый (10)</button>
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-slate-800 text-slate-200 border border-slate-400 hover:brightness-125 font-bold"
+              data-rarity="titanium">Титановый</button>
             <button
-              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-yellow-950 text-yellow-300 border border-yellow-400 hover:brightness-125 font-black"
-              data-rarity="godly" data-i18n="index.rarity.godly">Божественный (5)</button>
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-indigo-950 text-indigo-300 border border-indigo-400 hover:brightness-125 font-bold"
+              data-rarity="cosmic">Космический</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-lime-950 text-lime-300 border border-lime-400 hover:brightness-125 font-bold"
+              data-rarity="quantum">Квантовый</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-fuchsia-950 text-fuchsia-300 border border-fuchsia-400 hover:brightness-125 font-bold"
+              data-rarity="impossible">Невозможный</button>
+            <button
+              class="index-rarity-filter-btn px-2.5 py-1 rounded-full shrink-0 bg-yellow-950 text-yellow-300 border border-yellow-300 hover:brightness-125 font-black"
+              data-rarity="absolute">Абсолютный</button>
           </div>
         </div>
 
@@ -1709,6 +1721,20 @@
                 class="px-2.5 py-0.5 rounded-lg bg-amber-950 border border-yellow-500/50 text-yellow-300 font-mono">✨ x1.15</span>
             </div>
           </div>
+        </div>
+
+        <!-- Carousel / Multi-Open Navigation Bar (Task 7) -->
+        <div id="rouletteMultiCarouselNav" class="hidden flex items-center justify-between w-full max-w-md my-2 px-3 py-1.5 bg-stone-900/90 rounded-2xl border border-yellow-500/40 z-10 shadow-lg">
+          <button id="btnMultiCarouselPrev" type="button" class="w-8 h-8 rounded-xl bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold transition flex items-center justify-center text-sm jelly-btn cursor-pointer" title="Предыдущий нож">◀</button>
+          <div class="flex flex-col items-center">
+            <span id="multiCarouselCounter" class="text-xs font-bold text-yellow-300 font-game">Нож 1 из 3</span>
+            <div id="multiCarouselDots" class="flex gap-2 mt-1">
+              <span class="w-2.5 h-2.5 rounded-full bg-yellow-400 cursor-pointer transition" data-index="0"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-stone-600 cursor-pointer transition" data-index="1"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-stone-600 cursor-pointer transition" data-index="2"></span>
+            </div>
+          </div>
+          <button id="btnMultiCarouselNext" type="button" class="w-8 h-8 rounded-xl bg-stone-800 hover:bg-stone-700 text-yellow-300 font-bold transition flex items-center justify-center text-sm jelly-btn cursor-pointer" title="Следующий нож">▶</button>
         </div>
 
         <!-- Main equip / inventory buttons -->

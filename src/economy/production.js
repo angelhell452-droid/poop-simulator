@@ -302,7 +302,7 @@ export function getKnifeFactorySynergyMult() {
   if (!knife) return 0.1; // 90% штраф без экипированного ножа после формы 3500
 
   // Ножи редких/божественных тиров всегда удовлетворяют синергии
-  if (['godly', 'celestial', 'special', 'titanium', 'rainbow'].includes(knife.rarity)) {
+  if (['godly', 'celestial', 'special', 'titanium', 'rainbow', 'cosmic', 'quantum', 'impossible', 'absolute'].includes(knife.rarity)) {
     return 1.0;
   }
 
