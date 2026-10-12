@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Lobby & Single-Device Authentication Controller
  *
  * Implements lobby screen, background asset preloading,
@@ -24,25 +24,18 @@ export function setCachedCredentials(creds) {
   cachedCredentials = creds;
 }
 
-// Background preloading of heavy assets while player is in the lobby
+// Background preloading of verified assets while player is in the lobby
 export function startAssetPreloading() {
   const assets = [
-    'assets/art/bg.webp',
-    'assets/sprites/poop.webp',
-    'assets/icons/plunger.svg',
-    'assets/icons/paper.svg',
-    'assets/audio/fart.mp3'
+    'assets/backgrounds/epoch-01.png',
+    'assets/icons/plunger.svg'
   ];
 
   assets.forEach((url) => {
     try {
-      if (url.endsWith('.webp') || url.endsWith('.svg') || url.endsWith('.png')) {
+      if (url.endsWith('.png') || url.endsWith('.svg') || url.endsWith('.webp')) {
         const img = new Image();
         img.src = url;
-      } else if (url.endsWith('.mp3')) {
-        const a = new Audio();
-        a.preload = 'auto';
-        a.src = url;
       }
     } catch (_) {}
   });
@@ -145,10 +138,55 @@ export function initLobbyAuth(onGameReady) {
   const inputPassword = document.getElementById('lobbyPassword');
   const btnReconnect = document.getElementById('btnSessionReconnect');
 
+  const welcomeCard = document.getElementById('lobbyWelcomeCard');
+  const authForm = document.getElementById('lobbyAuthForm');
+  const savedUserLabel = document.getElementById('lobbySavedUsername');
+  const btnContinue = document.getElementById('btnLobbyContinue');
+  const btnSwitchAccount = document.getElementById('btnLobbySwitchAccount');
+  const backToWelcomeWrap = document.getElementById('lobbyBackToWelcomeWrap');
+  const btnBackToWelcome = document.getElementById('btnLobbyBackToWelcome');
+
   const stored = getStoredAccount();
   if (stored?.username && inputUsername) {
     inputUsername.value = stored.username;
   }
+
+  // Toggle Welcome Card vs Login Form
+  const showWelcomeCard = (username) => {
+    if (welcomeCard && authForm) {
+      if (savedUserLabel) savedUserLabel.textContent = username;
+      welcomeCard.classList.remove('hidden');
+      welcomeCard.classList.add('flex');
+      authForm.classList.add('hidden');
+      if (backToWelcomeWrap) backToWelcomeWrap.classList.remove('hidden');
+    }
+  };
+
+  const showLoginForm = () => {
+    if (welcomeCard && authForm) {
+      welcomeCard.classList.add('hidden');
+      welcomeCard.classList.remove('flex');
+      authForm.classList.remove('hidden');
+    }
+  };
+
+  if (stored?.username && stored?.passwordHash) {
+    showWelcomeCard(stored.username);
+  } else {
+    showLoginForm();
+  }
+
+  btnSwitchAccount?.addEventListener('click', () => {
+    showLoginForm();
+    if (inputPassword) inputPassword.value = '';
+    if (inputUsername) inputUsername.focus();
+  });
+
+  btnBackToWelcome?.addEventListener('click', () => {
+    if (stored?.username) {
+      showWelcomeCard(stored.username);
+    }
+  });
 
   const showError = (msg) => {
     if (errorBox) {
@@ -163,6 +201,75 @@ export function initLobbyAuth(onGameReady) {
       errorBox.classList.add('hidden');
     }
   };
+
+  // Continue with saved account (1-click entry)
+  btnContinue?.addEventListener('click', async () => {
+    const current = getStoredAccount();
+    if (!current?.username || !current?.passwordHash) {
+      showLoginForm();
+      return;
+    }
+
+    if (btnContinue) {
+      btnContinue.disabled = true;
+      btnContinue.innerHTML = '<span>⏳</span><span>Вход в игру...</span>';
+    }
+
+    try {
+      // Fast login with saved password hash
+      const res = await fetch(`${CLOUD_SAVE_ENDPOINT}?action=login`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'login',
+          username: current.username,
+          passwordHash: current.passwordHash
+        })
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        showLoginForm();
+        showError(data?.error || 'Требуется повторный ввод пароля');
+        return;
+      }
+
+      cachedCredentials = { username: data.username, passwordHash: current.passwordHash };
+      saveStoredAccount({
+        username: data.username,
+        playerId: data.playerId,
+        passwordHash: current.passwordHash,
+        sessionToken: data.sessionToken || ''
+      });
+
+      GAME.playerId = data.playerId;
+      GAME.playerName = data.username;
+
+      hideLobby();
+
+      // Load save and start game
+      await loadFromCloudDatabaseOrLocal();
+
+      if (!isGameInitialized) {
+        isGameInitialized = true;
+        if (typeof onGameReady === 'function') {
+          await onGameReady();
+        }
+      } else {
+        resumeGameLoop();
+      }
+    } catch (err) {
+      showLoginForm();
+      showError('Ошибка связи с сервером');
+    } finally {
+      if (btnContinue) {
+        btnContinue.disabled = false;
+        btnContinue.innerHTML = '<span>🎮</span><span>Войти в игру</span>';
+      }
+    }
+  });
 
   const submitAuth = async (action) => {
     clearError();

@@ -1,4 +1,4 @@
-﻿import { GAME } from './core/state.js?v=5.4.0';
+import { GAME } from './core/state.js?v=5.4.0';
 import { startGameLoop } from './core/gameLoop.js?v=5.4.0';
 import { performBlockingHandshake, startAuthorityWatcher } from './core/serverAuthority.js?v=5.4.0';
 import { initLobbyAuth, checkAutoLogin } from './core/lobbyAuth.js?v=5.4.0';
@@ -488,10 +488,11 @@ if (typeof window !== 'undefined') {
 
 async function startApp() {
   initLobbyAuth(bootstrap);
-  const loggedIn = await checkAutoLogin(bootstrap);
-  if (!loggedIn) {
-    const bootVeil = document.getElementById('bootVeil');
-    if (bootVeil) bootVeil.style.display = 'none';
+  // Always present lobby to user. Boot veil hides to reveal the lobby card.
+  const bootVeil = document.getElementById('bootVeil');
+  if (bootVeil) {
+    bootVeil.style.display = 'none';
+    bootVeil.setAttribute('hidden', '');
   }
 }
 

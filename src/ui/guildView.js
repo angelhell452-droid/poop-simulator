@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.4.0';
+import { GAME } from '../core/state.js?v=5.4.0';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.4.0';
 import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.4.0';
 import { GUILD_MAX_LEVEL, guildBonusLabel, guildLevelProgress } from '../data/bosses.data.js?v=5.4.0';
@@ -1104,8 +1104,8 @@ export function initGuildView() {
     if (modal?.classList.contains('hidden')) return;
     if (page === 'fight' && (state?.guild?.boss || fightResult)) paintFight();
   }, 250);
-  // Presence only once at boot — no background guild spam.
-  if (signedIn()) loadGuild();
+  // Guild data loads on demand when the guild modal is opened or on social pulse
+  // Do not spam /api/social?action=guild at boot
 
   onLocaleChange(() => {
     if (guildOpen()) render();

@@ -40,6 +40,29 @@
         <p class="text-xs sm:text-sm text-stone-400 mt-1">Войдите в аккаунт или зарегистрируйтесь для игры</p>
       </div>
 
+      <!-- A. WELCOME BACK RETURNING PLAYER CARD -->
+      <div id="lobbyWelcomeCard" class="hidden flex-col items-center gap-4 text-center">
+        <div class="p-4 rounded-2xl bg-stone-900/90 border border-emerald-500/30 w-full flex items-center gap-3.5 shadow-lg">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-2xl shadow-md select-none shrink-0">
+            💩
+          </div>
+          <div class="text-left overflow-hidden">
+            <div class="text-[11px] font-bold text-stone-400 uppercase tracking-wider">С возвращением!</div>
+            <div id="lobbySavedUsername" class="text-base sm:text-lg font-black text-emerald-300 truncate max-w-[200px] sm:max-w-[240px]">Игрок</div>
+          </div>
+        </div>
+
+        <button type="button" id="btnLobbyContinue" class="w-full jelly-btn py-3.5 px-6 rounded-2xl font-black text-base bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 hover:brightness-110 text-stone-950 shadow-xl border border-emerald-300 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+          <span>🎮</span>
+          <span>Войти в игру</span>
+        </button>
+
+        <button type="button" id="btnLobbySwitchAccount" class="text-xs font-bold text-stone-400 hover:text-emerald-400 underline underline-offset-4 transition py-1">
+          Сменить аккаунт или войти под другим именем
+        </button>
+      </div>
+
+      <!-- B. DEFAULT LOGIN / REGISTRATION FORM -->
       <form id="lobbyAuthForm" class="flex flex-col gap-3.5 text-left" autocomplete="on">
         <div>
           <label for="lobbyUsername" class="block text-[11px] font-bold text-stone-300 uppercase tracking-wider mb-1">Имя игрока / Логин</label>
@@ -59,6 +82,12 @@
           </button>
           <button type="button" id="btnLobbyRegister" class="jelly-btn py-2.5 px-4 rounded-full font-extrabold text-sm bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-600 transition">
             Регистрация
+          </button>
+        </div>
+
+        <div id="lobbyBackToWelcomeWrap" class="hidden text-center mt-1">
+          <button type="button" id="btnLobbyBackToWelcome" class="text-xs text-stone-400 hover:text-white transition">
+            ← Назад к быстрому входу
           </button>
         </div>
       </form>
