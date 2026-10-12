@@ -1,4 +1,4 @@
-import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, currentWorldReset, getServerVersions, setServerPatchVersion, displayName, vipLevelOf, makeSessionCookie } from "./workerAdmin.js";
+import { ensureAdminSchema, handleAdmin, issueSession, rejectStaleSave, sessionUser, isCreator, wipePlayerProgress, wipeWorldProgress, replacementIfSeasonReset, currentWorldReset, getServerVersions, setServerPatchVersion, compareSemver, displayName, vipLevelOf, makeSessionCookie } from "./workerAdmin.js";
 import { ensureFriendSchema, handleFriendGet, handleFriendPost } from "./workerFriends.js";
 import { ensureGuildSchema, handleGuildGet, handleGuildPost, presenceOf, tagsFor } from "./workerGuild.js";
 import { handleSocial } from "./workerSocial.js";
@@ -327,7 +327,7 @@ async function handleCloudSave(req, env) {
       const sGame = (sObj && typeof sObj === "object" && sObj.game && typeof sObj.game === "object") ? sObj.game : (sObj || {});
 
       // 1. Strict Server Authority version verification
-      const { worldReset: serverWorldReset, patchVersion: serverPatchVersion } = await getServerVersions(env.DB);
+      let { worldReset: serverWorldReset, patchVersion: serverPatchVersion } = await getServerVersions(env.DB);
 
       const clientReset = Number(
         body.clientWorldReset ??
@@ -360,8 +360,8 @@ async function handleCloudSave(req, env) {
         );
       }
 
-      // Enforce Patch Version -> 426 Upgrade Required
-      if (clientPatch && clientPatch !== serverPatchVersion) {
+      // Enforce Patch Version -> 426 Upgrade Required ONLY when server is strictly newer than client
+      if (clientPatch && compareSemver(serverPatchVersion, clientPatch) > 0) {
         return new Response(
           JSON.stringify({
             success: false,
@@ -372,6 +372,11 @@ async function handleCloudSave(req, env) {
           }),
           { status: 426, headers }
         );
+      }
+
+      if (clientPatch && compareSemver(clientPatch, serverPatchVersion) > 0) {
+        serverPatchVersion = clientPatch;
+        await setServerPatchVersion(env.DB, clientPatch).catch(() => {});
       }
 
       if (sObj && typeof sObj === "object") {

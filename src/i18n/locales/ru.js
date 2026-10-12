@@ -23,7 +23,8 @@ export default {
   'header.accountTitle': 'Облачный аккаунт и база данных Cloudflare D1',
   'header.versionTitle': 'Открыть журнал обновлений',
 
-  'common.guest': 'Гость',
+  'common.guest': 'Игрок',
+  'common.player': 'Игрок',
   'common.check': 'Проверить',
   'common.loading': 'Загрузка',
   'common.cancel': 'Отмена',
@@ -69,7 +70,7 @@ export default {
   'auth.title': 'Cloudflare D1 Database',
   'auth.blurb': 'Прогресс каждого игрока автоматически и надёжно сохраняется в глобальной базе данных Cloudflare D1.',
   'auth.currentStatus': 'Текущий статус:',
-  'auth.guestMode': '⚪ Гостевой режим',
+  'auth.guestMode': '🟢 Облачный аккаунт',
   'auth.loggedInAs': '🟢 В сети · {name}',
   'auth.statusTitle': 'Статус серверов',
   'auth.probeHint': 'Нажмите «Проверить», если видите ошибку про облако или друзей.',
@@ -99,7 +100,7 @@ export default {
   'auth.createFail': 'Ошибка при создании аккаунта',
 
   'friends.title': 'Друзья',
-  'friends.guest': 'Друзья открываются с аккаунта. Гость не может отправить заявку.',
+  'friends.guest': 'Друзья доступны при входе в аккаунт.',
   'friends.loading': 'Загружаем друзей…',
   'friends.empty': 'Пока тихо. Друзей ещё нет.',
   'friends.incoming': 'Входящие',
@@ -153,7 +154,7 @@ export default {
 
   'auth.welcome': '✅ Добро пожаловать, {name}! Прогресс загружен.',
   'auth.createdOk': '🎉 Аккаунт {name} успешно создан в Cloudflare D1!',
-  'auth.guestLocal': '⚪ Гостевой режим (Локальное сохранение)',
+  'auth.guestLocal': '🟢 Облачный аккаунт (Cloudflare D1)',
   'auth.cloudUser': '🟢 {name} (Cloudflare D1)',
 
   'mail.openFail': 'Почта не открылась',

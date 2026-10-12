@@ -1,4 +1,4 @@
-﻿import { GAME } from '../core/state.js?v=5.0.80';
+import { GAME } from '../core/state.js?v=5.0.80';
 import { events } from '../core/events.js';
 import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase, probeCloudServers } from '../save/cloudSync.js?v=5.3.3';
 import { updateHUD } from './hudView.js?v=5.0.80';
@@ -11,6 +11,7 @@ import { renderCasesSystem } from './casesView.js?v=5.0.80';
 import { refreshAdminAccess } from './adminView.js?v=5.0.80';
 import { currentGuildTag, formatTaggedName } from '../guild/guildPresence.js?v=5.0.80';
 import { t, setLocale, getLocale, listLocales, onLocaleChange, applyDomI18n } from '../i18n/t.js';
+import { showLobby, handleSessionInterrupted } from '../core/lobbyAuth.js?v=5.3.8';
 
 function paintServerLine(id, row) {
   const node = document.getElementById(id);
@@ -71,11 +72,7 @@ export async function refreshServerStatus() {
 }
 
 export function openAuthModal(defaultTab = 'login') {
-  const modal = document.getElementById('authModal');
-  if (!modal) return;
-  modal.classList.remove('hidden');
-  switchAuthTab(defaultTab);
-  clearAuthStatus();
+  showLobby();
 }
 
 export function closeAuthModal() {
@@ -84,30 +81,7 @@ export function closeAuthModal() {
 }
 
 export function switchAuthTab(tab) {
-  const tabLogin = document.getElementById('tabAuthLogin');
-  const tabRegister = document.getElementById('tabAuthRegister');
-  const formLogin = document.getElementById('formAuthLogin');
-  const formRegister = document.getElementById('formAuthRegister');
-
-  clearAuthStatus();
-
-  if (tab === 'login') {
-    tabLogin?.classList.add('bg-amber-600', 'text-white', 'shadow');
-    tabLogin?.classList.remove('text-stone-400');
-    tabRegister?.classList.remove('bg-amber-600', 'text-white', 'shadow');
-    tabRegister?.classList.add('text-stone-400');
-
-    formLogin?.classList.remove('hidden');
-    formRegister?.classList.add('hidden');
-  } else {
-    tabRegister?.classList.add('bg-amber-600', 'text-white', 'shadow');
-    tabRegister?.classList.remove('text-stone-400');
-    tabLogin?.classList.remove('bg-amber-600', 'text-white', 'shadow');
-    tabLogin?.classList.add('text-stone-400');
-
-    formRegister?.classList.remove('hidden');
-    formLogin?.classList.add('hidden');
-  }
+  showLobby();
 }
 
 function showAuthStatus(msg, isSuccess = false) {
@@ -149,13 +123,13 @@ export function updateAccountHeaderUI() {
       btnAuthAction.className = 'w-full py-1.5 px-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-bold border border-stone-600 transition';
     }
   } else {
-    if (headerName) headerName.textContent = t('common.guest');
+    if (headerName) headerName.textContent = GAME.playerName || 'Игрок';
     if (accountStatusBadge) {
-      accountStatusBadge.textContent = t('auth.guestLocal');
+      accountStatusBadge.textContent = '🟢 Облачный аккаунт';
     }
     if (btnAuthAction) {
-      btnAuthAction.textContent = t('auth.loginCreate');
-      btnAuthAction.className = 'w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-500 hover:brightness-110 text-stone-950 font-game text-xs font-bold border border-yellow-300 shadow jelly-btn transition';
+      btnAuthAction.textContent = t('auth.logout');
+      btnAuthAction.className = 'w-full py-1.5 px-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-bold border border-stone-600 transition';
     }
   }
 
@@ -183,96 +157,14 @@ function refreshAllGameUI() {
 export function initAuthModal() {
   // Tabs
   document.getElementById('tabAuthLogin')?.addEventListener('click', () => switchAuthTab('login'));
-  document.getElementById('tabAuthRegister')?.addEventListener('click', () => switchAuthTab('register'));
-
-  // Close & Guest buttons
-  document.getElementById('btnAuthClose')?.addEventListener('click', () => {
-    sessionStorage.setItem('poop_auth_dismissed', '1');
-    closeAuthModal();
-  });
-
-  document.getElementById('btnPlayAsGuest')?.addEventListener('click', () => {
-    sessionStorage.setItem('poop_auth_dismissed', '1');
-    closeAuthModal();
-  });
-
-  // Login form submit
-  document.getElementById('formAuthLogin')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearAuthStatus();
-
-    const username = document.getElementById('loginUsername')?.value;
-    const password = document.getElementById('loginPassword')?.value;
-    const btnSubmit = document.getElementById('btnSubmitLogin');
-
-    if (btnSubmit) {
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = t('auth.loggingIn');
-    }
-
-    const res = await loginAccount(username, password);
-
-    if (btnSubmit) {
-      btnSubmit.disabled = false;
-      btnSubmit.textContent = t('auth.loginTab');
-    }
-
-    if (res.success) {
-      showAuthStatus(t('auth.welcome', { name: res.username }), true);
-      refreshAllGameUI();
-      setTimeout(() => {
-        closeAuthModal();
-      }, 700);
-    } else {
-      showAuthStatus(res.error || t('auth.loginError'));
-    }
-  });
-
-  // Register form submit
-  document.getElementById('formAuthRegister')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearAuthStatus();
-
-    const username = document.getElementById('registerUsername')?.value;
-    const password = document.getElementById('registerPassword')?.value;
-    const btnSubmit = document.getElementById('btnSubmitRegister');
-
-    if (btnSubmit) {
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = t('auth.creating');
-    }
-
-    const res = await registerAccount(username, password);
-
-    if (btnSubmit) {
-      btnSubmit.disabled = false;
-      btnSubmit.textContent = t('auth.createAccount');
-    }
-
-    if (res.success) {
-      showAuthStatus(t('auth.createdOk', { name: res.username }), true);
-      refreshAllGameUI();
-      setTimeout(() => {
-        closeAuthModal();
-      }, 800);
-    } else {
-      showAuthStatus(res.error || t('auth.registerError'));
-    }
-  });
-
-  // Account modal action button (Logout or Login)
+  // Account modal action button (Logout)
   document.getElementById('btnAuthAction')?.addEventListener('click', () => {
-    const stored = getStoredAccount();
-    if (stored) {
-      if (confirm(t('auth.logoutConfirm'))) {
-        logoutAccount();
-        updateAccountHeaderUI();
-        refreshAdminAccess();
-        openAuthModal('login');
-      }
-    } else {
+    if (confirm(t('auth.logoutConfirm'))) {
       document.getElementById('accountModal')?.classList.add('hidden');
-      openAuthModal('login');
+      logoutAccount();
+      updateAccountHeaderUI();
+      refreshAdminAccess();
+      showLobby();
     }
   });
 
@@ -301,22 +193,6 @@ export function initAuthModal() {
   updateAccountHeaderUI();
 
   events.on('auth:relogin', () => {
-    openAuthModal('login');
-    const nameInput = document.getElementById('loginUsername');
-    const known = getStoredAccount()?.username;
-    if (nameInput && known && !nameInput.value) nameInput.value = known;
-    showAuthStatus(t('auth.sessionDead'), false);
-    const box = document.getElementById('authStatusBox');
-    if (box) box.className = 'mt-3 text-[11px] text-center p-2 rounded-xl font-medium bg-amber-950/80 border border-amber-500 text-amber-200';
+    handleSessionInterrupted();
   });
-
-  // Startup check: if no stored account and not dismissed in session, open auth modal
-  const stored = getStoredAccount();
-  const dismissed = sessionStorage.getItem('poop_auth_dismissed');
-  if (!stored && !dismissed) {
-    // Show after slight delay for smooth page animation
-    setTimeout(() => {
-      openAuthModal('login');
-    }, 400);
-  }
 }

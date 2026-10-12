@@ -12,6 +12,18 @@ export const CURRENT_CLIENT_PATCH_VERSION = '5.4.0';
 export const LOCAL_WORLD_RESET_KEY = 'PoopSim_WorldReset';
 export const LOCAL_PATCH_VERSION_KEY = 'PoopSim_PatchVersion';
 
+export function compareSemver(a, b) {
+  const pa = String(a || '0').split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b || '0').split('.').map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = pa[i] || 0;
+    const nb = pb[i] || 0;
+    if (na > nb) return 1;
+    if (na < nb) return -1;
+  }
+  return 0;
+}
+
 const VERSION_ENDPOINT = '/api/version';
 const FALLBACK_VERSION_ENDPOINT = '/api/cloud-save?action=version';
 
@@ -113,6 +125,14 @@ export async function performBlockingHandshake() {
         localPatchVersion = CURRENT_CLIENT_PATCH_VERSION;
       }
 
+      // If client code version is newer than stored localPatchVersion, update stored version immediately
+      if (compareSemver(CURRENT_CLIENT_PATCH_VERSION, localPatchVersion) > 0) {
+        localPatchVersion = CURRENT_CLIENT_PATCH_VERSION;
+        try {
+          localStorage.setItem(LOCAL_PATCH_VERSION_KEY, CURRENT_CLIENT_PATCH_VERSION);
+        } catch (_) {}
+      }
+
       // 2. Fetch server versions
       const remote = await fetchServerVersions(6000);
 
@@ -161,20 +181,25 @@ export async function performBlockingHandshake() {
         localPatchVersion = serverPatchVersion;
       } else {
         // worldReset matches
-        if (serverPatchVersion !== localPatchVersion) {
+        // Only trigger patch if server is strictly newer than local version!
+        if (compareSemver(serverPatchVersion, localPatchVersion) > 0) {
           console.log(`✨ [StrictAuthority] Patch update detected: ${localPatchVersion} -> ${serverPatchVersion}`);
           try {
             localStorage.setItem(LOCAL_PATCH_VERSION_KEY, String(serverPatchVersion));
           } catch (_) {}
           localPatchVersion = serverPatchVersion;
+        } else {
+          // Local client is already equal or newer than server
+          serverPatchVersion = localPatchVersion;
         }
 
         try {
           localStorage.setItem(LOCAL_WORLD_RESET_KEY, String(serverWorldReset));
+          localStorage.setItem(LOCAL_PATCH_VERSION_KEY, String(localPatchVersion));
         } catch (_) {}
 
         GAME.worldReset = serverWorldReset;
-        GAME.patchVersion = serverPatchVersion;
+        GAME.patchVersion = localPatchVersion;
       }
 
       isHandshakeComplete = true;
@@ -255,7 +280,7 @@ export function startAuthorityWatcher() {
 
       if (remote.worldReset !== localWorldReset) {
         triggerUpdateNotice('wipe', remote);
-      } else if (remote.patchVersion !== localPatchVersion) {
+      } else if (compareSemver(remote.patchVersion, localPatchVersion) > 0) {
         triggerUpdateNotice('patch', remote);
       }
     } catch (err) {
@@ -344,6 +369,10 @@ function createCountdownBanner(type) {
 
   const doReload = () => {
     if (countdownInterval) clearInterval(countdownInterval);
+    try {
+      localStorage.setItem(LOCAL_PATCH_VERSION_KEY, String(serverPatchVersion));
+      localStorage.setItem(LOCAL_WORLD_RESET_KEY, String(serverWorldReset));
+    } catch (_) {}
     if (!isWipe && typeof onReloadLocalSave === 'function') {
       try {
         onReloadLocalSave();

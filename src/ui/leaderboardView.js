@@ -151,11 +151,8 @@ function updateDailyRewardCard(leaderboard) {
   const badgeEl = document.getElementById('playerRankBadge');
 
   const playerRank = boardOffline ? 0 : Number(cachedYou?.rank || 0);
-  const localGuest = !getStoredAccount()?.username;
-  const viewerIsUnlistedGuest = !boardOffline && !playerRank && (cachedYou?.guest || localGuest);
   if (badgeEl) {
     if (boardOffline) badgeEl.textContent = t('lb.badgeOffline');
-    else if (viewerIsUnlistedGuest) badgeEl.textContent = t('lb.badgeGuest');
     else if (playerRank > 0) badgeEl.textContent = t('lb.badgeRanked', { rank: formatNumber(playerRank) });
     else badgeEl.textContent = t('lb.badgeNotInDb');
     badgeEl.className = playerRank > 0 && playerRank <= 10
@@ -210,11 +207,9 @@ function updateDailyRewardCard(leaderboard) {
     if (infoEl) {
       infoEl.textContent = boardOffline
         ? t('lb.rewardOffline')
-        : (viewerIsUnlistedGuest
-          ? t('lb.guestOnly')
-          : (playerRank > 0
+        : (playerRank > 0
           ? t('lb.climb', { rank: formatNumber(playerRank), n: formatNumber(50000) })
-          : t('lb.needCloud', { n: formatNumber(50000) })));
+          : t('lb.needCloud', { n: formatNumber(50000) }));
     }
     if (btnClaim) {
       btnClaim.disabled = true;

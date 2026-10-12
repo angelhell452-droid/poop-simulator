@@ -97,7 +97,7 @@ async function sendBugReport(textarea, categoryBtns, statusEl, btnSend) {
   const embedColor = CATEGORY_COLORS[categoryId] || CATEGORY_COLORS.other;
 
   // Сбор данных об игроке
-  const playerName = GAME.playerName || GAME.cloudPlayerName || t('common.guest');
+  const playerName = GAME.playerName || GAME.cloudPlayerName || t('common.player');
   const stage = GAME.evoStage || 0;
   const biomass = formatNumber(GAME.biomass || 0);
   const sparkles = formatNumber(GAME.sparkles || 0);

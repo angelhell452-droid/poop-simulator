@@ -24,7 +24,7 @@ function keepBio(value) {
 }
 
 export function getIsolatedStorageKey(userId = null) {
-  const uid = userId || GAME.playerId || 'guest';
+  const uid = userId || GAME.playerId || 'local';
   return `saveGame_${uid}`;
 }
 

@@ -616,6 +616,14 @@ export async function getServerVersions(db) {
       `).bind(patchVersion).run().catch(() => {});
     }
 
+    if (compareSemver('5.4.0', patchVersion) > 0) {
+      patchVersion = '5.4.0';
+      await db.prepare(`
+        INSERT INTO server_config (config_key, config_value) VALUES ('patch_version', ?)
+        ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
+      `).bind(patchVersion).run().catch(() => {});
+    }
+
     return {
       worldReset: Number(worldReset) || 0,
       patchVersion: String(patchVersion) || '5.4.0'
@@ -627,6 +635,18 @@ export async function getServerVersions(db) {
       patchVersion: '5.4.0'
     };
   }
+}
+
+export function compareSemver(a, b) {
+  const pa = String(a || '0').split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b || '0').split('.').map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = pa[i] || 0;
+    const nb = pb[i] || 0;
+    if (na > nb) return 1;
+    if (na < nb) return -1;
+  }
+  return 0;
 }
 
 export async function currentWorldReset(db) {

@@ -23,7 +23,8 @@ export default {
   'header.accountTitle': 'Cloud account and Cloudflare D1 database',
   'header.versionTitle': 'Open update history',
 
-  'common.guest': 'Guest',
+  'common.guest': 'Player',
+  'common.player': 'Player',
   'common.check': 'Check',
   'common.loading': 'Loading',
   'common.cancel': 'Cancel',
@@ -69,7 +70,7 @@ export default {
   'auth.title': 'Cloudflare D1 Database',
   'auth.blurb': 'Every player’s progress is saved automatically in the global Cloudflare D1 database.',
   'auth.currentStatus': 'Current status:',
-  'auth.guestMode': '⚪ Guest mode',
+  'auth.guestMode': '🟢 Cloud Account',
   'auth.loggedInAs': '🟢 Online · {name}',
   'auth.statusTitle': 'Server status',
   'auth.probeHint': 'Press Check if you see a cloud or friends error.',
@@ -99,7 +100,7 @@ export default {
   'auth.createFail': 'Could not create account',
 
   'friends.title': 'Friends',
-  'friends.guest': 'Friends need an account. Guests can’t send requests.',
+  'friends.guest': 'Friends are available after signing in.',
   'friends.loading': 'Loading friends…',
   'friends.empty': 'Quiet for now. No friends yet.',
   'friends.incoming': 'Incoming',
@@ -153,7 +154,7 @@ export default {
 
   'auth.welcome': '✅ Welcome, {name}! Progress loaded.',
   'auth.createdOk': '🎉 Account {name} created in Cloudflare D1!',
-  'auth.guestLocal': '⚪ Guest mode (local save)',
+  'auth.guestLocal': '🟢 Cloud Account (Cloudflare D1)',
   'auth.cloudUser': '🟢 {name} (Cloudflare D1)',
 
   'mail.openFail': 'Mail failed to open',

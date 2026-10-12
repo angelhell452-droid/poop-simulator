@@ -10,6 +10,7 @@ import { pauseGameLoop, resumeGameLoop } from './gameLoop.js?v=5.0.80';
 import { hashPassword, saveStoredAccount, getStoredAccount, loadFromCloudDatabaseOrLocal, CLOUD_SAVE_ENDPOINT } from '../save/cloudSync.js?v=5.3.3';
 import { GAME } from './state.js?v=5.0.80';
 import { saveLocal } from '../save/saveManager.js?v=5.0.80';
+import { CURRENT_CLIENT_PATCH_VERSION } from './serverAuthority.js?v=5.4.0';
 
 // In-memory credentials cache for instant reconnect without page reload
 let cachedCredentials = null;
@@ -132,6 +133,11 @@ export async function checkAutoLogin(onGameReady) {
 // Initialize Lobby listeners
 export function initLobbyAuth(onGameReady) {
   startAssetPreloading();
+
+  const verTag = document.getElementById('lobbyVersionTag');
+  if (verTag) {
+    verTag.textContent = `v${CURRENT_CLIENT_PATCH_VERSION} PRO`;
+  }
 
   const btnLogin = document.getElementById('btnLobbyLogin');
   const btnRegister = document.getElementById('btnLobbyRegister');

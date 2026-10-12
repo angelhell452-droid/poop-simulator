@@ -34,6 +34,9 @@
       <div class="lobby-logo-wrapper mb-6">
         <div class="text-5xl sm:text-6xl mb-2 animate-bounce select-none">💩</div>
         <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wide text-emerald-400 drop-shadow">POOP SIMULATOR</h1>
+        <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-[11px] font-black tracking-wider uppercase my-1.5 shadow">
+          <span>✨</span> <span id="lobbyVersionTag">v5.4.0 PRO</span>
+        </div>
         <p class="text-xs sm:text-sm text-stone-400 mt-1">Войдите в аккаунт или зарегистрируйтесь для игры</p>
       </div>
 
@@ -187,7 +190,7 @@
         class="bg-stone-900 hover:bg-stone-800 text-amber-200 px-2 sm:px-2.5 py-1 rounded-xl border border-amber-600/70 text-xs font-bold flex items-center gap-1.5 shadow jelly-btn"
         data-i18n-title="header.accountTitle" title="Облачный аккаунт и база данных Cloudflare D1">
         <span class="text-sm">👤</span>
-        <span id="headerAccountName" class="max-w-[70px] sm:max-w-[110px] truncate text-[11px]" data-i18n="common.guest">Гость</span>
+        <span id="headerAccountName" class="max-w-[70px] sm:max-w-[110px] truncate text-[11px]" data-i18n="common.player">Игрок</span>
         <span id="headerVipBadge" class="vip-badge hidden">VIP</span>
       </button>
     </div>
@@ -920,90 +923,6 @@
     </div>
   </div>
 
-  <!-- AUTHENTICATION & LOGIN MODAL -->
-  <div id="authModal"
-    class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div
-      class="bg-stone-900 text-stone-100 rounded-3xl border-2 border-amber-500/70 max-w-md w-full p-6 relative shadow-2xl overflow-hidden">
-      <!-- Close button (acts as Play as Guest / Close) -->
-      <button id="btnAuthClose"
-        class="modal-close absolute top-3 right-3 text-stone-400 hover:text-white text-2xl font-bold transition">&times;</button>
-
-      <div class="text-center mb-4">
-        <div class="text-4xl mb-2 animate-bounce">👑</div>
-        <h3 class="font-game text-xl text-yellow-300" data-i18n="auth.cloudTitle">Облачный Аккаунт D1</h3>
-        <p class="text-[11px] text-stone-400 mt-1">
-          <span data-i18n="auth.cloudIntro">Создайте аккаунт, чтобы сохранять формы, ножи и возвращаться к игре с любого устройства!</span>
-        </p>
-      </div>
-
-      <!-- Auth Tabs: Login vs Register -->
-      <div class="flex rounded-xl bg-stone-950 p-1 border border-stone-800 mb-4 text-xs font-bold">
-        <button id="tabAuthLogin" class="flex-1 py-2 rounded-lg bg-amber-600 text-white shadow transition font-game" data-i18n="auth.loginTabShort">
-          🔑 Вход
-        </button>
-        <button id="tabAuthRegister"
-          class="flex-1 py-2 rounded-lg text-stone-400 hover:text-white transition font-game" data-i18n="auth.registerTabShort">
-          ✨ Регистрация
-        </button>
-      </div>
-
-      <!-- Form: Login -->
-      <form id="formAuthLogin" class="space-y-3">
-        <div>
-          <label class="block text-[10px] font-bold text-stone-400 uppercase mb-1" data-i18n="auth.usernameLabel">Имя пользователя (Логин):</label>
-          <input id="loginUsername" type="text" data-i18n="auth.loginUsernamePh" data-i18n-attr="placeholder" placeholder="Введите ваш логин" maxlength="32" autocomplete="username"
-            class="w-full bg-stone-950 px-3 py-2 rounded-xl border border-stone-700 text-xs text-yellow-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 font-medium">
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold text-stone-400 uppercase mb-1" data-i18n="auth.passwordLabel">Пароль:</label>
-          <input id="loginPassword" type="password" data-i18n="auth.loginPasswordPh" data-i18n-attr="placeholder" placeholder="Введите пароль" maxlength="64"
-            autocomplete="current-password"
-            class="w-full bg-stone-950 px-3 py-2 rounded-xl border border-stone-700 text-xs text-yellow-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 font-medium">
-        </div>
-        <button id="btnSubmitLogin" type="submit"
-          class="w-full py-2.5 rounded-xl font-game text-xs bg-gradient-to-r from-amber-600 to-yellow-500 hover:brightness-110 text-stone-950 font-bold border border-yellow-300 shadow jelly-btn transition" data-i18n="auth.submitLogin">
-          🚀 Войти в аккаунт
-        </button>
-      </form>
-
-      <!-- Form: Register -->
-      <form id="formAuthRegister" class="space-y-3 hidden">
-        <div>
-          <label class="block text-[10px] font-bold text-stone-400 uppercase mb-1" data-i18n="auth.registerUsernameLabel">Придумайте Логин:</label>
-          <input id="registerUsername" type="text" data-i18n="auth.registerUsernamePh" data-i18n-attr="placeholder" placeholder="От 3 до 30 символов" maxlength="32"
-            autocomplete="username"
-            class="w-full bg-stone-950 px-3 py-2 rounded-xl border border-stone-700 text-xs text-yellow-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 font-medium">
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold text-stone-400 uppercase mb-1" data-i18n="auth.registerPasswordLabel">Придумайте Пароль:</label>
-          <input id="registerPassword" type="password" data-i18n="auth.registerPasswordPh" data-i18n-attr="placeholder" placeholder="Минимум 4 символа" maxlength="64"
-            autocomplete="new-password"
-            class="w-full bg-stone-950 px-3 py-2 rounded-xl border border-stone-700 text-xs text-yellow-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 font-medium">
-        </div>
-        <div class="text-[10px] text-amber-400/90 bg-amber-950/40 p-2 rounded-lg border border-amber-800/40">
-          <span data-i18n="auth.registerHint">💡 Весь ваш текущий прогресс, ножи и рулоны будут сохранены в Cloudflare D1 под этим логином!</span>
-        </div>
-        <button id="btnSubmitRegister" type="submit"
-          class="w-full py-2.5 rounded-xl font-game text-xs bg-gradient-to-r from-emerald-600 to-teal-500 hover:brightness-110 text-white font-bold border border-emerald-400 shadow jelly-btn transition" data-i18n="auth.createAccount">
-          ✨ Создать аккаунт
-        </button>
-      </form>
-
-      <!-- Feedback / status box -->
-      <div id="authStatusBox" class="mt-3 text-[11px] text-center p-2 rounded-xl hidden font-medium"></div>
-
-      <!-- Play as Guest divider & button -->
-      <div class="mt-4 pt-3 border-t border-stone-800 text-center">
-        <button id="btnPlayAsGuest" type="button"
-          class="text-xs text-stone-400 hover:text-amber-300 transition underline underline-offset-4 font-semibold" data-i18n="auth.playGuest">
-          🎮 Играть как Гость (без пароля)
-        </button>
-        <p class="text-[9px] text-stone-500 mt-1" data-i18n="auth.guestHint">Вы сможете создать или привязать аккаунт в любое удобное время через меню профиля.</p>
-      </div>
-    </div>
-  </div>
-
   <!-- DATABASE & ACCOUNT MODAL -->
   <div id="accountModal"
     class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
@@ -1020,11 +939,11 @@
       <div class="bg-stone-950 p-3 rounded-2xl border border-stone-800 my-3 space-y-2 text-xs">
         <div class="flex items-center justify-between">
           <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider" data-i18n="auth.currentStatus">Текущий статус:</span>
-          <span id="accountStatusBadge" class="text-[11px] text-emerald-400 font-medium" data-i18n="auth.guestMode">⚪ Гостевой режим</span>
+          <span id="accountStatusBadge" class="text-[11px] text-emerald-400 font-bold">🟢 Авторизован</span>
         </div>
         <button id="btnAuthAction"
-          class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-500 hover:brightness-110 text-stone-950 font-game text-xs font-bold border border-yellow-300 shadow jelly-btn transition" data-i18n="auth.loginCreate">
-          🔑 Войти / Создать аккаунт
+          class="w-full py-2 px-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-game text-xs font-bold border border-stone-600 shadow jelly-btn transition">
+          🚪 Выйти из аккаунта
         </button>
       </div>
 
