@@ -1,27 +1,27 @@
-﻿import { knifeName, knifeDesc, knifeRarity, shopName, shopDesc, skinName } from '../i18n/localize.js';
+import { knifeName, knifeDesc, knifeRarity, shopName, shopDesc, skinName } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.0';
-import { KNIVES } from '../data/knives.data.js?v=5.4.0';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.0';
+import { GAME } from '../core/state.js?v=5.4.1';
+import { KNIVES } from '../data/knives.data.js?v=5.4.1';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.1';
 import {
   getKnifeStar, getKnifeSharpenCost, getKnifeRecycleReward, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
 import { openSharpenWheelModal } from './sharpenView.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.4.0';
-import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.4.0';
-import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.0';
-import { saveLocal } from '../save/saveManager.js?v=5.4.0';
-import { updateHUD } from './hudView.js?v=5.4.0';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.4.1';
+import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.4.1';
+import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.1';
+import { saveLocal } from '../save/saveManager.js?v=5.4.1';
+import { updateHUD } from './hudView.js?v=5.4.1';
 import { renderShop } from './shopView.js';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.0';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.0';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.1';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.1';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getRarityMeta } from '../data/knifeRarities.config.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { hatArtHtml } from './artIcon.js?v=5.4.0';
-import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.0';
+import { hatArtHtml } from './artIcon.js?v=5.4.1';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.1';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'
@@ -47,7 +47,7 @@ function skinFormOpen(skin) {
 function skinArtHtml(skin, size) {
   const girly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
   const src = girly ? skin.girl : skin.boy;
-  return `<img src="${src}?v=5.4.0m" alt="" class="art-icon" width="${size}" height="${size}">`;
+  return `<img src="${src}?v=5.4.1m" alt="" class="art-icon" width="${size}" height="${size}">`;
 }
 
 function skinClickLabel(skin) {

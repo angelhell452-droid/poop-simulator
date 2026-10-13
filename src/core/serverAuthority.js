@@ -5,10 +5,10 @@
  * to prevent database overwrites after wipes and handle graceful patch updates.
  */
 
-import { GAME, getDefaultGameState } from './state.js?v=5.4.0';
-import { wipeRuntimeCatalogs } from '../save/saveManager.js?v=5.4.0';
+import { GAME, getDefaultGameState } from './state.js?v=5.4.1';
+import { wipeRuntimeCatalogs } from '../save/saveManager.js?v=5.4.1';
 
-export const CURRENT_CLIENT_PATCH_VERSION = '5.4.0';
+export const CURRENT_CLIENT_PATCH_VERSION = '5.4.1';
 export const LOCAL_WORLD_RESET_KEY = 'PoopSim_WorldReset';
 export const LOCAL_PATCH_VERSION_KEY = 'PoopSim_PatchVersion';
 

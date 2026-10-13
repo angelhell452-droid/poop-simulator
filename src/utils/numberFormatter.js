@@ -1,4 +1,12 @@
-﻿import { isBig, log10Of, rehydrateBig } from './big.js?v=5.4.0';
+import { isBig, log10Of, rehydrateBig } from './big.js?v=5.4.1';
+
+function mantissaDecimals(absMantissa, decimals) {
+  return absMantissa >= 10 ? 1 : decimals;
+}
+
+function roundMantissa(scaled, decimals) {
+  return Number(scaled.toFixed(mantissaDecimals(Math.abs(scaled), decimals)));
+}
 
 // Ordinary numbers stay as they were. Bigger values print as 1.23e603.
 export function formatNumber(rawNum, decimals = 2) {
@@ -6,8 +14,16 @@ export function formatNumber(rawNum, decimals = 2) {
   if (isBig(num)) {
     const exp = Math.floor(log10Of(num));
     const mantissa = Math.pow(10, log10Of(num) - exp);
-    const shown = mantissa >= 100 ? mantissa.toFixed(0) : (mantissa >= 10 ? mantissa.toFixed(1) : mantissa.toFixed(decimals));
-    return `${Number(shown)}e${exp}`;
+    let shown = roundMantissa(mantissa, decimals);
+    let outExp = exp;
+    if (shown >= 1000) {
+      shown /= 1000;
+      outExp += 3;
+    } else if (shown >= 10) {
+      shown /= 10;
+      outExp += 1;
+    }
+    return `${shown}e${outExp}`;
   }
   if (num === null || num === undefined || isNaN(num)) return '0';
   if (!isFinite(num) || num >= 1.7976931348623157e308) return '1.79e308 (MAX)';
@@ -26,12 +42,22 @@ export function formatNumber(rawNum, decimals = 2) {
     'Vg'
   ];
   const exp = Math.floor(Math.log10(abs));
-  const unitIndex = Math.floor(exp / 3) - 1;
+  let unitIndex = Math.floor(exp / 3) - 1;
 
   if (unitIndex >= 0 && unitIndex < units.length) {
-    const scaled = num / Math.pow(10, (unitIndex + 1) * 3);
-    const dec = scaled >= 100 ? 0 : (scaled >= 10 ? 1 : decimals);
-    return Number(scaled.toFixed(dec)) + units[unitIndex];
+    const sign = num < 0 ? -1 : 1;
+    let scaled = sign * (abs / Math.pow(10, (unitIndex + 1) * 3));
+    let shown = roundMantissa(scaled, decimals);
+    if (Math.abs(shown) >= 1000) {
+      if (unitIndex + 1 < units.length) {
+        unitIndex += 1;
+        scaled = sign * (abs / Math.pow(10, (unitIndex + 1) * 3));
+        shown = roundMantissa(scaled, decimals);
+      } else {
+        return (sign * abs).toExponential(decimals).replace('+', '');
+      }
+    }
+    return shown + units[unitIndex];
   }
 
   // Beyond 10^66: Scientific exponential notation (e.g., 1.23e75, 4.56e200)

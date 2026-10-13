@@ -1,23 +1,24 @@
-﻿import { GAME } from '../core/state.js?v=5.4.0';
-import { getEquippedKnife } from '../economy/production.js?v=5.4.0';
+import { GAME } from '../core/state.js?v=5.4.1';
+import { getEquippedKnife } from '../economy/production.js?v=5.4.1';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.0';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.1';
 import { hasPerk } from '../data/perks.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.0';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.0';
-import { cmp, gainBio, mul } from '../utils/big.js?v=5.4.0';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.0';
-import { updateHUD } from './hudView.js?v=5.4.0';
-import { saveLocal } from '../save/saveManager.js?v=5.4.0';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.0';
+import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.1';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.1';
+import { cmp, gainBio, mul } from '../utils/big.js?v=5.4.1';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.1';
+import { updateHUD } from './hudView.js?v=5.4.1';
+import { saveLocal } from '../save/saveManager.js?v=5.4.1';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.1';
 import { events } from '../core/events.js';
-import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.4.0';
-import { KNIVES } from '../data/knives.data.js?v=5.4.0';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.0';
+import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.4.1';
+import { getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.1';
+import { KNIVES } from '../data/knives.data.js?v=5.4.1';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.1';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.0';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.0';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.1';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.1';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
@@ -168,8 +169,8 @@ export function meteorSparkleProfile(evoStage, transcends, flushes) {
   const phaseId = Math.max(phase.id, unlockedId);
   const span = Math.max(1, phase.formEnd - phase.formStart);
   const local = Math.min(1, Math.max(0, ((evoStage || 0) + 1 - phase.formStart) / span));
-  // Базовый дроп Блестяшек навсегда увеличен ровно в 3 раза (было 1800 -> стало 5400)
-  const purse = 5400 * Math.pow(1.075, phaseId - 1);
+  // База 5400 — прежний тройной дроп. Эпоха общая с критами: x1.74 за уровень.
+  const purse = 5400 * getSparkleEpochMult(phaseId);
   const localMult = 1 + local * 0.5;
   const flushBonus = 1 + ((flushes || 0) / ((flushes || 0) + 20)) * 0.35;
   return { phaseId, purse, localMult, flushBonus };
@@ -1063,16 +1064,16 @@ export function initPetCanvas() {
   canvas = document.getElementById('petCanvas');
   if (!canvas) return;
   ctx = canvas.getContext('2d');
-  queueLook('boy', boyLook, 'assets/poop/boy.png', 'assets/poop/boy-blink.png?v=5.4.0m', { maxEdge: 720 }, 1);
-  queueLook('girl', girlLook, 'assets/poop/girl.png?v=5.0', 'assets/poop/girl-blink.png?v=5.4.0m', { neutral: true, maxEdge: 720 }, 1);
-  queueLook('robe-boy', robeBoyLook, 'assets/poop/skins/robe-boy.png?v=5.4.0h', 'assets/poop/skins/robe-boy-blink.png?v=5.4.0l', { maxEdge: 720, prepared: true }, 2);
-  queueLook('robe-girl', robeGirlLook, 'assets/poop/skins/robe-girl.png?v=5.4.0h', 'assets/poop/skins/robe-girl-blink.png?v=5.4.0l', { maxEdge: 720, prepared: true }, 2);
-  queueLook('hoodie-boy', hoodieBoyLook, 'assets/poop/skins/hoodie-boy.png?v=5.4.0m', 'assets/poop/skins/hoodie-boy-blink.png?v=5.4.0m', { maxEdge: 720, prepared: true }, 2);
-  queueLook('hoodie-girl', hoodieGirlLook, 'assets/poop/skins/hoodie-girl.png?v=5.4.0m', 'assets/poop/skins/hoodie-girl-blink.png?v=5.4.0m', { maxEdge: 720, prepared: true }, 2);
-  queueLook('tunic-boy', tunicBoyLook, 'assets/poop/skins/tunic-boy.png?v=5.4.0m', 'assets/poop/skins/tunic-boy-blink.png?v=5.4.0m', { maxEdge: 720, prepared: true }, 2);
-  queueLook('tunic-girl', tunicGirlLook, 'assets/poop/skins/tunic-girl.png?v=5.4.0m', 'assets/poop/skins/tunic-girl-blink.png?v=5.4.0m', { maxEdge: 720, prepared: true }, 2);
-  queueLook('tuxedo-boy', tuxedoBoyLook, 'assets/poop/skins/tuxedo-boy.png?v=5.4.0m', 'assets/poop/skins/tuxedo-boy-blink.png?v=5.4.0m', { maxEdge: 720, prepared: true }, 2);
-  queueLook('tuxedo-girl', tuxedoGirlLook, 'assets/poop/skins/tuxedo-girl.png?v=5.4.0m', 'assets/poop/skins/tuxedo-girl-blink.png?v=5.4.0m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('boy', boyLook, 'assets/poop/boy.png', 'assets/poop/boy-blink.png?v=5.4.1m', { maxEdge: 720 }, 1);
+  queueLook('girl', girlLook, 'assets/poop/girl.png?v=5.0', 'assets/poop/girl-blink.png?v=5.4.1m', { neutral: true, maxEdge: 720 }, 1);
+  queueLook('robe-boy', robeBoyLook, 'assets/poop/skins/robe-boy.png?v=5.4.1h', 'assets/poop/skins/robe-boy-blink.png?v=5.4.1l', { maxEdge: 720, prepared: true }, 2);
+  queueLook('robe-girl', robeGirlLook, 'assets/poop/skins/robe-girl.png?v=5.4.1h', 'assets/poop/skins/robe-girl-blink.png?v=5.4.1l', { maxEdge: 720, prepared: true }, 2);
+  queueLook('hoodie-boy', hoodieBoyLook, 'assets/poop/skins/hoodie-boy.png?v=5.4.1m', 'assets/poop/skins/hoodie-boy-blink.png?v=5.4.1m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('hoodie-girl', hoodieGirlLook, 'assets/poop/skins/hoodie-girl.png?v=5.4.1m', 'assets/poop/skins/hoodie-girl-blink.png?v=5.4.1m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('tunic-boy', tunicBoyLook, 'assets/poop/skins/tunic-boy.png?v=5.4.1m', 'assets/poop/skins/tunic-boy-blink.png?v=5.4.1m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('tunic-girl', tunicGirlLook, 'assets/poop/skins/tunic-girl.png?v=5.4.1m', 'assets/poop/skins/tunic-girl-blink.png?v=5.4.1m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('tuxedo-boy', tuxedoBoyLook, 'assets/poop/skins/tuxedo-boy.png?v=5.4.1m', 'assets/poop/skins/tuxedo-boy-blink.png?v=5.4.1m', { maxEdge: 720, prepared: true }, 2);
+  queueLook('tuxedo-girl', tuxedoGirlLook, 'assets/poop/skins/tuxedo-girl.png?v=5.4.1m', 'assets/poop/skins/tuxedo-girl-blink.png?v=5.4.1m', { maxEdge: 720, prepared: true }, 2);
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 

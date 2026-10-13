@@ -1,6 +1,36 @@
-﻿import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.0';
+﻿import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.1';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.1 PRO',
+    date: '13 Октября 2026',
+    dateEn: 'October 13, 2026',
+    title: 'Патч 5.4.1: Блестяшки по эпохам и лестница ножей',
+    titleEn: 'Patch 5.4.1: Epoch Sparkles and the Knife Ladder',
+    badge: 'Баланс 5.4.1',
+    badgeEn: 'Balance 5.4.1',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '✨',
+        text: 'Блестяшки с критов и метеоритов растут в x1.74 за эпоху. Кейс покупается около формы, на которой открылся, а не на тысячи форм позже.',
+        textEn: 'Crit and meteor sparkles now grow by x1.74 per epoch, so a case is affordable near the form that unlocks it.'
+      },
+      {
+        type: 'balance',
+        icon: '🔪',
+        text: 'Ножи с «Феникса» по «Гамму 1» выстроены лестницей: обычный нож нового кейса сильнее джекпота предыдущего, джекпот внутри кейса около x4.',
+        textEn: 'Knives from Phoenix through Gamma 1 are a ladder: the common drop beats the previous jackpot, and a jackpot is about x4 its own common knife.'
+      },
+      {
+        type: 'ui',
+        icon: '🔢',
+        text: 'Числа от 10k показывают десятую: 191.5k больше не выглядит как уже взятые 192k.',
+        textEn: 'Numbers from 10k keep one decimal, so 191.5k no longer looks like the 192k goal is already reached.'
+      }
+    ]
+  },
   {
     version: 'v5.4.0 PRO',
     date: '12 Октября 2026',
