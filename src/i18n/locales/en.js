@@ -448,6 +448,7 @@ export default {
   'cases.firstAvailableToast': '🎉 First weapon case is available with a discount! Click to open 🔪 Cases',
   'cases.noFunds': 'No funds',
   'cases.infoTitle': 'Case contents',
+  'cases.formLevel': 'Form {form} · Breakthrough {bt}',
   'cases.open3Title': 'Open 3 at once',
   'cases.click': 'Click',
   'cases.mult': 'Mult.',

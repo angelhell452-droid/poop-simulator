@@ -1,6 +1,30 @@
-﻿import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.1';
+﻿import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.2';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.2 PRO',
+    date: '13 Октября 2026',
+    dateEn: 'October 13, 2026',
+    title: 'Патч 5.4.2: Ручки блестяшек и форма на кейсах',
+    titleEn: 'Patch 5.4.2: Sparkle Knobs and Case Form Labels',
+    badge: 'Баланс 5.4.2',
+    badgeEn: 'Balance 5.4.2',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '✨',
+        text: 'Множитель блестяшек за эпоху снижен до x1.5. Ручки крита и метеорита собраны в economy.config.js.',
+        textEn: 'Sparkle growth per epoch is now x1.5. Crit and meteor knobs live in economy.config.js.'
+      },
+      {
+        type: 'ui',
+        icon: '📦',
+        text: 'На каждом кейсе видна целевая форма и прорыв: Форма 1.9k · Прорыв 2.',
+        textEn: 'Every case shows its target form and breakthrough, e.g. Form 1.9k · Breakthrough 2.'
+      }
+    ]
+  },
   {
     version: 'v5.4.1 PRO',
     date: '13 Октября 2026',

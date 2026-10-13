@@ -5,7 +5,7 @@ interface Env {
   DB: D1Database;
 }
 
-const MIN_PATCH = "5.4.1";
+const MIN_PATCH = "5.4.2";
 
 function compareSemver(a: string, b: string): number {
   const pa = String(a || "0").split(".").map((n) => parseInt(n, 10) || 0);
@@ -48,7 +48,7 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
         INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('world_reset', '3');
       `).run().catch(() => {});
       await env.DB.prepare(`
-        INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('patch_version', '5.4.1');
+        INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('patch_version', '5.4.2');
       `).run().catch(() => {});
 
       const rows: any = await env.DB.prepare(`

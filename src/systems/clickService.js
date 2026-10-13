@@ -1,15 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.1';
+import { GAME } from '../core/state.js?v=5.4.2';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.1';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.1';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.1';
-import { getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.1';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.1';
-import { takeClickBudget } from './autoclickService.js?v=5.4.1';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.2';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.2';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.2';
+import { getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.2';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.2';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.2';
+import { takeClickBudget } from './autoclickService.js?v=5.4.2';
 import { events } from '../core/events.js';
-import { add, gainBio, mul } from '../utils/big.js?v=5.4.1';
+import { add, gainBio, mul } from '../utils/big.js?v=5.4.2';
 import { hasPerk } from '../data/perks.data.js';
-import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.1';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.2';
 
 export let pendingClicks = 0;
 
@@ -57,9 +58,9 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const bCount = Math.max(0, GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
   const currentEpoch = getPhaseForStage(GAME.evoStage).id;
   const knifeStar = eqKnife ? getKnifeStar(eqKnife.id) : 1;
-  const breakthroughMult = 1 + bCount * 0.25;
+  const breakthroughMult = 1 + bCount * ECONOMY.sparkleBreakthroughStep;
   const epochMult = getSparkleEpochMult(currentEpoch);
-  const starMult = 1 + Math.max(0, knifeStar - 1) * 0.05;
+  const starMult = 1 + Math.max(0, knifeStar - 1) * ECONOMY.sparkleStarStep;
   const progScale = breakthroughMult * epochMult * starMult;
 
   const sparklesPerProc = Math.max(1, Math.round(knifeSparkleMult * gamblerMult * progScale));

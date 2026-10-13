@@ -1,21 +1,21 @@
 import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.1';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.1';
-import { KNIVES } from '../data/knives.data.js?v=5.4.1';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.1';
-import { saveLocal } from '../save/saveManager.js?v=5.4.1';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.1';
-import { updateHUD } from './hudView.js?v=5.4.1';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.1';
+import { GAME } from '../core/state.js?v=5.4.2';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.2';
+import { KNIVES } from '../data/knives.data.js?v=5.4.2';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.2';
+import { saveLocal } from '../save/saveManager.js?v=5.4.2';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.2';
+import { updateHUD } from './hudView.js?v=5.4.2';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.2';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.1';
-import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.1';
-import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.1';
-import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.1';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.2';
+import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.2';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.2';
+import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.2';
 import { TALENTS } from '../data/talents.data.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.1';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.2';
 import { KNIFE_RARITIES, getRarityMeta } from '../data/knifeRarities.config.js';
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -60,6 +60,12 @@ export function isFirstCaseDiscountAvailable(caseObj) {
 
 export function casePlungerCost(caseObj) {
   return Math.max(0, Number(caseObj?.costPlungers) || 0);
+}
+
+export function caseFormLabel(caseObj) {
+  const form = formatNumber(Math.max(1, Number(caseObj?.reqForm) || 1));
+  const bt = formatNumber(Math.max(0, Number(caseObj?.reqBreakthrough) || 0));
+  return t('cases.formLevel', { form, bt });
 }
 
 export function getCaseIndex(caseObj) {
@@ -1059,6 +1065,7 @@ export function renderCasesSystem() {
             <div class="flex flex-col items-center text-center my-1 px-1">
               <div class="text-3xl my-0.5 select-none filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transform transition-transform duration-200 hover:scale-110">${c.icon}</div>
               <div class="font-game text-xs sm:text-sm text-yellow-200 font-bold tracking-wide leading-tight min-h-[1.8rem] flex items-center justify-center text-center">${caseName(c)}</div>
+              <div class="mt-0.5 text-[10px] font-bold text-emerald-200">${caseFormLabel(c)}</div>
               <div class="text-[10px] text-stone-300 mt-0.5 leading-snug line-clamp-1">${caseDesc(c)}</div>
               ${lockBadge}
               ${discountBadge}
@@ -1129,6 +1136,8 @@ export function openCasePreviewModal(caseId) {
   if (iconEl) iconEl.textContent = caseObj.icon;
   if (descEl) descEl.textContent = caseDesc(caseObj);
   if (costEl) costEl.innerHTML = casePriceHtml(caseObj);
+  const formEl = document.getElementById('casePreviewFormLevel');
+  if (formEl) formEl.textContent = caseFormLabel(caseObj);
 
   if (listEl) {
     listEl.innerHTML = '';

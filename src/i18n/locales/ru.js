@@ -448,6 +448,7 @@ export default {
   'cases.firstAvailableToast': '🎉 Доступен первый кейс к покупке со скидкой! Нажмите, чтобы открыть 🔪 Кейсы',
   'cases.noFunds': 'Нет валюты',
   'cases.infoTitle': 'Состав кейса',
+  'cases.formLevel': 'Форма {form} · Прорыв {bt}',
   'cases.open3Title': 'Открыть 3 сразу',
   'cases.click': 'Клик',
   'cases.mult': 'Множ.',
