@@ -1,6 +1,6 @@
-import { GAME } from '../core/state.js?v=5.4.5';
-import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.4.5';
-import { ECONOMY } from './economy.config.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.4.6';
+import { ECONOMY } from './economy.config.js?v=5.4.6';
 
 function echoCount(phaseId) {
   const bag = GAME.phaseEcho || {};
@@ -59,16 +59,16 @@ function openPairEchoBonus(at, closedPairs, previewPhase = 0, previewAdd = 0) {
   return bonus;
 }
 
-import { bigPow, mul } from '../utils/big.js?v=5.4.5';
+import { bigPow, isBig, log10Of, mul, rehydrateBig } from '../utils/big.js?v=5.4.6';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
 
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.5';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.6';
 
 export function getFlushIncomeMult() {
   const flushes = Math.max(0, GAME.flushCount ?? GAME.totalPrestiges ?? 0);
   const FLUSH_POWER_BASE = ECONOMY.flushPowerBase || 1.18;
-  return Math.pow(FLUSH_POWER_BASE, flushes);
+  return bigPow(FLUSH_POWER_BASE, flushes);
 }
 
 export function getBreakthroughBoostDetails(count = null) {
@@ -102,16 +102,23 @@ export function getBreakthroughIncomeMult() {
 export function getInfinityEssenceMult() {
   const lvl = getRelicLevel('relic_meta_infinity_multiplier');
   if (lvl <= 0) return 1.0;
-  return Math.pow(2.0, lvl);
+  return bigPow(2.0, lvl);
 }
 
 export function getPlungerCapitalMult() {
   const lvl = getRelicLevel('relic_guild_plunger_scaling');
   if (lvl <= 0) return 1.0;
-  const bankPlungers = Number(GAME.guildBankPlungers || GAME.transcendPlungers || 0);
-  const millions = Math.floor(bankPlungers / 1000000);
+  const bank = rehydrateBig(GAME.guildBankPlungers || GAME.transcendPlungers || 0);
+  let millions = 0;
+  if (isBig(bank)) {
+    const logM = log10Of(bank) - 6;
+    if (logM < 0) return 1.0;
+    millions = logM > 12 ? 1e12 : Math.pow(10, logM);
+  } else {
+    millions = Math.floor((Number(bank) || 0) / 1000000);
+  }
   if (millions <= 0) return 1.0;
-  return Math.pow(1 + 0.05 * lvl, millions);
+  return bigPow(1 + 0.05 * lvl, millions);
 }
 
 /**

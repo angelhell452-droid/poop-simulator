@@ -1,13 +1,13 @@
-import { GAME } from '../core/state.js?v=5.4.5';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.6';
 import { TALENTS } from '../data/talents.data.js';
 import { events } from '../core/events.js';
-import { bigPow, gte, mul } from '../utils/big.js?v=5.4.5';
+import { bigPow, gainBio, gte, isOrdinaryNumber, mul } from '../utils/big.js?v=5.4.6';
 import { hasPerk } from '../data/perks.data.js';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.5';
-import { saveLocal } from '../save/saveManager.js?v=5.4.5';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.5';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.5';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.6';
+import { saveLocal } from '../save/saveManager.js?v=5.4.6';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.6';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.6';
 
 export function getPrestigeRequirement() {
   const flushes = GAME.flushCount ?? GAME.totalPrestiges ?? 0;
@@ -30,8 +30,15 @@ export function getPrestigeRequirement() {
 }
 
 export function flushRollPack(flushes = GAME.flushCount ?? GAME.totalPrestiges ?? 0) {
-  // Награда: 14 * (Номер Смыва + 1)
-  return Math.max(14, Math.round(14 * (flushes + 1)));
+  // Награда: 14 * (Номер Смыва + 1) — linear in flush index, stays ordinary for practical counts
+  const n = Math.max(0, Number(flushes) || 0);
+  return Math.max(14, Math.round(14 * (n + 1)));
+}
+
+function boostPctFromMult(mult) {
+  if (!isOrdinaryNumber(mult)) return null;
+  const pct = (Number(mult) - 1) * 100;
+  return Number.isFinite(pct) ? pct : null;
 }
 
 export function getPrestigeRewardBreakdown() {
@@ -45,12 +52,11 @@ export function getPrestigeRewardBreakdown() {
 
   const totalGain = req.isMet ? Math.max(1, Math.round(pack * flushTalentBonus * vipMult * recycleMult)) : 0;
 
-  // Единая ось: Math.pow(flushPowerBase, flushes)
   const FLUSH_POWER_BASE = ECONOMY.flushPowerBase || 1.18;
-  const currentIncomeMult = Math.pow(FLUSH_POWER_BASE, req.flushes);
-  const nextIncomeMult = Math.pow(FLUSH_POWER_BASE, req.flushes + 1);
-  const currentBoostPct = (currentIncomeMult - 1) * 100;
-  const nextBoostPct = (nextIncomeMult - 1) * 100;
+  const currentIncomeMult = bigPow(FLUSH_POWER_BASE, req.flushes);
+  const nextIncomeMult = bigPow(FLUSH_POWER_BASE, req.flushes + 1);
+  const currentBoostPct = boostPctFromMult(currentIncomeMult);
+  const nextBoostPct = boostPctFromMult(nextIncomeMult);
 
   return {
     ...req,
@@ -78,9 +84,9 @@ export function executePrestige(chosenArchetype = 'balanced') {
   GAME.flushCount = nextFlushes;
   GAME.totalPrestiges = nextFlushes;
 
-  GAME.prestigeRolls = (GAME.prestigeRolls || 0) + breakdown.totalGain;
-  GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + breakdown.totalGain;
-  GAME.transcendCycleRolls = (GAME.transcendCycleRolls || 0) + breakdown.totalGain;
+  GAME.prestigeRolls = gainBio(GAME.prestigeRolls || 0, breakdown.totalGain);
+  GAME.allTimePrestigeRolls = gainBio(GAME.allTimePrestigeRolls || 0, breakdown.totalGain);
+  GAME.transcendCycleRolls = gainBio(GAME.transcendCycleRolls || 0, breakdown.totalGain);
 
   const startTalent = TALENTS.find(t => t.id === 'royal_gold');
   const startBio = startTalent ? startTalent.level * 200 : 0;

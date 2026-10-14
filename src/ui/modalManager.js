@@ -1,17 +1,17 @@
-import { GAME } from '../core/state.js?v=5.4.5';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.5';
-import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.4.5';
-import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase, getBreakthroughExpLevel, getTargetBreakthroughExperience } from '../prestige/transcendService.js?v=5.4.5';
-import { rehydrateBig } from '../utils/big.js?v=5.4.5';
-import { saveLocal } from '../save/saveManager.js?v=5.4.5';
-import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.4.5';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { formatMult, formatNumber } from '../utils/numberFormatter.js?v=5.4.6';
+import { getPrestigeRollsReward, executePrestige, getPrestigeRequirement, getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.4.6';
+import { getTranscendPlungersReward, executeTranscend, getTranscendRequirement, getTranscendRewardBreakdown, flushesNeededForBridge, plungerFlushCap, currentBridgePhase, getBreakthroughExpLevel, getTargetBreakthroughExperience } from '../prestige/transcendService.js?v=5.4.6';
+import { gte, rehydrateBig } from '../utils/big.js?v=5.4.6';
+import { saveLocal } from '../save/saveManager.js?v=5.4.6';
+import { getRollsIncomeMult, getEchoBonus } from '../economy/metaMultipliers.js?v=5.4.6';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.6';
 
-import { updateHUD } from './hudView.js?v=5.4.5';
-import { renderCasesSystem } from './casesView.js?v=5.4.5';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.4.5';
-import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.4.5';
-import { renderFactories } from './factoryView.js?v=5.4.5';
+import { updateHUD } from './hudView.js?v=5.4.6';
+import { renderCasesSystem } from './casesView.js?v=5.4.6';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.4.6';
+import { renderTalents, switchTalentSubTab } from './talentView.js?v=5.4.6';
+import { renderFactories } from './factoryView.js?v=5.4.6';
 import { renderShop } from './shopView.js';
 import { events } from '../core/events.js';
 import { isRelicSectionUnlocked } from '../progression/unlocks.js';
@@ -31,8 +31,12 @@ export function updatePrestigeModalRealtime() {
   const b = getPrestigeRewardBreakdown();
   const gain = b.totalGain;
   const flushes = b.flushes ?? GAME.flushCount ?? 0;
-  const currentBoostPct = b.currentBoostPct ?? (flushes * 50);
-  const nextBoostPct = b.nextBoostPct ?? ((flushes + 1) * 50);
+  const currentBoost = formatMult(b.currentIncomeMult ?? 1);
+  const nextBoost = formatMult(b.nextIncomeMult ?? 1);
+  const currentBoostLabel = currentBoost.pctLabel || currentBoost.multLabel;
+  const nextBoostLabel = nextBoost.pctLabel
+    ? `${nextBoost.pctLabel} (${nextBoost.multLabel})`
+    : nextBoost.multLabel;
 
   const reqLabel = document.getElementById('prestigeReqLabel');
   if (reqLabel) {
@@ -76,11 +80,11 @@ export function updatePrestigeModalRealtime() {
         <div class="p-2 rounded-lg bg-stone-950/60 border border-purple-500/20 text-xs space-y-1 font-mono">
           <div class="flex items-center justify-between">
             <span class="text-purple-200">Пассивный буст к доходу:</span>
-            <span class="text-emerald-300 font-bold">+${formatNumber(currentBoostPct)}%</span>
+            <span class="text-emerald-300 font-bold">${currentBoostLabel}</span>
           </div>
           <div class="flex items-center justify-between text-[11px] text-stone-400">
             <span>После Смыва станет:</span>
-            <span class="text-yellow-300 font-bold">+${formatNumber(nextBoostPct)}% (x${formatNumber(b.nextIncomeMult)})</span>
+            <span class="text-yellow-300 font-bold">${nextBoostLabel}</span>
           </div>
           ${b.flushTalentBonus > 1 ? `
             <div class="flex items-center justify-between text-[10px] text-purple-300 pt-1 border-t border-purple-900/40">
@@ -101,7 +105,7 @@ export function updatePrestigeModalRealtime() {
 
   const execBtn = document.getElementById('btnExecutePrestige');
   if (execBtn) {
-    execBtn.disabled = !b.isMet || gain <= 0;
+    execBtn.disabled = !b.isMet || !gte(gain, 1);
     if (b.isMet) {
       execBtn.textContent = 'СОВЕРШИТЬ СМЫВ! 🌊';
     } else {

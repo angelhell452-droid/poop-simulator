@@ -1,8 +1,8 @@
-import { GAME } from '../core/state.js?v=5.4.5';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.5';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.6';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.4.6';
 import { events } from '../core/events.js';
-import { spendBio, gainBio, mul } from '../utils/big.js?v=5.4.5';
+import { spendBio, gainBio, mul } from '../utils/big.js?v=5.4.6';
 import { TALENTS } from '../data/talents.data.js';
 
 export function buyFactory(facId) {

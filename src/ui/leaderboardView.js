@@ -1,10 +1,11 @@
-import { GAME } from '../core/state.js?v=5.4.5';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.5';
-import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.4.5';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.4.5';
-import { saveLocal } from '../save/saveManager.js?v=5.4.5';
-import { updateHUD } from './hudView.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.6';
+import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.4.6';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.4.6';
+import { saveLocal } from '../save/saveManager.js?v=5.4.6';
+import { updateHUD } from './hudView.js?v=5.4.6';
 import { t, onLocaleChange } from '../i18n/t.js';
+import { gainBio } from '../utils/big.js?v=5.4.6';
 
 let cachedLeaderboard = null;
 let cachedYou = null;
@@ -189,7 +190,7 @@ function updateDailyRewardCard(leaderboard) {
       btnClaim.innerHTML = t('lb.claimBtn', { n: formatNumber(rewardAmount) });
       btnClaim.className = 'w-full sm:w-auto shrink-0 bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-stone-950 font-game font-bold text-xs px-3.5 py-2 rounded-xl transition shadow jelly-btn';
       btnClaim.onclick = () => {
-        GAME.sparkles = (Number(GAME.sparkles) || 0) + rewardAmount;
+        GAME.sparkles = gainBio(GAME.sparkles, rewardAmount);
         GAME.lastDailyTop10Claim = Date.now();
         saveLocal();
         updateHUD();

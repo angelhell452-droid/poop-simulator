@@ -1,25 +1,25 @@
-import { GAME } from '../core/state.js?v=5.4.5';
-import { getEquippedKnife } from '../economy/production.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { getEquippedKnife } from '../economy/production.js?v=5.4.6';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.5';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.6';
 import { hasPerk } from '../data/perks.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.5';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.5';
-import { cmp, gainBio, mul, log10Of } from '../utils/big.js?v=5.4.5';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.5';
-import { updateHUD } from './hudView.js?v=5.4.5';
-import { saveLocal } from '../save/saveManager.js?v=5.4.5';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.5';
+import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.6';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.6';
+import { cmp, gainBio, gte, isBig, mul } from '../utils/big.js?v=5.4.6';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.6';
+import { updateHUD } from './hudView.js?v=5.4.6';
+import { saveLocal } from '../save/saveManager.js?v=5.4.6';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.6';
 import { events } from '../core/events.js';
-import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.4.5';
-import { getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.5';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.5';
-import { KNIVES } from '../data/knives.data.js?v=5.4.5';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.5';
+import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.4.6';
+import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.6';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.6';
+import { KNIVES } from '../data/knives.data.js?v=5.4.6';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.6';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.5';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.5';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.6';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.6';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
@@ -1524,21 +1524,30 @@ export function catchGoldenMeteor() {
   const eqKnife = getEquippedKnife();
   const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
   const slice = ECONOMY.meteorSliceMin + Math.random() * (ECONOMY.meteorSliceMax - ECONOMY.meteorSliceMin);
-  // Гармония: метеорит тоже ∝ CPS^0.8
-  const cpsNow = getPassiveIncome();
-  const cpsLog = Math.max(0, log10Of(cpsNow) - Math.log10(Math.max(1, ECONOMY.sparkleCpsRef || 80)));
-  const cpsSparkleMult = Math.pow(10, cpsLog * (ECONOMY.sparkleCpsExponent || 0.8));
-  const raw = profile.purse * slice * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult * meteorTalentSparkle() * Math.max(0.25, cpsSparkleMult);
-  let spGain = Math.max(60, Math.round(raw));
+  // Гармония: метеорит тоже ∝ CPS^0.8 (Big-safe)
+  const cpsSparkleMult = sparkleMultFromCps(getPassiveIncome());
+  const cpsFloor = gte(cpsSparkleMult, 0.25) ? cpsSparkleMult : 0.25;
+  let spGain = mul(
+    mul(
+      mul(profile.purse * slice * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult, meteorTalentSparkle()),
+      cpsFloor
+    ),
+    1
+  );
+  if (!isBig(spGain)) {
+    spGain = Math.max(60, Math.round(Number(spGain) || 60));
+  } else if (cmp(spGain, 60) < 0) {
+    spGain = 60;
+  }
   const tripleTalent = TALENTS.find(t => t.id === 'talent_meteor_triple');
   const tripleChance = tripleTalent ? tripleTalent.level * 0.001 : 0;
   let isTriple = false;
   if (tripleChance > 0 && Math.random() < tripleChance) {
-    spGain *= 3;
+    spGain = mul(spGain, 3);
     isTriple = true;
     addVisualParticle('✨ ЗОЛОТАЯ ИСКРА x3! ✨', '#fde047', 1.8, 2.5, -2.8);
   }
-  GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
+  GAME.sparkles = gainBio(GAME.sparkles, spGain);
 
   // ВТОРИЧНЫЙ СУПЕР-БОНУС МЕТЕОРИТА
   const roll = Math.random();
@@ -1559,12 +1568,12 @@ export function catchGoldenMeteor() {
   } else if (roll < 0.85) {
     const rollMultiplier = 1 + Math.min(1.5, (GAME.totalPrestiges || 0) * 0.02) + Math.min(1.5, (GAME.totalTranscend || 0) * 0.12);
     const rollGain = Math.max(1, Math.min(3, Math.round((1 + Math.random()) * rollMultiplier * Math.min(1.5, lootMult))));
-    GAME.prestigeRolls = (GAME.prestigeRolls || 0) + rollGain;
+    GAME.prestigeRolls = gainBio(GAME.prestigeRolls, rollGain);
     bonusLabel = t('canvas.meteorSacredRoll', { n: formatNumber(rollGain) });
   } else {
     // Джекпот: дополнительные x2 Блестяшек!
-    GAME.sparkles = (Number.isFinite(GAME.sparkles) ? GAME.sparkles : 0) + spGain;
-    spGain *= 2;
+    GAME.sparkles = gainBio(GAME.sparkles, spGain);
+    spGain = mul(spGain, 2);
     bonusLabel = '✨ МЕТЕОРИТНЫЙ ДЖЕКПОТ x2! ✨';
   }
 
@@ -1576,7 +1585,7 @@ export function catchGoldenMeteor() {
 
   // VIP Визуализация автосбора метеорита (Эффект Магнитных Искр в #sparklesBalance)
   if (Boolean(GAME.vipPass || GAME.hasVipPass)) {
-    GAME.vipCollectedSparkles = (GAME.vipCollectedSparkles || 0) + spGain;
+    GAME.vipCollectedSparkles = gainBio(GAME.vipCollectedSparkles, spGain);
     spawnMagneticSparkleTrail(spawnX, spawnY);
   }
 
@@ -1727,22 +1736,30 @@ export function catchShowerMeteor(index) {
   GAME.meteorsCaught = GAME.stats.totalMeteorsCaught;
   events.emit('stats:meteorCaught', { total: GAME.stats.totalMeteorsCaught });
   const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
-  let sparkGain = Math.max(24, Math.round(profile.purse * (0.012 + Math.random() * 0.010) * profile.localMult * profile.flushBonus * meteorTalentSparkle()));
+  let sparkGain = mul(
+    profile.purse * (0.012 + Math.random() * 0.010) * profile.localMult * profile.flushBonus,
+    meteorTalentSparkle()
+  );
+  if (!isBig(sparkGain)) {
+    sparkGain = Math.max(24, Math.round(Number(sparkGain) || 24));
+  } else if (cmp(sparkGain, 24) < 0) {
+    sparkGain = 24;
+  }
 
   const tripleTalent = TALENTS.find(t => t.id === 'talent_meteor_triple');
   const tripleChance = tripleTalent ? tripleTalent.level * 0.001 : 0;
   const isTriple = tripleChance > 0 && Math.random() < tripleChance;
   if (isTriple) {
-    sparkGain *= 3;
+    sparkGain = mul(sparkGain, 3);
     addVisualParticle('✨ ЗОЛОТАЯ ИСКРА x3! ✨', '#fde047', 1.8, 2.5, -2.8);
   }
 
-  GAME.sparkles = (Number(GAME.sparkles) || 0) + sparkGain;
+  GAME.sparkles = gainBio(GAME.sparkles, sparkGain);
   addVisualParticle(t('canvas.meteorShowerCatch', { n: formatNumber(sparkGain) }), '#fde68a', 1.05);
 
   // VIP Визуализация автосбора звездопада (Эффект Магнитных Искр в #sparklesBalance)
   if (Boolean(GAME.vipPass || GAME.hasVipPass)) {
-    GAME.vipCollectedSparkles = (GAME.vipCollectedSparkles || 0) + sparkGain;
+    GAME.vipCollectedSparkles = gainBio(GAME.vipCollectedSparkles, sparkGain);
     spawnMagneticSparkleTrail(mx, my);
   }
   checkAchievements();

@@ -1,11 +1,12 @@
-import { WEAPON_CASES } from './cases.data.js?v=5.4.5';
+import { WEAPON_CASES } from './cases.data.js?v=5.4.6';
 import {
   ECONOMY,
   factoryCostLog10,
   factoryCpsLog10,
   factoryUnlockForm,
   caseUnlockBreakthrough
-} from '../economy/economy.config.js?v=5.4.5';
+} from '../economy/economy.config.js?v=5.4.6';
+import { isBig, pow10 } from '../utils/big.js?v=5.4.6';
 
 export const FACTORIES_PER_EPOCH = 1;
 export const CLASSIC_EPOCHS = 45;
@@ -33,15 +34,14 @@ export function getFactoryLogCps(tierNumber) {
 }
 
 export function makeBigFromLog(logVal) {
-  if (logVal < 300) {
-    const val = Math.pow(10, logVal);
-    if (Number.isFinite(val) && val < 1e300) {
-      return logVal < 12 ? Math.round(val) : val;
-    }
+  const val = pow10(logVal);
+  if (!isBig(val) && Number.isFinite(val)) {
+    return logVal < 12 ? Math.round(val) : val;
   }
-  const e = Math.floor(logVal);
-  const m = Math.pow(10, logVal - e);
-  return { __big: true, m: Number(m.toFixed(4)), e };
+  if (isBig(val)) {
+    return { __big: true, m: Number(val.m.toFixed(4)), e: val.e };
+  }
+  return val;
 }
 
 export function getFactoryBaseCost(tierNumber) {

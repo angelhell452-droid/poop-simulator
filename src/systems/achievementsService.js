@@ -1,8 +1,8 @@
-import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.4.5';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.5';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.5';
+import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.4.6';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.6';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.6';
 import { events } from '../core/events.js';
-import { gte } from '../utils/big.js?v=5.4.5';
+import { gainBio, gte } from '../utils/big.js?v=5.4.6';
 
 export function checkAchievements() {
   const completed = [];
@@ -37,15 +37,15 @@ export function checkAchievements() {
     if (met) {
       ach.done = true;
       if (ach.reward) {
-        GAME.sparkles = (GAME.sparkles || 0) + ach.reward;
+        GAME.sparkles = gainBio(GAME.sparkles, ach.reward);
       }
       if (ach.rewardRolls) {
-        GAME.prestigeRolls = (GAME.prestigeRolls || 0) + ach.rewardRolls;
-        GAME.allTimePrestigeRolls = (GAME.allTimePrestigeRolls || 0) + ach.rewardRolls;
-        GAME.transcendCycleRolls = (GAME.transcendCycleRolls || 0) + ach.rewardRolls;
+        GAME.prestigeRolls = gainBio(GAME.prestigeRolls, ach.rewardRolls);
+        GAME.allTimePrestigeRolls = gainBio(GAME.allTimePrestigeRolls, ach.rewardRolls);
+        GAME.transcendCycleRolls = gainBio(GAME.transcendCycleRolls, ach.rewardRolls);
       }
       if (ach.rewardPlungers) {
-        GAME.transcendPlungers = (GAME.transcendPlungers || 0) + ach.rewardPlungers;
+        GAME.transcendPlungers = gainBio(GAME.transcendPlungers, ach.rewardPlungers);
       }
       completed.push(ach);
       events.emit('achievement:unlocked', { achievement: ach });

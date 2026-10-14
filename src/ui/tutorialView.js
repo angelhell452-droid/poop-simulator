@@ -1,16 +1,16 @@
-import { GAME, feedCount, washCount } from '../core/state.js?v=5.4.5';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.5';
+import { GAME, feedCount, washCount } from '../core/state.js?v=5.4.6';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.6';
 import { TALENTS } from '../data/talents.data.js';
 import { PERMANENT_PERKS, hasPerk } from '../data/perks.data.js';
 import { RELICS, hasRelic } from '../data/relics.data.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.5';
-import { gainBio } from '../utils/big.js?v=5.4.5';
-import { saveLocal } from '../save/saveManager.js?v=5.4.5';
-import { updateHUD } from './hudView.js?v=5.4.5';
-import { addVisualParticle, triggerForcedMeteor } from './petCanvasView.js?v=5.4.5';
-import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.5';
-import { openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.5';
-import { switchTalentSubTab } from './talentView.js?v=5.4.5';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.6';
+import { gainBio } from '../utils/big.js?v=5.4.6';
+import { saveLocal } from '../save/saveManager.js?v=5.4.6';
+import { updateHUD } from './hudView.js?v=5.4.6';
+import { addVisualParticle, triggerForcedMeteor } from './petCanvasView.js?v=5.4.6';
+import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.6';
+import { openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.6';
+import { switchTalentSubTab } from './talentView.js?v=5.4.6';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 let activeSpotlightElement = null;
@@ -65,7 +65,7 @@ export const TUTORIAL_QUESTS = [
       if (tab) tab.click();
     },
     claim: (silent = false) => {
-      GAME.sparkles = (GAME.sparkles || 0) + 20;
+      GAME.sparkles = gainBio(GAME.sparkles, );
       if (!silent) addVisualParticle('+20 Блестяшек ✨', '#fbbf24', 1.8);
     }
   },
@@ -99,7 +99,7 @@ export const TUTORIAL_QUESTS = [
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     },
     claim: (silent = false) => {
-      GAME.sparkles = (GAME.sparkles || 0) + 10;
+      GAME.sparkles = gainBio(GAME.sparkles, );
       if (!silent) addVisualParticle('+10 Блестяшек ✨', '#fbbf24', 1.8);
     }
   },
@@ -153,7 +153,7 @@ export const TUTORIAL_QUESTS = [
       if (tab) tab.click();
     },
     claim: (silent = false) => {
-      GAME.sparkles = (GAME.sparkles || 0) + 20;
+      GAME.sparkles = gainBio(GAME.sparkles, );
       if (!silent) addVisualParticle('+20 Блестяшек ✨', '#fbbf24', 1.8);
     }
   },
@@ -285,7 +285,7 @@ export const TUTORIAL_QUESTS = [
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     },
     claim: (silent = false) => {
-      GAME.sparkles = (GAME.sparkles || 0) + 50;
+      GAME.sparkles = gainBio(GAME.sparkles, );
       if (!silent) addVisualParticle('+50 Блестяшек ✨', '#fbbf24', 1.8);
     }
   },
@@ -341,7 +341,7 @@ export const TUTORIAL_QUESTS = [
       }
     },
     claim: (silent = false) => {
-      GAME.sparkles = (GAME.sparkles || 0) + 100;
+      GAME.sparkles = gainBio(GAME.sparkles, );
       if (!silent) addVisualParticle('+100 Блестяшек ✨', '#fbbf24', 2.0);
     }
   },
@@ -420,7 +420,7 @@ export const TUTORIAL_QUESTS = [
       if (tab) tab.click();
     },
     claim: (silent = false) => {
-      GAME.sparkles = (GAME.sparkles || 0) + 50;
+      GAME.sparkles = gainBio(GAME.sparkles, );
       if (!silent) addVisualParticle('Вечный бафф активен! +50 ✨', '#fbbf24', 2.0);
     }
   },

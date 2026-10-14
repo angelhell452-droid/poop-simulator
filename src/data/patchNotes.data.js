@@ -1,6 +1,36 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.5';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.6';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.6 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.6: Большие числа везде',
+    titleEn: 'Patch 5.4.6: Big Numbers Everywhere',
+    badge: 'Фикс 5.4.6',
+    badgeEn: 'Fix 5.4.6',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '♾️',
+        text: 'Infinity больше не схлопывается в 0: rehydrateBig/promote, смыв 1.18^N через bigPow — буст и доход снова видны на тысячах смывов.',
+        textEn: 'Infinity no longer collapses to 0: rehydrateBig promote + flush 1.18^N via bigPow — boost and income stay visible at thousands of flushes.'
+      },
+      {
+        type: 'fix',
+        icon: '✨',
+        text: 'Блестяшки и метеоры считают CPS^0.8 через Big pow10; кошелёк/трата через gainBio/spendBio.',
+        textEn: 'Sparkles and meteors scale CPS^0.8 via Big pow10; wallet add/spend uses gainBio/spendBio.'
+      },
+      {
+        type: 'fix',
+        icon: '💾',
+        text: 'Сейв хранит sparkles/rolls/biomass как scientific Big; загрузка больше не обнуляет втулки из‑за isFinite(Big).',
+        textEn: 'Saves store sparkles/rolls/biomass as scientific Big; load no longer wipes rolls via isFinite(Big).'
+      }
+    ]
+  },
   {
     version: 'v5.4.5 PRO',
     date: '14 Октября 2026',

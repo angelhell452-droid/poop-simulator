@@ -1,7 +1,8 @@
-import { GAME } from '../core/state.js?v=5.4.5';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.5';
-import { SHOP_ITEMS } from './shop.data.js?v=5.4.5';
-import { getRelicLevel } from './relics.data.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.6';
+import { SHOP_ITEMS } from './shop.data.js?v=5.4.6';
+import { getRelicLevel } from './relics.data.js?v=5.4.6';
+import { gte, spendBio } from '../utils/big.js?v=5.4.6';
 
 /**
  * 20 Уникальных Постоянных Перков (Permanent Perks) за Блестяшки ✨
@@ -304,12 +305,11 @@ export function buyPermanentPerk(perkId) {
   }
 
   const cost = getPerkCost(perk);
-  const curSparkles = Number(GAME.sparkles) || 0;
-  if (curSparkles < cost) {
+  if (!gte(GAME.sparkles || 0, cost)) {
     return { success: false, msg: `Недостаточно Блестяшек (${formatNumber(cost)} ✨)!` };
   }
 
-  GAME.sparkles = Math.max(0, curSparkles - cost);
+  GAME.sparkles = spendBio(GAME.sparkles, cost);
   perk.owned = true;
   if (!GAME.ownedPerks) GAME.ownedPerks = {};
   GAME.ownedPerks[perk.id] = true;

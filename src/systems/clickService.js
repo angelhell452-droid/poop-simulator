@@ -1,16 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.5';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.5';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.5';
-import { getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.5';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.5';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.5';
-import { takeClickBudget } from './autoclickService.js?v=5.4.5';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.6';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.6';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.6';
+import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.6';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.6';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.6';
+import { takeClickBudget } from './autoclickService.js?v=5.4.6';
 import { events } from '../core/events.js';
-import { add, gainBio, mul, log10Of } from '../utils/big.js?v=5.4.5';
+import { add, bigPow, cmp, gainBio, gte, isBig, mul } from '../utils/big.js?v=5.4.6';
 import { hasPerk } from '../data/perks.data.js';
-import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.5';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.6';
 
 export let pendingClicks = 0;
 
@@ -61,13 +61,16 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const breakthroughMult = 1 + bCount * ECONOMY.sparkleBreakthroughStep;
   const epochMult = getSparkleEpochMult(currentEpoch);
   const starMult = 1 + Math.max(0, knifeStar - 1) * ECONOMY.sparkleStarStep;
-  // Гармония: SparklesIncome ∝ CPS^0.8 (норма к CPS тира 1).
-  const cpsNow = getPassiveIncome();
-  const cpsLog = Math.max(0, log10Of(cpsNow) - Math.log10(Math.max(1, ECONOMY.sparkleCpsRef || 80)));
-  const cpsSparkleMult = Math.pow(10, cpsLog * (ECONOMY.sparkleCpsExponent || 0.8));
-  const progScale = breakthroughMult * epochMult * starMult * Math.max(0.25, cpsSparkleMult);
-
-  const sparklesPerProc = Math.max(1, Math.round(knifeSparkleMult * gamblerMult * progScale));
+  // Гармония: SparklesIncome ∝ CPS^0.8 (норма к CPS тира 1) — Big-safe.
+  const cpsSparkleMult = sparkleMultFromCps(getPassiveIncome());
+  const cpsFloor = gte(cpsSparkleMult, 0.25) ? cpsSparkleMult : 0.25;
+  let progScale = mul(mul(mul(breakthroughMult, epochMult), starMult), cpsFloor);
+  let sparklesPerProc = mul(mul(knifeSparkleMult, gamblerMult), progScale);
+  if (!isBig(sparklesPerProc)) {
+    sparklesPerProc = Math.max(1, Math.round(Number(sparklesPerProc) || 1));
+  } else if (cmp(sparklesPerProc, 1) < 0) {
+    sparklesPerProc = 1;
+  }
 
   let totalEarned = 0;
   let sparklesEarned = 0;
@@ -95,7 +98,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
       critBio = add(critBio, mul(mul(superCritsCount, basePower), critMultiplier * 100));
     }
     totalEarned = add(mul(regularClicks, basePower), critBio);
-    sparklesEarned = critsCount * sparklesPerProc;
+    sparklesEarned = mul(critsCount, sparklesPerProc);
   } else {
     for (let i = 0; i < clicksToProcess; i++) {
       const isCrit = Math.random() < critChance;
@@ -109,13 +112,13 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
         totalEarned = add(totalEarned, basePower);
       }
     }
-    sparklesEarned = critsCount * sparklesPerProc;
+    sparklesEarned = mul(critsCount, sparklesPerProc);
   }
 
   // perk_sparkle_cornucopia: +15% шанс на дабл-дроп Блестяшек при выпадении Крита
   if (critsCount > 0 && (hasPerk('perk_sparkle_cornucopia') || hasPerk('upg_infinite_sparkles'))) {
     if (Math.random() < 0.15) {
-      sparklesEarned *= 2;
+      sparklesEarned = mul(sparklesEarned, 2);
     }
   }
 
@@ -124,7 +127,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   // гарантированно начисляет в кошелек +5 Блестяшек ✨
   const isKnifePenaltyActive = getKnifeFactorySynergyMult() <= 0.10;
   if (isKnifePenaltyActive && critsCount > 0 && isManual) {
-    sparklesEarned += critsCount * 5;
+    sparklesEarned = add(sparklesEarned, critsCount * 5);
   }
 
   // perk_omniverse_essence: глобальный x1.20 ко всему
@@ -133,9 +136,9 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   }
 
   // relic_meta_infinity_multiplier: x2.0 за уровень ко всем кликам/доходу
-  const metaInf = Math.pow(2.0, getRelicLevel('relic_meta_infinity_multiplier'));
-  if (metaInf > 1) {
-    totalEarned = mul(totalEarned, metaInf);
+  const metaInfLvl = getRelicLevel('relic_meta_infinity_multiplier');
+  if (metaInfLvl > 0) {
+    totalEarned = mul(totalEarned, bigPow(2.0, metaInfLvl));
   }
 
   // relic_crit_explosion: Каждый 50-й Крит подряд вызывает взрыв, дающий доход за 30 секунд
@@ -157,7 +160,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   GAME.allTimeBiomass = gainBio(GAME.allTimeBiomass, totalEarned);
   GAME.cycleBiomass = gainBio(GAME.cycleBiomass, totalEarned);
   GAME.totalClicks += clicksToProcess;
-  GAME.sparkles += sparklesEarned;
+  GAME.sparkles = gainBio(GAME.sparkles, sparklesEarned);
 
   if (eqKnife) {
     eqKnife.statTrak = (eqKnife.statTrak || 0) + clicksToProcess;

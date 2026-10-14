@@ -30,16 +30,34 @@ function normalize(mantissa, exponent) {
   return { __big: true, m, e };
 }
 
+/** Safe 10^log10Value (alias used by sparkle/CPS scaling). */
+export function pow10(log10Value) {
+  return bigPow10(log10Value);
+}
+
 export function bigPow10(exponent) {
-  const exp = Number(exponent) || 0;
+  const exp = Number(exponent);
+  if (!Number.isFinite(exp)) return 0;
   if (exp < 308 && exp > -308) {
     const n = Math.pow(10, exp);
     if (Number.isFinite(n)) return n;
   }
   const e = Math.floor(exp);
-  const m = Math.pow(10, exp - e);
+  const frac = exp - e;
+  const m = Number.isFinite(frac) ? Math.pow(10, frac) : 1;
   if (e > EXP_LIMIT) return { __big: true, m: 1, e: EXP_LIMIT };
+  if (!Number.isFinite(m) || m <= 0) return bigPow10(e);
   return normalize(m, e);
+}
+
+/**
+ * Promote raw JS Infinity (or non-finite overflow) into a Big at EXP_LIMIT,
+ * never collapse to 0 — that zeroed income/UI at high flush counts.
+ */
+function promoteNonFinite(n) {
+  if (n === Infinity) return bigPow10(EXP_LIMIT);
+  if (n === -Infinity || Number.isNaN(n)) return 0;
+  return 0;
 }
 
 export function rehydrateBig(value) {
@@ -57,14 +75,20 @@ export function rehydrateBig(value) {
       }
     }
   }
+  if (typeof value === 'number') {
+    if (Number.isFinite(value)) return value >= 0 ? value : 0;
+    return promoteNonFinite(value);
+  }
   const n = Number(value);
   if (Number.isFinite(n) && n >= 0) return n;
+  if (value === Infinity || n === Infinity) return bigPow10(EXP_LIMIT);
   return 0;
 }
 
 export function log10Of(value) {
-  if (isBig(value)) return value.e + Math.log10(value.m);
-  const n = Number(value) || 0;
+  const v = rehydrateBig(value);
+  if (isBig(v)) return v.e + Math.log10(v.m);
+  const n = Number(v) || 0;
   if (n <= 0) return -Infinity;
   return Math.log10(n);
 }
@@ -100,6 +124,7 @@ export function add(a, b) {
   if (!isBig(left) && !isBig(right)) {
     const sum = left + right;
     if (Number.isFinite(sum) && sum < 1e308) return sum < 0 ? 0 : sum;
+    // Overflow → fall through to log-space add
   }
   if (cmp(left, 0) === 0) return right;
   if (cmp(right, 0) === 0) return left;
@@ -149,12 +174,14 @@ export function div(a, b) {
     if (Number.isFinite(quote) && quote < 1e308) return quote < 0 ? 0 : quote;
   }
   if (cmp(left, 0) === 0) return 0;
+  if (cmp(right, 0) === 0) return left;
   return normalize(1, log10Of(left) - log10Of(right));
 }
 
 export function mulFloor(value, factor) {
   const out = mul(value, factor);
   if (isBig(out)) return out;
+  if (!Number.isFinite(out) || out <= 0) return 1;
   return Math.max(1, Math.floor(out));
 }
 
@@ -187,4 +214,10 @@ export function bigPow(base, exponent) {
   const e = Math.floor(newLog);
   const m = Math.pow(10, newLog - e);
   return normalize(m, e);
+}
+
+/** True when value is still a finite ordinary JS number (safe for %-style UI). */
+export function isOrdinaryNumber(value) {
+  const v = rehydrateBig(value);
+  return !isBig(v) && Number.isFinite(v);
 }

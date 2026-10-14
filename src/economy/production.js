@@ -1,24 +1,24 @@
-import { GAME } from '../core/state.js?v=5.4.5';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.5';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.6';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.6';
 import { TALENTS } from '../data/talents.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.4.5';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.5';
-import { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../data/knifeBalance.config.js?v=5.4.5';
+import { KNIVES } from '../data/knives.data.js?v=5.4.6';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.6';
+import { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../data/knifeBalance.config.js?v=5.4.6';
 export { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult };
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.5';
-import { dampenGearMult, getCleanIncomeMult, getHungerClickMult, getHappyCritBonus, getIdealMult, getInfinityEssenceMult, getPlungerCapitalMult, getPlungersIncomeMult, getRollsIncomeMult, getTutorialClickMult, getTutorialCritBonus, getTutorialIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.4.5';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.6';
+import { dampenGearMult, getCleanIncomeMult, getHungerClickMult, getHappyCritBonus, getIdealMult, getInfinityEssenceMult, getPlungerCapitalMult, getPlungersIncomeMult, getRollsIncomeMult, getTutorialClickMult, getTutorialCritBonus, getTutorialIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.4.6';
 import { hasPerk } from '../data/perks.data.js';
-import { guildPresenceMult } from '../guild/guildPresence.js?v=5.4.5';
+import { guildPresenceMult } from '../guild/guildPresence.js?v=5.4.6';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { archetypeName } from '../i18n/localize.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.5';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.6';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
-import { findBodySkin } from '../data/skins.data.js?v=5.4.5';
-import { add, cmp, isBig, mul } from '../utils/big.js?v=5.4.5';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.5';
-import { horizonIncomeMult } from './horizon.js?v=5.4.5';
-import { BARE_CLICK_CAP } from '../systems/autoclickService.js?v=5.4.5';
+import { findBodySkin } from '../data/skins.data.js?v=5.4.6';
+import { add, bigPow, cmp, isBig, mul } from '../utils/big.js?v=5.4.6';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.6';
+import { horizonIncomeMult } from './horizon.js?v=5.4.6';
+import { BARE_CLICK_CAP } from '../systems/autoclickService.js?v=5.4.6';
 
 /** Max share of factory income that a full click-cap stream may add. */
 const CLICK_INCOME_SHARE_CAP = 0.15;
@@ -237,9 +237,9 @@ function milestoneMult(count) {
   if (count >= 200) mult *= 1.5;
   if (count >= 500) mult *= 1.5;
   if (count >= 1000) {
-    mult *= 2;
+    mult = mul(mult, 2);
     const extraThousands = Math.floor((count - 1000) / 1000);
-    if (extraThousands > 0) mult *= Math.pow(1.5, extraThousands);
+    if (extraThousands > 0) mult = mul(mult, bigPow(1.5, extraThousands));
   }
   return mult;
 }
@@ -282,9 +282,9 @@ function describeFactory(fac, idx, count) {
 
   // talent_factory_meta: +5% к доходу заводов мультипликативно, если уровень завода > 500
   const metaLvl = talentLevel('talent_factory_meta');
-  const metaMult = (count > 500 && metaLvl > 0) ? Math.pow(1.05, metaLvl) : 1;
+  const metaMult = (count > 500 && metaLvl > 0) ? bigPow(1.05, metaLvl) : 1;
 
-  const raw = mul(mul(mul(count, effectiveBaseCps), milestone * knife * core), metaMult);
+  const raw = mul(mul(mul(mul(count, effectiveBaseCps), milestone), knife * core), metaMult);
   return { raw, milestone, knife, quantum: 1, core, metaMult, count, perCopy: effectiveBaseCps };
 }
 
@@ -326,7 +326,7 @@ function passiveGlobalLines() {
   const softRollsMult = 1 + talentLevel('soft_rolls') * 0.12;
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const rollsMult = getRollsIncomeMult();
-  const cosmicMult = Math.pow(1.20, Math.floor(talentLevel('cosmic_resonance') / 2));
+  const cosmicMult = bigPow(1.20, Math.floor(talentLevel('cosmic_resonance') / 2));
   const plungersMult = getPlungersIncomeMult();
   const cleanBuff = getCleanIncomeMult();
   const knifePassiveMult = getKnifePassiveMult(styles.knife);
@@ -411,7 +411,7 @@ function clickParts() {
   const evo = EVOLUTIONS[GAME.evoStage] || EVOLUTIONS[0];
   const rollsMult = getRollsIncomeMult();
   const softRollsMult = 1 + talentLevel('soft_rolls') * 0.12;
-  const cosmicMult = Math.pow(1.20, Math.floor(talentLevel('cosmic_resonance') / 2));
+  const cosmicMult = bigPow(1.20, Math.floor(talentLevel('cosmic_resonance') / 2));
 
   let totalFactories = 0;
   FACTORIES.forEach(fac => { totalFactories += (fac.count || 0); });

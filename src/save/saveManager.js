@@ -1,25 +1,31 @@
-import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.4.5';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.5';
+import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.4.6';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.6';
 import { TALENTS } from '../data/talents.data.js';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.5';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.5';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.6';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.6';
 import { PERMANENT_PERKS } from '../data/perks.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.4.5';
-import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.4.5';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.5';
-import { migrateSaveData } from './migrations.js?v=5.4.5';
-import { clampAutoclickerState } from '../systems/autoclickService.js?v=5.4.5';
+import { KNIVES } from '../data/knives.data.js?v=5.4.6';
+import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.4.6';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.6';
+import { migrateSaveData } from './migrations.js?v=5.4.6';
+import { clampAutoclickerState } from '../systems/autoclickService.js?v=5.4.6';
 import { notePeakForm } from '../progression/unlocks.js';
-import { maxUnlockedStage } from '../progression/phases.data.js?v=5.4.5';
+import { maxUnlockedStage } from '../progression/phases.data.js?v=5.4.6';
 import { events } from '../core/events.js';
-import { isBig, rehydrateBig } from '../utils/big.js?v=5.4.5';
+import { gt, isBig, rehydrateBig } from '../utils/big.js?v=5.4.6';
 import { RELICS } from '../data/relics.data.js';
-import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION, LOCAL_PATCH_VERSION_KEY, compareSemver } from '../core/serverAuthority.js?v=5.4.5';
+import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION, LOCAL_PATCH_VERSION_KEY, compareSemver } from '../core/serverAuthority.js?v=5.4.6';
 
 function keepBio(value) {
   const n = rehydrateBig(value);
   if (isBig(n)) return n;
   if (!Number.isFinite(n) || n < 0) return 0;
+  return n;
+}
+
+function serializeCurrency(value) {
+  const n = keepBio(value);
+  if (isBig(n)) return `${n.m}e${n.e}`;
   return n;
 }
 
@@ -85,10 +91,10 @@ export function buildSavePayload() {
     totalTranscend: currentBreakthroughs,
     flushCount: currentFlushes,
     totalPrestiges: currentFlushes,
-    biomass: GAME.biomass,
-    allTimeBiomass: GAME.allTimeBiomass,
-    sparkles: GAME.sparkles,
-    prestigeRolls: GAME.prestigeRolls,
+    biomass: serializeCurrency(GAME.biomass),
+    allTimeBiomass: serializeCurrency(GAME.allTimeBiomass),
+    sparkles: serializeCurrency(GAME.sparkles),
+    prestigeRolls: serializeCurrency(GAME.prestigeRolls),
     game: {
       ...GAME,
       clientWorldReset: worldResetVal,
@@ -141,6 +147,11 @@ export function saveLocal() {
     GAME.cycleBiomass = keepBio(GAME.cycleBiomass);
     GAME.allTimeBiomass = keepBio(GAME.allTimeBiomass);
     GAME.transcendPlungers = keepBio(GAME.transcendPlungers);
+    GAME.sparkles = keepBio(GAME.sparkles);
+    GAME.prestigeRolls = keepBio(GAME.prestigeRolls);
+    GAME.allTimePrestigeRolls = keepBio(GAME.allTimePrestigeRolls);
+    GAME.transcendCycleRolls = keepBio(GAME.transcendCycleRolls);
+    GAME.vipCollectedSparkles = keepBio(GAME.vipCollectedSparkles);
     
     const payload = buildSavePayload();
     const json = JSON.stringify(payload);
@@ -407,6 +418,8 @@ export function applySaveDataSafely(rawData) {
   GAME.breakthroughProgress = GAME.lifetimeBiomassInCurrentCycle;
   GAME.allTimeBiomass = keepBio(GAME.allTimeBiomass);
   GAME.cycleBiomass = keepBio(GAME.cycleBiomass);
+  GAME.sparkles = keepBio(data.sparkles ?? data.game?.sparkles ?? GAME.sparkles ?? 0);
+  GAME.vipCollectedSparkles = keepBio(GAME.vipCollectedSparkles);
   GAME.breakthroughCount = Math.max(0, Math.floor(Number(GAME.breakthroughCount ?? GAME.totalTranscend ?? 0) || 0));
   GAME.totalTranscend = GAME.breakthroughCount;
   GAME.flushCount = Math.max(0, Math.floor(Number(GAME.flushCount ?? GAME.totalPrestiges ?? 0) || 0));
@@ -434,11 +447,10 @@ export function applySaveDataSafely(rawData) {
   if (!GAME.horizonUpgrades || typeof GAME.horizonUpgrades !== 'object') GAME.horizonUpgrades = { pace: 0, seal: 0 };
   GAME.horizonUpgrades.pace = Math.max(0, Math.min(5, Math.floor(Number(GAME.horizonUpgrades.pace) || 0)));
   GAME.horizonUpgrades.seal = GAME.horizonUpgrades.seal ? 1 : 0;
-  if (!isFinite(GAME.prestigeRolls) || GAME.prestigeRolls < 0 || GAME.prestigeRolls > 1e308) GAME.prestigeRolls = 0;
-  if (!Number.isFinite(GAME.transcendCycleRolls) || GAME.transcendCycleRolls < 0 || GAME.transcendCycleRolls > 1e308) {
-    GAME.transcendCycleRolls = GAME.prestigeRolls || 0;
-  }
-  if (GAME.transcendCycleRolls === 0 && (GAME.prestigeRolls || 0) > 0) {
+  GAME.prestigeRolls = keepBio(data.prestigeRolls ?? data.game?.prestigeRolls ?? GAME.prestigeRolls ?? 0);
+  GAME.allTimePrestigeRolls = keepBio(GAME.allTimePrestigeRolls);
+  GAME.transcendCycleRolls = keepBio(GAME.transcendCycleRolls ?? GAME.prestigeRolls ?? 0);
+  if (!gt(GAME.transcendCycleRolls, 0) && gt(GAME.prestigeRolls, 0)) {
     GAME.transcendCycleRolls = GAME.prestigeRolls;
   }
   const rawPlungers = data.transcendPlungers ?? data.game?.transcendPlungers ?? GAME.transcendPlungers ?? 0;

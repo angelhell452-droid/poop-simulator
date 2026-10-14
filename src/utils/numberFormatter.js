@@ -1,4 +1,4 @@
-import { isBig, log10Of, rehydrateBig } from './big.js?v=5.4.5';
+import { isBig, isOrdinaryNumber, log10Of, rehydrateBig } from './big.js?v=5.4.6';
 
 function mantissaDecimals(absMantissa, decimals) {
   return absMantissa >= 10 ? 1 : decimals;
@@ -29,7 +29,7 @@ export function formatNumber(rawNum, decimals = 2) {
     return `${shown}e${outExp}`;
   }
   if (num === null || num === undefined || isNaN(num)) return '0';
-  if (!isFinite(num) || num >= 1.7976931348623157e308) return '1.79e308 (MAX)';
+  if (!isFinite(num)) return '0';
   if (num === 0) return '0';
 
   const abs = Math.abs(num);
@@ -67,6 +67,27 @@ export function formatNumber(rawNum, decimals = 2) {
   return num.toExponential(decimals).replace('+', '');
 }
 
+/**
+ * Multiplier display: ordinary → "x1.5" / optional percent; Big → "x1.23eN" only.
+ * Returns { multLabel, pctLabel } where pctLabel is null when % is unsafe.
+ */
+export function formatMult(value, decimals = 2) {
+  const v = rehydrateBig(value);
+  const multLabel = `x${formatNumber(v, decimals)}`;
+  if (isOrdinaryNumber(v) && v >= 1) {
+    const pct = (v - 1) * 100;
+    if (Number.isFinite(pct)) {
+      return { multLabel, pctLabel: `+${formatNumber(pct, decimals)}%`, pct };
+    }
+  }
+  return { multLabel, pctLabel: null, pct: null };
+}
+
+/** Boost percent only when mult is ordinary; else null. */
+export function formatBoostPct(mult, decimals = 2) {
+  return formatMult(mult, decimals).pctLabel;
+}
+
 const SHORTHAND = [
   ['sp', 1e24], ['oc', 1e27], ['no', 1e30], ['dc', 1e33],
   ['ud', 1e36], ['dd', 1e39], ['td', 1e42], ['qad', 1e45], ['qid', 1e48],
@@ -79,8 +100,10 @@ export function parseShorthand(raw) {
   const text = String(raw ?? '').trim().replace(/\s+/g, '').replace(',', '.');
   if (!text) return null;
   if (/^\d+(?:\.\d+)?e[+-]?\d+$/i.test(text)) {
-    const n = Number(text);
-    return Number.isFinite(n) && n >= 0 ? n : null;
+    const parsed = rehydrateBig(text);
+    if (isBig(parsed)) return parsed;
+    if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+    return null;
   }
   const match = text.match(/^(\d+(?:\.\d+)?)([a-z]+)$/i);
   if (match) {

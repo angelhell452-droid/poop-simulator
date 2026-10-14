@@ -1,27 +1,28 @@
 import { knifeName, knifeDesc, knifeRarity, shopName, shopDesc, skinName } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.5';
-import { KNIVES } from '../data/knives.data.js?v=5.4.5';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { KNIVES } from '../data/knives.data.js?v=5.4.6';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.6';
 import {
   getKnifeStar, getKnifeSharpenCost, getKnifeRecycleReward, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
 import { openSharpenWheelModal } from './sharpenView.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.4.5';
-import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.4.5';
-import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.5';
-import { saveLocal } from '../save/saveManager.js?v=5.4.5';
-import { updateHUD } from './hudView.js?v=5.4.5';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.4.6';
+import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.4.6';
+import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.6';
+import { saveLocal } from '../save/saveManager.js?v=5.4.6';
+import { updateHUD } from './hudView.js?v=5.4.6';
 import { renderShop } from './shopView.js';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.5';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.5';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.6';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.6';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getRarityMeta } from '../data/knifeRarities.config.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { hatArtHtml } from './artIcon.js?v=5.4.5';
-import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.5';
+import { hatArtHtml } from './artIcon.js?v=5.4.6';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.6';
+import { gte, spendBio } from '../utils/big.js?v=5.4.6';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'
@@ -706,10 +707,9 @@ function renderHatsGrid() {
   container.querySelectorAll('.buy-hat-inv-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const hat = SHOP_ITEMS.find(i => i.id === btn.dataset.id);
-      const curSp = Number(GAME.sparkles) || 0;
       const canUnlock = isBoutiqueUnlocked() || hat?.id === 'hat_cap';
-      if (hat && canUnlock && curSp >= hat.cost && !hat.owned) {
-        GAME.sparkles = Math.max(0, curSp - hat.cost);
+      if (hat && canUnlock && gte(GAME.sparkles || 0, hat.cost) && !hat.owned) {
+        GAME.sparkles = spendBio(GAME.sparkles, hat.cost);
         hat.owned = true;
         GAME.equippedHat = hat.id;
         checkAchievements();

@@ -1,14 +1,15 @@
-import { GAME } from '../core/state.js?v=5.4.5';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.5';
-import { saveLocal } from '../save/saveManager.js?v=5.4.5';
-import { updateHUD } from './hudView.js?v=5.4.5';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.5';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.5';
-import { openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.5';
-import { hatArtHtml } from './artIcon.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.6';
+import { saveLocal } from '../save/saveManager.js?v=5.4.6';
+import { updateHUD } from './hudView.js?v=5.4.6';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.6';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.6';
+import { openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.6';
+import { hatArtHtml } from './artIcon.js?v=5.4.6';
 import { isBoutiqueUnlocked, peakForm } from '../progression/unlocks.js';
 import { t, onLocaleChange } from '../i18n/t.js';
 import { PERMANENT_PERKS, hasPerk, buyPermanentPerk, getPerkCost } from '../data/perks.data.js';
+import { gte } from '../utils/big.js?v=5.4.6';
 
 let activeBoutiqueTier = '1'; // '1' | '2' | '3' | '4'
 let shopListenersHooked = false;
@@ -89,13 +90,11 @@ export function renderShop() {
   perksHeader.innerHTML = `<span>🔮 ${t('shop.perksHeader')} (Тир ${activeBoutiqueTier}: ${visiblePerks.length})</span><span class="text-[9px] text-amber-400 font-normal">Прорыв: ${formatNumber(b)}</span>`;
   container.appendChild(perksHeader);
 
-  const curSparkles = Number(GAME.sparkles) || 0;
-
   visiblePerks.forEach(perk => {
     const isUnlocked = b >= perk.reqBreakthrough;
     const isOwned = hasPerk(perk.id);
     const cost = getPerkCost(perk);
-    const canBuy = isUnlocked && !isOwned && curSparkles >= cost;
+    const canBuy = isUnlocked && !isOwned && gte(GAME.sparkles || 0, cost);
 
     const row = document.createElement('div');
     row.className = `p-2.5 rounded-xl border flex items-center justify-between transition ${
@@ -161,7 +160,6 @@ export function updateShopButtons() {
   const sparkleLabel = document.getElementById('shopSparkleLabel');
   if (sparkleLabel) sparkleLabel.textContent = `${formatNumber(GAME.sparkles)} ✨`;
 
-  const curSparkles = Number(GAME.sparkles) || 0;
   const b = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
 
   container.querySelectorAll('.buy-shop-perk-btn').forEach(btn => {
@@ -170,7 +168,7 @@ export function updateShopButtons() {
     const isUnlocked = b >= perk.reqBreakthrough;
     const isOwned = hasPerk(perk.id);
     const cost = getPerkCost(perk);
-    const canBuy = isUnlocked && !isOwned && curSparkles >= cost;
+    const canBuy = isUnlocked && !isOwned && gte(GAME.sparkles || 0, cost);
 
     btn.disabled = !canBuy;
     if (canBuy) {

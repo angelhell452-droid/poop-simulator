@@ -1,16 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.5';
-import { KNIVES } from '../data/knives.data.js?v=5.4.5';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.5';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.5';
-import { getKnifeStar, getHatLevel, getKnifeClickMult } from '../economy/production.js?v=5.4.5';
-import { gt } from '../utils/big.js?v=5.4.5';
+import { GAME } from '../core/state.js?v=5.4.6';
+import { KNIVES } from '../data/knives.data.js?v=5.4.6';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.6';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.6';
+import { getKnifeStar, getHatLevel, getKnifeClickMult } from '../economy/production.js?v=5.4.6';
+import { gte, gt, spendBio } from '../utils/big.js?v=5.4.6';
 import { events } from '../core/events.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.5';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.6';
 import { t } from '../i18n/t.js';
 import { knifeName } from '../i18n/localize.js';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.5';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.6';
 
 // Tier 1 knives set from first 3 starter cases
 export const TIER_1_KNIFE_IDS = new Set(
@@ -130,12 +130,12 @@ export function applyKnifeSharpen(knifeId, isSuccess) {
   const costInfo = getKnifeSharpenCost(knife);
   if (costInfo.maxReached) return { success: false, msg: t('knife.err.maxSharpen') };
 
-  if ((GAME.sparkles || 0) < costInfo.cost) {
+  if (!gte(GAME.sparkles || 0, costInfo.cost)) {
     return { success: false, msg: t('knife.err.needSparkles', { n: formatNumber(costInfo.cost) }) };
   }
 
   // Deduct sparkles only upon applying
-  GAME.sparkles = Math.max(0, (GAME.sparkles || 0) - costInfo.cost);
+  GAME.sparkles = spendBio(GAME.sparkles, costInfo.cost);
 
   const curStar = getKnifeStar(knifeId);
   const forgeLuckLvl = getRelicLevel('relic_forge_luck');
