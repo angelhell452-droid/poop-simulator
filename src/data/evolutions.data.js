@@ -1,10 +1,10 @@
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.17';
-import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.17';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.17';
-import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.17';
-import { GAME } from '../core/state.js?v=5.4.17';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.17';
-import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.17';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.18';
+import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.18';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.18';
+import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.18';
+import { GAME } from '../core/state.js?v=5.4.18';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.18';
+import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.18';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
@@ -97,6 +97,10 @@ export function calcEvolutionCost(i) {
   // После прорыва доход растёт BreakthroughBoost — порог формы тоже, иначе автозаводы пролетают окна.
   if (ECONOMY.formScaleWithBreakthrough) {
     total = mul(total, getBreakthroughIncomeMult());
+  }
+  // Пассив множится на evo.mult — без этого 2k→3k после прорыва схлопывается за секунды.
+  if (ECONOMY.formScaleWithEvoMult) {
+    total = mul(total, calcEvolutionMult(stage));
   }
   if (isBig(total)) return total;
   if (Number.isFinite(total) && total > 0) return Math.max(1, Math.floor(total));

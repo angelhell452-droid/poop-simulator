@@ -1,17 +1,17 @@
 import { factoryName, factoryTier } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.17';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.17';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.17';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.4.17';
-import { buyFactory } from '../systems/factoryService.js?v=5.4.17';
-import { updateHUD, openRateBreakdown } from './hudView.js?v=5.4.17';
-import { factoryMilestoneRank, getFactoryBreakdown, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.17';
-import { saveLocal } from '../save/saveManager.js?v=5.4.17';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.17';
-import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.4.17';
-import { mul } from '../utils/big.js?v=5.4.17';
-import { drawPlunger } from '../utils/icons.js?v=5.4.17';
+import { GAME } from '../core/state.js?v=5.4.18';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.18';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.18';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.4.18';
+import { buyFactory } from '../systems/factoryService.js?v=5.4.18';
+import { updateHUD, openRateBreakdown } from './hudView.js?v=5.4.18';
+import { factoryMilestoneRank, getFactoryBreakdown, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.18';
+import { saveLocal } from '../save/saveManager.js?v=5.4.18';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.18';
+import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.4.18';
+import { mul } from '../utils/big.js?v=5.4.18';
+import { drawPlunger } from '../utils/icons.js?v=5.4.18';
 import { events } from '../core/events.js';
 
 let activeFactoryTier = '1'; // '1' | '2' | '3' | '4'

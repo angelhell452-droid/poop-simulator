@@ -1,6 +1,30 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.17';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.18';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.18 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.18: Золото и темп после прорыва',
+    titleEn: 'Patch 5.4.18: Golden Glow & Post-BT Pace',
+    badge: 'Патч 5.4.18',
+    badgeEn: 'Patch 5.4.18',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'ui',
+        icon: '✨',
+        text: 'Вернули мягкое золотое свечение «Идеал» (тонкий rim). Автоклик-turbo по-прежнему без засветки.',
+        textEn: 'Restored soft Ideal golden glow (thin rim). Autoclick turbo still does not wash the sprite.'
+      },
+      {
+        type: 'balance',
+        icon: '📈',
+        text: 'Цена формы теперь учитывает множитель формы (evo.mult) — как и доход. Окно 2k→3k после прорыва больше не пролетает за секунды.',
+        textEn: 'Form cost now scales with form multiplier (evo.mult), matching income. The 2k→3k post-breakthrough window no longer melts in seconds.'
+      }
+    ]
+  },
   {
     version: 'v5.4.17 PRO',
     date: '14 Октября 2026',

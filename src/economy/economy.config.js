@@ -34,6 +34,8 @@ export const ECONOMY = {
   factoryCopySoftcapPower: 0.42,
   // Порог формы масштабируется бустом прорыва — тот же рычаг, что качает доход после BT.
   formScaleWithBreakthrough: true,
+  // Доход × evo.mult (к форме ~2000 уже ~×48) — порог тоже, иначе окно после прорыва тает за секунды.
+  formScaleWithEvoMult: true,
 
   // --- Кейсы ---
   // Строго 1 кейс = 1 прорыв. Кейс index 0 при BT 0; каждый следующий — +1 прорыв / +1000 форм.

@@ -1,16 +1,16 @@
-import { GAME, feedCount, washCount } from '../core/state.js?v=5.4.17';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.17';
+import { GAME, feedCount, washCount } from '../core/state.js?v=5.4.18';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.18';
 import { TALENTS } from '../data/talents.data.js';
 import { PERMANENT_PERKS, hasPerk } from '../data/perks.data.js';
 import { RELICS, hasRelic } from '../data/relics.data.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.17';
-import { gainBio } from '../utils/big.js?v=5.4.17';
-import { saveLocal } from '../save/saveManager.js?v=5.4.17';
-import { updateHUD } from './hudView.js?v=5.4.17';
-import { addVisualParticle, triggerForcedMeteor } from './petCanvasView.js?v=5.4.17';
-import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.17';
-import { openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.17';
-import { switchTalentSubTab } from './talentView.js?v=5.4.17';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.18';
+import { gainBio } from '../utils/big.js?v=5.4.18';
+import { saveLocal } from '../save/saveManager.js?v=5.4.18';
+import { updateHUD } from './hudView.js?v=5.4.18';
+import { addVisualParticle, triggerForcedMeteor } from './petCanvasView.js?v=5.4.18';
+import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.18';
+import { openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.18';
+import { switchTalentSubTab } from './talentView.js?v=5.4.18';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 let activeSpotlightElement = null;

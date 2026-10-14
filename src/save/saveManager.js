@@ -1,20 +1,20 @@
-import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.4.17';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.17';
+import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.4.18';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.18';
 import { TALENTS } from '../data/talents.data.js';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.17';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.17';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.18';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.18';
 import { PERMANENT_PERKS } from '../data/perks.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.4.17';
-import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.4.17';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.17';
-import { migrateSaveData } from './migrations.js?v=5.4.17';
-import { clampAutoclickerState } from '../systems/autoclickService.js?v=5.4.17';
+import { KNIVES } from '../data/knives.data.js?v=5.4.18';
+import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.4.18';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.18';
+import { migrateSaveData } from './migrations.js?v=5.4.18';
+import { clampAutoclickerState } from '../systems/autoclickService.js?v=5.4.18';
 import { notePeakForm } from '../progression/unlocks.js';
-import { maxUnlockedStage } from '../progression/phases.data.js?v=5.4.17';
+import { maxUnlockedStage } from '../progression/phases.data.js?v=5.4.18';
 import { events } from '../core/events.js';
-import { gt, isBig, rehydrateBig } from '../utils/big.js?v=5.4.17';
+import { gt, isBig, rehydrateBig } from '../utils/big.js?v=5.4.18';
 import { RELICS } from '../data/relics.data.js';
-import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION, LOCAL_PATCH_VERSION_KEY, compareSemver } from '../core/serverAuthority.js?v=5.4.17';
+import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION, LOCAL_PATCH_VERSION_KEY, compareSemver } from '../core/serverAuthority.js?v=5.4.18';
 
 function keepBio(value) {
   const n = rehydrateBig(value);

@@ -6,7 +6,7 @@
  */
 
 import { getKnifeVectorSvg } from './knifeVectorRenderer.js';
-import { knifeArtHtml } from '../ui/artIcon.js?v=5.4.17';
+import { knifeArtHtml } from '../ui/artIcon.js?v=5.4.18';
 
 // Базовые иконки по типу ножа (style)
 export const KNIFE_STYLE_ICONS = {
