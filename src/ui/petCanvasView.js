@@ -1,25 +1,25 @@
-import { GAME } from '../core/state.js?v=5.4.14';
-import { getEquippedKnife } from '../economy/production.js?v=5.4.14';
+import { GAME } from '../core/state.js?v=5.4.15';
+import { getEquippedKnife } from '../economy/production.js?v=5.4.15';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.14';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.15';
 import { hasPerk } from '../data/perks.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.14';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.14';
-import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.14';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.14';
-import { updateHUD } from './hudView.js?v=5.4.14';
-import { saveLocal } from '../save/saveManager.js?v=5.4.14';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.14';
+import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.15';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.15';
+import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.15';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.15';
+import { updateHUD } from './hudView.js?v=5.4.15';
+import { saveLocal } from '../save/saveManager.js?v=5.4.15';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.15';
 import { events } from '../core/events.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.14';
-import { getSparkleEpochMult, sparkleMultFromProgress } from '../economy/sparkleScale.js?v=5.4.14';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.14';
-import { KNIVES } from '../data/knives.data.js?v=5.4.14';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.14';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.15';
+import { getSparkleEpochMult, sparkleMultFromProgress } from '../economy/sparkleScale.js?v=5.4.15';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.15';
+import { KNIVES } from '../data/knives.data.js?v=5.4.15';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.15';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.14';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.14';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.15';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.15';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
@@ -1054,17 +1054,17 @@ function drawCharacterFrame(ctx, frame, layoutFrame = frame) {
 function drawCharacterGlow(ctx, frame, alpha, layoutFrame = frame) {
   if (!frame.glow) return;
   const box = characterDest(layoutFrame);
-  // Soft breathe — avoid hard yellow blink on the whole silhouette.
-  const pulse = 0.96 + Math.sin(performance.now() * 0.0016) * 0.04;
+  // Thin rim only — wide blur used to wash the whole poop yellow.
+  const pulse = 0.97 + Math.sin(performance.now() * 0.0012) * 0.03;
   const paint = (pad, blur, strength) => {
     ctx.save();
     ctx.filter = `blur(${blur}px)`;
-    ctx.globalAlpha = Math.min(1, alpha * pulse * strength);
+    ctx.globalAlpha = Math.min(0.45, alpha * pulse * strength);
     ctx.drawImage(frame.glow, box.x - pad, box.y - pad, box.destW + pad * 2, box.destH + pad * 2);
     ctx.restore();
   };
-  paint(22, 14, 0.75);
-  paint(8, 4, 0.55);
+  paint(10, 6, 0.55);
+  paint(4, 2, 0.35);
 }
 
 export function initPetCanvas() {
@@ -1334,11 +1334,12 @@ function renderPetLoop(time) {
     : null;
   ensureVisibleArt();
 
-  // Aura only for ideal care / turbo — not a permanent yellow wash that blinks every tick.
+  // Ideal = soft rim. Meteor star turbo = brief bump.
+  // Do NOT key off turboRushTime — autoclicker keeps it on and fully yellow-washed the pet.
   const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
-  const turboOn = (GAME.turboStarMultTime || 0) > 0 || GAME.turboRushTime > 0;
-  if (characterFrame && layoutFrame && (isIdealPet || turboOn)) {
-    const glowAlpha = turboOn ? 0.72 : 0.48;
+  const starTurbo = (GAME.turboStarMultTime || 0) > 0;
+  if (characterFrame && layoutFrame && (isIdealPet || starTurbo)) {
+    const glowAlpha = starTurbo ? 0.32 : 0.18;
     drawCharacterGlow(ctx, characterFrame, glowAlpha, layoutFrame);
   }
   if (characterFrame && layoutFrame) {

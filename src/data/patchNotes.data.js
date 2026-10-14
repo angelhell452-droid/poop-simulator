@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.14';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.15';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.15 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.15: Аура без засветки',
+    titleEn: 'Patch 5.4.15: Aura Without Washout',
+    badge: 'Фикс 5.4.15',
+    badgeEn: 'Fix 5.4.15',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'ui',
+        icon: '💡',
+        text: 'Жёлтая аура больше не заливает какашку при автоклике: turbo rush отключён от glow, остался тонкий rim для Идеала / звёздного турбо.',
+        textEn: 'Yellow aura no longer washes out the pet under autoclick: turbo rush unlinked from glow; soft rim only for Ideal / star turbo.'
+      }
+    ]
+  },
   {
     version: 'v5.4.14 PRO',
     date: '14 Октября 2026',
