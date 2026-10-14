@@ -1,11 +1,25 @@
-import { ECONOMY } from './economy.config.js?v=5.4.13';
-import { bigPow, log10Of, pow10, rehydrateBig } from '../utils/big.js?v=5.4.13';
+import { ECONOMY } from './economy.config.js?v=5.4.14';
+import { bigPow, log10Of, pow10, rehydrateBig } from '../utils/big.js?v=5.4.14';
 
 /** Epoch 1 stays at x1. Later epochs use sparkleEpochBase from economy.config.js. */
 export function getSparkleEpochMult(epoch) {
   const n = Math.max(1, Math.floor(Number(epoch) || 1));
   const base = Math.max(1, Number(ECONOMY.sparkleEpochBase) || 1);
   return bigPow(base, n - 1);
+}
+
+/**
+ * Model CPS along the harmony axis (1× factory tier at current form).
+ * Used for sparkles — NOT full getPassiveIncome() (turbo/stacks/flush would explode ✨).
+ */
+export function modelCpsForSparkles(evoStage = 0) {
+  const stage = Math.max(0, Number(evoStage) || 0);
+  const step = Math.max(1, Number(ECONOMY.factoryFormStep) || 850);
+  const k = Math.max(1.01, Number(ECONOMY.tierGrowthK) || 3.8);
+  const base = Math.max(1, Number(ECONOMY.factoryBaseCps) || 80);
+  const raw = base * Math.pow(k, stage / step);
+  if (!Number.isFinite(raw) || raw <= 0) return base;
+  return raw;
 }
 
 /**
@@ -21,4 +35,9 @@ export function sparkleMultFromCps(cps) {
   if (!Number.isFinite(cpsLog) || cpsLog <= 0) return 1;
   const mult = pow10(cpsLog * exponent);
   return mult;
+}
+
+/** Sparkle CPS mult from form progress (harmony model), not wallet income. */
+export function sparkleMultFromProgress(evoStage = 0) {
+  return sparkleMultFromCps(modelCpsForSparkles(evoStage));
 }

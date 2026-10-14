@@ -1,25 +1,25 @@
-import { GAME } from '../core/state.js?v=5.4.13';
-import { getEquippedKnife } from '../economy/production.js?v=5.4.13';
+import { GAME } from '../core/state.js?v=5.4.14';
+import { getEquippedKnife } from '../economy/production.js?v=5.4.14';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.13';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.14';
 import { hasPerk } from '../data/perks.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.13';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.13';
-import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.13';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.13';
-import { updateHUD } from './hudView.js?v=5.4.13';
-import { saveLocal } from '../save/saveManager.js?v=5.4.13';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.13';
+import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.14';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.14';
+import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.14';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.14';
+import { updateHUD } from './hudView.js?v=5.4.14';
+import { saveLocal } from '../save/saveManager.js?v=5.4.14';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.14';
 import { events } from '../core/events.js';
-import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.4.13';
-import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.13';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.13';
-import { KNIVES } from '../data/knives.data.js?v=5.4.13';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.13';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.14';
+import { getSparkleEpochMult, sparkleMultFromProgress } from '../economy/sparkleScale.js?v=5.4.14';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.14';
+import { KNIVES } from '../data/knives.data.js?v=5.4.14';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.14';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.13';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.13';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.14';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.14';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
@@ -169,11 +169,14 @@ export function spawnMagneticSparkleTrail(canvasX, canvasY) {
  */
 export function meteorSparkleProfile(evoStage, transcends, flushes) {
   const phase = getPhaseForStage(evoStage || 0);
-  const unlockedId = getPhaseForForm(maxUnlockedForm(transcends || 0)).id;
-  const phaseId = Math.max(phase.id, unlockedId);
+  // Только текущая эпоха формы — не maxUnlockedForm (после BT метеор иначе брал epoch 4+ уже на форме 1–500).
+  const phaseId = phase.id;
   const span = Math.max(1, phase.formEnd - phase.formStart);
   const local = Math.min(1, Math.max(0, ((evoStage || 0) + 1 - phase.formStart) / span));
-  const purse = ECONOMY.meteorPurseBase * getSparkleEpochMult(phaseId);
+  const epochMult = getSparkleEpochMult(phaseId);
+  const purse = typeof epochMult === 'number'
+    ? ECONOMY.meteorPurseBase * epochMult
+    : mul(ECONOMY.meteorPurseBase, epochMult);
   const localMult = 1 + local * ECONOMY.meteorEpochWalk;
   const flushBonus = 1 + ((flushes || 0) / ((flushes || 0) + 20)) * ECONOMY.meteorFlushCap;
   return { phaseId, purse, localMult, flushBonus };
@@ -1545,16 +1548,11 @@ export function catchGoldenMeteor() {
   const eqKnife = getEquippedKnife();
   const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
   const slice = ECONOMY.meteorSliceMin + Math.random() * (ECONOMY.meteorSliceMax - ECONOMY.meteorSliceMin);
-  // Гармония: метеорит тоже ∝ CPS^sparkleCpsExponent (Big-safe)
-  const cpsSparkleMult = sparkleMultFromCps(getPassiveIncome());
+  // Гармония: метеорит ∝ model CPS формы (не полный пассив)
+  const cpsSparkleMult = sparkleMultFromProgress(GAME.evoStage);
   const cpsFloor = gte(cpsSparkleMult, 0.25) ? cpsSparkleMult : 0.25;
-  let spGain = mul(
-    mul(
-      mul(profile.purse * slice * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult, meteorTalentSparkle()),
-      cpsFloor
-    ),
-    1
-  );
+  const purseSlice = mul(profile.purse, slice * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult);
+  let spGain = mul(mul(purseSlice, meteorTalentSparkle()), cpsFloor);
   if (!isBig(spGain)) {
     spGain = Math.max(60, Math.round(Number(spGain) || 60));
   } else if (cmp(spGain, 60) < 0) {

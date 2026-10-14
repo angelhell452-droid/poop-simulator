@@ -1,7 +1,7 @@
-import { GAME } from '../core/state.js?v=5.4.13';
+import { GAME } from '../core/state.js?v=5.4.14';
 import { ARCHETYPES } from './archetypes.js';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.13';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.13';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.14';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.14';
 import { t } from '../i18n/t.js';
 import { archetypeBadge, milestoneRewardText, milestoneTitle } from '../i18n/localize.js';
 

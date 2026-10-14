@@ -1,16 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.13';
+import { GAME } from '../core/state.js?v=5.4.14';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.13';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.13';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.13';
-import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.13';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.13';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.13';
-import { takeClickBudget } from './autoclickService.js?v=5.4.13';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.14';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.14';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.14';
+import { getSparkleEpochMult, sparkleMultFromProgress } from '../economy/sparkleScale.js?v=5.4.14';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.14';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.14';
+import { takeClickBudget } from './autoclickService.js?v=5.4.14';
 import { events } from '../core/events.js';
-import { add, bigPow, cmp, gainBio, gte, isBig, mul } from '../utils/big.js?v=5.4.13';
+import { add, bigPow, cmp, gainBio, gte, isBig, mul } from '../utils/big.js?v=5.4.14';
 import { hasPerk } from '../data/perks.data.js';
-import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.13';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.14';
 
 export let pendingClicks = 0;
 
@@ -61,8 +61,8 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const breakthroughMult = 1 + bCount * ECONOMY.sparkleBreakthroughStep;
   const epochMult = getSparkleEpochMult(currentEpoch);
   const starMult = 1 + Math.max(0, knifeStar - 1) * ECONOMY.sparkleStarStep;
-  // Гармония: SparklesIncome ∝ CPS^sparkleCpsExponent (норма к CPS тира 1) — Big-safe.
-  const cpsSparkleMult = sparkleMultFromCps(getPassiveIncome());
+  // Гармония: ✨ от model CPS формы — не от полного пассива (турбо/стаки иначе дают миллионы).
+  const cpsSparkleMult = sparkleMultFromProgress(GAME.evoStage);
   const cpsFloor = gte(cpsSparkleMult, 0.25) ? cpsSparkleMult : 0.25;
   let progScale = mul(mul(mul(breakthroughMult, epochMult), starMult), cpsFloor);
   let sparklesPerProc = mul(mul(knifeSparkleMult, gamblerMult), progScale);

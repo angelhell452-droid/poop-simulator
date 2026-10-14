@@ -1,6 +1,30 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.13';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.14';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.14 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.14: Без взрыва блестяшек',
+    titleEn: 'Patch 5.4.14: No Sparkle Explosion',
+    badge: 'Фикс 5.4.14',
+    badgeEn: 'Fix 5.4.14',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '✨',
+        text: 'Криты/метеоры больше не считают ✨ от полного пассива (турбо×стаки×смывы). Только model CPS формы — не будет скачка в миллионы около формы 500.',
+        textEn: 'Crits/meteors no longer scale ✨ from full passive (turbo×stacks×flushes). Only form model CPS — no multi-million spike around form 500.'
+      },
+      {
+        type: 'fix',
+        icon: '☄️',
+        text: 'Метеорный purse берёт текущую эпоху формы, а не maxUnlockedForm после прорыва.',
+        textEn: 'Meteor purse uses the current form epoch, not maxUnlockedForm after breakthrough.'
+      }
+    ]
+  },
   {
     version: 'v5.4.13 PRO',
     date: '14 Октября 2026',
