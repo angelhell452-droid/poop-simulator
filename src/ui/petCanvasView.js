@@ -1,25 +1,25 @@
-import { GAME } from '../core/state.js?v=5.4.6';
-import { getEquippedKnife } from '../economy/production.js?v=5.4.6';
+import { GAME } from '../core/state.js?v=5.4.7';
+import { getEquippedKnife } from '../economy/production.js?v=5.4.7';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.6';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.7';
 import { hasPerk } from '../data/perks.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.6';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.6';
-import { cmp, gainBio, gte, isBig, mul } from '../utils/big.js?v=5.4.6';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.6';
-import { updateHUD } from './hudView.js?v=5.4.6';
-import { saveLocal } from '../save/saveManager.js?v=5.4.6';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.6';
+import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.7';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.7';
+import { add, cmp, gainBio, gt, isBig, mul } from '../utils/big.js?v=5.4.7';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.7';
+import { updateHUD } from './hudView.js?v=5.4.7';
+import { saveLocal } from '../save/saveManager.js?v=5.4.7';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.7';
 import { events } from '../core/events.js';
-import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.4.6';
-import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.6';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.6';
-import { KNIVES } from '../data/knives.data.js?v=5.4.6';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.6';
+import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.4.7';
+import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.7';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.7';
+import { KNIVES } from '../data/knives.data.js?v=5.4.7';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.7';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.6';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.6';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.7';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.7';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
@@ -1080,7 +1080,8 @@ export function initPetCanvas() {
   if (!listenersInitialized) {
     listenersInitialized = true;
     events.on('click:processed', (res) => {
-      if (!res || res.totalEarned <= 0) return;
+      // Big objects break JS `<=` / `>` / `+=` — use big.js helpers only.
+      if (!res || !gt(res.totalEarned, 0)) return;
 
       const isManual = !!res.isManual;
       const { clicks, totalEarned, sparklesEarned, critsCount, clientX, clientY } = res;
@@ -1140,7 +1141,7 @@ export function initPetCanvas() {
           });
         }
 
-        if (sparklesEarned > 0) {
+        if (gt(sparklesEarned, 0)) {
           addManagedTextParticle({
             x: clickX + (Math.random() * 30 - 15),
             y: clickY - 14,
@@ -1153,10 +1154,10 @@ export function initPetCanvas() {
           });
         }
       } else {
-        // Autoclicker bursts: throttled to ~200ms interval to keep screen elegant, maximum 4 on screen!
-        pendingAutoEarned += totalEarned;
+        // Autoclicker bursts: throttled to ~200ms; accumulate with Big-safe add()
+        pendingAutoEarned = add(pendingAutoEarned, totalEarned);
         pendingAutoCrits += critsCount;
-        pendingAutoSparkles += (sparklesEarned || 0);
+        pendingAutoSparkles = add(pendingAutoSparkles, sparklesEarned || 0);
 
         if (now - lastFloatingTextTime >= 200) {
           const spawnX = w / 2 + (Math.random() * 50 - 25);
@@ -1186,7 +1187,7 @@ export function initPetCanvas() {
             });
           }
 
-          if (pendingAutoSparkles > 0) {
+          if (gt(pendingAutoSparkles, 0)) {
             addManagedTextParticle({
               x: spawnX + (Math.random() * 30 - 15),
               y: spawnY - 12,

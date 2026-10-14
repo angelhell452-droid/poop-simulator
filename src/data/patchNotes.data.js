@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.6';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.7';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.7 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.7: Криты без +0',
+    titleEn: 'Patch 5.4.7: Crits Without +0',
+    badge: 'Фикс 5.4.7',
+    badgeEn: 'Fix 5.4.7',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '💥',
+        text: 'Попапы крита и блестяшек: сравнение/накопление через big.js (gt/add) — больше нет «КРИТ! +0» на late-game Big-числах.',
+        textEn: 'Crit and sparkle popups use big.js gt/add — no more “CRIT! +0” when gains are Big objects.'
+      }
+    ]
+  },
   {
     version: 'v5.4.6 PRO',
     date: '14 Октября 2026',
