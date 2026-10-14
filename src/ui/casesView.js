@@ -1,22 +1,22 @@
 import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.10';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.10';
-import { KNIVES } from '../data/knives.data.js?v=5.4.10';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.10';
-import { saveLocal } from '../save/saveManager.js?v=5.4.10';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.10';
-import { updateHUD } from './hudView.js?v=5.4.10';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.10';
+import { GAME } from '../core/state.js?v=5.4.11';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.11';
+import { KNIVES } from '../data/knives.data.js?v=5.4.11';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.11';
+import { saveLocal } from '../save/saveManager.js?v=5.4.11';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.11';
+import { updateHUD } from './hudView.js?v=5.4.11';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.11';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.10';
-import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.10';
-import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.10';
-import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.10';
-import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.10';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.11';
+import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.11';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.11';
+import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.11';
+import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.11';
 import { TALENTS } from '../data/talents.data.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.10';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.11';
 import { KNIFE_RARITIES, getRarityMeta } from '../data/knifeRarities.config.js';
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -56,7 +56,7 @@ export function getFirstCaseDiscountCost(caseObj = null) {
   return Math.max(100, Math.round(base * 0.5));
 }
 /** @deprecated use getFirstCaseDiscountCost — kept for any stale imports */
-export const FIRST_CASE_DISCOUNT_COST = 1600;
+export const FIRST_CASE_DISCOUNT_COST = 1600; // fallback ≈ 50% of case #1 (3200)
 
 export function isFirstCaseDiscountAvailable(caseObj) {
   const cid = typeof caseObj === 'string' ? caseObj : caseObj?.id;

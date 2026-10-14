@@ -1,4 +1,4 @@
-import { isBig, isOrdinaryNumber, log10Of, rehydrateBig } from './big.js?v=5.4.10';
+import { isBig, isOrdinaryNumber, log10Of, rehydrateBig } from './big.js?v=5.4.11';
 
 function mantissaDecimals(absMantissa, decimals) {
   return absMantissa >= 10 ? 1 : decimals;

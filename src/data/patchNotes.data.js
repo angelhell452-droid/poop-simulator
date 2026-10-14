@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.10';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.11';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.11 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.11: Цены кейсов от стека ✨',
+    titleEn: 'Patch 5.4.11: Case Prices from Sparkle Stack',
+    badge: 'Баланс 5.4.11',
+    badgeEn: 'Balance 5.4.11',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🧮',
+        text: 'Цена кейса = 72% ожидаемого стека блестяшек к этому прорыву. Якорь: ~40k к форме 1000 → кейс #2 ≈ 28.8k (остаток на перки). Рост по BT из epoch × CPS^0.55 × нож.',
+        textEn: 'Case cost = 72% of expected sparkle stack at that breakthrough. Anchor: ~40k at form 1000 → case #2 ≈ 28.8k (room for perks). Per-BT growth from epoch × CPS^0.55 × knife.'
+      }
+    ]
+  },
   {
     version: 'v5.4.10 PRO',
     date: '14 Октября 2026',

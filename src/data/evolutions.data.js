@@ -1,9 +1,9 @@
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.10';
-import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.10';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.10';
-import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.10';
-import { GAME } from '../core/state.js?v=5.4.10';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.10';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.11';
+import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.11';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.11';
+import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.11';
+import { GAME } from '../core/state.js?v=5.4.11';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.11';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },

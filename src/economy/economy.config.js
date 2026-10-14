@@ -5,7 +5,7 @@
  *
  * Форма — корень прогрессии. Цена формы ≈ formBuySeconds секунд модельного CPS.
  * Заводы и формы растут на tierGrowthK за каждый шаг factoryFormStep форм.
- * Кейсы: строго 1 кейс на 1 прорыв (кейс #N → прорыв N-1, форма 1 + (N-1)*1000).
+ * Кейсы: строго 1 кейс на 1 прорыв; цена = доля ожидаемого стека блестяшек к этому BT.
  * Смывы: flushPowerBase ^ число_смывов → «Эхо смыва».
  */
 export const ECONOMY = {
@@ -33,9 +33,12 @@ export const ECONOMY = {
   // --- Кейсы ---
   // Строго 1 кейс = 1 прорыв. Кейс index 0 при BT 0; каждый следующий — +1 прорыв / +1000 форм.
   caseFormStep: 1000,
-  // База цены в блестяшках (~доля meteorPurseBase), чтобы метеор не покупал кейс сразу.
-  caseSparkleCostBase: 3200,
-  caseSparkleCostGrowth: 0.62,
+  // Замер: типичный стек ✨ к форме 1000 / перед 1-м прорывом (~5–10 мин активного ранa).
+  caseSparkleStackAtBt1: 40000,
+  // Доля стека на кейс (остаток на перки/заточку/шапки).
+  caseSparkleSinkRatio: 0.72,
+  // Кейс #1 (BT 0): онбординг — доля стека BT1, не полный слив.
+  caseSparkleCase0Ratio: 0.08,
 
   // --- Блестяшки ---
   // Эпоха 1 = x1. Каждая следующая эпоха * sparkleEpochBase.
@@ -90,16 +93,58 @@ export function caseUnlockBreakthrough(reqForm) {
 }
 
 /**
- * Цена кейса в блестяшках.
- * База ~caseSparkleCostBase (выше типичного метеора early), рост K^ (idx * growth).
+ * Во сколько раз ожидаемый стек ✨ растёт за один прорыв.
+ * Собирается из тех же рычагов, что и приток: epoch × (CPS^exp) × нож тира.
+ */
+export function caseSparkleStackGrowthPerBt() {
+  const k = Math.max(1.01, Number(ECONOMY.tierGrowthK) || 3.8);
+  const formStep = Math.max(1, Number(ECONOMY.caseFormStep) || 1000);
+  const factoryStep = Math.max(1, Number(ECONOMY.factoryFormStep) || 850);
+  const epochBase = Math.max(1, Number(ECONOMY.sparkleEpochBase) || 1.35);
+  const cpsExp = Number(ECONOMY.sparkleCpsExponent);
+  const exp = Number.isFinite(cpsExp) ? cpsExp : 0.55;
+
+  // +1000 форм ≈ 2 эпохи по 500.
+  const epochPerBt = Math.pow(epochBase, formStep / 500);
+  // CPS вдоль гармонии ~ K^(forms/factoryStep); блестяшки ~ CPS^exp.
+  const cpsPerBt = Math.pow(k, (formStep / factoryStep) * exp);
+  // Джекпот ножа кейса растёт как K^0.25 за тир (см. knifeBalance sync).
+  const knifePerBt = Math.pow(k, 0.25);
+  // Мягкий blend: не перемножаем всё на 100%, иначе late costs улетают слишком жёстко.
+  return epochPerBt * Math.pow(cpsPerBt, 0.9) * Math.pow(knifePerBt, 0.5);
+}
+
+/**
+ * Ожидаемый стек блестяшек к моменту, когда открывается кейс index
+ * (после набора форм окна предыдущего прорыва).
+ * index 0 — онбординг; index 1 — якорь caseSparkleStackAtBt1 (~40k).
+ */
+export function expectedSparkleStackForCase(caseIndex) {
+  const idx = Math.max(0, Math.floor(Number(caseIndex) || 0));
+  const stack1 = Math.max(1000, Number(ECONOMY.caseSparkleStackAtBt1) || 40000);
+  if (idx <= 0) {
+    const r0 = Number(ECONOMY.caseSparkleCase0Ratio);
+    const ratio = Number.isFinite(r0) ? r0 : 0.08;
+    return Math.max(500, Math.round(stack1 * ratio));
+  }
+  const growth = caseSparkleStackGrowthPerBt();
+  return Math.max(stack1, Math.round(stack1 * Math.pow(growth, idx - 1)));
+}
+
+/**
+ * Цена кейса в блестяшках = sinkRatio × ожидаемый стек к этому BT.
+ * Кейс #2 (index 1) ≈ 0.72 × 40k ≈ 28.8k — основной слив, остаток на перки.
  */
 export function caseSparkleCost(caseIndex) {
   const idx = Math.max(0, Math.floor(Number(caseIndex) || 0));
-  const k = Math.max(1, Number(ECONOMY.tierGrowthK) || 3.8);
-  const base = Math.max(500, Number(ECONOMY.caseSparkleCostBase) || 3200);
-  const growth = Number(ECONOMY.caseSparkleCostGrowth);
-  const exp = Number.isFinite(growth) ? growth : 0.62;
-  return Math.max(base, Math.round(base * Math.pow(k, idx * exp)));
+  const sinkRaw = Number(ECONOMY.caseSparkleSinkRatio);
+  const sink = Number.isFinite(sinkRaw) ? Math.min(0.95, Math.max(0.2, sinkRaw)) : 0.72;
+  // Кейс #1 дешевле доли sink — онбординг.
+  const ratio = idx <= 0
+    ? 1
+    : sink;
+  const stack = expectedSparkleStackForCase(idx);
+  return Math.max(idx <= 0 ? 500 : 1000, Math.round(stack * ratio));
 }
 
 /** Доп. цена кейса в вантузах (с 8-го прорыва). */
