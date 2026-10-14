@@ -154,7 +154,7 @@ export function updateHUD() {
   const topStTitle = document.getElementById('topStageTitle');
   if (topStTitle) {
     topStTitle.textContent = t('hud.formTitle', {
-      n: formatNumber(currEvo.id + 1).toLocaleString('ru-RU'), 
+      n: Number(currEvo.id + 1).toLocaleString('ru-RU'), 
       phase: phaseLabel(phase)
     });
   }
@@ -169,7 +169,7 @@ export function updateHUD() {
   const nameEvo = document.getElementById('evoStageName');
   if (nameEvo) {
     nameEvo.textContent = t('hud.formName', {
-      n: formatNumber(currEvo.id + 1).toLocaleString('ru-RU'), 
+      n: Number(currEvo.id + 1).toLocaleString('ru-RU'), 
       name: evolutionDisplayName(currEvo)
     });
   }
