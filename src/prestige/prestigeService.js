@@ -7,6 +7,7 @@ import { hasPerk } from '../data/perks.data.js';
 import { getRelicLevel } from '../data/relics.data.js?v=5.4.2';
 import { saveLocal } from '../save/saveManager.js?v=5.4.2';
 import { requestCloudSync } from '../save/cloudSync.js?v=5.4.2';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.2';
 
 export function getPrestigeRequirement() {
   const flushes = GAME.flushCount ?? GAME.totalPrestiges ?? 0;
@@ -45,8 +46,13 @@ export function getPrestigeRewardBreakdown() {
   const totalGain = req.isMet ? Math.max(1, Math.round(pack * flushTalentBonus * vipMult * recycleMult)) : 0;
   const currentBoostPct = req.flushes * 50;
   const nextBoostPct = (req.flushes + 1) * 50;
-  const currentIncomeMult = 1 + req.flushes * 0.5;
-  const nextIncomeMult = 1 + (req.flushes + 1) * 0.5;
+  //const currentIncomeMult = 1 + req.flushes * 0.5;
+  //const nextIncomeMult = 1 + (req.flushes + 1) * 0.5;
+// Берем базовый множитель из конфига (с защитой: если не найдет, возьмет 1.18)
+const FLUSH_POWER_BASE = ECONOMY.flushPowerBase || 1.18;
+  
+const currentIncomeMult = Math.pow(FLUSH_POWER_BASE, req.flushes);
+const nextIncomeMult = Math.pow(FLUSH_POWER_BASE, req.flushes + 1);
 
   return {
     ...req,
