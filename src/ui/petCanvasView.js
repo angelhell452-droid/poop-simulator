@@ -1,25 +1,25 @@
-import { GAME } from '../core/state.js?v=5.4.16';
-import { getEquippedKnife } from '../economy/production.js?v=5.4.16';
+import { GAME } from '../core/state.js?v=5.4.17';
+import { getEquippedKnife } from '../economy/production.js?v=5.4.17';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.16';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.17';
 import { hasPerk } from '../data/perks.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.16';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.16';
-import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.16';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.16';
-import { updateHUD } from './hudView.js?v=5.4.16';
-import { saveLocal } from '../save/saveManager.js?v=5.4.16';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.16';
+import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.17';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.17';
+import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.17';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.17';
+import { updateHUD } from './hudView.js?v=5.4.17';
+import { saveLocal } from '../save/saveManager.js?v=5.4.17';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.17';
 import { events } from '../core/events.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.16';
-import { getSparkleEpochMult, sparkleMultFromProgress } from '../economy/sparkleScale.js?v=5.4.16';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.16';
-import { KNIVES } from '../data/knives.data.js?v=5.4.16';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.16';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.17';
+import { getSparkleEpochMult, sparkleMultFromProgress } from '../economy/sparkleScale.js?v=5.4.17';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.17';
+import { KNIVES } from '../data/knives.data.js?v=5.4.17';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.17';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.16';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.16';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.17';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.17';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
@@ -1280,6 +1280,8 @@ function renderPetLoop(time) {
   try {
     const w = canvas.width;
     const h = canvas.height;
+    ctx.globalAlpha = 1;
+    ctx.filter = 'none';
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
   const isGirly = !!(GAME.girlyMode || GAME.gameMode === 'girls');
@@ -1453,6 +1455,8 @@ function renderPetLoop(time) {
       ctx.arc(sp.x, sp.y, sp.r || 2, 0, Math.PI * 2);
       ctx.fill();
     }
+    // Must reset — otherwise next frame draws the pet at leftover spark alpha.
+    ctx.globalAlpha = 1;
   }
 
   // 2. High-performance Floating text particles (Max 4, pre-set font outside loop!)
@@ -1492,7 +1496,7 @@ function renderPetLoop(time) {
         ctx.fillText(p.text, p.x, p.y);
       }
     }
-    ctx.globalAlpha = 1.0;
+    ctx.globalAlpha = 1;
   }
   } catch (err) {
     console.error("renderPetLoop error:", err);

@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.16';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.17';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.17 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.17: Какашка не мигает',
+    titleEn: 'Patch 5.4.17: Pet No Longer Fades',
+    badge: 'Фикс 5.4.17',
+    badgeEn: 'Fix 5.4.17',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '✨',
+        text: 'Искры автоклика больше не оставляют прозрачность на какашке — globalAlpha сбрасывается каждый кадр.',
+        textEn: 'Autoclick sparks no longer leave the pet transparent — globalAlpha resets every frame.'
+      }
+    ]
+  },
   {
     version: 'v5.4.16 PRO',
     date: '14 Октября 2026',

@@ -76,7 +76,7 @@ export async function ensureAdminSchema(db) {
     INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('world_reset', '0');
   `).run().catch(() => {});
   await db.prepare(`
-    INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('patch_version', '5.4.16');
+    INSERT OR IGNORE INTO server_config (config_key, config_value) VALUES ('patch_version', '5.4.17');
   `).run().catch(() => {});
   adminSchemaReady = true;
 }
@@ -511,8 +511,8 @@ export function blankProgressSave(playerId, playerName, worldReset, seq) {
     saveVersion: 6,
     worldReset,
     clientWorldReset: worldReset,
-    patchVersion: '5.4.16',
-    clientPatchVersion: '5.4.16',
+    patchVersion: '5.4.17',
+    clientPatchVersion: '5.4.17',
     adminSeq: seq,
     resetProgress: true,
     feedCount: 0,
@@ -529,8 +529,8 @@ export function blankProgressSave(playerId, playerName, worldReset, seq) {
     game: {
       playerId,
       playerName: name,
-      patchVersion: '5.4.16',
-      clientPatchVersion: '5.4.16',
+      patchVersion: '5.4.17',
+      clientPatchVersion: '5.4.17',
       biomass: 0,
       cycleBiomass: 0,
       allTimeBiomass: 0,
@@ -626,15 +626,15 @@ export async function getServerVersions(db) {
     }
 
     if (!patchVersion) {
-      patchVersion = '5.4.16';
+      patchVersion = '5.4.17';
       await db.prepare(`
         INSERT INTO server_config (config_key, config_value) VALUES ('patch_version', ?)
         ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
       `).bind(patchVersion).run().catch(() => {});
     }
 
-    if (compareSemver('5.4.16', patchVersion) > 0) {
-      patchVersion = '5.4.16';
+    if (compareSemver('5.4.17', patchVersion) > 0) {
+      patchVersion = '5.4.17';
       await db.prepare(`
         INSERT INTO server_config (config_key, config_value) VALUES ('patch_version', ?)
         ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
@@ -643,13 +643,13 @@ export async function getServerVersions(db) {
 
     return {
       worldReset: Number(worldReset) || 0,
-      patchVersion: String(patchVersion) || '5.4.16'
+      patchVersion: String(patchVersion) || '5.4.17'
     };
   } catch (err) {
     console.error("Error querying server versions:", err);
     return {
       worldReset: 0,
-      patchVersion: '5.4.16'
+      patchVersion: '5.4.17'
     };
   }
 }
@@ -672,7 +672,7 @@ export async function currentWorldReset(db) {
 }
 
 export async function setServerPatchVersion(db, newVersion) {
-  const versionStr = String(newVersion || '5.4.16').trim();
+  const versionStr = String(newVersion || '5.4.17').trim();
   await db.prepare(`
     INSERT INTO server_config (config_key, config_value) VALUES ('patch_version', ?)
     ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value

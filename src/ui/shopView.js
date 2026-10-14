@@ -1,15 +1,15 @@
-import { GAME } from '../core/state.js?v=5.4.16';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.16';
-import { saveLocal } from '../save/saveManager.js?v=5.4.16';
-import { updateHUD } from './hudView.js?v=5.4.16';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.16';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.16';
-import { openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.16';
-import { hatArtHtml } from './artIcon.js?v=5.4.16';
+import { GAME } from '../core/state.js?v=5.4.17';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.17';
+import { saveLocal } from '../save/saveManager.js?v=5.4.17';
+import { updateHUD } from './hudView.js?v=5.4.17';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.17';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.17';
+import { openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.17';
+import { hatArtHtml } from './artIcon.js?v=5.4.17';
 import { isBoutiqueUnlocked, peakForm } from '../progression/unlocks.js';
 import { t, onLocaleChange } from '../i18n/t.js';
 import { PERMANENT_PERKS, hasPerk, buyPermanentPerk, getPerkCost } from '../data/perks.data.js';
-import { gte } from '../utils/big.js?v=5.4.16';
+import { gte } from '../utils/big.js?v=5.4.17';
 
 let activeBoutiqueTier = '1'; // '1' | '2' | '3' | '4'
 let shopListenersHooked = false;

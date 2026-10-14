@@ -1,4 +1,4 @@
-import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from './relics.data.js?v=5.4.16';
+import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from './relics.data.js?v=5.4.17';
 
 // TRANSCEND_UPGRADES re-exports RELICS with compatible property mapping for any legacy readers
 export const TRANSCEND_UPGRADES = RELICS.map(r => ({
