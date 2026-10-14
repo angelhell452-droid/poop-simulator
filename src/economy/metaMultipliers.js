@@ -1,6 +1,6 @@
-import { GAME } from '../core/state.js?v=5.4.8';
-import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.4.8';
-import { ECONOMY } from './economy.config.js?v=5.4.8';
+import { GAME } from '../core/state.js?v=5.4.9';
+import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.4.9';
+import { ECONOMY } from './economy.config.js?v=5.4.9';
 
 function echoCount(phaseId) {
   const bag = GAME.phaseEcho || {};
@@ -59,11 +59,11 @@ function openPairEchoBonus(at, closedPairs, previewPhase = 0, previewAdd = 0) {
   return bonus;
 }
 
-import { bigPow, isBig, log10Of, mul, rehydrateBig } from '../utils/big.js?v=5.4.8';
+import { bigPow, isBig, log10Of, mul, rehydrateBig } from '../utils/big.js?v=5.4.9';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
 
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.8';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.9';
 
 export function getFlushIncomeMult() {
   const flushes = Math.max(0, GAME.flushCount ?? GAME.totalPrestiges ?? 0);
@@ -77,7 +77,7 @@ export function getBreakthroughBoostDetails(count = null) {
   const expBonus = hackLvl * 0.05;
   const exp = b + expBonus;
   const boostLvl = getRelicLevel('relic_breakthrough_boost');
-  const baseBonus = boostLvl * 0.1;
+  const baseBonus = boostLvl * 0.03;
   const base = 1.5 + (b * 0.1) + baseBonus;
   const mult = b === 0 ? 1 : bigPow(base, exp);
 
@@ -102,7 +102,7 @@ export function getBreakthroughIncomeMult() {
 export function getInfinityEssenceMult() {
   const lvl = getRelicLevel('relic_meta_infinity_multiplier');
   if (lvl <= 0) return 1.0;
-  return bigPow(2.0, lvl);
+  return bigPow(1.15, lvl);
 }
 
 export function getPlungerCapitalMult() {
@@ -118,7 +118,8 @@ export function getPlungerCapitalMult() {
     millions = Math.floor((Number(bank) || 0) / 1000000);
   }
   if (millions <= 0) return 1.0;
-  return bigPow(1 + 0.05 * lvl, millions);
+  millions = Math.min(20, millions);
+  return bigPow(1 + 0.02 * lvl, millions);
 }
 
 /**

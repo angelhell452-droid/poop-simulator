@@ -5,7 +5,7 @@
  *
  * Форма — корень прогрессии. Цена формы ≈ formBuySeconds секунд модельного CPS.
  * Заводы и формы растут на tierGrowthK за каждый шаг factoryFormStep форм.
- * Кейсы: 1 новый на caseFormStep форм (после раннего онбординга).
+ * Кейсы: 3 ранних онбординг, дальше 1 кейс на 1 прорыв (шаг caseFormStep = 1000 форм).
  * Смывы: flushPowerBase ^ число_смывов → «Эхо смыва».
  */
 export const ECONOMY = {
@@ -31,18 +31,20 @@ export const ECONOMY = {
   },
 
   // --- Кейсы ---
-  // После 6-го кейса шаг reqForm (диапазон ТЗ: 1000–1200).
-  caseFormStep: 1100,
-  // Форма якоря после раннего блока (кейсы 0..5 остаются плотнее).
-  caseFormAnchor: 950,
+  // После 3 онбординг-кейсов: 1 кейс = 1 прорыв (шаг форм = 1000).
+  caseFormStep: 1000,
+  // Сколько кейсов доступны до первого прорыва.
+  caseEarlyCount: 3,
 
   // --- Блестяшки ---
   // Эпоха 1 = x1. Каждая следующая эпоха * sparkleEpochBase.
-  sparkleEpochBase: 1.5,
+  // 1.35 вместо 1.5 — мягче разгон по эпохам (форма ~3000 = эпоха 6).
+  sparkleEpochBase: 1.35,
   sparkleBreakthroughStep: 0.25,
   sparkleStarStep: 0.05,
   // SparklesIncome ∝ CPS^sparkleCpsExponent. Нормализация к sparkleCpsRef (CPS тира 1).
-  sparkleCpsExponent: 0.8,
+  // 0.55 вместо 0.8 — late-game CPS больше не раздувает блестяшки до уровня биомассы.
+  sparkleCpsExponent: 0.55,
   sparkleCpsRef: 80,
 
   // --- Метеориты ---
@@ -74,16 +76,31 @@ export function factoryUnlockForm(tierNumber) {
 
 /**
  * Целевая форма кейса по индексу (0-based).
- * Первые 6 кейсов — плотный онбординг; дальше шаг caseFormStep.
+ * Первые 3 кейса — онбординг; дальше 1 кейс на 1 прорыв (шаг 1000 форм).
  */
 export function caseUnlockForm(caseIndex) {
   const idx = Math.max(0, Math.floor(Number(caseIndex) || 0));
-  const early = [1, 40, 150, 350, 600, 950];
+  const early = [1, 40, 150];
   if (idx < early.length) return early[idx];
-  return Math.round(ECONOMY.caseFormAnchor + (idx - (early.length - 1)) * ECONOMY.caseFormStep);
+  return 1 + (idx - 2) * ECONOMY.caseFormStep;
 }
 
 /** Минимальный прорыв, чтобы форма кейса была достижима: floor((form-1)/1000). */
 export function caseUnlockBreakthrough(reqForm) {
   return Math.max(0, Math.floor((Math.max(1, reqForm) - 1) / 1000));
+}
+
+/** Цена кейса в блестяшках по индексу (0-based). */
+export function caseSparkleCost(caseIndex) {
+  const idx = Math.max(0, Math.floor(Number(caseIndex) || 0));
+  const k = Math.max(1, Number(ECONOMY.tierGrowthK) || 3.8);
+  return Math.max(20, Math.round(45 * Math.pow(k, idx * 0.42)));
+}
+
+/** Доп. цена кейса в вантузах (0 пока breakthrough меньше 8). */
+export function casePlungerCost(caseIndex) {
+  const idx = Math.max(0, Math.floor(Number(caseIndex) || 0));
+  const bt = caseUnlockBreakthrough(caseUnlockForm(idx));
+  if (bt < 8) return 0;
+  return Math.max(1, Math.round(Math.pow(1.55, bt - 8)));
 }

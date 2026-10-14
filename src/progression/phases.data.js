@@ -1,8 +1,8 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.8';
-import { bigPow10, div, mul } from '../utils/big.js?v=5.4.8';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.9';
+import { bigPow10, div, mul } from '../utils/big.js?v=5.4.9';
 import { t } from '../i18n/t.js';
-import { epochName } from '../i18n/localize.js?v=5.4.8';
-import { PHASE_COUNT, PHASE_FORMS, CLASSIC_EPOCHS, BANDS } from './phases.constants.js?v=5.4.8';
+import { epochName } from '../i18n/localize.js?v=5.4.9';
+import { PHASE_COUNT, PHASE_FORMS, CLASSIC_EPOCHS, BANDS } from './phases.constants.js?v=5.4.9';
 
 export { PHASE_COUNT, PHASE_FORMS, CLASSIC_EPOCHS, BANDS };
 

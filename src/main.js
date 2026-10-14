@@ -1,48 +1,48 @@
-import { GAME } from './core/state.js?v=5.4.8';
-import { startGameLoop } from './core/gameLoop.js?v=5.4.8';
-import { performBlockingHandshake, startAuthorityWatcher } from './core/serverAuthority.js?v=5.4.8';
-import { initLobbyAuth, checkAutoLogin } from './core/lobbyAuth.js?v=5.4.8';
-import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.4.8';
-import { saveLocal, saveGame, hardReset } from './save/saveManager.js?v=5.4.8';
-import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.4.8';
-import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.4.8';
-import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.4.8';
+import { GAME } from './core/state.js?v=5.4.9';
+import { startGameLoop } from './core/gameLoop.js?v=5.4.9';
+import { performBlockingHandshake, startAuthorityWatcher } from './core/serverAuthority.js?v=5.4.9';
+import { initLobbyAuth, checkAutoLogin } from './core/lobbyAuth.js?v=5.4.9';
+import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.4.9';
+import { saveLocal, saveGame, hardReset } from './save/saveManager.js?v=5.4.9';
+import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.4.9';
+import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.4.9';
+import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.4.9';
 import { renderShop, initShopI18n } from './ui/shopView.js';
 import { renderAchievements } from './ui/achievementsView.js';
-import { renderCasesSystem, initCasesListeners, updateCasesButtons, updateCasesTabBadge, checkFirstCaseNotification } from './ui/casesView.js?v=5.4.8';
-import { initKnivesIndexListeners } from './ui/knivesIndexView.js?v=5.4.8';
-import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.4.8';
-import { initModals } from './ui/modalManager.js?v=5.4.8';
-import { initAuthModal, refreshServerStatus } from './ui/authModalView.js?v=5.4.8';
-import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js?v=5.4.8';
-import { initLeaderboardView } from './ui/leaderboardView.js?v=5.4.8';
-import { initFriendsView } from './ui/friendsView.js?v=5.4.8';
-import { initGuildView } from './ui/guildView.js?v=5.4.8';
-import { initMailView } from './ui/mailView.js?v=5.4.8';
-import { startSocialPulse } from './ui/socialPulse.js?v=5.4.8';
-import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.4.8';
+import { renderCasesSystem, initCasesListeners, updateCasesButtons, updateCasesTabBadge, checkFirstCaseNotification } from './ui/casesView.js?v=5.4.9';
+import { initKnivesIndexListeners } from './ui/knivesIndexView.js?v=5.4.9';
+import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.4.9';
+import { initModals } from './ui/modalManager.js?v=5.4.9';
+import { initAuthModal, refreshServerStatus } from './ui/authModalView.js?v=5.4.9';
+import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js?v=5.4.9';
+import { initLeaderboardView } from './ui/leaderboardView.js?v=5.4.9';
+import { initFriendsView } from './ui/friendsView.js?v=5.4.9';
+import { initGuildView } from './ui/guildView.js?v=5.4.9';
+import { initMailView } from './ui/mailView.js?v=5.4.9';
+import { startSocialPulse } from './ui/socialPulse.js?v=5.4.9';
+import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.4.9';
 import { initVipShop } from './ui/vipShopView.js';
 import { initProfileView, renderProfileStats } from './ui/profileView.js';
 import { hasPerk } from './data/perks.data.js';
 import { getRelicLevel } from './data/relics.data.js';
-import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.4.8';
+import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.4.9';
 import { initTutorialListeners, validateAndAdvanceRetroactiveQuests } from './ui/tutorialView.js';
-import { initBeginnerGuideListeners } from './ui/beginnerGuideView.js?v=5.4.8';
-import { initBugReportListeners } from './ui/bugReportView.js?v=5.4.8';
-import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.4.8';
+import { initBeginnerGuideListeners } from './ui/beginnerGuideView.js?v=5.4.9';
+import { initBugReportListeners } from './ui/bugReportView.js?v=5.4.9';
+import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.4.9';
 import { initSharpenView } from './ui/sharpenView.js';
 import { initHotkeys } from './ui/hotkeys.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
-import { addPendingClicks, processBatchedClicks } from './systems/clickService.js?v=5.4.8';
-import { checkAchievements } from './systems/achievementsService.js?v=5.4.8';
-import { getPassiveIncome } from './economy/production.js?v=5.4.8';
+import { addPendingClicks, processBatchedClicks } from './systems/clickService.js?v=5.4.9';
+import { checkAchievements } from './systems/achievementsService.js?v=5.4.9';
+import { getPassiveIncome } from './economy/production.js?v=5.4.9';
 import { TALENTS } from './data/talents.data.js';
-import { ACHIEVEMENTS } from './data/achievements.data.js?v=5.4.8';
-import { SHOP_ITEMS } from './data/shop.data.js?v=5.4.8';
-import { formatNumber } from './utils/numberFormatter.js?v=5.4.8';
-import { gainBio, isBig, mul } from './utils/big.js?v=5.4.8';
+import { ACHIEVEMENTS } from './data/achievements.data.js?v=5.4.9';
+import { SHOP_ITEMS } from './data/shop.data.js?v=5.4.9';
+import { formatNumber } from './utils/numberFormatter.js?v=5.4.9';
+import { gainBio, isBig, mul } from './utils/big.js?v=5.4.9';
 import { formatDurationAway } from './utils/timeUtils.js';
-import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap } from './systems/autoclickService.js?v=5.4.8';
+import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap } from './systems/autoclickService.js?v=5.4.9';
 import { events } from './core/events.js';
 import { initI18n, t, onLocaleChange } from './i18n/t.js';
 
@@ -421,11 +421,11 @@ function checkOfflineProgress() {
     const offlineBiomass = isBig(offlineRaw) ? offlineRaw : Math.round(offlineRaw);
     let offlineSparkles = Math.min(500, Math.floor((effectiveSeconds / 180) * (1 + afkTalent * 0.05)));
 
-    // relic_offline_sparkles: Авто-заводы генерируют Блестяшки ✨ в оффлайне со скоростью 5% от активной игры за уровень
+    // relic_offline_sparkles: Авто-заводы генерируют Блестяшки ✨ в оффлайне со скоростью 2% за уровень
     const relicSparklesLvl = getRelicLevel('relic_offline_sparkles');
     if (relicSparklesLvl > 0) {
       const totalFactories = (GAME.factories || []).reduce((acc, f) => acc + (f.count || 0), 0);
-      const factorySparkles = Math.floor((effectiveSeconds / 60) * (totalFactories * 0.01) * (relicSparklesLvl * 0.05));
+      const factorySparkles = Math.floor((effectiveSeconds / 60) * (totalFactories * 0.01) * (relicSparklesLvl * 0.02));
       offlineSparkles += Math.max(relicSparklesLvl, factorySparkles);
     }
 

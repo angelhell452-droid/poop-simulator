@@ -1,3 +1,12 @@
+import {
+  casePlungerCost,
+  caseSparkleCost,
+  caseUnlockBreakthrough,
+  caseUnlockForm
+} from '../economy/economy.config.js?v=5.4.9';
+import { KNIVES } from './knives.data.js?v=5.4.9';
+import { syncKnivesToCaseTiers } from './knifeBalance.config.js?v=5.4.9';
+
 export const WEAPON_CASES = [
   {
     "id": "case_classic",
@@ -1350,12 +1359,28 @@ export const WEAPON_CASES = [
     "tierNumber": 45
   }
 
-].map(c => {
-  // Автоматический расчет цены: 5000 * 2.76^(Tier - 1)
-  c.cost = Math.floor(5000 * Math.pow(2.76, c.tierNumber - 1));
-  
-  // Автоматический расчет формы: Tier^3.55
-  c.reqForm = Math.max(1, Math.floor(Math.pow(c.tierNumber, 3.55)));
-  
+].map((c, index) => {
+  c.tierNumber = index + 1;
+  c.reqForm = caseUnlockForm(index);
+  c.reqBreakthrough = caseUnlockBreakthrough(c.reqForm);
+  c.cost = caseSparkleCost(index);
+  c.costPlungers = casePlungerCost(index);
+  if (c.costPlungers > 0) {
+    c.currencySymbol = '✨ + 🪠';
+  } else if (!c.currencySymbol) {
+    c.currencySymbol = '✨';
+  }
   return c;
 });
+
+syncKnivesToCaseTiers(WEAPON_CASES, KNIVES);
+
+for (const c of WEAPON_CASES) {
+  const pool = c.pool || [];
+  const jackpotId = pool[pool.length - 1];
+  const jackpot = KNIVES.find(k => k.id === jackpotId);
+  if (!jackpot) continue;
+  const cps = Math.max(0, Number(jackpot.cpsBonus) || Number(jackpot.passiveMult) || 0);
+  const sp = Number(jackpot.sparkleMult) || 1;
+  c.desc = `Джекпот 1%: ${jackpot.name} (${cps} CPS). Бонус блестяшек ✨ x${sp}.`;
+}

@@ -1,22 +1,22 @@
 import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.8';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.8';
-import { KNIVES } from '../data/knives.data.js?v=5.4.8';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.8';
-import { saveLocal } from '../save/saveManager.js?v=5.4.8';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.8';
-import { updateHUD } from './hudView.js?v=5.4.8';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.8';
+import { GAME } from '../core/state.js?v=5.4.9';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.9';
+import { KNIVES } from '../data/knives.data.js?v=5.4.9';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.9';
+import { saveLocal } from '../save/saveManager.js?v=5.4.9';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.9';
+import { updateHUD } from './hudView.js?v=5.4.9';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.9';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.8';
-import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.8';
-import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.8';
-import { caseUnlockForm, caseUnlockBreakthrough } from '../economy/economy.config.js?v=5.4.8';
-import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.8';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.9';
+import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.9';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.9';
+import { caseUnlockForm, caseUnlockBreakthrough } from '../economy/economy.config.js?v=5.4.9';
+import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.9';
 import { TALENTS } from '../data/talents.data.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.8';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.9';
 import { KNIFE_RARITIES, getRarityMeta } from '../data/knifeRarities.config.js';
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -546,7 +546,7 @@ export function getKnifePoolWithChances(poolKnives, fixedChances = null) {
 
   const dropLuckLvl = TALENTS.find(t => t.id === 'talent_drop_luck')?.level || 0;
   const relicCaseLuckLvl = getRelicLevel('relic_case_luck');
-  const luckBonus = dropLuckLvl * 0.005 + relicCaseLuckLvl * 0.015;
+  const luckBonus = dropLuckLvl * 0.005 + relicCaseLuckLvl * 0.0075;
 
   const fixedChanceOf = (knife) => {
     let value = fixedChances && Number(fixedChances[knife.id]);

@@ -1,6 +1,48 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.8';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.9';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.9 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.9: Кейсы = прорывы',
+    titleEn: 'Patch 5.4.9: Cases = Breakthroughs',
+    badge: 'Баланс 5.4.9',
+    badgeEn: 'Balance 5.4.9',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '📦',
+        text: 'Кейсы: 3 онбординг, дальше строго 1 кейс на 1 прорыв (форма +1000). Цена из economy.config, без 2.76^tier.',
+        textEn: 'Cases: 3 onboarding, then strictly 1 case per breakthrough (+1000 forms). Costs from economy.config, no more 2.76^tier.'
+      },
+      {
+        type: 'balance',
+        icon: '🗡️',
+        text: 'Сила ножей из пула кейса синхронизируется с тиром (K^0.25) — джекпот не обгоняет завод того же индекса.',
+        textEn: 'Case-pool knife power syncs to tier (K^0.25) — jackpot no longer outruns the paired factory.'
+      },
+      {
+        type: 'balance',
+        icon: '✨',
+        text: 'Блестяшки: CPS-exponent 0.55 и epochBase 1.35 — late-game приток ближе к биомассе, не наравне с ней.',
+        textEn: 'Sparkles: CPS exponent 0.55 and epochBase 1.35 — late-game inflow no longer matches biomass.'
+      },
+      {
+        type: 'balance',
+        icon: '🪐',
+        text: 'Нерф реликвий: Эссенция x1.15 (max 10), Резонатор +0.03, Капитал/Шторм/Инкубатор/Оффлайн/Омни/Архивариус ослаблены.',
+        textEn: 'Relic nerfs: Infinity Essence x1.15 (max 10), Resonator +0.03, Capital/Storm/Incubator/Offline/Omni/Archivist toned down.'
+      },
+      {
+        type: 'ui',
+        icon: '👑',
+        text: 'Аура «Идеал» только при уходе/турбо; шапка больше не прыгает на кадре моргания.',
+        textEn: 'Ideal aura only with care/turbo; hat no longer jumps on the blink frame.'
+      }
+    ]
+  },
   {
     version: 'v5.4.8 PRO',
     date: '14 Октября 2026',

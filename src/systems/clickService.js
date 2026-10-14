@@ -1,16 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.8';
+import { GAME } from '../core/state.js?v=5.4.9';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.8';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.8';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.8';
-import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.8';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.8';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.8';
-import { takeClickBudget } from './autoclickService.js?v=5.4.8';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.9';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.9';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.9';
+import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.9';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.9';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.9';
+import { takeClickBudget } from './autoclickService.js?v=5.4.9';
 import { events } from '../core/events.js';
-import { add, bigPow, cmp, gainBio, gte, isBig, mul } from '../utils/big.js?v=5.4.8';
+import { add, bigPow, cmp, gainBio, gte, isBig, mul } from '../utils/big.js?v=5.4.9';
 import { hasPerk } from '../data/perks.data.js';
-import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.8';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.9';
 
 export let pendingClicks = 0;
 
@@ -61,7 +61,7 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const breakthroughMult = 1 + bCount * ECONOMY.sparkleBreakthroughStep;
   const epochMult = getSparkleEpochMult(currentEpoch);
   const starMult = 1 + Math.max(0, knifeStar - 1) * ECONOMY.sparkleStarStep;
-  // Гармония: SparklesIncome ∝ CPS^0.8 (норма к CPS тира 1) — Big-safe.
+  // Гармония: SparklesIncome ∝ CPS^sparkleCpsExponent (норма к CPS тира 1) — Big-safe.
   const cpsSparkleMult = sparkleMultFromCps(getPassiveIncome());
   const cpsFloor = gte(cpsSparkleMult, 0.25) ? cpsSparkleMult : 0.25;
   let progScale = mul(mul(mul(breakthroughMult, epochMult), starMult), cpsFloor);
@@ -135,10 +135,10 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     totalEarned = mul(totalEarned, 1.20);
   }
 
-  // relic_meta_infinity_multiplier: x2.0 за уровень ко всем кликам/доходу
+  // relic_meta_infinity_multiplier: x1.15 за уровень ко всем кликам/доходу
   const metaInfLvl = getRelicLevel('relic_meta_infinity_multiplier');
   if (metaInfLvl > 0) {
-    totalEarned = mul(totalEarned, bigPow(2.0, metaInfLvl));
+    totalEarned = mul(totalEarned, bigPow(1.15, metaInfLvl));
   }
 
   // relic_crit_explosion: Каждый 50-й Крит подряд вызывает взрыв, дающий доход за 30 секунд

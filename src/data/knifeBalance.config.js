@@ -24,7 +24,52 @@ export const KNIFE_BALANCE_CONFIG = {
   passivePower: 0.28
 };
 
-import { mul } from '../utils/big.js?v=5.4.8';
+import { mul } from '../utils/big.js?v=5.4.9';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.9';
+
+/** Pool slot weights: common → jackpot (1%). */
+const CASE_SLOT_WEIGHTS = [0.28, 0.42, 0.58, 0.78, 1.0];
+
+/**
+ * Target jackpot passiveMult for case tier (1-based).
+ * Grows with K softer than factory CPS so knives never outrun the paired factory.
+ */
+export function caseTierJackpotPassive(tierNumber) {
+  const tier = Math.max(1, Math.floor(Number(tierNumber) || 1));
+  const k = Math.max(1, Number(ECONOMY.tierGrowthK) || 3.8);
+  const scaled = Math.pow(k, (tier - 1) * 0.25);
+  const earlyFloor = tier <= 3 ? 5 : 1;
+  return Math.max(earlyFloor, Math.round(scaled));
+}
+
+/**
+ * Rewrite knife click/passive/sparkle stats from their case pool slot
+ * so case rewards match the harmony economy axis.
+ */
+export function syncKnivesToCaseTiers(cases, knives) {
+  if (!Array.isArray(cases) || !Array.isArray(knives)) return;
+  const byId = new Map(knives.map(k => [k.id, k]));
+
+  for (let index = 0; index < cases.length; index++) {
+    const c = cases[index];
+    const tier = Math.max(1, Number(c.tierNumber) || (index + 1));
+    const jackpotPassive = caseTierJackpotPassive(tier);
+    const pool = c.pool || [];
+
+    for (let slot = 0; slot < pool.length; slot++) {
+      const knife = byId.get(pool[slot]);
+      if (!knife) continue;
+      const weight = CASE_SLOT_WEIGHTS[Math.min(slot, CASE_SLOT_WEIGHTS.length - 1)];
+      const passiveMult = Math.max(1, Math.round(jackpotPassive * weight));
+      const clickMult = Math.max(2, Math.round(2.2 * passiveMult));
+      const sparkleMult = Math.round((1 + 0.35 * Math.log10(passiveMult + 1)) * 100) / 100;
+      knife.passiveMult = passiveMult;
+      knife.clickMult = clickMult;
+      knife.sparkleMult = sparkleMult;
+      knife.cpsBonus = Math.max(0, Math.round(passiveMult));
+    }
+  }
+}
 
 /**
  * Возвращает фактический базовый множитель клика ножа с учётом глобального баланса.

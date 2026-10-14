@@ -1,5 +1,5 @@
-import { ECONOMY } from './economy.config.js?v=5.4.8';
-import { bigPow, log10Of, pow10, rehydrateBig } from '../utils/big.js?v=5.4.8';
+import { ECONOMY } from './economy.config.js?v=5.4.9';
+import { bigPow, log10Of, pow10, rehydrateBig } from '../utils/big.js?v=5.4.9';
 
 /** Epoch 1 stays at x1. Later epochs use sparkleEpochBase from economy.config.js. */
 export function getSparkleEpochMult(epoch) {
@@ -15,7 +15,7 @@ export function getSparkleEpochMult(epoch) {
 export function sparkleMultFromCps(cps) {
   const ref = Math.max(1, Number(ECONOMY.sparkleCpsRef) || 80);
   const exp = Number(ECONOMY.sparkleCpsExponent);
-  const exponent = Number.isFinite(exp) ? exp : 0.8;
+  const exponent = Number.isFinite(exp) ? exp : 0.55;
   const cpsVal = rehydrateBig(cps || 0);
   const cpsLog = Math.max(0, log10Of(cpsVal) - Math.log10(ref));
   if (!Number.isFinite(cpsLog) || cpsLog <= 0) return 1;

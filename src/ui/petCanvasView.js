@@ -1,25 +1,25 @@
-import { GAME } from '../core/state.js?v=5.4.8';
-import { getEquippedKnife } from '../economy/production.js?v=5.4.8';
+import { GAME } from '../core/state.js?v=5.4.9';
+import { getEquippedKnife } from '../economy/production.js?v=5.4.9';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.8';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.9';
 import { hasPerk } from '../data/perks.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.8';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.8';
-import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.8';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.8';
-import { updateHUD } from './hudView.js?v=5.4.8';
-import { saveLocal } from '../save/saveManager.js?v=5.4.8';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.8';
+import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.9';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.9';
+import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.9';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.9';
+import { updateHUD } from './hudView.js?v=5.4.9';
+import { saveLocal } from '../save/saveManager.js?v=5.4.9';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.9';
 import { events } from '../core/events.js';
-import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.4.8';
-import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.8';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.8';
-import { KNIVES } from '../data/knives.data.js?v=5.4.8';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.8';
+import { getPhaseForForm, getPhaseForStage, maxUnlockedForm } from '../progression/phases.data.js?v=5.4.9';
+import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.9';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.9';
+import { KNIVES } from '../data/knives.data.js?v=5.4.9';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.9';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.8';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.8';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.9';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.9';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
@@ -1039,8 +1039,8 @@ function characterDest(frame) {
   return { destW, destH, x: -destW / 2, y: foot - destH };
 }
 
-function drawCharacterFrame(ctx, frame) {
-  const box = characterDest(frame);
+function drawCharacterFrame(ctx, frame, layoutFrame = frame) {
+  const box = characterDest(layoutFrame);
   ctx.drawImage(
     frame.canvas,
     frame.sx, frame.sy, frame.sw, frame.sh,
@@ -1048,10 +1048,11 @@ function drawCharacterFrame(ctx, frame) {
   );
 }
 
-function drawCharacterGlow(ctx, frame, alpha) {
+function drawCharacterGlow(ctx, frame, alpha, layoutFrame = frame) {
   if (!frame.glow) return;
-  const box = characterDest(frame);
-  const pulse = 0.88 + Math.sin(performance.now() * 0.003) * 0.12;
+  const box = characterDest(layoutFrame);
+  // Soft breathe — avoid hard yellow blink on the whole silhouette.
+  const pulse = 0.96 + Math.sin(performance.now() * 0.0016) * 0.04;
   const paint = (pad, blur, strength) => {
     ctx.save();
     ctx.filter = `blur(${blur}px)`;
@@ -1059,8 +1060,8 @@ function drawCharacterGlow(ctx, frame, alpha) {
     ctx.drawImage(frame.glow, box.x - pad, box.y - pad, box.destW + pad * 2, box.destH + pad * 2);
     ctx.restore();
   };
-  paint(30, 18, 1);
-  paint(10, 5, 0.85);
+  paint(22, 14, 0.75);
+  paint(8, 4, 0.55);
 }
 
 export function initPetCanvas() {
@@ -1323,23 +1324,27 @@ function renderPetLoop(time) {
   const body = equippedBodyArt(isGirly);
   const baseLook = isGirly ? girlLook : boyLook;
   const look = (body && body.look.open) ? body.look : baseLook;
-  const characterFrame = look.open
-    ? ((isBlinking && look.blink) ? look.blink : look.open)
+  // Layout always from open eyes — blink crop differs and used to jump hat/knife off for a frame.
+  const layoutFrame = look.open || null;
+  const characterFrame = layoutFrame
+    ? ((isBlinking && look.blink) ? look.blink : layoutFrame)
     : null;
   ensureVisibleArt();
 
-  // Aura effects. On the painted character the shine follows the silhouette.
+  // Aura only for ideal care / turbo — not a permanent yellow wash that blinks every tick.
   const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
   const turboOn = (GAME.turboStarMultTime || 0) > 0 || GAME.turboRushTime > 0;
-  if (characterFrame) {
-    const glowAlpha = turboOn ? 1 : (isIdealPet ? 0.92 : 0.78);
-    drawCharacterGlow(ctx, characterFrame, glowAlpha);
-    drawCharacterFrame(ctx, characterFrame);
+  if (characterFrame && layoutFrame && (isIdealPet || turboOn)) {
+    const glowAlpha = turboOn ? 0.72 : 0.48;
+    drawCharacterGlow(ctx, characterFrame, glowAlpha, layoutFrame);
+  }
+  if (characterFrame && layoutFrame) {
+    drawCharacterFrame(ctx, characterFrame, layoutFrame);
   }
 
-  const placed = characterFrame ? characterDest(characterFrame) : null;
-  const clayHat = characterFrame ? clayHats[GAME.equippedHat] : null;
-  if (clayHat && propLooks[clayHat.key]) {
+  const placed = layoutFrame ? characterDest(layoutFrame) : null;
+  const clayHat = layoutFrame ? clayHats[GAME.equippedHat] : null;
+  if (clayHat && propLooks[clayHat.key] && placed) {
     const skinOn = !!(body && body.look.open);
     const face = skinOn && clayHat.faceSkin != null ? clayHat.faceSkin : clayHat.face;
     const hatTop = face != null
@@ -1347,13 +1352,13 @@ function renderPetLoop(time) {
       : placed.y - clayHat.h + clayHat.overlap;
     const hatX = skinOn && clayHat.xSkin != null ? clayHat.xSkin : clayHat.x;
     drawProp(ctx, propLooks[clayHat.key], hatX, hatTop, clayHat.h);
-  } else if (characterFrame && GAME.equippedHat && !clayHats[GAME.equippedHat]) {
+  } else if (layoutFrame && GAME.equippedHat && !clayHats[GAME.equippedHat]) {
     drawEquippedHat(ctx, GAME.equippedHat, time, isGirly);
   }
 
   const knife = getEquippedKnife();
   const clayKnifeKey = knife && clayKnives[knife.id];
-  if (characterFrame && clayKnifeKey && propLooks[clayKnifeKey]) {
+  if (layoutFrame && placed && clayKnifeKey && propLooks[clayKnifeKey]) {
     const fist = fistCenter(placed);
     const strike = knifeStrike();
     ctx.save();
@@ -1540,7 +1545,7 @@ export function catchGoldenMeteor() {
   const eqKnife = getEquippedKnife();
   const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
   const slice = ECONOMY.meteorSliceMin + Math.random() * (ECONOMY.meteorSliceMax - ECONOMY.meteorSliceMin);
-  // Гармония: метеорит тоже ∝ CPS^0.8 (Big-safe)
+  // Гармония: метеорит тоже ∝ CPS^sparkleCpsExponent (Big-safe)
   const cpsSparkleMult = sparkleMultFromCps(getPassiveIncome());
   const cpsFloor = gte(cpsSparkleMult, 0.25) ? cpsSparkleMult : 0.25;
   let spGain = mul(
@@ -1612,15 +1617,15 @@ export function catchGoldenMeteor() {
     addVisualParticle('🌌 КВАНТОВЫЙ ВАРП (2ч)! 🌌', '#c084fc', 1.8, 2.5, -2.8);
   }
 
-  // relic_meteor_progression_skip: +1% шанс мгновенно дать +100 уровней опыта Прорыва
+  // relic_meteor_progression_skip: +0.25%/lvl шанс мгновенно дать ~+20 уровней опыта Прорыва
   const skipLvl = getRelicLevel('relic_meteor_progression_skip');
-  if (skipLvl > 0 && Math.random() < skipLvl * 0.01) {
+  if (skipLvl > 0 && Math.random() < skipLvl * 0.0025) {
     const cur = GAME.lifetimeBiomassInCurrentCycle || 1;
-    const addBio = mul(cur, 31.62);
+    const addBio = mul(cur, Math.pow(31.62, 0.2));
     GAME.biomass = gainBio(GAME.biomass, addBio);
     GAME.lifetimeBiomassInCurrentCycle = gainBio(GAME.lifetimeBiomassInCurrentCycle, addBio);
     GAME.breakthroughProgress = GAME.lifetimeBiomassInCurrentCycle;
-    addVisualParticle('⚡ ГАЛАКТИЧЕСКИЙ ШТОРМ (+100 УР)! ⚡', '#38bdf8', 1.8, 2.5, -2.8);
+    addVisualParticle('⚡ ГАЛАКТИЧЕСКИЙ ШТОРМ (+20 УР)! ⚡', '#38bdf8', 1.8, 2.5, -2.8);
   }
 
   scheduleNextMeteor();
