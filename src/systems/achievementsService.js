@@ -1,8 +1,8 @@
-import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.4.15';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.15';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.15';
+import { GAME, feedCount, washCount, polishCount, flushCount } from '../core/state.js?v=5.4.16';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.16';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.16';
 import { events } from '../core/events.js';
-import { gainBio, gte } from '../utils/big.js?v=5.4.15';
+import { gainBio, gte } from '../utils/big.js?v=5.4.16';
 
 export function checkAchievements() {
   const completed = [];

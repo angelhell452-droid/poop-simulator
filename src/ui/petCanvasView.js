@@ -1,25 +1,25 @@
-import { GAME } from '../core/state.js?v=5.4.15';
-import { getEquippedKnife } from '../economy/production.js?v=5.4.15';
+import { GAME } from '../core/state.js?v=5.4.16';
+import { getEquippedKnife } from '../economy/production.js?v=5.4.16';
 
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.15';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.16';
 import { hasPerk } from '../data/perks.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.15';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.15';
-import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.15';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.15';
-import { updateHUD } from './hudView.js?v=5.4.15';
-import { saveLocal } from '../save/saveManager.js?v=5.4.15';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.15';
+import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.16';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.16';
+import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.16';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.16';
+import { updateHUD } from './hudView.js?v=5.4.16';
+import { saveLocal } from '../save/saveManager.js?v=5.4.16';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.16';
 import { events } from '../core/events.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.15';
-import { getSparkleEpochMult, sparkleMultFromProgress } from '../economy/sparkleScale.js?v=5.4.15';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.15';
-import { KNIVES } from '../data/knives.data.js?v=5.4.15';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.15';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.16';
+import { getSparkleEpochMult, sparkleMultFromProgress } from '../economy/sparkleScale.js?v=5.4.16';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.16';
+import { KNIVES } from '../data/knives.data.js?v=5.4.16';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.16';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.15';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.15';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.16';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.16';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
@@ -1334,13 +1334,11 @@ function renderPetLoop(time) {
     : null;
   ensureVisibleArt();
 
-  // Ideal = soft rim. Meteor star turbo = brief bump.
-  // Do NOT key off turboRushTime — autoclicker keeps it on and fully yellow-washed the pet.
-  const isIdealPet = (GAME.hunger >= 90 && GAME.clean >= 90 && GAME.happy >= 90);
+  // No Ideal wash — auto-care keeps Ideal forever and yellow-covers the sprite.
+  // Only a short meteor star-turbo rim (turboRush from autoclicker stays off).
   const starTurbo = (GAME.turboStarMultTime || 0) > 0;
-  if (characterFrame && layoutFrame && (isIdealPet || starTurbo)) {
-    const glowAlpha = starTurbo ? 0.32 : 0.18;
-    drawCharacterGlow(ctx, characterFrame, glowAlpha, layoutFrame);
+  if (characterFrame && layoutFrame && starTurbo) {
+    drawCharacterGlow(ctx, characterFrame, 0.22, layoutFrame);
   }
   if (characterFrame && layoutFrame) {
     drawCharacterFrame(ctx, characterFrame, layoutFrame);

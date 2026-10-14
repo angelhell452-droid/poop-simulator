@@ -1,4 +1,4 @@
-import { GAME } from '../core/state.js?v=5.4.15';
+import { GAME } from '../core/state.js?v=5.4.16';
 
 /**
  * 5 Тиров Реликвий Прорыва (Breakthrough Relic Tiers)

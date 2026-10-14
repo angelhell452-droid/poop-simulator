@@ -1,28 +1,28 @@
 import { knifeName, knifeDesc, knifeRarity, shopName, shopDesc, skinName } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.15';
-import { KNIVES } from '../data/knives.data.js?v=5.4.15';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.15';
+import { GAME } from '../core/state.js?v=5.4.16';
+import { KNIVES } from '../data/knives.data.js?v=5.4.16';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.16';
 import {
   getKnifeStar, getKnifeSharpenCost, getKnifeRecycleReward, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
 import { openSharpenWheelModal } from './sharpenView.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.4.15';
-import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.4.15';
-import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.15';
-import { saveLocal } from '../save/saveManager.js?v=5.4.15';
-import { updateHUD } from './hudView.js?v=5.4.15';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.4.16';
+import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.4.16';
+import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.16';
+import { saveLocal } from '../save/saveManager.js?v=5.4.16';
+import { updateHUD } from './hudView.js?v=5.4.16';
 import { renderShop } from './shopView.js';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.15';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.15';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.16';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.16';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getRarityMeta } from '../data/knifeRarities.config.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { hatArtHtml } from './artIcon.js?v=5.4.15';
-import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.15';
-import { gte, spendBio } from '../utils/big.js?v=5.4.15';
+import { hatArtHtml } from './artIcon.js?v=5.4.16';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.16';
+import { gte, spendBio } from '../utils/big.js?v=5.4.16';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'

@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.15';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.16';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.16 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.16: Без жёлтого Идеала',
+    titleEn: 'Patch 5.4.16: No Ideal Yellow Wash',
+    badge: 'Фикс 5.4.16',
+    badgeEn: 'Fix 5.4.16',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'ui',
+        icon: '💩',
+        text: 'Аура «Идеал» отключена (авто-уход держал её всегда и желтил спрайт). Короткий glow только у звёздного турбо с метеора.',
+        textEn: 'Ideal aura disabled (auto-care kept it forever and yellow-washed the sprite). Brief glow only for meteor star turbo.'
+      }
+    ]
+  },
   {
     version: 'v5.4.15 PRO',
     date: '14 Октября 2026',

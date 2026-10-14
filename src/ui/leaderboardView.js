@@ -1,11 +1,11 @@
-import { GAME } from '../core/state.js?v=5.4.15';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.15';
-import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.4.15';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.4.15';
-import { saveLocal } from '../save/saveManager.js?v=5.4.15';
-import { updateHUD } from './hudView.js?v=5.4.15';
+import { GAME } from '../core/state.js?v=5.4.16';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.16';
+import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.4.16';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.4.16';
+import { saveLocal } from '../save/saveManager.js?v=5.4.16';
+import { updateHUD } from './hudView.js?v=5.4.16';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { gainBio } from '../utils/big.js?v=5.4.15';
+import { gainBio } from '../utils/big.js?v=5.4.16';
 
 let cachedLeaderboard = null;
 let cachedYou = null;
