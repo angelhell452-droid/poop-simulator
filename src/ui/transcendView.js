@@ -1,5 +1,5 @@
-import { updateTranscendModalRealtime, openTranscendModal } from './modalManager.js?v=5.4.18';
-import { getTranscendRequirement, getTranscendRewardBreakdown, getTargetBreakthroughExperience, executeTranscend } from '../prestige/transcendService.js?v=5.4.18';
+import { updateTranscendModalRealtime, openTranscendModal } from './modalManager.js?v=5.4.19';
+import { getTranscendRequirement, getTranscendRewardBreakdown, getTargetBreakthroughExperience, executeTranscend } from '../prestige/transcendService.js?v=5.4.19';
 
 export {
   updateTranscendModalRealtime,

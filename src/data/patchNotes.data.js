@@ -1,14 +1,14 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.18';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.19';
 
 export const PATCH_NOTES = [
   {
-    version: 'v5.4.18 PRO',
+    version: 'v5.4.19 PRO',
     date: '14 Октября 2026',
     dateEn: 'October 14, 2026',
-    title: 'Патч 5.4.18: Золото и темп после прорыва',
-    titleEn: 'Patch 5.4.18: Golden Glow & Post-BT Pace',
-    badge: 'Патч 5.4.18',
-    badgeEn: 'Patch 5.4.18',
+    title: 'Патч 5.4.19: Золото и темп после прорыва',
+    titleEn: 'Patch 5.4.19: Golden Glow & Post-BT Pace',
+    badge: 'Патч 5.4.19',
+    badgeEn: 'Patch 5.4.19',
     badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
     changes: [
       {

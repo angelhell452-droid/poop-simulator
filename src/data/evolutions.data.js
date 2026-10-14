@@ -1,10 +1,10 @@
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.18';
-import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.18';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.18';
-import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.18';
-import { GAME } from '../core/state.js?v=5.4.18';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.18';
-import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.18';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.19';
+import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.19';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.19';
+import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.19';
+import { GAME } from '../core/state.js?v=5.4.19';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.19';
+import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.19';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
