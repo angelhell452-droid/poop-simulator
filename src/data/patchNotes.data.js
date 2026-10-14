@@ -1,6 +1,30 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.7';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.8';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.8 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.8: Метеоры без краша',
+    titleEn: 'Patch 5.4.8: Meteors Without Crash',
+    badge: 'Фикс 5.4.8',
+    badgeEn: 'Fix 5.4.8',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '☄️',
+        text: 'Вернули импорт gte в petCanvasView — ловля золотых метеоров больше не сыпет ReferenceError в консоль каждый тик.',
+        textEn: 'Restored gte import in petCanvasView — catching golden meteors no longer spams ReferenceError every tick.'
+      },
+      {
+        type: 'ui',
+        icon: '✨',
+        text: 'Автоклик: попапы дохода реже мигают — throttle и обновление текста на месте.',
+        textEn: 'Autoclick earn popups blink less — longer throttle and in-place text refresh.'
+      }
+    ]
+  },
   {
     version: 'v5.4.7 PRO',
     date: '14 Октября 2026',

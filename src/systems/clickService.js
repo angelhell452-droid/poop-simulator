@@ -1,16 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.7';
+import { GAME } from '../core/state.js?v=5.4.8';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.7';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.7';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.7';
-import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.7';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.7';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.7';
-import { takeClickBudget } from './autoclickService.js?v=5.4.7';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.8';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.8';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.8';
+import { getSparkleEpochMult, sparkleMultFromCps } from '../economy/sparkleScale.js?v=5.4.8';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.8';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.8';
+import { takeClickBudget } from './autoclickService.js?v=5.4.8';
 import { events } from '../core/events.js';
-import { add, bigPow, cmp, gainBio, gte, isBig, mul } from '../utils/big.js?v=5.4.7';
+import { add, bigPow, cmp, gainBio, gte, isBig, mul } from '../utils/big.js?v=5.4.8';
 import { hasPerk } from '../data/perks.data.js';
-import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.7';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.8';
 
 export let pendingClicks = 0;
 
