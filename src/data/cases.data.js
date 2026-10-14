@@ -1349,4 +1349,13 @@ export const WEAPON_CASES = [
     "reqBreakthrough": 300,
     "tierNumber": 45
   }
-];
+
+].map(c => {
+  // Автоматический расчет цены: 5000 * 2.76^(Tier - 1)
+  c.cost = Math.floor(5000 * Math.pow(2.76, c.tierNumber - 1));
+  
+  // Автоматический расчет формы: Tier^3.55
+  c.reqForm = Math.max(1, Math.floor(Math.pow(c.tierNumber, 3.55)));
+  
+  return c;
+});
