@@ -1,9 +1,10 @@
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.11';
-import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.11';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.11';
-import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.11';
-import { GAME } from '../core/state.js?v=5.4.11';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.11';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.12';
+import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.12';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.12';
+import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.12';
+import { GAME } from '../core/state.js?v=5.4.12';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.12';
+import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.12';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
@@ -92,7 +93,11 @@ export function calcEvolutionCost(i) {
     sum = div(sub(bigPow(K, stage / step), 1), denom);
   }
 
-  const total = mul(mul(base, flushMult), sum);
+  let total = mul(mul(base, flushMult), sum);
+  // После прорыва доход растёт BreakthroughBoost — порог формы тоже, иначе автозаводы пролетают окна.
+  if (ECONOMY.formScaleWithBreakthrough) {
+    total = mul(total, getBreakthroughIncomeMult());
+  }
   if (isBig(total)) return total;
   if (Number.isFinite(total) && total > 0) return Math.max(1, Math.floor(total));
   return 1;

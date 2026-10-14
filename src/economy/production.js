@@ -1,24 +1,25 @@
-import { GAME } from '../core/state.js?v=5.4.11';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.11';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.11';
+import { GAME } from '../core/state.js?v=5.4.12';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.12';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.12';
 import { TALENTS } from '../data/talents.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.4.11';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.11';
-import { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../data/knifeBalance.config.js?v=5.4.11';
+import { KNIVES } from '../data/knives.data.js?v=5.4.12';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.12';
+import { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../data/knifeBalance.config.js?v=5.4.12';
 export { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult };
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.11';
-import { dampenGearMult, getCleanIncomeMult, getHungerClickMult, getHappyCritBonus, getIdealMult, getInfinityEssenceMult, getPlungerCapitalMult, getPlungersIncomeMult, getRollsIncomeMult, getTutorialClickMult, getTutorialCritBonus, getTutorialIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.4.11';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.12';
+import { dampenGearMult, getCleanIncomeMult, getHungerClickMult, getHappyCritBonus, getIdealMult, getInfinityEssenceMult, getPlungerCapitalMult, getPlungersIncomeMult, getRollsIncomeMult, getTutorialClickMult, getTutorialCritBonus, getTutorialIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.4.12';
 import { hasPerk } from '../data/perks.data.js';
-import { guildPresenceMult } from '../guild/guildPresence.js?v=5.4.11';
+import { guildPresenceMult } from '../guild/guildPresence.js?v=5.4.12';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { archetypeName } from '../i18n/localize.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.11';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.12';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
-import { findBodySkin } from '../data/skins.data.js?v=5.4.11';
-import { add, bigPow, cmp, isBig, mul } from '../utils/big.js?v=5.4.11';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.11';
-import { horizonIncomeMult } from './horizon.js?v=5.4.11';
-import { BARE_CLICK_CAP } from '../systems/autoclickService.js?v=5.4.11';
+import { findBodySkin } from '../data/skins.data.js?v=5.4.12';
+import { add, bigPow, cmp, isBig, mul } from '../utils/big.js?v=5.4.12';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.12';
+import { horizonIncomeMult } from './horizon.js?v=5.4.12';
+import { effectiveFactoryCopyCount } from './economy.config.js?v=5.4.12';
+import { BARE_CLICK_CAP } from '../systems/autoclickService.js?v=5.4.12';
 
 /** Max share of factory income that a full click-cap stream may add. */
 const CLICK_INCOME_SHARE_CAP = 0.15;
@@ -275,7 +276,9 @@ function describeFactory(fac, idx, count) {
   const coreOn = hasPerk('perk_singularity_core') || hasPerk('upg_singularity_core');
   const highTier = fac.tier === 'late' || fac.tier === 'endgame' || fac.tier === 'singularity' || idx >= 11;
   const core = (coreOn && highTier) ? 1.5 : 1;
+  // Вехи/мета по реальному count; CPS-стек — по softcap (авто-MAX не даёт линейный ×40).
   const milestone = milestoneMult(count);
+  const effCount = effectiveFactoryCopyCount(count);
 
   // talent_factory_base переведён с плоского бонуса на глобальный процентный множитель (+8% за уровень в passiveGlobalLines)
   const effectiveBaseCps = fac.baseCps;
@@ -284,8 +287,8 @@ function describeFactory(fac, idx, count) {
   const metaLvl = talentLevel('talent_factory_meta');
   const metaMult = (count > 500 && metaLvl > 0) ? bigPow(1.05, metaLvl) : 1;
 
-  const raw = mul(mul(mul(mul(count, effectiveBaseCps), milestone), knife * core), metaMult);
-  return { raw, milestone, knife, quantum: 1, core, metaMult, count, perCopy: effectiveBaseCps };
+  const raw = mul(mul(mul(mul(effCount, effectiveBaseCps), milestone), knife * core), metaMult);
+  return { raw, milestone, knife, quantum: 1, core, metaMult, count, effCount, perCopy: effectiveBaseCps };
 }
 
 export function getKnifeFactorySynergyMult() {

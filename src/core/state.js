@@ -102,7 +102,7 @@ export function getDefaultGameState() {
     lastActiveTime: Date.now(),
     cloudAdminSeq: 0,
     worldReset: 0,
-    patchVersion: '5.4.11',
+    patchVersion: '5.4.12',
 
     autoBuyerEnabled: true,
     autoBuyerMode: 'latest',

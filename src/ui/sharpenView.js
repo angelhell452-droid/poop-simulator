@@ -1,5 +1,5 @@
-import { GAME } from '../core/state.js?v=5.4.11';
-import { KNIVES } from '../data/knives.data.js?v=5.4.11';
+import { GAME } from '../core/state.js?v=5.4.12';
+import { KNIVES } from '../data/knives.data.js?v=5.4.12';
 import {
   getKnifeStar,
   getKnifeSharpenCost,
@@ -8,10 +8,10 @@ import {
   applyKnifeSharpen
 } from '../systems/knifeService.js';
 import { knifeName } from '../i18n/localize.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.11';
-import { updateHUD } from './hudView.js?v=5.4.11';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.12';
+import { updateHUD } from './hudView.js?v=5.4.12';
 import { renderCharacterInventory } from './characterInventoryView.js';
-import { saveLocal } from '../save/saveManager.js?v=5.4.11';
+import { saveLocal } from '../save/saveManager.js?v=5.4.12';
 import { t } from '../i18n/t.js';
 
 let currentKnifeId = null;

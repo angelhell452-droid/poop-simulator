@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.11';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.12';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.12 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.12: Формы vs автозаводы',
+    titleEn: 'Patch 5.4.12: Forms vs Auto-Factories',
+    badge: 'Баланс 5.4.12',
+    badgeEn: 'Balance 5.4.12',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🏭',
+        text: 'Авто-MAX заводов больше не пролетает формы: formBuySeconds 25→90, softcap копий (knee 8), порог формы масштабируется BreakthroughBoost. Штраф ножа не трогали.',
+        textEn: 'Auto-MAX factories no longer skip forms: formBuySeconds 25→90, copy softcap (knee 8), form thresholds scale with BreakthroughBoost. Knife penalty unchanged.'
+      }
+    ]
+  },
   {
     version: 'v5.4.11 PRO',
     date: '14 Октября 2026',
