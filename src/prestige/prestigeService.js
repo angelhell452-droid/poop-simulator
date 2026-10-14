@@ -44,15 +44,15 @@ export function getPrestigeRewardBreakdown() {
   const recycleMult = hasPerk('perk_paper_recycling') ? 1.20 : 1;
 
   const totalGain = req.isMet ? Math.max(1, Math.round(pack * flushTalentBonus * vipMult * recycleMult)) : 0;
-  const currentBoostPct = req.flushes * 50;
-  const nextBoostPct = (req.flushes + 1) * 50;
-  //const currentIncomeMult = 1 + req.flushes * 0.5;
-  //const nextIncomeMult = 1 + (req.flushes + 1) * 0.5;
-// Берем базовый множитель из конфига (с защитой: если не найдет, возьмет 1.18)
-const FLUSH_POWER_BASE = ECONOMY.flushPowerBase || 1.18;
   
-const currentIncomeMult = Math.pow(FLUSH_POWER_BASE, req.flushes);
-const nextIncomeMult = Math.pow(FLUSH_POWER_BASE, req.flushes + 1);
+  // 1. Сначала вычисляем множители
+  const FLUSH_POWER_BASE = ECONOMY.flushPowerBase || 1.18;
+  const currentIncomeMult = Math.pow(FLUSH_POWER_BASE, req.flushes);
+  const nextIncomeMult = Math.pow(FLUSH_POWER_BASE, req.flushes + 1);
+
+  // 2. Затем вычисляем проценты на основе этих множителей
+  const currentBoostPct = (currentIncomeMult - 1) * 100;
+  const nextBoostPct = (nextIncomeMult - 1) * 100;
 
   return {
     ...req,
