@@ -1,11 +1,11 @@
-import { WEAPON_CASES } from './cases.data.js?v=5.4.3';
+import { WEAPON_CASES } from './cases.data.js?v=5.4.4';
 import {
   ECONOMY,
   factoryCostLog10,
   factoryCpsLog10,
   factoryUnlockForm,
   caseUnlockBreakthrough
-} from '../economy/economy.config.js?v=5.4.3';
+} from '../economy/economy.config.js?v=5.4.4';
 
 export const FACTORIES_PER_EPOCH = 1;
 export const CLASSIC_EPOCHS = 45;

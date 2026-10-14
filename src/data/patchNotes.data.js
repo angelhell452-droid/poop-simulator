@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.3';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.4';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.4 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.4: Полная цена формы',
+    titleEn: 'Patch 5.4.4: Full Form Cost',
+    badge: 'Баланс 5.4.4',
+    badgeEn: 'Balance 5.4.4',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '⚖️',
+        text: 'Цена формы снова полный пакет ~formBuySeconds CPS: порог — сумма уровней, K=3.8 масштабирует сложность вперёд, а не микродельту соседних форм.',
+        textEn: 'Form cost is again a full ~formBuySeconds CPS pack: threshold is the sum of levels; K=3.8 scales difficulty ahead, not tiny neighbor deltas.'
+      }
+    ]
+  },
   {
     version: 'v5.4.3 PRO',
     date: '14 Октября 2026',

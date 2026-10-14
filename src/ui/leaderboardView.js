@@ -1,9 +1,9 @@
-import { GAME } from '../core/state.js?v=5.4.3';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.3';
-import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.4.3';
-import { formatTaggedName } from '../guild/guildPresence.js?v=5.4.3';
-import { saveLocal } from '../save/saveManager.js?v=5.4.3';
-import { updateHUD } from './hudView.js?v=5.4.3';
+import { GAME } from '../core/state.js?v=5.4.4';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.4';
+import { CLOUD_SAVE_ENDPOINT, LEGACY_SAVE_ENDPOINT, getStoredAccount, syncToCloudDatabase } from '../save/cloudSync.js?v=5.4.4';
+import { formatTaggedName } from '../guild/guildPresence.js?v=5.4.4';
+import { saveLocal } from '../save/saveManager.js?v=5.4.4';
+import { updateHUD } from './hudView.js?v=5.4.4';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 let cachedLeaderboard = null;

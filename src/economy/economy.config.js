@@ -23,8 +23,9 @@ export const ECONOMY = {
   factoryFormStep: 850,
   // Сколько секунд модельного CPS стоит одна форма (диапазон ТЗ: 20–30).
   formBuySeconds: 25,
-  // Старт порога формы 1→2: factoryBaseCps * formBuySeconds.
-  // Дальше: formBaseCost * K^(stage / factoryFormStep) * живой множитель смывов.
+  // Цена одного уровня формы: factoryBaseCps * formBuySeconds (= formBaseCost).
+  // Порог формы i — накопленная сумма: base * flushMult * (r^i - 1)/(r - 1),
+  // r = K^(1/factoryFormStep). Прирост соседних уровней ≈ base * K^(stage/step) * flushMult.
   get formBaseCost() {
     return this.factoryBaseCps * this.formBuySeconds;
   },
