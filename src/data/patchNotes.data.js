@@ -1,6 +1,30 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.12';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.13';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.13 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.13: Смывы / ножи T2',
+    titleEn: 'Patch 5.4.13: Flushes / T2 Knives',
+    badge: 'Баланс 5.4.13',
+    badgeEn: 'Balance 5.4.13',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🧻',
+        text: 'Требование смывов к прорыву снижено вдвое (1-й прорыв: 5, дальше ceil(legacy/2) — было 25 → 13).',
+        textEn: 'Breakthrough flush requirement halved (1st: 5, then ceil(legacy/2) — was 25 → 13).'
+      },
+      {
+        type: 'balance',
+        icon: '🗡️',
+        text: 'Ножи кейсов: убран общий early-floor, из‑за которого T1=T2. Теперь джекпот T2 (pass 8) строго выше T1 (pass 5).',
+        textEn: 'Case knives: removed shared early floor that made T1=T2. T2 jackpot (pass 8) is now strictly above T1 (pass 5).'
+      }
+    ]
+  },
   {
     version: 'v5.4.12 PRO',
     date: '14 Октября 2026',

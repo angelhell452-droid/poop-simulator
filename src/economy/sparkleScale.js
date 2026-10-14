@@ -1,5 +1,5 @@
-import { ECONOMY } from './economy.config.js?v=5.4.12';
-import { bigPow, log10Of, pow10, rehydrateBig } from '../utils/big.js?v=5.4.12';
+import { ECONOMY } from './economy.config.js?v=5.4.13';
+import { bigPow, log10Of, pow10, rehydrateBig } from '../utils/big.js?v=5.4.13';
 
 /** Epoch 1 stays at x1. Later epochs use sparkleEpochBase from economy.config.js. */
 export function getSparkleEpochMult(epoch) {

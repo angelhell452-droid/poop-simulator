@@ -24,22 +24,23 @@ export const KNIFE_BALANCE_CONFIG = {
   passivePower: 0.28
 };
 
-import { mul } from '../utils/big.js?v=5.4.12';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.12';
+import { mul } from '../utils/big.js?v=5.4.13';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.13';
 
 /** Pool slot weights: common → jackpot (1%). */
 const CASE_SLOT_WEIGHTS = [0.28, 0.42, 0.58, 0.78, 1.0];
 
 /**
  * Target jackpot passiveMult for case tier (1-based).
- * Grows with K softer than factory CPS so knives never outrun the paired factory.
+ * Tier N jackpot is strictly above tier N-1 (no shared early floor that flattened T1=T2).
+ * Growth ~K^0.35 per tier — softer than factory CPS, clear step between cases.
  */
 export function caseTierJackpotPassive(tierNumber) {
   const tier = Math.max(1, Math.floor(Number(tierNumber) || 1));
-  const k = Math.max(1, Number(ECONOMY.tierGrowthK) || 3.8);
-  const scaled = Math.pow(k, (tier - 1) * 0.25);
-  const earlyFloor = tier <= 3 ? 5 : 1;
-  return Math.max(earlyFloor, Math.round(scaled));
+  const k = Math.max(1.01, Number(ECONOMY.tierGrowthK) || 3.8);
+  const tier1Jackpot = 5;
+  const perTier = Math.pow(k, 0.35);
+  return Math.max(tier, Math.round(tier1Jackpot * Math.pow(perTier, tier - 1)));
 }
 
 /**

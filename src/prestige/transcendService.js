@@ -1,30 +1,31 @@
-import { GAME } from '../core/state.js?v=5.4.12';
+import { GAME } from '../core/state.js?v=5.4.13';
 import { TALENTS } from '../data/talents.data.js';
-import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.12';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.4.12';
+import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.13';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.4.13';
 import { events } from '../core/events.js';
-import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.4.12';
-import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub, rehydrateBig } from '../utils/big.js?v=5.4.12';
-import { noteHorizonSpark } from '../economy/horizon.js?v=5.4.12';
-import { saveLocal } from '../save/saveManager.js?v=5.4.12';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.12';
-import { peakForm } from '../progression/unlocks.js?v=5.4.12';
-import { getBreakthroughBoostDetails } from '../economy/metaMultipliers.js?v=5.4.12';
-import { effectiveFormCost } from '../progression/evolutionService.js?v=5.4.12';
+import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.4.13';
+import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub, rehydrateBig } from '../utils/big.js?v=5.4.13';
+import { noteHorizonSpark } from '../economy/horizon.js?v=5.4.13';
+import { saveLocal } from '../save/saveManager.js?v=5.4.13';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.13';
+import { peakForm } from '../progression/unlocks.js?v=5.4.13';
+import { getBreakthroughBoostDetails } from '../economy/metaMultipliers.js?v=5.4.13';
+import { effectiveFormCost } from '../progression/evolutionService.js?v=5.4.13';
 
-export const BRIDGE_FLUSHES_NEEDED = 10;
+export const BRIDGE_FLUSHES_NEEDED = 5;
 
 /**
- * Dynamic infinite scaling for flush requirement:
- * 1st breakthrough (done === 0): strictly 10 flushes.
- * Subsequent breakthroughs (done > 0): 20 + Math.floor(done * 4) + Math.floor(Math.pow(done, 1.3))
+ * Dynamic infinite scaling for flush requirement (halved vs legacy curve):
+ * 1st breakthrough (done === 0): strictly 5 flushes.
+ * Subsequent: ceil((20 + done*4 + done^1.3) / 2)
  * relic_flush_req_reduction reduces requirement by -2% per level.
  */
 export function flushesNeededForBridge(transcends = (GAME.breakthroughCount ?? GAME.totalTranscend ?? 0)) {
   const done = Math.max(0, Number(transcends) || 0);
-  const base = done === 0
+  const raw = done === 0
     ? 10
     : (20 + Math.floor(done * 4) + Math.floor(Math.pow(done, 1.3)));
+  const base = Math.max(1, Math.ceil(raw / 2));
 
   const reductionLvl = getRelicLevel('relic_flush_req_reduction');
   if (reductionLvl > 0) {
