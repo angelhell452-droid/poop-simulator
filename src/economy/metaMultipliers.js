@@ -1,5 +1,6 @@
 import { GAME } from '../core/state.js?v=5.4.2';
 import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.4.2';
+import { ECONOMY } from './economy.config.js?v=5.4.2'; // проверьте относительный путь к конфигу
 
 function echoCount(phaseId) {
   const bag = GAME.phaseEcho || {};
@@ -66,7 +67,8 @@ import { getRelicLevel } from '../data/relics.data.js?v=5.4.2';
 
 export function getFlushIncomeMult() {
   const flushes = Math.max(0, GAME.flushCount ?? GAME.totalPrestiges ?? 0);
-  return 1 + 0.5 * flushes;
+  const FLUSH_POWER_BASE = ECONOMY.flushPowerBase || 1.18;
+  return Math.pow(FLUSH_POWER_BASE, flushes);
 }
 
 export function getBreakthroughBoostDetails(count = null) {
