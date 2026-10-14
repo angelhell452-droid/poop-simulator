@@ -1,31 +1,32 @@
-import { GAME } from '../core/state.js?v=5.4.4';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.4';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.4';
-import { drawPlunger } from '../utils/icons.js?v=5.4.4';
-import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.4.4';
-import { getAffordableEvoInfo } from '../economy/costs.js?v=5.4.4';
-import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.4.4';
+import { GAME } from '../core/state.js?v=5.4.5';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.5';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.5';
+import { drawPlunger } from '../utils/icons.js?v=5.4.5';
+import { getPassiveIncome, getClickPower, getClickBreakdown, getPassiveBreakdown, getActiveBuffsList, getTurboClickMult } from '../economy/production.js?v=5.4.5';
+import { getAffordableEvoInfo } from '../economy/costs.js?v=5.4.5';
+import { effectiveFormCost, formBiomassCredit } from '../progression/evolutionService.js?v=5.4.5';
 import { getNextMilestoneGoal } from '../progression/milestoneService.js';
-import { liveCps } from '../core/gameLoop.js?v=5.4.4';
-import { saveLocal } from '../save/saveManager.js?v=5.4.4';
-import { updateFactoryButtons } from './factoryView.js?v=5.4.4';
-import { updateTalentButtons } from './talentView.js?v=5.4.4';
+import { liveCps } from '../core/gameLoop.js?v=5.4.5';
+import { saveLocal } from '../save/saveManager.js?v=5.4.5';
+import { updateFactoryButtons } from './factoryView.js?v=5.4.5';
+import { updateTalentButtons } from './talentView.js?v=5.4.5';
 import { updateShopButtons } from './shopView.js';
-import { updateCasesButtons } from './casesView.js?v=5.4.4';
-import { updateSmartAssistant } from './smartAssistantView.js?v=5.4.4';
+import { updateCasesButtons } from './casesView.js?v=5.4.5';
+import { updateSmartAssistant } from './smartAssistantView.js?v=5.4.5';
 import { updateTutorialQuestWidget } from './tutorialView.js';
 import { updateBeginnerGuide } from './beginnerGuideView.js';
 import { ARCHETYPES } from '../progression/archetypes.js';
-import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.4.4';
+import { getPhaseForStage, phaseLabel } from '../progression/phases.data.js?v=5.4.5';
 import { isBoutiqueUnlocked, isCasesUnlocked, isRelicSectionUnlocked, notePeakForm, peakForm } from '../progression/unlocks.js';
-import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.4';
-import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.4.4';
-import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.4.4';
-import { showKnifeToast } from './characterInventoryView.js?v=5.4.4';
+import { updatePrestigeModalRealtime, updateTranscendModalRealtime, openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.5';
+import { getPrestigeRewardBreakdown } from '../prestige/prestigeService.js?v=5.4.5';
+import { getTranscendRewardBreakdown } from '../prestige/transcendService.js?v=5.4.5';
+import { showKnifeToast } from './characterInventoryView.js?v=5.4.5';
 import { getConfirmedVip } from '../economy/pace.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { hasRelic } from '../data/relics.data.js?v=5.4.4';
+import { hasRelic } from '../data/relics.data.js?v=5.4.5';
 import { archetypeBadge, archetypeDesc, archetypeName, evolutionDisplayDesc, evolutionDisplayName } from '../i18n/localize.js';
+import { gte, isBig, log10Of, lt, sub } from '../utils/big.js?v=5.4.5';
 
 const FLUSH_COOLDOWN = 35000;
 
@@ -196,10 +197,25 @@ export function updateHUD() {
     } else {
       const floorCost = stage <= 0 ? 0 : effectiveFormCost(stage);
       const nextCost = effectiveFormCost(stage + 1);
-      const span = Math.max(1, nextCost - floorCost);
-      const into = Math.max(0, Math.min(span, earned - floorCost));
-      const left = Math.max(0, span - into);
-      const pct = Math.max(0, Math.min(100, (into / span) * 100));
+      let span = sub(nextCost, floorCost);
+      if (!gte(span, 1)) span = 1;
+      const progress = sub(earned, floorCost);
+      const into = gte(progress, 0) ? (lt(progress, span) ? progress : span) : 0;
+      const left = gte(sub(span, into), 0) ? sub(span, into) : 0;
+      let pct = 0;
+      if (isBig(into) || isBig(span)) {
+        const li = log10Of(into);
+        const ls = log10Of(span);
+        if (Number.isFinite(li) && Number.isFinite(ls) && ls > -Infinity) {
+          pct = Math.max(0, Math.min(100, Math.pow(10, li - ls) * 100));
+        } else if (gte(into, span)) {
+          pct = 100;
+        }
+      } else {
+        const s = Number(span) || 1;
+        const n = Number(into) || 0;
+        pct = Math.max(0, Math.min(100, (n / s) * 100));
+      }
       evoFill.style.width = `${pct}%`;
       evoLabel.textContent = `${formatNumber(into)} / ${formatNumber(span)}`;
       if (evoLeft) evoLeft.textContent = t('hud.evoLeft', { n: formatNumber(left) });
@@ -524,12 +540,12 @@ export function initAutomationToggleListeners() {
   document.getElementById('btnLazyBossAttack')?.addEventListener('click', async () => {
     const tickets = GAME.guildTickets || 0;
     if (tickets <= 0) {
-      const { toast } = await import('../utils/toast.js?v=5.4.4');
+      const { toast } = await import('../utils/toast.js?v=5.4.5');
       toast('Нет билетов вклада');
       return;
     }
-    const { socialRequest } = await import('../save/cloudSync.js?v=5.4.4');
-    const { toast } = await import('../utils/toast.js?v=5.4.4');
+    const { socialRequest } = await import('../save/cloudSync.js?v=5.4.5');
+    const { toast } = await import('../utils/toast.js?v=5.4.5');
     const data = await socialRequest('guild_ticket', { method: 'POST', body: { tickets } });
     if (data?.success) {
       GAME.guildTickets = 0;

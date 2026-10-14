@@ -1,15 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.4';
+import { GAME } from '../core/state.js?v=5.4.5';
 import { TALENTS } from '../data/talents.data.js';
-import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.4';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.4.4';
+import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.5';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.4.5';
 import { events } from '../core/events.js';
-import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.4.4';
-import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub, rehydrateBig } from '../utils/big.js?v=5.4.4';
-import { noteHorizonSpark } from '../economy/horizon.js?v=5.4.4';
-import { saveLocal } from '../save/saveManager.js?v=5.4.4';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.4';
-import { peakForm } from '../progression/unlocks.js?v=5.4.4';
-import { getBreakthroughBoostDetails } from '../economy/metaMultipliers.js?v=5.4.4';
+import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.4.5';
+import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub, rehydrateBig } from '../utils/big.js?v=5.4.5';
+import { noteHorizonSpark } from '../economy/horizon.js?v=5.4.5';
+import { saveLocal } from '../save/saveManager.js?v=5.4.5';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.5';
+import { peakForm } from '../progression/unlocks.js?v=5.4.5';
+import { getBreakthroughBoostDetails } from '../economy/metaMultipliers.js?v=5.4.5';
+import { effectiveFormCost } from '../progression/evolutionService.js?v=5.4.5';
 
 export const BRIDGE_FLUSHES_NEEDED = 10;
 
@@ -171,6 +172,14 @@ export function executeTranscend() {
   // На Прорыве заводы НЕ сбрасываются ("без сброса заводов!").
   GAME.lifetimeBiomassInCurrentCycle = 0;
   GAME.breakthroughProgress = 0;
+
+  // Кэп излишка cycleBiomass: иначе syncEvolutionToBiomass одним тиком
+  // проталкивает сотни форм за запас, накопленный у гейта прорыва.
+  const stage = Math.max(0, Number(GAME.evoStage) || 0);
+  const floor = effectiveFormCost(stage);
+  if (gte(GAME.cycleBiomass || 0, floor)) {
+    GAME.cycleBiomass = floor;
+  }
 
   saveLocal();
   requestCloudSync(500);

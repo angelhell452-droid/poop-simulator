@@ -1,6 +1,36 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.4';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.5';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.5 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.5: Прорыв без пролёта форм',
+    titleEn: 'Patch 5.4.5: Breakthrough Without Form Skip',
+    badge: 'Фикс 5.4.5',
+    badgeEn: 'Fix 5.4.5',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '🔒',
+        text: 'На Прорыве излишек cycleBiomass кэпится до порога текущей формы — больше нет мгновенного пролёта сотен уровней.',
+        textEn: 'On Breakthrough, excess cycleBiomass is capped to the current form threshold — no more instant skip of hundreds of forms.'
+      },
+      {
+        type: 'ui',
+        icon: '📊',
+        text: 'Полоска формы считает span через big.js — больше нет NaN и ложного «0» на прогрессе.',
+        textEn: 'Form XP bar uses big.js for span — no more NaN or false “0” on the progress label.'
+      },
+      {
+        type: 'fix',
+        icon: '🛡️',
+        text: 'calcEvolutionCost защищён от Infinity/NaN (flushMult через bigPow), чтобы цена не схлопывалась в 1.',
+        textEn: 'calcEvolutionCost guards against Infinity/NaN (flushMult via bigPow) so form cost cannot collapse to 1.'
+      }
+    ]
+  },
   {
     version: 'v5.4.4 PRO',
     date: '14 Октября 2026',

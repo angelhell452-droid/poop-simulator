@@ -1,13 +1,13 @@
-import { GAME } from '../core/state.js?v=5.4.4';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.4';
+import { GAME } from '../core/state.js?v=5.4.5';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.5';
 import { TALENTS } from '../data/talents.data.js';
 import { events } from '../core/events.js';
-import { bigPow, gte, mul } from '../utils/big.js?v=5.4.4';
+import { bigPow, gte, mul } from '../utils/big.js?v=5.4.5';
 import { hasPerk } from '../data/perks.data.js';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.4';
-import { saveLocal } from '../save/saveManager.js?v=5.4.4';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.4';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.4';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.5';
+import { saveLocal } from '../save/saveManager.js?v=5.4.5';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.5';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.5';
 
 export function getPrestigeRequirement() {
   const flushes = GAME.flushCount ?? GAME.totalPrestiges ?? 0;

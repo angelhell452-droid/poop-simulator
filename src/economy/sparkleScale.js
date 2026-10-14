@@ -1,4 +1,4 @@
-import { ECONOMY } from './economy.config.js?v=5.4.4';
+import { ECONOMY } from './economy.config.js?v=5.4.5';
 
 /** Epoch 1 stays at x1. Later epochs use sparkleEpochBase from economy.config.js. */
 export function getSparkleEpochMult(epoch) {

@@ -24,7 +24,7 @@ export const KNIFE_BALANCE_CONFIG = {
   passivePower: 0.28
 };
 
-import { mul } from '../utils/big.js?v=5.4.4';
+import { mul } from '../utils/big.js?v=5.4.5';
 
 /**
  * Возвращает фактический базовый множитель клика ножа с учётом глобального баланса.
