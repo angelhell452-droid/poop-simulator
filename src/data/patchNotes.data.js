@@ -1,6 +1,36 @@
-﻿import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.2';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.3';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.3 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.3: Идеальная Гармония',
+    titleEn: 'Patch 5.4.3: Ideal Harmony',
+    badge: 'Баланс 5.4.3',
+    badgeEn: 'Balance 5.4.3',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '⚖️',
+        text: 'Единая ось в economy.config.js: заводы и формы на K=3.8, смывы на flushPowerBase^N, блестяшки ∝ CPS^0.8.',
+        textEn: 'One axis in economy.config.js: factories and forms use K=3.8, flushes use flushPowerBase^N, sparkles scale with CPS^0.8.'
+      },
+      {
+        type: 'fix',
+        icon: '🔒',
+        text: 'Кейс нельзя открыть раньше своей формы: peakForm() строго >= reqForm.',
+        textEn: 'Cases cannot open early: peakForm() must be >= reqForm.'
+      },
+      {
+        type: 'ui',
+        icon: '📦',
+        text: 'На кейсе показывается форма и прорыв по оси гармонии (шаг ~1100 форм после онбординга).',
+        textEn: 'Case cards show harmony form and breakthrough (~1100 form steps after onboarding).'
+      }
+    ]
+  },
   {
     version: 'v5.4.2 PRO',
     date: '13 Октября 2026',

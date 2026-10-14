@@ -87,7 +87,7 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
 
     if (action === "version") {
       let worldReset = 3;
-      let patchVersion = "5.4.2";
+      let patchVersion = "5.4.3";
       try {
         await env.DB.prepare(`
           CREATE TABLE IF NOT EXISTS server_config (
@@ -101,10 +101,10 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
         if (rows && rows.results) {
           for (const row of rows.results) {
             if (row.config_key === "world_reset") worldReset = Number(row.config_value) || 3;
-            if (row.config_key === "patch_version") patchVersion = String(row.config_value || "5.4.2");
+            if (row.config_key === "patch_version") patchVersion = String(row.config_value || "5.4.3");
           }
         }
-        const minPatch = "5.4.2";
+        const minPatch = "5.4.3";
         const older = String(patchVersion).split(".").map((n) => parseInt(n, 10) || 0);
         const floor = minPatch.split(".").map((n) => parseInt(n, 10) || 0);
         let below = false;

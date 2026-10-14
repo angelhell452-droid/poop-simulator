@@ -1,21 +1,22 @@
 import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.2';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.2';
-import { KNIVES } from '../data/knives.data.js?v=5.4.2';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.2';
-import { saveLocal } from '../save/saveManager.js?v=5.4.2';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.2';
-import { updateHUD } from './hudView.js?v=5.4.2';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.2';
+import { GAME } from '../core/state.js?v=5.4.3';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.3';
+import { KNIVES } from '../data/knives.data.js?v=5.4.3';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.3';
+import { saveLocal } from '../save/saveManager.js?v=5.4.3';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.3';
+import { updateHUD } from './hudView.js?v=5.4.3';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.3';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.2';
-import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.2';
-import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.2';
-import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.2';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.3';
+import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.3';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.3';
+import { caseUnlockForm, caseUnlockBreakthrough } from '../economy/economy.config.js?v=5.4.3';
+import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.3';
 import { TALENTS } from '../data/talents.data.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.2';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.3';
 import { KNIFE_RARITIES, getRarityMeta } from '../data/knifeRarities.config.js';
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -62,9 +63,19 @@ export function casePlungerCost(caseObj) {
   return Math.max(0, Number(caseObj?.costPlungers) || 0);
 }
 
+/** Эффективная форма кейса по оси гармонии (не сырой reqForm из старых данных). */
+export function getCaseReqForm(caseObj) {
+  const idx = Math.max(0, getCaseIndex(caseObj) - 1);
+  return caseUnlockForm(idx);
+}
+
+export function getCaseReqBreakthrough(caseObj) {
+  return caseUnlockBreakthrough(getCaseReqForm(caseObj));
+}
+
 export function caseFormLabel(caseObj) {
-  const form = formatNumber(Math.max(1, Number(caseObj?.reqForm) || 1));
-  const bt = formatNumber(Math.max(0, Number(caseObj?.reqBreakthrough) || 0));
+  const form = formatNumber(getCaseReqForm(caseObj));
+  const bt = formatNumber(getCaseReqBreakthrough(caseObj));
   return t('cases.formLevel', { form, bt });
 }
 
@@ -81,11 +92,20 @@ export function getCaseLockInfo(caseObj) {
   const cid = typeof caseObj === 'string' ? caseObj : caseObj?.id;
   const index = WEAPON_CASES.findIndex(c => c.id === cid);
   if (index < 0) {
-    return { isUnlocked: true, hasPrevKnife: true, hasBreakthrough: true, prevIndex: 0, reqBreakthrough: 0 };
+    return {
+      isUnlocked: true,
+      hasPrevKnife: true,
+      hasBreakthrough: true,
+      hasForm: true,
+      prevIndex: 0,
+      reqBreakthrough: 0,
+      reqForm: 1
+    };
   }
-  const targetCase = WEAPON_CASES[index];
-  const reqBreakthrough = Math.max(0, Number(targetCase?.reqBreakthrough) || 0);
+  const reqForm = caseUnlockForm(index);
+  const reqBreakthrough = caseUnlockBreakthrough(reqForm);
   const currentBreakthrough = getBreakthroughCount();
+  const currentForm = peakForm();
 
   // relic_gate_of_eternity: Навсегда открывает Кейс №45 (0-indexed 44)
   if ((index === 44 || index === WEAPON_CASES.length - 1) && hasRelic('relic_gate_of_eternity')) {
@@ -93,18 +113,23 @@ export function getCaseLockInfo(caseObj) {
       isUnlocked: true,
       hasPrevKnife: true,
       hasBreakthrough: true,
+      hasForm: true,
       prevIndex: index,
-      reqBreakthrough: 0
+      reqBreakthrough: 0,
+      reqForm
     };
   }
 
   const hasBreakthrough = currentBreakthrough >= reqBreakthrough;
+  const hasForm = currentForm >= reqForm;
   return {
-    isUnlocked: hasBreakthrough,
+    isUnlocked: hasBreakthrough && hasForm,
     hasPrevKnife: true,
     hasBreakthrough,
+    hasForm,
     prevIndex: index,
-    reqBreakthrough
+    reqBreakthrough,
+    reqForm
   };
 }
 
@@ -115,6 +140,10 @@ export function caseIsOpen(caseObj) {
 export function getCaseLockReason(caseObj) {
   const info = getCaseLockInfo(caseObj);
   if (info.isUnlocked) return '';
+  if (!info.hasForm) {
+    return t('cases.lockNeedForm', { form: formatNumber(info.reqForm) })
+      || `Нужна форма ${formatNumber(info.reqForm)}`;
+  }
   const reqStr = formatNumber(info.reqBreakthrough);
   return t('cases.lockNeedBreakthrough', { req: reqStr }) || `Требуется ${reqStr} Прорыв`;
 }
@@ -123,6 +152,10 @@ export function getCaseLockAlert(caseObj) {
   const idx = getCaseIndex(caseObj);
   const info = getCaseLockInfo(caseObj);
   if (info.isUnlocked) return '';
+  if (!info.hasForm) {
+    return t('cases.lockedFormAlert', { idx, form: formatNumber(info.reqForm) })
+      || `Кейс #${idx} заблокирован! Нужна форма ${formatNumber(info.reqForm)} (сейчас ${formatNumber(peakForm())})`;
+  }
   const reqStr = formatNumber(info.reqBreakthrough);
   return t('cases.lockedBreakthroughAlert', { idx, req: reqStr }) || `Кейс #${idx} заблокирован! Требуется ${reqStr} Прорыв`;
 }
@@ -259,6 +292,11 @@ function casesInEpochOrder() {
 }
 
 function assertCaseReady(caseObj, count = 1) {
+  // Жёсткий замок гармонии: нельзя открыть кейс из будущего даже при избытке блестяшек.
+  if (peakForm() < getCaseReqForm(caseObj)) {
+    alert(getCaseLockAlert(caseObj));
+    return false;
+  }
   if (!caseIsOpen(caseObj)) {
     const alertMsg = getCaseLockAlert(caseObj) || `Кейс #${getCaseIndex(caseObj)} заблокирован! ${getCaseLockReason(caseObj)}`;
     alert(alertMsg);

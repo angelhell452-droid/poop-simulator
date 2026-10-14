@@ -1,37 +1,88 @@
 /**
- * Ручки дохода блестяшек.
- * Меняй числа здесь: крит и метеорит читают этот файл.
- * Сила клика и пассив ножей — в src/data/knifeBalance.config.js, не здесь.
+ * Единая ось баланса «Идеальная Гармония».
+ * Меняй числа здесь — формы, заводы, смывы и блестяшки читают этот файл.
+ * Сила клика/пассива ножей — в src/data/knifeBalance.config.js.
  *
- * Эпоха 1 всегда x1. Каждая следующая эпоха умножает блестяшки на sparkleEpochBase.
- * Эпоха = 500 форм. Форма 9430 — эпоха 19, то есть база в 18-й степени.
+ * Форма — корень прогрессии. Цена формы ≈ formBuySeconds секунд модельного CPS.
+ * Заводы и формы растут на tierGrowthK за каждый шаг factoryFormStep форм.
+ * Кейсы: 1 новый на caseFormStep форм (после раннего онбординга).
+ * Смывы: flushPowerBase ^ число_смывов → «Эхо смыва».
  */
 export const ECONOMY = {
-  // Множитель блестяшек за эпоху. 1.5 мягче, чем 1.74: на эпохе 19 доход падает примерно в 14 раз.
-  // Выше — кейсы поздней игры копятся за минуты. Ниже — снова не хватает на кейс своей формы.
+  // --- Смывы ---
+  // Эхо смыва: Math.pow(flushPowerBase, flushes). 1.18 = +18% к доходу за каждый смыв.
+  flushPowerBase: 1.18,
+
+  // --- Степенная ось (заводы + формы) ---
+  // Множитель роста стоимости/дохода за один тир завода.
+  tierGrowthK: 3.8,
+  // База первой фабрики (тир 1).
+  factoryBaseCost: 20,
+  factoryBaseCps: 80,
+  // Новый завод каждые N форм (диапазон ТЗ: 700–1000).
+  factoryFormStep: 850,
+  // Сколько секунд модельного CPS стоит одна форма (диапазон ТЗ: 20–30).
+  formBuySeconds: 25,
+  // Старт порога формы 1→2: factoryBaseCps * formBuySeconds.
+  // Дальше: formBaseCost * K^(stage / factoryFormStep) * живой множитель смывов.
+  get formBaseCost() {
+    return this.factoryBaseCps * this.formBuySeconds;
+  },
+
+  // --- Кейсы ---
+  // После 6-го кейса шаг reqForm (диапазон ТЗ: 1000–1200).
+  caseFormStep: 1100,
+  // Форма якоря после раннего блока (кейсы 0..5 остаются плотнее).
+  caseFormAnchor: 950,
+
+  // --- Блестяшки ---
+  // Эпоха 1 = x1. Каждая следующая эпоха * sparkleEpochBase.
   sparkleEpochBase: 1.5,
-
-  // Крит: 1 + прорывы * шаг. 0.25 значит +25% за каждый прорыв.
   sparkleBreakthroughStep: 0.25,
-
-  // Крит: 1 + (звёзды ножа - 1) * шаг. 0.05 значит +5% за каждую звезду после первой.
   sparkleStarStep: 0.05,
+  // SparklesIncome ∝ CPS^sparkleCpsExponent. Нормализация к sparkleCpsRef (CPS тира 1).
+  sparkleCpsExponent: 0.8,
+  sparkleCpsRef: 80,
 
-  // Кошелёк метеорита до эпохи. Эпоха умножает его так же, как крит.
-  // Выше — метеорит снова печатает миллиарды. Ниже — метеорит почти не кормит.
+  // --- Метеориты ---
   meteorPurseBase: 5400,
-
-  // Случайная доля кошелька: от min до max. Сейчас 10–18%.
   meteorSliceMin: 0.10,
   meteorSliceMax: 0.18,
-
-  // Доля эпохи, уже пройденная формой, добавляет до этого бонуса. 0.5 = до +50% к концу эпохи.
   meteorEpochWalk: 0.5,
-
-  // Смывы добавляют бонус, но он никогда не превышает это число. 0.35 = потолок +35%.
-  meteorFlushCap: 0.35,
-
-  // --- НОВЫЙ ПАРАМЕТР ---
-  // Экспоненциальный базовый множитель дохода за Смыв (1.18 = +18% геометрического роста за каждый уровень)
-  flushPowerBase: 1.18
+  meteorFlushCap: 0.35
 };
+
+/** Лог10 базовой цены завода тира k (1-based). */
+export function factoryCostLog10(tierNumber) {
+  const k = Math.max(1, Math.floor(Number(tierNumber) || 1));
+  return Math.log10(ECONOMY.factoryBaseCost) + (k - 1) * Math.log10(ECONOMY.tierGrowthK);
+}
+
+/** Лог10 базового CPS завода тира k (1-based). */
+export function factoryCpsLog10(tierNumber) {
+  const k = Math.max(1, Math.floor(Number(tierNumber) || 1));
+  return Math.log10(ECONOMY.factoryBaseCps) + (k - 1) * Math.log10(ECONOMY.tierGrowthK);
+}
+
+/** Целевая форма разблокировки завода (1-based form). */
+export function factoryUnlockForm(tierNumber) {
+  const k = Math.max(1, Math.floor(Number(tierNumber) || 1));
+  if (k <= 1) return 1;
+  return 1 + Math.round((k - 1) * ECONOMY.factoryFormStep);
+}
+
+/**
+ * Целевая форма кейса по индексу (0-based).
+ * Первые 6 кейсов — плотный онбординг; дальше шаг caseFormStep.
+ */
+export function caseUnlockForm(caseIndex) {
+  const idx = Math.max(0, Math.floor(Number(caseIndex) || 0));
+  const early = [1, 40, 150, 350, 600, 950];
+  if (idx < early.length) return early[idx];
+  return Math.round(ECONOMY.caseFormAnchor + (idx - (early.length - 1)) * ECONOMY.caseFormStep);
+}
+
+/** Минимальный прорыв, чтобы форма кейса была достижима: floor((form-1)/1000). */
+export function caseUnlockBreakthrough(reqForm) {
+  return Math.max(0, Math.floor((Math.max(1, reqForm) - 1) / 1000));
+}

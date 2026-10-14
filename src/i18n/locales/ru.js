@@ -427,6 +427,8 @@ export default {
   'cases.lockNeedBoth': 'Нужен нож из #{prev} И {req}-й Прорыв',
   'cases.lockNeedKnife': 'Нужен нож из #{prev}',
   'cases.lockNeedBreakthrough': 'Нужен {req}-й Прорыв',
+  'cases.lockNeedForm': 'Нужна форма {form}',
+  'cases.lockedFormAlert': 'Кейс #{idx} заблокирован! Нужна форма {form}.',
   'cases.lockedBothAlert': 'Чтобы открыть Кейс #{idx}, выбейте хотя бы один нож из Кейса #{prev} и достигните {req}-го Прорыва.',
   'cases.lockedKnifeAlert': 'Чтобы открыть Кейс #{idx}, выбейте хотя бы один нож из Кейса #{prev}.',
   'cases.lockedBreakthroughAlert': 'Чтобы открыть Кейс #{idx}, достигните {req}-го Прорыва.',

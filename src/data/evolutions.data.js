@@ -1,7 +1,9 @@
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.2';
-import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.2';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.2';
-import { isBig, mul, bigPow } from '../utils/big.js?v=5.4.2';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.3';
+import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.3';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.3';
+import { isBig, mul, bigPow } from '../utils/big.js?v=5.4.3';
+import { GAME } from '../core/state.js?v=5.4.3';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.3';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
@@ -52,18 +54,21 @@ export const ENTITIES = [
   "Коллапс", "Сингуляр", "Суперструна", "Квазар", "Парадокс", "Создатель", "Архитектор", "Абсолют", "Вулкан", "Дракон", "Архангел", "Демиург"
 ];
 
-// Cost climbs about x1000 inside one epoch.
-// Epoch 1 climbs x6. Epochs 2–4 double. From epoch 5 each epoch adds x1.25, with no drop on the boundary.
+/**
+ * Порог cycleBiomass для формы (stage index i).
+ * Ось гармонии: formBaseCost * K^(stage / factoryFormStep) * flushPowerBase^flushes.
+ * Множитель смывов держит темп ~formBuySeconds секунд CPS после престижа.
+ */
 export function calcEvolutionCost(i) {
   if (i <= 0) return 0;
-  const phase = getPhaseForStage(i);
-  const local = (i - (phase.formStart - 1)) / PHASE_FORMS;
-  const climb = Math.pow(1000, Math.min(1, Math.max(0, local)));
-  const stretch = Math.pow(i + 1, 1.25);
-  const cost = mul(phase.floor, climb);
-  const stretched = mul(cost, stretch);
-  if (!isBig(stretched) && Number.isFinite(stretched)) return Math.max(1, Math.floor(stretched));
-  return stretched;
+  const stage = Math.max(0, Number(i) || 0);
+  const tierFloat = stage / Math.max(1, ECONOMY.factoryFormStep);
+  const flushes = Math.max(0, Number(GAME?.flushCount ?? GAME?.totalPrestiges ?? 0) || 0);
+  const flushMult = Math.pow(Math.max(1.01, ECONOMY.flushPowerBase || 1.18), flushes);
+  const base = ECONOMY.formBaseCost;
+  const scaled = mul(mul(base, bigPow(ECONOMY.tierGrowthK, tierFloat)), flushMult);
+  if (!isBig(scaled) && Number.isFinite(scaled)) return Math.max(1, Math.floor(scaled));
+  return scaled;
 }
 
 export function calcEvolutionMult(i) {
@@ -145,10 +150,9 @@ export const EVOLUTIONS = new Proxy(rawEvolutions, {
     if (typeof prop === 'string') {
       const idx = Number(prop);
       if (Number.isInteger(idx) && idx >= 0) {
-        if (idx < target.length) {
-          return target[idx];
-        }
-        return createEvolutionObject(idx);
+        const row = idx < target.length ? target[idx] : createEvolutionObject(idx);
+        // Живая цена формы: зависит от числа смывов (ось гармонии).
+        return { ...row, cost: calcEvolutionCost(idx) };
       }
     }
     return target[prop];

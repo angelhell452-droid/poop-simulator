@@ -1,13 +1,13 @@
-import { GAME } from '../core/state.js?v=5.4.2';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.2';
+import { GAME } from '../core/state.js?v=5.4.3';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.3';
 import { TALENTS } from '../data/talents.data.js';
 import { events } from '../core/events.js';
-import { bigPow, gte, mul } from '../utils/big.js?v=5.4.2';
+import { bigPow, gte, mul } from '../utils/big.js?v=5.4.3';
 import { hasPerk } from '../data/perks.data.js';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.2';
-import { saveLocal } from '../save/saveManager.js?v=5.4.2';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.2';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.2';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.3';
+import { saveLocal } from '../save/saveManager.js?v=5.4.3';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.3';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.3';
 
 export function getPrestigeRequirement() {
   const flushes = GAME.flushCount ?? GAME.totalPrestiges ?? 0;
@@ -44,13 +44,11 @@ export function getPrestigeRewardBreakdown() {
   const recycleMult = hasPerk('perk_paper_recycling') ? 1.20 : 1;
 
   const totalGain = req.isMet ? Math.max(1, Math.round(pack * flushTalentBonus * vipMult * recycleMult)) : 0;
-  
-  // 1. Сначала вычисляем множители
+
+  // Единая ось: Math.pow(flushPowerBase, flushes)
   const FLUSH_POWER_BASE = ECONOMY.flushPowerBase || 1.18;
   const currentIncomeMult = Math.pow(FLUSH_POWER_BASE, req.flushes);
   const nextIncomeMult = Math.pow(FLUSH_POWER_BASE, req.flushes + 1);
-
-  // 2. Затем вычисляем проценты на основе этих множителей
   const currentBoostPct = (currentIncomeMult - 1) * 100;
   const nextBoostPct = (nextIncomeMult - 1) * 100;
 

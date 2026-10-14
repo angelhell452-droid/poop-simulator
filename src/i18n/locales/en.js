@@ -427,6 +427,8 @@ export default {
   'cases.lockNeedBoth': 'Need knife from #{prev} AND Breakthrough {req}',
   'cases.lockNeedKnife': 'Need knife from #{prev}',
   'cases.lockNeedBreakthrough': 'Need Breakthrough {req}',
+  'cases.lockNeedForm': 'Need form {form}',
+  'cases.lockedFormAlert': 'Case #{idx} is locked! Need form {form}.',
   'cases.lockedBothAlert': 'To unlock Case #{idx}, drop at least one knife from Case #{prev} and reach Breakthrough {req}.',
   'cases.lockedKnifeAlert': 'To unlock Case #{idx}, drop at least one knife from Case #{prev}.',
   'cases.lockedBreakthroughAlert': 'To unlock Case #{idx}, reach Breakthrough {req}.',

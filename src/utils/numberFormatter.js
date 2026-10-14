@@ -1,17 +1,13 @@
-import { isBig, log10Of, rehydrateBig } from './big.js?v=5.4.2';
+import { isBig, log10Of, rehydrateBig } from './big.js?v=5.4.3';
 
 function mantissaDecimals(absMantissa, decimals) {
   return absMantissa >= 10 ? 1 : decimals;
 }
 
-//function roundMantissa(scaled, decimals) {
-//  return Number(scaled.toFixed(mantissaDecimals(Math.abs(scaled), decimals)));
-//}
 function roundMantissa(scaled, decimals) {
-  // Вычисляем количество знаков после запятой
+  // Truncate instead of round so 191500 stays 191.5k (not 192k).
   const dec = mantissaDecimals(Math.abs(scaled), decimals);
   const factor = Math.pow(10, dec);
-  // Используем Math.trunc для отсекания вместо округления
   return Math.trunc(scaled * factor) / factor;
 }
 
@@ -35,17 +31,13 @@ export function formatNumber(rawNum, decimals = 2) {
   if (num === null || num === undefined || isNaN(num)) return '0';
   if (!isFinite(num) || num >= 1.7976931348623157e308) return '1.79e308 (MAX)';
   if (num === 0) return '0';
-  
+
   const abs = Math.abs(num);
   if (abs < 0.001) return '0';
- // if (abs < 1000) {
- //   if (Math.abs(num - Math.round(num)) < 1e-6) return String(Math.round(num));
- //   return Number(num.toFixed(1)).toString();
- // }
- if (abs < 1000) {
-  if (Math.abs(num - Math.round(num)) < 1e-6) return String(Math.round(num));
-  return String(Math.trunc(num * 10) / 10);
-}
+  if (abs < 1000) {
+    if (Math.abs(num - Math.round(num)) < 1e-6) return String(Math.round(num));
+    return String(Math.trunc(num * 10) / 10);
+  }
 
   const units = [
     'k', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No',

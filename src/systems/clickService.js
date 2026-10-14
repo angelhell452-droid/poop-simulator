@@ -1,16 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.2';
+import { GAME } from '../core/state.js?v=5.4.3';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.2';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.2';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.2';
-import { getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.2';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.2';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.2';
-import { takeClickBudget } from './autoclickService.js?v=5.4.2';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.3';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.3';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.3';
+import { getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.3';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.3';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.3';
+import { takeClickBudget } from './autoclickService.js?v=5.4.3';
 import { events } from '../core/events.js';
-import { add, gainBio, mul } from '../utils/big.js?v=5.4.2';
+import { add, gainBio, mul, log10Of } from '../utils/big.js?v=5.4.3';
 import { hasPerk } from '../data/perks.data.js';
-import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.2';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.3';
 
 export let pendingClicks = 0;
 
@@ -61,7 +61,11 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const breakthroughMult = 1 + bCount * ECONOMY.sparkleBreakthroughStep;
   const epochMult = getSparkleEpochMult(currentEpoch);
   const starMult = 1 + Math.max(0, knifeStar - 1) * ECONOMY.sparkleStarStep;
-  const progScale = breakthroughMult * epochMult * starMult;
+  // Гармония: SparklesIncome ∝ CPS^0.8 (норма к CPS тира 1).
+  const cpsNow = getPassiveIncome();
+  const cpsLog = Math.max(0, log10Of(cpsNow) - Math.log10(Math.max(1, ECONOMY.sparkleCpsRef || 80)));
+  const cpsSparkleMult = Math.pow(10, cpsLog * (ECONOMY.sparkleCpsExponent || 0.8));
+  const progScale = breakthroughMult * epochMult * starMult * Math.max(0.25, cpsSparkleMult);
 
   const sparklesPerProc = Math.max(1, Math.round(knifeSparkleMult * gamblerMult * progScale));
 

@@ -1,4 +1,11 @@
-import { WEAPON_CASES } from './cases.data.js?v=5.4.2';
+import { WEAPON_CASES } from './cases.data.js?v=5.4.3';
+import {
+  ECONOMY,
+  factoryCostLog10,
+  factoryCpsLog10,
+  factoryUnlockForm,
+  caseUnlockBreakthrough
+} from '../economy/economy.config.js?v=5.4.3';
 
 export const FACTORIES_PER_EPOCH = 1;
 export const CLASSIC_EPOCHS = 45;
@@ -12,36 +19,17 @@ export const TIER_TITLES = [
 ];
 
 /**
- * Логарифмическая шкала базовой цены завода по тирам.
- * Тир 1 = 20 биомассы.
- * Тир 45 = 1e1050 биомассы (500+ Прорыв / финальные рубежи).
- * При tier > 45 формула масштабируется дальше в бесконечность.
+ * Лог10 цены завода. Ось гармонии: BaseCost * K^(tier-1).
  */
 export function getFactoryLogCost(tierNumber) {
-  const k = Math.max(1, Number(tierNumber) || 1);
-  if (k === 1) return Math.log10(20);
-  if (k === 2) return Math.log10(15000);
-  if (k === 3) return Math.log10(1500000);
-  if (k === 4) return 8.37;
-  if (k === 5) return 13.0;
-  // Сглаживание экспоненты для Т6+ (шаг +3.75 порядка на тир для сбалансированной закупки через MAX)
-  return 13.0 + (k - 5) * 3.75;
+  return factoryCostLog10(tierNumber);
 }
 
 /**
- * Логарифмическая шкала базового дохода завода по тирам.
- * Начиная с Т6+ шаг строго +3.40 порядка на тир:
- * 1 штука нового завода приносит ~4.19x от суммарного дохода 100 штук предыдущего тира (в диапазоне 3-5x).
+ * Лог10 CPS завода. Ось гармонии: BaseCps * K^(tier-1).
  */
 export function getFactoryLogCps(tierNumber) {
-  const k = Math.max(1, Number(tierNumber) || 1);
-  if (k === 1) return Math.log10(80);
-  if (k === 2) return Math.log10(1800);
-  if (k === 3) return Math.log10(6000);
-  if (k === 4) return 5.66;
-  if (k === 5) return 9.63;
-  // Сглаживание экспоненты для Т6+: 1 шт. нового тира дает ровно 4.186x от 100 шт. предыдущего тира
-  return 9.63 + (k - 5) * 3.40;
+  return factoryCpsLog10(tierNumber);
 }
 
 export function makeBigFromLog(logVal) {
@@ -123,9 +111,11 @@ export const FACTORY_TEMPLATES = [
 
 export const FACTORIES = FACTORY_TEMPLATES.map((tmpl, idx) => {
   const k = idx + 1;
-  const c = WEAPON_CASES[idx];
+  const unlockForm = factoryUnlockForm(k);
   const tierGroup = k <= 9 ? 1 : k <= 18 ? 2 : k <= 27 ? 3 : k <= 35 ? 4 : 5;
   const tier = tierGroup === 1 ? 'early' : tierGroup === 2 ? 'mid' : tierGroup === 3 ? 'late' : tierGroup === 4 ? 'endgame' : 'singularity';
+  // Кейс того же индекса остаётся визуальной парой, но замок формы — по оси гармонии.
+  const c = WEAPON_CASES[idx];
 
   return {
     id: tmpl.id,
@@ -137,8 +127,12 @@ export const FACTORIES = FACTORY_TEMPLATES.map((tmpl, idx) => {
     tierTitle: TIER_TITLES[tierGroup - 1],
     cost: getFactoryBaseCost(k),
     baseCps: getFactoryBaseIncome(k),
-    reqStage: c ? Math.max(0, (c.reqForm || 1) - 1) : 0,
-    reqBreakthrough: c ? (c.reqBreakthrough || 0) : 0,
+    reqStage: Math.max(0, unlockForm - 1),
+    reqBreakthrough: caseUnlockBreakthrough(unlockForm),
+    pairedCaseId: c?.id || null,
     count: 0
   };
 });
+
+// Silence unused lint if ECONOMY only used via helpers in some builds
+void ECONOMY;

@@ -1,18 +1,18 @@
-import { GAME } from '../core/state.js?v=5.4.2';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.2';
-import { buyFactory } from '../systems/factoryService.js?v=5.4.2';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.4.2';
+import { GAME } from '../core/state.js?v=5.4.3';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.3';
+import { buyFactory } from '../systems/factoryService.js?v=5.4.3';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.4.3';
 import { getBestKnife, equipBestKnife } from '../systems/knifeService.js';
 import { feedPet, washPet } from '../systems/petCareService.js';
-import { getPrestigeRollsReward } from '../prestige/prestigeService.js?v=5.4.2';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.2';
-import { peakForm, isCasesUnlocked } from '../progression/unlocks.js?v=5.4.2';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.2';
-import { gte } from '../utils/big.js?v=5.4.2';
-import { updateHUD } from './hudView.js?v=5.4.2';
-import { addVisualParticle } from './petCanvasView.js?v=5.4.2';
-import { renderCasesSystem, FIRST_CASE_ID, isFirstCaseDiscountAvailable, canAffordCase, caseIsOpen } from './casesView.js?v=5.4.2';
-import { renderCharacterInventory } from './characterInventoryView.js?v=5.4.2';
+import { getPrestigeRollsReward } from '../prestige/prestigeService.js?v=5.4.3';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.3';
+import { peakForm, isCasesUnlocked } from '../progression/unlocks.js?v=5.4.3';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.3';
+import { gte } from '../utils/big.js?v=5.4.3';
+import { updateHUD } from './hudView.js?v=5.4.3';
+import { addVisualParticle } from './petCanvasView.js?v=5.4.3';
+import { renderCasesSystem, FIRST_CASE_ID, isFirstCaseDiscountAvailable, canAffordCase, caseIsOpen } from './casesView.js?v=5.4.3';
+import { renderCharacterInventory } from './characterInventoryView.js?v=5.4.3';
 import { t, onLocaleChange } from '../i18n/t.js';
 import { factoryName, knifeName, caseName } from '../i18n/localize.js';
 import { getNextBeginnerStep, isBeginnerGuideComplete } from './beginnerGuideView.js';
@@ -167,8 +167,7 @@ function determineBestHint() {
     }
 
     for (let c of WEAPON_CASES) {
-      const meetsEpoch = peakForm() >= (c.reqForm || 1);
-      if (caseIsOpen(c) && meetsEpoch && canAffordCase(c, 1)) {
+      if (caseIsOpen(c) && canAffordCase(c, 1)) {
         return {
           icon: '📦',
           text: t('assist.caseAffordable', { name: caseName(c) }),
