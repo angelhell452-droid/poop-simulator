@@ -4,8 +4,15 @@ function mantissaDecimals(absMantissa, decimals) {
   return absMantissa >= 10 ? 1 : decimals;
 }
 
+//function roundMantissa(scaled, decimals) {
+//  return Number(scaled.toFixed(mantissaDecimals(Math.abs(scaled), decimals)));
+//}
 function roundMantissa(scaled, decimals) {
-  return Number(scaled.toFixed(mantissaDecimals(Math.abs(scaled), decimals)));
+  // Вычисляем количество знаков после запятой
+  const dec = mantissaDecimals(Math.abs(scaled), decimals);
+  const factor = Math.pow(10, dec);
+  // Используем Math.trunc для отсекания вместо округления
+  return Math.trunc(scaled * factor) / factor;
 }
 
 // Ordinary numbers stay as they were. Bigger values print as 1.23e603.
@@ -31,10 +38,14 @@ export function formatNumber(rawNum, decimals = 2) {
   
   const abs = Math.abs(num);
   if (abs < 0.001) return '0';
-  if (abs < 1000) {
-    if (Math.abs(num - Math.round(num)) < 1e-6) return String(Math.round(num));
-    return Number(num.toFixed(1)).toString();
-  }
+ // if (abs < 1000) {
+ //   if (Math.abs(num - Math.round(num)) < 1e-6) return String(Math.round(num));
+ //   return Number(num.toFixed(1)).toString();
+ // }
+ if (abs < 1000) {
+  if (Math.abs(num - Math.round(num)) < 1e-6) return String(Math.round(num));
+  return String(Math.trunc(num * 10) / 10);
+}
 
   const units = [
     'k', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No',
