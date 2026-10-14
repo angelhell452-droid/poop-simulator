@@ -35,7 +35,10 @@ let pendingAutoEarned = 0;
 let pendingAutoCrits = 0;
 let pendingAutoSparkles = 0;
 let lastFloatingTextTime = 0;
-let activeComboParticle = null;
+/** Autoclick earn popups: was 200ms — after Big fix real numbers made that feel like blinking. */
+const AUTO_FLOAT_MS = 550;
+let activeAutoEarnParticle = null;
+let activeAutoSparkleParticle = null;
 
 export let goldenMeteor = {
   active: false,
@@ -1154,50 +1157,62 @@ export function initPetCanvas() {
           });
         }
       } else {
-        // Autoclicker bursts: throttled to ~200ms; accumulate with Big-safe add()
+        // Autoclicker: accumulate Big-safe, refresh one floating label (no spam/blink)
         pendingAutoEarned = add(pendingAutoEarned, totalEarned);
         pendingAutoCrits += critsCount;
         pendingAutoSparkles = add(pendingAutoSparkles, sparklesEarned || 0);
 
-        if (now - lastFloatingTextTime >= 200) {
-          const spawnX = w / 2 + (Math.random() * 50 - 25);
-          const spawnY = h * 0.44 + (Math.random() * 30 - 15);
+        if (now - lastFloatingTextTime >= AUTO_FLOAT_MS) {
+          const spawnX = w / 2 + (Math.random() * 36 - 18);
+          const spawnY = h * 0.44 + (Math.random() * 20 - 10);
+          const earnText = pendingAutoCrits > 0
+            ? t('canvas.critEarn', { n: formatNumber(pendingAutoEarned) })
+            : t('canvas.earn', { n: formatNumber(pendingAutoEarned) });
+          const earnColor = pendingAutoCrits > 0 ? '#facc15' : '#38bdf8';
 
-          if (pendingAutoCrits > 0) {
-            addManagedTextParticle({
-              x: spawnX,
-              y: spawnY,
-              vx: (Math.random() - 0.5) * 1.2,
-              vy: -2.3,
-              text: t('canvas.critEarn', { n: formatNumber(pendingAutoEarned) }),
-              color: '#facc15',
-              scale: 1.35,
-              life: 0.85
-            });
+          const earnAlive = activeAutoEarnParticle
+            && activeAutoEarnParticle.life > 0.12
+            && visualParticles.includes(activeAutoEarnParticle);
+          if (earnAlive) {
+            activeAutoEarnParticle.text = earnText;
+            activeAutoEarnParticle.color = earnColor;
+            activeAutoEarnParticle.life = Math.min(1.15, activeAutoEarnParticle.life + 0.35);
+            activeAutoEarnParticle.scale = pendingAutoCrits > 0 ? 1.35 : 1.15;
           } else {
-            addManagedTextParticle({
+            activeAutoEarnParticle = {
               x: spawnX,
               y: spawnY,
-              vx: (Math.random() - 0.5) * 0.9,
-              vy: -1.8,
-              text: t('canvas.earn', { n: formatNumber(pendingAutoEarned) }),
-              color: '#38bdf8',
-              scale: 1.15,
-              life: 0.80
-            });
+              vx: (Math.random() - 0.5) * 0.7,
+              vy: pendingAutoCrits > 0 ? -2.1 : -1.7,
+              text: earnText,
+              color: earnColor,
+              scale: pendingAutoCrits > 0 ? 1.35 : 1.15,
+              life: 1.05
+            };
+            addManagedTextParticle(activeAutoEarnParticle);
           }
 
           if (gt(pendingAutoSparkles, 0)) {
-            addManagedTextParticle({
-              x: spawnX + (Math.random() * 30 - 15),
-              y: spawnY - 12,
-              vx: (Math.random() - 0.5) * 1.0,
-              vy: -2.4,
-              text: t('canvas.sparkles', { n: formatNumber(pendingAutoSparkles) }),
-              color: '#fde047',
-              scale: 1.2,
-              life: 0.85
-            });
+            const spText = t('canvas.sparkles', { n: formatNumber(pendingAutoSparkles) });
+            const spAlive = activeAutoSparkleParticle
+              && activeAutoSparkleParticle.life > 0.12
+              && visualParticles.includes(activeAutoSparkleParticle);
+            if (spAlive) {
+              activeAutoSparkleParticle.text = spText;
+              activeAutoSparkleParticle.life = Math.min(1.15, activeAutoSparkleParticle.life + 0.3);
+            } else {
+              activeAutoSparkleParticle = {
+                x: spawnX + (Math.random() * 24 - 12),
+                y: spawnY - 12,
+                vx: (Math.random() - 0.5) * 0.8,
+                vy: -2.2,
+                text: spText,
+                color: '#fde047',
+                scale: 1.15,
+                life: 1.0
+              };
+              addManagedTextParticle(activeAutoSparkleParticle);
+            }
           }
 
           pendingAutoEarned = 0;
