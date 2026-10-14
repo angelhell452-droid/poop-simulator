@@ -6,7 +6,7 @@ import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.7';
 import { hasPerk } from '../data/perks.data.js';
 import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.7';
 import { formatNumber } from '../utils/numberFormatter.js?v=5.4.7';
-import { add, cmp, gainBio, gt, isBig, mul } from '../utils/big.js?v=5.4.7';
+import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.7';
 import { checkAchievements } from '../systems/achievementsService.js?v=5.4.7';
 import { updateHUD } from './hudView.js?v=5.4.7';
 import { saveLocal } from '../save/saveManager.js?v=5.4.7';
