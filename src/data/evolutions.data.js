@@ -62,15 +62,6 @@ export const ENTITIES = [
 export function calcEvolutionCost(i) {
   if (i <= 0) return 0;
   const stage = Math.max(0, Number(i) || 0);
-  
-  // Для самых первых уровней (старт после ресета) делаем мягкую, плавную прогрессию без скачков
-  if (stage < 10) {
-    const baseFirst = ECONOMY.formBaseCost || 2000;
-    // Плавный линейно-степенной рост для старта
-    return Math.max(1, Math.floor(baseFirst * Math.pow(1.35, stage - 1)));
-  }
-
-  // Для основной игры работает единая ось гармонии
   const tierFloat = stage / Math.max(1, ECONOMY.factoryFormStep);
   const flushes = Math.max(0, Number(GAME?.flushCount ?? GAME?.totalPrestiges ?? 0) || 0);
   const flushMult = Math.pow(Math.max(1.01, ECONOMY.flushPowerBase || 1.18), flushes);
