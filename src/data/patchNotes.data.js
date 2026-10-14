@@ -1,6 +1,30 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.9';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.10';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.10 PRO',
+    date: '14 Октября 2026',
+    dateEn: 'October 14, 2026',
+    title: 'Патч 5.4.10: Кейсы строго по прорывам',
+    titleEn: 'Patch 5.4.10: Cases Strictly by Breakthrough',
+    badge: 'Баланс 5.4.10',
+    badgeEn: 'Balance 5.4.10',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '📦',
+        text: 'Строго 1 кейс = 1 прорыв: кейс #1 при BT 0, кейс #2 при BT 1 / форма 1001, и так далее. Больше нет трёх кейсов на Прорыв 0.',
+        textEn: 'Strictly 1 case = 1 breakthrough: case #1 at BT 0, case #2 at BT 1 / form 1001, and so on. No more three cases at Breakthrough 0.'
+      },
+      {
+        type: 'balance',
+        icon: '💎',
+        text: 'Цены кейсов подняты (база 3200 ✨): один early-метеор больше не покупает кейс. Промо первого открытия = −50% от реальной цены.',
+        textEn: 'Case prices raised (base 3200 ✨): one early meteor no longer buys a case. First-open promo = −50% of the real price.'
+      }
+    ]
+  },
   {
     version: 'v5.4.9 PRO',
     date: '14 Октября 2026',

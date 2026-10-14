@@ -1,22 +1,22 @@
 import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.9';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.9';
-import { KNIVES } from '../data/knives.data.js?v=5.4.9';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.9';
-import { saveLocal } from '../save/saveManager.js?v=5.4.9';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.9';
-import { updateHUD } from './hudView.js?v=5.4.9';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.9';
+import { GAME } from '../core/state.js?v=5.4.10';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.10';
+import { KNIVES } from '../data/knives.data.js?v=5.4.10';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.10';
+import { saveLocal } from '../save/saveManager.js?v=5.4.10';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.10';
+import { updateHUD } from './hudView.js?v=5.4.10';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.10';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.9';
-import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.9';
-import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.9';
-import { caseUnlockForm, caseUnlockBreakthrough } from '../economy/economy.config.js?v=5.4.9';
-import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.9';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.10';
+import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.10';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.10';
+import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.10';
+import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.10';
 import { TALENTS } from '../data/talents.data.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.9';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.10';
 import { KNIFE_RARITIES, getRarityMeta } from '../data/knifeRarities.config.js';
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -50,7 +50,13 @@ export function getCaseTierCategory(caseIndexOrObj) {
 }
 
 export const FIRST_CASE_ID = 'case_classic';
-export const FIRST_CASE_DISCOUNT_COST = 10;
+/** First-open promo: 50% of case #1 sparkle cost (not a flat 10). */
+export function getFirstCaseDiscountCost(caseObj = null) {
+  const base = Math.max(0, Number(caseObj?.cost) || caseSparkleCost(0) || 3200);
+  return Math.max(100, Math.round(base * 0.5));
+}
+/** @deprecated use getFirstCaseDiscountCost — kept for any stale imports */
+export const FIRST_CASE_DISCOUNT_COST = 1600;
 
 export function isFirstCaseDiscountAvailable(caseObj) {
   const cid = typeof caseObj === 'string' ? caseObj : caseObj?.id;
@@ -162,9 +168,10 @@ export function getCaseLockAlert(caseObj) {
 
 export function caseRollNeed(caseObj, count = 1) {
   if (isFirstCaseDiscountAvailable(caseObj)) {
-    if (count <= 1) return FIRST_CASE_DISCOUNT_COST;
+    const promo = getFirstCaseDiscountCost(caseObj);
+    if (count <= 1) return promo;
     const baseCost = caseObj?.cost || 0;
-    return add(FIRST_CASE_DISCOUNT_COST, mul(baseCost, count - 1));
+    return add(promo, mul(baseCost, count - 1));
   }
   const baseCost = caseObj?.cost || 0;
   return mul(baseCost, count);
@@ -248,7 +255,7 @@ function refundLabel(refund) {
 
 export function casePriceHtml(caseObj) {
   if (isFirstCaseDiscountAvailable(caseObj)) {
-    return `<span class="line-through text-stone-500 text-[10px] mr-1">${formatNumber(caseObj.cost)}</span><span class="inline-flex items-center gap-1 text-emerald-300 font-black">${formatNumber(FIRST_CASE_DISCOUNT_COST)} ✨</span><span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-1 py-0.2 rounded font-black border border-emerald-500/40 uppercase ml-1 animate-pulse">-50%</span>`;
+    return `<span class="line-through text-stone-500 text-[10px] mr-1">${formatNumber(caseObj.cost)}</span><span class="inline-flex items-center gap-1 text-emerald-300 font-black">${formatNumber(getFirstCaseDiscountCost(caseObj))} ✨</span><span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-1 py-0.2 rounded font-black border border-emerald-500/40 uppercase ml-1 animate-pulse">-50%</span>`;
   }
   const costPlungers = Number(caseObj?.costPlungers) || 0;
   const costSparkles = caseObj?.cost || 0;
