@@ -487,6 +487,7 @@ export default {
   'inv.best': '⚔️ Лучший',
   'inv.clickPct': '+{n}% клик',
   'inv.factoriesPct': '+{n}% заводы',
+  'inv.clickCps': '+{n} клик/с',
   'inv.toastSharpened': '⭐ {name} заточен до Lv.{n}! (+35% силы)',
   'inv.bareHands': 'Голые руки',
   'inv.equipBest': '⚔️ Надеть лучший',

@@ -487,6 +487,7 @@ export default {
   'inv.best': '⚔️ Best',
   'inv.clickPct': '+{n}% click',
   'inv.factoriesPct': '+{n}% factories',
+  'inv.clickCps': '+{n} click/s',
   'inv.toastSharpened': '⭐ {name} sharpened to Lv.{n}! (+35% power)',
   'inv.bareHands': 'Bare hands',
   'inv.equipBest': '⚔️ Equip best',

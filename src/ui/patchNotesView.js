@@ -1,6 +1,6 @@
-import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.4.20';
-import { NEWS } from '../data/news.data.js?v=5.4.20';
-import { localizePatchNote } from '../data/patchNotesTranslations.js?v=5.4.20';
+import { PATCH_NOTES } from '../data/patchNotes.data.js?v=5.4.21';
+import { NEWS } from '../data/news.data.js?v=5.4.21';
+import { localizePatchNote } from '../data/patchNotesTranslations.js?v=5.4.21';
 import { t, td, dataText, getLocale, onLocaleChange } from '../i18n/t.js';
 
 function escapeText(value) {

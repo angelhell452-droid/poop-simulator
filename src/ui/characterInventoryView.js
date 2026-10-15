@@ -1,28 +1,28 @@
 import { knifeName, knifeDesc, knifeRarity, shopName, shopDesc, skinName } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.20';
-import { KNIVES } from '../data/knives.data.js?v=5.4.20';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.20';
+import { GAME } from '../core/state.js?v=5.4.21';
+import { KNIVES } from '../data/knives.data.js?v=5.4.21';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.21';
 import {
   getKnifeStar, getKnifeSharpenCost, getKnifeRecycleReward, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
 import { openSharpenWheelModal } from './sharpenView.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.4.20';
-import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.4.20';
-import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.20';
-import { saveLocal } from '../save/saveManager.js?v=5.4.20';
-import { updateHUD } from './hudView.js?v=5.4.20';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.4.21';
+import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.4.21';
+import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.21';
+import { saveLocal } from '../save/saveManager.js?v=5.4.21';
+import { updateHUD } from './hudView.js?v=5.4.21';
 import { renderShop } from './shopView.js';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.20';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.20';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.21';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.21';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getRarityMeta } from '../data/knifeRarities.config.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { hatArtHtml } from './artIcon.js?v=5.4.20';
-import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.20';
-import { gte, spendBio } from '../utils/big.js?v=5.4.20';
+import { hatArtHtml } from './artIcon.js?v=5.4.21';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.21';
+import { gte, spendBio } from '../utils/big.js?v=5.4.21';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'
@@ -341,7 +341,7 @@ export function renderCharacterInventory() {
           <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
             <span class="text-emerald-300 font-currency bg-emerald-950/70 px-1.5 py-0.5 rounded">${t('inv.clickPct', { n: formatNumber(eqClickPct) })}</span>
             <span class="text-lime-200 font-currency bg-lime-950/70 px-1.5 py-0.5 rounded">${t('inv.factoriesPct', { n: formatNumber(shown.passPct) })}</span>
-            <span class="text-cyan-300 font-currency bg-cyan-950/70 px-1.5 py-0.5 rounded">+${formatNumber(getKnifeCpsBonus(equippedObj))} CPS</span>
+            <span class="text-cyan-300 font-currency bg-cyan-950/70 px-1.5 py-0.5 rounded">${t('inv.clickCps', { n: formatNumber(getKnifeCpsBonus(equippedObj)) })}</span>
             ${equippedObj.sparkleMult > 1 ? `<span class="text-yellow-300 font-currency bg-amber-950/70 px-1.5 py-0.5 rounded">✨ x${formatNumber(equippedObj.sparkleMult)}</span>` : ''}
             <span class="text-amber-300 font-currency bg-amber-950/70 px-1.5 py-0.5 rounded">★ ${t('hud.lvl', { n: formatNumber(eqStar) })}</span>
             ${equippedObj.statTrak ? `<span class="text-orange-300 font-currency bg-orange-950/70 px-1.5 py-0.5 rounded">🔥 ${formatNumber(equippedObj.statTrak)}</span>` : ''}
@@ -500,7 +500,8 @@ function renderKnivesGrid() {
         <!-- Row 2: Compact Stats Badges -->
         <div class="flex items-center gap-1.5 my-1.5 text-[9px] sm:text-[10px] font-mono font-bold flex-wrap">
           <span class="bg-emerald-950/80 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30">🗡️ +${formatNumber(clickBonus)}%</span>
-          <span class="bg-cyan-950/80 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/30">+${formatNumber(getKnifeCpsBonus(kn))} CPS</span>
+          <span class="bg-lime-950/80 text-lime-200 px-1.5 py-0.5 rounded border border-lime-500/30">${t('inv.factoriesPct', { n: formatNumber(shown.passPct) })}</span>
+          <span class="bg-cyan-950/80 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/30">${t('inv.clickCps', { n: formatNumber(getKnifeCpsBonus(kn)) })}</span>
           ${kn.sparkleMult > 1 ? `<span class="bg-amber-950/80 text-yellow-300 px-1.5 py-0.5 rounded border border-yellow-500/30">✨ x${formatNumber(kn.sparkleMult)}</span>` : ''}
           ${kn.statTrak ? `<span class="bg-orange-950/80 text-orange-400 px-1.5 py-0.5 rounded border border-orange-500/30" title="${t('inv.statTrakTitle')}">🔥 ${formatNumber(kn.statTrak)}</span>` : ''}
         </div>

@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.20';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.21';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.21 PRO',
+    date: '15 Октября 2026',
+    dateEn: 'October 15, 2026',
+    title: 'Патч 5.4.21: КПС ножа ≠ клик/с',
+    titleEn: 'Patch 5.4.21: Knife Income ≠ Click/s',
+    badge: 'Фикс 5.4.21',
+    badgeEn: 'Fix 5.4.21',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '🖱️',
+        text: 'Развели пассив к заводам и бонус к потолку кликов: больше никаких «+4B CPS» на карточке. Потолок клик/с остаётся 300; в UI отдельно % заводов и +N клик/с.',
+        textEn: 'Split factory passive from click-cap bonus: no more fake “+4B CPS” on knife cards. Click/s hard cap stays 300; UI shows factory % and +N click/s separately.'
+      }
+    ]
+  },
   {
     version: 'v5.4.20 PRO',
     date: '15 Октября 2026',

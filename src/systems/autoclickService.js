@@ -1,9 +1,9 @@
-import { GAME } from '../core/state.js?v=5.4.20';
+import { GAME } from '../core/state.js?v=5.4.21';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.20';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.20';
-import { KNIVES } from '../data/knives.data.js?v=5.4.20';
-import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.4.20';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.21';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.21';
+import { KNIVES } from '../data/knives.data.js?v=5.4.21';
+import { getEquippedKnife, getKnifeStar } from '../economy/production.js?v=5.4.21';
 import { hasPerk } from '../data/perks.data.js';
 
 export const BARE_CLICK_CAP = 20;
@@ -70,15 +70,19 @@ export function isAutoclickUnlocked() {
   return true;
 }
 
-/** Clicks per second this knife adds to the player's cap. Later cases sit above earlier ones. */
+const MAX_KNIFE_CLICK_BONUS = MAX_HARD_CPS - BARE_CLICK_CAP; // 280
+
+/** Clicks/sec this knife adds to the click/autoclick cap (not factory income). */
 export function getKnifeCpsBonus(knife, explicitStar = null) {
   if (!knife) return 0;
   const starVal = explicitStar !== null ? explicitStar : getKnifeStar(knife.id);
   const stars = Math.min(15, Math.max(0, starVal - 1));
-  if (typeof knife.cpsBonus === 'number') {
-    return knife.cpsBonus + stars;
-  }
-  return caseCpsBase(knife) + stars;
+  // cpsBonus = click-cap only. Legacy sync wrote passiveMult here (>>280) — clamp / fallback.
+  const raw = Number(knife.cpsBonus);
+  const base = (Number.isFinite(raw) && raw >= 0 && raw <= MAX_KNIFE_CLICK_BONUS * 2)
+    ? Math.min(MAX_KNIFE_CLICK_BONUS, Math.round(raw))
+    : caseCpsBase(knife);
+  return Math.min(MAX_KNIFE_CLICK_BONUS, base + stars);
 }
 
 export function getBaseKnifeCpsBonus(knife) {

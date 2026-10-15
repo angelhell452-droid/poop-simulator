@@ -1,22 +1,22 @@
 import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.20';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.20';
-import { KNIVES } from '../data/knives.data.js?v=5.4.20';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.20';
-import { saveLocal } from '../save/saveManager.js?v=5.4.20';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.20';
-import { updateHUD } from './hudView.js?v=5.4.20';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.20';
+import { GAME } from '../core/state.js?v=5.4.21';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.21';
+import { KNIVES } from '../data/knives.data.js?v=5.4.21';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.21';
+import { saveLocal } from '../save/saveManager.js?v=5.4.21';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.21';
+import { updateHUD } from './hudView.js?v=5.4.21';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.21';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.20';
-import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.20';
-import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.20';
-import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.20';
-import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.20';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.21';
+import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.21';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.21';
+import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.21';
+import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.21';
 import { TALENTS } from '../data/talents.data.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.20';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.21';
 import { KNIFE_RARITIES, getRarityMeta } from '../data/knifeRarities.config.js';
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -810,7 +810,9 @@ function onRouletteFinished() {
   }
 
   const pbEl = document.getElementById('rouletteResultPassiveBoost');
-  if (pbEl) pbEl.textContent = `+${formatNumber(getBaseKnifeCpsBonus(rouletteWinningKnife))} CPS`;
+  if (pbEl) {
+    pbEl.textContent = `${t('inv.factoriesPct', { n: formatNumber(shown.passPct) })} · ${t('inv.clickCps', { n: formatNumber(getBaseKnifeCpsBonus(rouletteWinningKnife)) })}`;
+  }
 
   showKnifeToast(isDuplicate
     ? t('cases.toastDuplicate', { name: knifeName(rouletteWinningKnife), refund: duplicateRefundText })
@@ -926,7 +928,9 @@ export function renderMultiCarouselItem() {
   }
 
   const pbEl = document.getElementById('rouletteResultPassiveBoost');
-  if (pbEl) pbEl.textContent = `+${formatNumber(getBaseKnifeCpsBonus(knife))} CPS`;
+  if (pbEl) {
+    pbEl.textContent = `${t('inv.factoriesPct', { n: formatNumber(shown.passPct) })} · ${t('inv.clickCps', { n: formatNumber(getBaseKnifeCpsBonus(knife)) })}`;
+  }
 
   const sbEl = document.getElementById('rouletteResultSparkleBoost');
   if (sbEl) sbEl.textContent = `✨ x${formatNumber(shown.sparkleMult || 1)}`;
@@ -1224,7 +1228,9 @@ export function openCasePreviewModal(caseId) {
             <div class="text-[10px] text-stone-400 mt-1 flex items-center gap-2 flex-wrap font-mono">
               <span>${t('cases.click')} <b class="text-emerald-300 font-bold">${clickLabel}</b></span>
               <span class="text-stone-600">•</span>
-              <span>CPS: <b class="text-cyan-300 font-bold">+${formatNumber(getBaseKnifeCpsBonus(knife))}</b></span>
+              <span class="text-lime-200 font-bold">${t('inv.factoriesPct', { n: formatNumber(shown.passPct) })}</span>
+              <span class="text-stone-600">•</span>
+              <span class="text-cyan-300 font-bold">${t('inv.clickCps', { n: formatNumber(getBaseKnifeCpsBonus(knife)) })}</span>
               <span class="text-stone-600">•</span>
               <span>✨ <b class="text-yellow-300 font-bold">x${formatNumber(knife.sparkleMult || 1)}</b></span>
             </div>

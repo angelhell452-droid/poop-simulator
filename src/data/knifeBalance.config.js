@@ -24,8 +24,8 @@ export const KNIFE_BALANCE_CONFIG = {
   passivePower: 0.28
 };
 
-import { mul } from '../utils/big.js?v=5.4.20';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.20';
+import { mul } from '../utils/big.js?v=5.4.21';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.21';
 
 /** Pool slot weights: common → jackpot (1%). */
 const CASE_SLOT_WEIGHTS = [0.28, 0.42, 0.58, 0.78, 1.0];
@@ -44,6 +44,19 @@ export function caseTierJackpotPassive(tierNumber) {
 }
 
 /**
+ * Click-cap bonus (клик/сек к потолку) for case jackpot.
+ * Approaches 280 so bare 20 + knife ≤ MAX_HARD_CPS 300.
+ * NOT passiveMult — that field used to be wrongly copied into cpsBonus (UI showed +4B CPS).
+ */
+export function caseTierJackpotClickCap(tierNumber) {
+  const tier = Math.max(1, Math.floor(Number(tierNumber) || 1));
+  const maxKnife = 280;
+  const t1 = 18;
+  const progress = 1 - Math.pow(0.88, tier - 1);
+  return Math.max(t1, Math.min(maxKnife, Math.round(t1 + (maxKnife - t1) * progress)));
+}
+
+/**
  * Rewrite knife click/passive/sparkle stats from their case pool slot
  * so case rewards match the harmony economy axis.
  */
@@ -55,6 +68,7 @@ export function syncKnivesToCaseTiers(cases, knives) {
     const c = cases[index];
     const tier = Math.max(1, Number(c.tierNumber) || (index + 1));
     const jackpotPassive = caseTierJackpotPassive(tier);
+    const jackpotClickCap = caseTierJackpotClickCap(tier);
     const pool = c.pool || [];
 
     for (let slot = 0; slot < pool.length; slot++) {
@@ -64,10 +78,12 @@ export function syncKnivesToCaseTiers(cases, knives) {
       const passiveMult = Math.max(1, Math.round(jackpotPassive * weight));
       const clickMult = Math.max(2, Math.round(2.2 * passiveMult));
       const sparkleMult = Math.round((1 + 0.35 * Math.log10(passiveMult + 1)) * 100) / 100;
+      // cpsBonus = click-rate cap contribution only (≤280), never passive income mult.
+      const cpsBonus = Math.max(1, Math.min(280, Math.round(jackpotClickCap * weight)));
       knife.passiveMult = passiveMult;
       knife.clickMult = clickMult;
       knife.sparkleMult = sparkleMult;
-      knife.cpsBonus = Math.max(0, Math.round(passiveMult));
+      knife.cpsBonus = cpsBonus;
     }
   }
 }

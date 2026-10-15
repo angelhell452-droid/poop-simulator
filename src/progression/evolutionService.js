@@ -1,11 +1,11 @@
-import { GAME } from '../core/state.js?v=5.4.20';
-import { EVOLUTIONS, calcEvolutionCost } from '../data/evolutions.data.js?v=5.4.20';
+import { GAME } from '../core/state.js?v=5.4.21';
+import { EVOLUTIONS, calcEvolutionCost } from '../data/evolutions.data.js?v=5.4.21';
 import { TALENTS } from '../data/talents.data.js';
-import { getAsymptoticDiscountFactor } from '../economy/costs.js?v=5.4.20';
+import { getAsymptoticDiscountFactor } from '../economy/costs.js?v=5.4.21';
 import { events } from '../core/events.js';
 import { notePeakForm } from './unlocks.js';
-import { maxUnlockedStage } from './phases.data.js?v=5.4.20';
-import { gte, isBig, mulFloor } from '../utils/big.js?v=5.4.20';
+import { maxUnlockedStage } from './phases.data.js?v=5.4.21';
+import { gte, isBig, mulFloor } from '../utils/big.js?v=5.4.21';
 import { evolutionDisplayName, poopSkinDesc, poopSkinName, poopSkinRank } from '../i18n/localize.js';
 import { getRelicLevel } from '../data/relics.data.js';
 

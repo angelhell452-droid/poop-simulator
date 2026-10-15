@@ -1,8 +1,8 @@
-import { GAME } from '../core/state.js?v=5.4.20';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.20';
-import { SHOP_ITEMS } from './shop.data.js?v=5.4.20';
-import { getRelicLevel } from './relics.data.js?v=5.4.20';
-import { gte, spendBio } from '../utils/big.js?v=5.4.20';
+import { GAME } from '../core/state.js?v=5.4.21';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.21';
+import { SHOP_ITEMS } from './shop.data.js?v=5.4.21';
+import { getRelicLevel } from './relics.data.js?v=5.4.21';
+import { gte, spendBio } from '../utils/big.js?v=5.4.21';
 
 /**
  * 20 Уникальных Постоянных Перков (Permanent Perks) за Блестяшки ✨

@@ -1,22 +1,22 @@
-import { GAME } from '../core/state.js?v=5.4.20';
-import { KNIVES } from '../data/knives.data.js?v=5.4.20';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.20';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.20';
-import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.4.20';
+import { GAME } from '../core/state.js?v=5.4.21';
+import { KNIVES } from '../data/knives.data.js?v=5.4.21';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.21';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.21';
+import { SHOP_ITEMS, BOUTIQUE_REPEATABLES } from '../data/shop.data.js?v=5.4.21';
 import { PERMANENT_PERKS, hasPerk } from '../data/perks.data.js';
 import { TALENTS } from '../data/talents.data.js';
 import { getKnifeStar, getKnifeSharpenCost, sharpenKnife, getHatLevel } from '../systems/knifeService.js';
-import { saveLocal } from '../save/saveManager.js?v=5.4.20';
-import { updateHUD } from './hudView.js?v=5.4.20';
-import { renderCasesSystem } from './casesView.js?v=5.4.20';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.20';
-import { drawPlunger } from '../utils/icons.js?v=5.4.20';
+import { saveLocal } from '../save/saveManager.js?v=5.4.21';
+import { updateHUD } from './hudView.js?v=5.4.21';
+import { renderCasesSystem } from './casesView.js?v=5.4.21';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.21';
+import { drawPlunger } from '../utils/icons.js?v=5.4.21';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { hatArtHtml } from './artIcon.js?v=5.4.20';
-import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.4.20';
-import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.20';
+import { hatArtHtml } from './artIcon.js?v=5.4.21';
+import { getHatClickMult, getKnifeShownBonuses } from '../economy/production.js?v=5.4.21';
+import { getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.21';
 import { t, td, onLocaleChange } from '../i18n/t.js';
-import { isBig } from '../utils/big.js?v=5.4.20';
+import { isBig } from '../utils/big.js?v=5.4.21';
 import { knifeName, knifeRarity, caseName, shopName, shopDesc, factoryName, talentName, talentDesc } from '../i18n/localize.js';
 import { getRarityMeta } from '../data/knifeRarities.config.js';
 
@@ -183,7 +183,8 @@ export function renderKnivesIndexBook() {
               <span class="text-emerald-400">${clickBonusText}</span>
             </div>
             <div class="text-[9px] text-stone-300 font-mono text-center mb-1.5 flex justify-center items-center gap-2">
-              <span class="text-cyan-300">+${formatNumber(getKnifeCpsBonus(knife))} CPS</span>
+              <span class="text-lime-200">${t('inv.factoriesPct', { n: formatNumber(getKnifeShownBonuses(knife).passPct) })}</span>
+              <span class="text-cyan-300">${t('inv.clickCps', { n: formatNumber(getKnifeCpsBonus(knife)) })}</span>
               <span class="text-yellow-300 font-bold">✨ x${formatNumber(knife.sparkleMult || 1)}</span>
             </div>
             <div class="flex gap-1.5 px-0.5">

@@ -1,11 +1,11 @@
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.20';
-import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.20';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.20';
-import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.20';
-import { GAME } from '../core/state.js?v=5.4.20';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.20';
-import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.20';
-import { caseTierJackpotPassive } from './knifeBalance.config.js?v=5.4.20';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.21';
+import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.21';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.21';
+import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.21';
+import { GAME } from '../core/state.js?v=5.4.21';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.21';
+import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.21';
+import { caseTierJackpotPassive } from './knifeBalance.config.js?v=5.4.21';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },

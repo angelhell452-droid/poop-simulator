@@ -3,9 +3,9 @@ import {
   caseSparkleCost,
   caseUnlockBreakthrough,
   caseUnlockForm
-} from '../economy/economy.config.js?v=5.4.20';
-import { KNIVES } from './knives.data.js?v=5.4.20';
-import { syncKnivesToCaseTiers } from './knifeBalance.config.js?v=5.4.20';
+} from '../economy/economy.config.js?v=5.4.21';
+import { KNIVES } from './knives.data.js?v=5.4.21';
+import { syncKnivesToCaseTiers } from './knifeBalance.config.js?v=5.4.21';
 
 export const WEAPON_CASES = [
   {
@@ -1380,7 +1380,8 @@ for (const c of WEAPON_CASES) {
   const jackpotId = pool[pool.length - 1];
   const jackpot = KNIVES.find(k => k.id === jackpotId);
   if (!jackpot) continue;
-  const cps = Math.max(0, Number(jackpot.cpsBonus) || Number(jackpot.passiveMult) || 0);
+  const pass = Math.max(1, Number(jackpot.passiveMult) || 1);
+  const clickCps = Math.max(0, Number(jackpot.cpsBonus) || 0);
   const sp = Number(jackpot.sparkleMult) || 1;
-  c.desc = `Джекпот 1%: ${jackpot.name} (${cps} CPS). Бонус блестяшек ✨ x${sp}.`;
+  c.desc = `Джекпот 1%: ${jackpot.name} (доход x${pass}, +${clickCps} клик/с). Бонус блестяшек ✨ x${sp}.`;
 }
