@@ -1,13 +1,13 @@
-import { GAME } from '../core/state.js?v=5.4.28';
+import { GAME } from '../core/state.js?v=5.4.29';
 import { events } from '../core/events.js';
-import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.4.28';
+import { buildSavePayload, saveLocal, applySaveDataSafely, loadLocal, readLocalSave } from './saveManager.js?v=5.4.29';
 import { setConfirmedVip } from '../economy/pace.js';
-import { setGuildPresence } from '../guild/guildPresence.js?v=5.4.28';
-import { cmp, isBig } from '../utils/big.js?v=5.4.28';
+import { setGuildPresence } from '../guild/guildPresence.js?v=5.4.29';
+import { cmp, isBig } from '../utils/big.js?v=5.4.29';
 import { t } from '../i18n/t.js';
-import { canSaveCloud, triggerUpdateNotice, CURRENT_CLIENT_PATCH_VERSION, compareSemver } from '../core/serverAuthority.js?v=5.4.28';
-import { handleSessionInterrupted, showLobby } from '../core/lobbyAuth.js?v=5.4.28';
-import { pauseGameLoop } from '../core/gameLoop.js?v=5.4.28';
+import { canSaveCloud, triggerUpdateNotice, CURRENT_CLIENT_PATCH_VERSION, compareSemver } from '../core/serverAuthority.js?v=5.4.29';
+import { handleSessionInterrupted, showLobby } from '../core/lobbyAuth.js?v=5.4.29';
+import { pauseGameLoop } from '../core/gameLoop.js?v=5.4.29';
 
 function cmpBio(a, b) {
   return cmp(a && typeof a === 'object' ? a : (Number(a) || 0), b && typeof b === 'object' ? b : (Number(b) || 0));
@@ -72,7 +72,7 @@ export async function confirmLiveSession() {
     const data = await res.json().catch(() => null);
     if (!data || data.online !== true) {
       // Session is invalid → go to lobby login screen, not the superseded modal
-      const { showLobby: goLobby } = await import('../core/lobbyAuth.js?v=5.4.28');
+      const { showLobby: goLobby } = await import('../core/lobbyAuth.js?v=5.4.29');
       goLobby();
       return false;
     }
@@ -715,7 +715,7 @@ export async function wipeAllCloudSaves() {
 
 export async function wipePlayerData() {
   try {
-    const { hardReset } = await import('./saveManager.js?v=5.4.28');
+    const { hardReset } = await import('./saveManager.js?v=5.4.29');
     await hardReset();
   } catch (e) {
     try {

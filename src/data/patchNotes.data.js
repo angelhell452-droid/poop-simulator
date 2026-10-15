@@ -1,6 +1,42 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.28';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.29';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.29 PRO',
+    date: '16 Октября 2026',
+    dateEn: 'October 16, 2026',
+    title: 'Патч 5.4.29: Квесты и уход',
+    titleEn: 'Patch 5.4.29: Quests & Care',
+    badge: 'Патч 5.4.29',
+    badgeEn: 'Patch 5.4.29',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '📍',
+        text: 'Плашка квеста снова в зоне canvas, а не в углу экрана; «Начать обучение» не перекрывает журнал патчей.',
+        textEn: 'Quest widget stays on the canvas (not the screen corner); Start Training no longer covers patch notes.'
+      },
+      {
+        type: 'fix',
+        icon: '🎰',
+        text: 'Рулетка заточки поднимается над инвентарём во время квеста закалки.',
+        textEn: 'Sharpen roulette rises above inventory during the tempering quest.'
+      },
+      {
+        type: 'ui',
+        icon: '🧼',
+        text: 'Квест 3: достаточно покормить, помыть или пощекотать; затемнение без сильного blur.',
+        textEn: 'Quest 3: feed, wash, or tickle is enough; spotlight dims without heavy blur.'
+      },
+      {
+        type: 'fix',
+        icon: '💖',
+        text: 'Счастье снова падает как сытость/чистота; авто-уход только по тумблерам, без вечных 100%.',
+        textEn: 'Happiness drains like hunger/clean; auto-care only via toggles — no permanent 100% meters.'
+      }
+    ]
+  },
   {
     version: 'v5.4.28 PRO',
     date: '16 Октября 2026',

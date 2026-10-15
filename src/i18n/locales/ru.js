@@ -1326,8 +1326,8 @@ export default {
   'tutorial.step2Reward': '+20 Блестяшек ✨',
   'tutorial.step2Done': '🏭 Первый завод запущен! +20 ✨!',
 
-  'tutorial.step3Title': 'Полный уход',
-  'tutorial.step3Desc': 'Помойте, покормите и пощекочите какашечку в меню ухода.',
+  'tutorial.step3Title': 'Первый уход',
+  'tutorial.step3Desc': 'Покормите, помойте или пощекочите какашечку — достаточно одного действия.',
   'tutorial.step3Reward': '+10 Блестяшек ✨',
   'tutorial.step3Done': '💖 Питомец счастлив! +10 ✨!',
 
@@ -1410,7 +1410,7 @@ export default {
 
   'tutorial.step1Task': '🎯 Задача: Сделай 50 ручных кликов',
   'tutorial.step2Task': '🎯 Задача: Купи первый Авто-завод',
-  'tutorial.step3Task': '🎯 Задача: Покорми, помой и пощекочи питомца',
+  'tutorial.step3Task': '🎯 Задача: Покорми, помой или пощекочи питомца',
   'tutorial.step4Task': '🎯 Задача: Активируй Автокликер (Турбо-х4)',
   'tutorial.step5Task': '🎯 Задача: Открой первый Кейс с ножом',
   'tutorial.step6Task': '🎯 Задача: Экипируй нож в Инвентаре',

@@ -3,9 +3,9 @@ import {
   caseSparkleCost,
   caseUnlockBreakthrough,
   caseUnlockForm
-} from '../economy/economy.config.js?v=5.4.28';
-import { KNIVES } from './knives.data.js?v=5.4.28';
-import { syncKnivesToCaseTiers } from './knifeBalance.config.js?v=5.4.28';
+} from '../economy/economy.config.js?v=5.4.29';
+import { KNIVES } from './knives.data.js?v=5.4.29';
+import { syncKnivesToCaseTiers } from './knifeBalance.config.js?v=5.4.29';
 
 export const WEAPON_CASES = [
   {

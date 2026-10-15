@@ -1,4 +1,4 @@
-import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.4.28';
+import { getStoredAccount, socialRequest } from '../save/cloudSync.js?v=5.4.29';
 
 /**
  * One slow heartbeat for header badges. Open modals refresh themselves

@@ -1,5 +1,5 @@
-import { GAME } from '../core/state.js?v=5.4.28';
-import { KNIVES } from '../data/knives.data.js?v=5.4.28';
+import { GAME } from '../core/state.js?v=5.4.29';
+import { KNIVES } from '../data/knives.data.js?v=5.4.29';
 import {
   getKnifeStar,
   getKnifeSharpenCost,
@@ -8,10 +8,10 @@ import {
   applyKnifeSharpen
 } from '../systems/knifeService.js';
 import { knifeName } from '../i18n/localize.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.28';
-import { updateHUD } from './hudView.js?v=5.4.28';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.29';
+import { updateHUD } from './hudView.js?v=5.4.29';
 import { renderCharacterInventory } from './characterInventoryView.js';
-import { saveLocal } from '../save/saveManager.js?v=5.4.28';
+import { saveLocal } from '../save/saveManager.js?v=5.4.29';
 import { t } from '../i18n/t.js';
 
 let currentKnifeId = null;
@@ -27,6 +27,8 @@ export function openSharpenWheelModal(knifeId, autoSpin = false) {
   if (!knife) return;
 
   currentKnifeId = knifeId;
+  // Выше инвентаря персонажа (spotlight поднимает его до ~860)
+  modal.style.zIndex = '890';
   modal.classList.remove('hidden');
 
   updateModalUI();
@@ -51,7 +53,10 @@ export function openSharpenWheelModal(knifeId, autoSpin = false) {
 export function closeSharpenWheelModal() {
   if (isSpinning) return;
   const modal = document.getElementById('knifeSharpenModal');
-  if (modal) modal.classList.add('hidden');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.style.zIndex = '';
+  }
   if (animFrameId) cancelAnimationFrame(animFrameId);
 }
 

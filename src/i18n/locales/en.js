@@ -1326,8 +1326,8 @@ export default {
   'tutorial.step2Reward': '+20 Sparkles ✨',
   'tutorial.step2Done': '🏭 First factory launched! +20 ✨!',
 
-  'tutorial.step3Title': 'Full Care',
-  'tutorial.step3Desc': 'Wash, feed, and tickle your pet using the care bars.',
+  'tutorial.step3Title': 'First Care',
+  'tutorial.step3Desc': 'Feed, wash, or tickle your pet — one action is enough.',
   'tutorial.step3Reward': '+10 Sparkles ✨',
   'tutorial.step3Done': '💖 Pet is delighted! +10 ✨!',
 
@@ -1410,7 +1410,7 @@ export default {
 
   'tutorial.step1Task': '🎯 Objective: Make 50 manual clicks',
   'tutorial.step2Task': '🎯 Objective: Buy 1 Auto-Factory',
-  'tutorial.step3Task': '🎯 Objective: Feed, wash, and tickle your pet',
+  'tutorial.step3Task': '🎯 Objective: Feed, wash, or tickle your pet',
   'tutorial.step4Task': '🎯 Objective: Activate Autoclicker (Turbo x4)',
   'tutorial.step5Task': '🎯 Objective: Open your first Knife Case',
   'tutorial.step6Task': '🎯 Objective: Equip a knife in Inventory',

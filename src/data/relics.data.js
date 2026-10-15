@@ -1,4 +1,4 @@
-import { GAME } from '../core/state.js?v=5.4.28';
+import { GAME } from '../core/state.js?v=5.4.29';
 
 /**
  * 5 Тиров Реликвий Прорыва (Breakthrough Relic Tiers)
@@ -67,8 +67,8 @@ export const RELICS = [
     name: '🤖 Астральный Авто-Уход',
     nameEn: 'Astral Auto-Care',
     icon: '🤖',
-    desc: 'Автоматически держит шкалы ухода на 100% навсегда, отменяя рутину.',
-    descEn: 'Automatically keeps care bars at 100% forever, eliminating routine.',
+    desc: 'Открывает тумблеры Авто-корм / Авто-мытьё / Авто-щекотка. Шкалы по-прежнему падают — авто подправляет, только если тумблер включён.',
+    descEn: 'Unlocks Auto-feed / Auto-wash / Auto-tickle toggles. Bars still drain — auto tops them up only while a toggle is on.',
     cost: 1,
     max: 1,
     tier: 1,

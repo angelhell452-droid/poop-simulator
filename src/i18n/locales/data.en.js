@@ -2402,7 +2402,7 @@ export default {
   "transcend.art_auto_buyer.desc": "Buys the latest available factory or the best value among unlocked ones.",
   "transcend.art_auto_buyer.name": "⚙️ Factory Auto-Buyer",
   "transcend.art_auto_buyer.tier": "Tier 1: Basic",
-  "transcend.art_auto_care.desc": "Automatically cares for the pet (feed, wash, tickle) and unlocks care toggles.",
+  "transcend.art_auto_care.desc": "Unlocks Auto-feed / Auto-wash / Auto-tickle toggles. Bars still drain unless a toggle is on.",
   "transcend.art_auto_care.name": "🤖 Astral Auto-Care",
   "transcend.art_auto_care.tier": "Tier 1: Basic",
   "transcend.art_cosmic_synergy.desc": "+12% to all income and click power per level",

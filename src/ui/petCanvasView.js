@@ -1,6 +1,6 @@
-import { GAME } from '../core/state.js?v=5.4.28';
+import { GAME } from '../core/state.js?v=5.4.29';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.28';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.29';
 import { hasPerk } from '../data/perks.data.js';
 import {
   getClickPower,
@@ -9,22 +9,22 @@ import {
   getKnifeFactorySynergyMult,
   getEquippedKnife,
   getKnifeStar
-} from '../economy/production.js?v=5.4.28';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.28';
-import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.28';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.28';
-import { updateHUD } from './hudView.js?v=5.4.28';
-import { saveLocal } from '../save/saveManager.js?v=5.4.28';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.28';
+} from '../economy/production.js?v=5.4.29';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.29';
+import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.29';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.29';
+import { updateHUD } from './hudView.js?v=5.4.29';
+import { saveLocal } from '../save/saveManager.js?v=5.4.29';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.29';
 import { events } from '../core/events.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.28';
-import { getMeteorSparkleGain, getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.28';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.28';
-import { KNIVES } from '../data/knives.data.js?v=5.4.28';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.28';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.29';
+import { getMeteorSparkleGain, getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.29';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.29';
+import { KNIVES } from '../data/knives.data.js?v=5.4.29';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.29';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.28';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.28';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.29';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.29';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;

@@ -1043,12 +1043,9 @@ body.girly-mode {
   animation: jackpotWinTitlePulse 0.9s ease-in-out infinite;
 }
 
-/* Плашка квеста поверх рулетки кейсов и прочих z-50 модалок */
+/* Плашка квеста: остаётся в canvas (absolute), только выше модалок по z-index */
 #tutorialQuestWidget.tutorial-widget-priority {
-  position: fixed !important;
-  top: 0.75rem;
-  left: 0.75rem;
-  z-index: 900 !important;
+  z-index: 40 !important;
   pointer-events: auto;
 }
 
@@ -1943,10 +1940,10 @@ select {
   animation: bounce 1.2s infinite;
 }
 
-/* TUTORIAL SPOTLIGHT OVERLAY & FOCUS SYSTEM */
+/* TUTORIAL SPOTLIGHT OVERLAY & FOCUS SYSTEM — без blur, чтобы экран не «мылился» */
 #tutorialSpotlightOverlay {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: none;
   transition: opacity 0.3s ease;
 }
 

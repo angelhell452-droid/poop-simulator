@@ -1,16 +1,16 @@
-import { GAME, feedCount, washCount } from '../core/state.js?v=5.4.28';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.28';
+import { GAME, feedCount, washCount } from '../core/state.js?v=5.4.29';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.29';
 import { TALENTS } from '../data/talents.data.js';
 import { PERMANENT_PERKS, hasPerk } from '../data/perks.data.js';
 import { RELICS, hasRelic } from '../data/relics.data.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.28';
-import { gainBio } from '../utils/big.js?v=5.4.28';
-import { saveLocal } from '../save/saveManager.js?v=5.4.28';
-import { updateHUD } from './hudView.js?v=5.4.28';
-import { addVisualParticle, triggerForcedMeteor } from './petCanvasView.js?v=5.4.28';
-import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.28';
-import { openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.28';
-import { switchTalentSubTab } from './talentView.js?v=5.4.28';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.29';
+import { gainBio } from '../utils/big.js?v=5.4.29';
+import { saveLocal } from '../save/saveManager.js?v=5.4.29';
+import { updateHUD } from './hudView.js?v=5.4.29';
+import { addVisualParticle, triggerForcedMeteor } from './petCanvasView.js?v=5.4.29';
+import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.29';
+import { openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.29';
+import { switchTalentSubTab } from './talentView.js?v=5.4.29';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 let activeSpotlightElement = null;
@@ -83,7 +83,9 @@ export function startTutorialTraining() {
 export function updateTutorialStartCta() {
   const cta = document.getElementById('tutorialStartModal');
   if (!cta) return;
-  if (isTutorialComplete() || GAME.tutorialStarted) {
+  const patchesOpen = !document.getElementById('patchNotesModal')?.classList.contains('hidden');
+  // Патчи важнее: не перекрываем журнал «Начать обучение!»
+  if (isTutorialComplete() || GAME.tutorialStarted || patchesOpen) {
     cta.classList.add('hidden');
     return;
   }
@@ -146,29 +148,29 @@ export const TUTORIAL_QUESTS = [
     }
   },
 
-  // 3. Полный уход
+  // 3. Уход — достаточно одного действия
   {
     id: 'full_care',
     num: 3,
     icon: '🧼',
     titleKey: 'tutorial.step3Title',
-    fallbackTitle: 'Полный уход',
+    fallbackTitle: 'Первый уход',
     taskKey: 'tutorial.step3Task',
-    fallbackTask: '🎯 Задача: Покорми, помой и пощекочи питомца',
+    fallbackTask: '🎯 Задача: Покорми, помой или пощекочи питомца',
     rewardDesc: '+10 ✨',
     beaconSelector: '#petNeedsStation',
     check: () => {
-      const w = GAME.tutorialCareDone?.wash || washCount > 0 || (GAME.clean || 0) >= 90;
-      const f = GAME.tutorialCareDone?.feed || feedCount > 0 || (GAME.hunger || 0) >= 90;
-      const tk = GAME.tutorialCareDone?.tickle || (GAME.tickleCount || 0) > 0 || (GAME.comboHeat || 0) >= 5;
-      return w && f && tk;
+      const w = GAME.tutorialCareDone?.wash || washCount > 0;
+      const f = GAME.tutorialCareDone?.feed || feedCount > 0;
+      const tk = GAME.tutorialCareDone?.tickle || (GAME.tickleCount || 0) > 0;
+      return w || f || tk;
     },
     progress: () => {
-      const w = GAME.tutorialCareDone?.wash || washCount > 0 || (GAME.clean || 0) >= 90;
-      const f = GAME.tutorialCareDone?.feed || feedCount > 0 || (GAME.hunger || 0) >= 90;
-      const tk = GAME.tutorialCareDone?.tickle || (GAME.tickleCount || 0) > 0 || (GAME.comboHeat || 0) >= 5;
-      const doneCount = (w ? 1 : 0) + (f ? 1 : 0) + (tk ? 1 : 0);
-      return { current: doneCount, max: 3, label: `Уход: ${doneCount} / 3` };
+      const w = GAME.tutorialCareDone?.wash || washCount > 0;
+      const f = GAME.tutorialCareDone?.feed || feedCount > 0;
+      const tk = GAME.tutorialCareDone?.tickle || (GAME.tickleCount || 0) > 0;
+      const done = w || f || tk;
+      return { current: done ? 1 : 0, max: 1, label: done ? 'Уход: готово' : 'Уход: 0 / 1' };
     },
     guide: () => {
       const el = document.getElementById('petNeedsStation');
@@ -652,15 +654,12 @@ export function resolveSpotlightTarget(step) {
     }
 
     case 3: {
-      // 3. Полный уход: Помыть, покормить, пощекотать
+      // 3. Уход: достаточно любого одного действия
       const needs = document.getElementById('petNeedsStation');
-      const wDone = GAME.tutorialCareDone?.wash || (GAME.clean || 0) >= 90;
-      const fDone = GAME.tutorialCareDone?.feed || (GAME.hunger || 0) >= 90;
-      const tDone = GAME.tutorialCareDone?.tickle || (GAME.comboHeat || 0) >= 5;
-      if (!wDone) return document.getElementById('btnWash') || needs;
-      if (!fDone) return document.getElementById('btnFeed') || needs;
-      if (!tDone) return document.getElementById('btnTickle') || needs;
-      return needs;
+      if (GAME.hunger < 90) return document.getElementById('btnFeed') || needs;
+      if (GAME.clean < 90) return document.getElementById('btnWash') || needs;
+      if (GAME.happy < 90) return document.getElementById('btnTickle') || needs;
+      return document.getElementById('btnFeed') || needs;
     }
 
     case 4: {
@@ -855,15 +854,20 @@ export function refreshTutorialSpotlight() {
 
   const widget = document.getElementById('tutorialQuestWidget');
   if (widget) {
-    // Виджет квеста всегда выше рулетки кейсов (z-50 / elevated 855)
-    widget.style.zIndex = '900';
+    widget.classList.add('tutorial-widget-priority');
   }
 
   ensureMeteorForCatchQuest(step);
 
+  // Колесо заточки поверх инвентаря, если открыто
+  const sharpenModal = document.getElementById('knifeSharpenModal');
+  const sharpenOpen = sharpenModal && !sharpenModal.classList.contains('hidden');
+
   let target = null;
   if (step.check()) {
     target = document.getElementById('tqActionBtn') || widget;
+  } else if (sharpenOpen && (step.id === 'steel_temper' || step.num === 8)) {
+    target = document.getElementById('btnSpinSharpenWheel') || sharpenModal;
   } else {
     target = resolveSpotlightTarget(step);
   }
@@ -883,9 +887,22 @@ export function refreshTutorialSpotlight() {
 
     const modal = target.closest('.fixed:not(#tutorialSpotlightOverlay):not(#bootVeil):not(#tutorialStartModal)');
     if (modal) {
-      // Рулетка/модалки под квестом, но над затемнением
-      modal.style.zIndex = modal.id === 'caseRouletteModal' ? '855' : '870';
+      // Заточка выше инвентаря; инвентарь выше затемнения
+      if (modal.id === 'knifeSharpenModal') modal.style.zIndex = '890';
+      else if (modal.id === 'caseRouletteModal') modal.style.zIndex = '855';
+      else if (modal.id === 'characterInventoryModal') modal.style.zIndex = '860';
+      else modal.style.zIndex = '870';
       activeElevatedModal = modal;
+    }
+  }
+
+  if (sharpenOpen && sharpenModal) {
+    sharpenModal.style.zIndex = '890';
+    if (activeElevatedModal !== sharpenModal) {
+      // Инвентарь чуть ниже колеса
+      const inv = document.getElementById('characterInventoryModal');
+      if (inv && !inv.classList.contains('hidden')) inv.style.zIndex = '860';
+      activeElevatedModal = sharpenModal;
     }
   }
 }
@@ -984,7 +1001,7 @@ export function updateTutorialQuestWidget() {
   if (widget) {
     widget.classList.remove('hidden');
     widget.classList.add('tutorial-widget-priority');
-    widget.style.zIndex = '900';
+    widget.style.zIndex = '';
   }
   ensureMeteorForCatchQuest(currentStep);
 
@@ -1066,10 +1083,9 @@ export function updateTutorialQuestWidget() {
     if (overlay && !overlay.classList.contains('hidden')) {
       overlay.classList.add('hidden');
     }
-    // Плашка квеста остаётся поверх рулетки даже без spotlight
     if (widget) {
       widget.classList.add('tutorial-widget-priority');
-      widget.style.zIndex = '900';
+      widget.style.zIndex = '';
     }
     if (activeSpotlightElement) {
       activeSpotlightElement.classList.remove('tutorial-spotlight-target');
@@ -1148,6 +1164,7 @@ export function initTutorialListeners() {
   });
 
   migrateTutorialStepForMeteorBeforeCase();
-  updateTutorialStartCta();
   updateTutorialQuestWidget();
+  // CTA после авто-журнала патчей (~350ms), чтобы не мигал поверх
+  setTimeout(() => updateTutorialStartCta(), 500);
 }
