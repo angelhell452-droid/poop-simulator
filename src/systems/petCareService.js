@@ -1,5 +1,5 @@
-import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.js?v=5.4.25';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.25';
+import { GAME, incFeedCount, incWashCount, incPolishCount } from '../core/state.js?v=5.4.26';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.26';
 import { events } from '../core/events.js';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
@@ -54,7 +54,7 @@ export function ticklePet() {
   return true;
 }
 
-import { hasRelic } from '../data/relics.data.js?v=5.4.25';
+import { hasRelic } from '../data/relics.data.js?v=5.4.26';
 
 export function decayNeeds(dt) {
   if (hasRelic('relic_auto_care') || GAME.transcendUpgrades?.autoCare) {

@@ -1,6 +1,6 @@
-import { GAME } from '../core/state.js?v=5.4.25';
-import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.4.25';
-import { ECONOMY } from './economy.config.js?v=5.4.25';
+import { GAME } from '../core/state.js?v=5.4.26';
+import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.4.26';
+import { ECONOMY } from './economy.config.js?v=5.4.26';
 
 function echoCount(phaseId) {
   const bag = GAME.phaseEcho || {};
@@ -59,11 +59,11 @@ function openPairEchoBonus(at, closedPairs, previewPhase = 0, previewAdd = 0) {
   return bonus;
 }
 
-import { bigPow, isBig, log10Of, mul, rehydrateBig } from '../utils/big.js?v=5.4.25';
+import { bigPow, isBig, log10Of, mul, rehydrateBig } from '../utils/big.js?v=5.4.26';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
 
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.25';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.26';
 
 export function getFlushIncomeMult() {
   const flushes = Math.max(0, GAME.flushCount ?? GAME.totalPrestiges ?? 0);

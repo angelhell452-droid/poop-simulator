@@ -1,5 +1,5 @@
-import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.25';
-import { openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.25';
+import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.26';
+import { openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.26';
 import { events } from '../core/events.js';
 
 /**

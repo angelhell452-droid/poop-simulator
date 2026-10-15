@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.25';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.26';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.26 PRO',
+    date: '15 Октября 2026',
+    dateEn: 'October 15, 2026',
+    title: 'Патч 5.4.26: Превью без клипа',
+    titleEn: 'Patch 5.4.26: Preview Without Clip',
+    badge: 'Патч 5.4.26',
+    badgeEn: 'Patch 5.4.26',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'ui',
+        icon: '✨',
+        text: 'Строки добычи в превью кейса: только внутреннее свечение, без filter/внешнего ореола у радужных — обрезка по краю скролла убрана.',
+        textEn: 'Case preview loot rows: inset glow only; rainbow filter/outer bloom disabled so the scroll edge no longer clips light.'
+      }
+    ]
+  },
   {
     version: 'v5.4.25 PRO',
     date: '15 Октября 2026',

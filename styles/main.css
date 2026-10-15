@@ -969,10 +969,11 @@ body.girly-mode {
 
 /*
  * Превью кейса: overflow-y:auto клипит и X.
- * Решение — запас по бокам + только inset-свечение у строк (внешний ореол не нужен).
+ * Внешний box-shadow / Tailwind shadow-* / filter:hue-rotate дают «обрезку».
+ * Только inset + без filter на строках добычи.
  */
 #casePreviewKnivesList {
-  padding: 0.85rem 1.35rem 1.1rem;
+  padding: 1rem 1.5rem 1.25rem;
   margin: 0;
 }
 
@@ -985,32 +986,46 @@ body.girly-mode {
   }
 }
 
+#casePreviewKnivesList > .case-preview-loot-row,
 #casePreviewKnivesList > [class*="rarity-"],
 #casePreviewKnivesList > .jackpot-slot {
+  filter: none !important;
   box-shadow: inset 0 0 14px rgba(255, 255, 255, 0.06) !important;
 }
 
-#casePreviewKnivesList > .rarity-covert {
-  box-shadow: inset 0 0 16px rgba(239, 68, 68, 0.35), inset 0 0 28px rgba(239, 68, 68, 0.14) !important;
+#casePreviewKnivesList > .rarity-covert,
+#casePreviewKnivesList > .case-preview-loot-row.rarity-covert {
+  box-shadow: inset 0 0 16px rgba(239, 68, 68, 0.4), inset 0 0 28px rgba(239, 68, 68, 0.16) !important;
 }
 
-#casePreviewKnivesList > .rarity-rainbow {
-  box-shadow: inset 0 0 16px rgba(244, 63, 94, 0.32), inset 0 0 28px rgba(168, 85, 247, 0.18) !important;
+#casePreviewKnivesList > .rarity-rainbow,
+#casePreviewKnivesList > .case-preview-loot-row.rarity-rainbow {
+  /* без hue-rotate filter — иначе ореол/градиент клипится скроллом */
+  animation: none !important;
+  background: linear-gradient(115deg, rgba(239, 68, 68, 0.35), rgba(245, 158, 11, 0.3), rgba(34, 197, 94, 0.3), rgba(59, 130, 246, 0.35), rgba(168, 85, 247, 0.35)) !important;
+  box-shadow: inset 0 0 18px rgba(244, 63, 94, 0.38), inset 0 0 28px rgba(168, 85, 247, 0.2) !important;
 }
 
-#casePreviewKnivesList > .rarity-legendary {
-  box-shadow: inset 0 0 16px rgba(245, 158, 11, 0.35), inset 0 0 28px rgba(245, 158, 11, 0.14) !important;
+#casePreviewKnivesList > .rarity-legendary,
+#casePreviewKnivesList > .case-preview-loot-row.rarity-legendary {
+  box-shadow: inset 0 0 16px rgba(245, 158, 11, 0.38), inset 0 0 28px rgba(245, 158, 11, 0.16) !important;
 }
 
 #casePreviewKnivesList > .rarity-godly,
 #casePreviewKnivesList > .rarity-celestial,
 #casePreviewKnivesList > .rarity-titanium,
-#casePreviewKnivesList > .rarity-special {
-  box-shadow: inset 0 0 16px rgba(56, 189, 248, 0.3), inset 0 0 28px rgba(250, 204, 21, 0.16) !important;
+#casePreviewKnivesList > .rarity-special,
+#casePreviewKnivesList > .case-preview-loot-row.rarity-godly,
+#casePreviewKnivesList > .case-preview-loot-row.rarity-celestial,
+#casePreviewKnivesList > .case-preview-loot-row.rarity-titanium,
+#casePreviewKnivesList > .case-preview-loot-row.rarity-special {
+  box-shadow: inset 0 0 16px rgba(56, 189, 248, 0.32), inset 0 0 28px rgba(250, 204, 21, 0.16) !important;
 }
 
-#casePreviewKnivesList > .jackpot-slot {
+#casePreviewKnivesList > .jackpot-slot,
+#casePreviewKnivesList > .case-preview-loot-row.jackpot-slot {
   animation: jackpotPulseGlowInset 1.5s ease-in-out infinite alternate !important;
+  filter: none !important;
 }
 
 @keyframes jackpotWinTitlePulse {
