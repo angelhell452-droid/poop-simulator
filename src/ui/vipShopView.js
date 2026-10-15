@@ -1,13 +1,13 @@
-import { GAME } from '../core/state.js?v=5.4.19';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.19';
-import { getPassiveIncome } from '../economy/production.js?v=5.4.19';
-import { mul, gainBio } from '../utils/big.js?v=5.4.19';
-import { showKnifeToast } from './characterInventoryView.js?v=5.4.19';
+import { GAME } from '../core/state.js?v=5.4.20';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.20';
+import { getPassiveIncome } from '../economy/production.js?v=5.4.20';
+import { mul, gainBio } from '../utils/big.js?v=5.4.20';
+import { showKnifeToast } from './characterInventoryView.js?v=5.4.20';
 import { onLocaleChange } from '../i18n/t.js';
 import { TALENTS } from '../data/talents.data.js';
-import { updateHUD } from './hudView.js?v=5.4.19';
-import { saveLocal } from '../save/saveManager.js?v=5.4.19';
-import { isCreatorOrAdmin } from './adminView.js?v=5.4.19';
+import { updateHUD } from './hudView.js?v=5.4.20';
+import { saveLocal } from '../save/saveManager.js?v=5.4.20';
+import { isCreatorOrAdmin } from './adminView.js?v=5.4.20';
 
 export function getWarpTalentMult() {
   const warpLvl = TALENTS.find(t => t.id === 'talent_warp_buff')?.level || 0;

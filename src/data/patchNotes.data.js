@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.19';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.20';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.20 PRO',
+    date: '15 Октября 2026',
+    dateEn: 'October 15, 2026',
+    title: 'Патч 5.4.20: Форма × нож окна',
+    titleEn: 'Patch 5.4.20: Form Cost × Window Knife',
+    badge: 'Патч 5.4.20',
+    badgeEn: 'Patch 5.4.20',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🗡️',
+        text: 'Цена формы масштабируется джекпотом кейса текущего прорыва: слабый нож тормозит рост форм, джекпот ≈ нормальный темп, звёзды/заточка всё ещё дают преимущество.',
+        textEn: 'Form cost scales with the current breakthrough case jackpot: a weak knife slows form climb, jackpot ≈ designed pace, stars/sharpen still help.'
+      }
+    ]
+  },
   {
     version: 'v5.4.19 PRO',
     date: '14 Октября 2026',

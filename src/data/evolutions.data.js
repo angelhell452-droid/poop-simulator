@@ -1,10 +1,11 @@
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.19';
-import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.19';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.19';
-import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.19';
-import { GAME } from '../core/state.js?v=5.4.19';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.19';
-import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.19';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.20';
+import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.20';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.20';
+import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.20';
+import { GAME } from '../core/state.js?v=5.4.20';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.20';
+import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.20';
+import { caseTierJackpotPassive } from './knifeBalance.config.js?v=5.4.20';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
@@ -101,6 +102,13 @@ export function calcEvolutionCost(i) {
   // Пассив множится на evo.mult — без этого 2k→3k после прорыва схлопывается за секунды.
   if (ECONOMY.formScaleWithEvoMult) {
     total = mul(total, calcEvolutionMult(stage));
+  }
+  // Пассив × нож: пол = джекпот кейса текущего окна BT (index = BT).
+  // Слабый нож < пол → медленнее; джекпот ≈ formBuySeconds; звёзды/заточка всё ещё ускоряют.
+  if (ECONOMY.formScaleWithCaseKnife) {
+    const bt = Math.max(0, Number(GAME?.breakthroughCount ?? GAME?.totalTranscend ?? 0) || 0);
+    const knifeFloor = caseTierJackpotPassive(bt + 1);
+    total = mul(total, Math.max(1, knifeFloor));
   }
   if (isBig(total)) return total;
   if (Number.isFinite(total) && total > 0) return Math.max(1, Math.floor(total));
