@@ -1,16 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.27';
+import { GAME } from '../core/state.js?v=5.4.28';
 import { TALENTS } from '../data/talents.data.js';
-import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.27';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.4.27';
+import { RELICS, RELIC_TIERS, getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.28';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.4.28';
 import { events } from '../core/events.js';
-import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.4.27';
-import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub, rehydrateBig } from '../utils/big.js?v=5.4.27';
-import { noteHorizonSpark } from '../economy/horizon.js?v=5.4.27';
-import { saveLocal } from '../save/saveManager.js?v=5.4.27';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.27';
-import { peakForm } from '../progression/unlocks.js?v=5.4.27';
-import { getBreakthroughBoostDetails } from '../economy/metaMultipliers.js?v=5.4.27';
-import { effectiveFormCost } from '../progression/evolutionService.js?v=5.4.27';
+import { getPhaseByIndex, PHASE_COUNT } from '../progression/phases.data.js?v=5.4.28';
+import { bigPow, bigPow10, gte, log10Of, mul, isBig, lt, sub, rehydrateBig } from '../utils/big.js?v=5.4.28';
+import { noteHorizonSpark } from '../economy/horizon.js?v=5.4.28';
+import { saveLocal } from '../save/saveManager.js?v=5.4.28';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.28';
+import { peakForm } from '../progression/unlocks.js?v=5.4.28';
+import { getBreakthroughBoostDetails } from '../economy/metaMultipliers.js?v=5.4.28';
+import { effectiveFormCost } from '../progression/evolutionService.js?v=5.4.28';
 
 export const BRIDGE_FLUSHES_NEEDED = 5;
 

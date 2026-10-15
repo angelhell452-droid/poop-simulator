@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.27';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.28';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.28 PRO',
+    date: '16 Октября 2026',
+    dateEn: 'October 16, 2026',
+    title: 'Патч 5.4.28: Стабильность обучения',
+    titleEn: 'Patch 5.4.28: Training Stability',
+    badge: 'Патч 5.4.28',
+    badgeEn: 'Patch 5.4.28',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'fix',
+        icon: '🛠️',
+        text: 'Акции заточки/скина в туториале без циклического импорта модулей — обучение и кейсы стабильнее.',
+        textEn: 'Tutorial sharpen/skin promos no longer use a circular module import — training and cases stay stable.'
+      }
+    ]
+  },
   {
     version: 'v5.4.27 PRO',
     date: '16 Октября 2026',
