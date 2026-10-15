@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.23';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.24';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.24 PRO',
+    date: '15 Октября 2026',
+    dateEn: 'October 15, 2026',
+    title: 'Патч 5.4.24: Джекпот-праздник',
+    titleEn: 'Patch 5.4.24: Jackpot Celebration',
+    badge: 'Патч 5.4.24',
+    badgeEn: 'Patch 5.4.24',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'ui',
+        icon: '🔥',
+        text: 'При выпадении джекпота кейса (1%) — отдельный фанфар, усиленное конфетти и крупная надпись «ДЖЕКПОТ». В превью кейса свечение редкости больше не обрезается рамкой списка.',
+        textEn: 'Case jackpot (1%) now plays a special fanfare, stronger confetti, and a big “JACKPOT” title. Case preview rarity glow no longer clips against the list edge.'
+      }
+    ]
+  },
   {
     version: 'v5.4.23 PRO',
     date: '15 Октября 2026',

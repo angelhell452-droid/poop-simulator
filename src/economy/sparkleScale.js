@@ -1,5 +1,5 @@
-import { ECONOMY, caseSparkleStackGrowthPerBt } from './economy.config.js?v=5.4.23';
-import { bigPow, log10Of, pow10, rehydrateBig } from '../utils/big.js?v=5.4.23';
+import { ECONOMY, caseSparkleStackGrowthPerBt } from './economy.config.js?v=5.4.24';
+import { bigPow, log10Of, pow10, rehydrateBig } from '../utils/big.js?v=5.4.24';
 
 /** Epoch 1 stays at x1. Kept for legacy UI / old meteor purse helpers. */
 export function getSparkleEpochMult(epoch) {

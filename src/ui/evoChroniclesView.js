@@ -1,6 +1,6 @@
-import { GAME } from '../core/state.js?v=5.4.23';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.23';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.23';
+import { GAME } from '../core/state.js?v=5.4.24';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.24';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.24';
 import { t, onLocaleChange } from '../i18n/t.js';
 import { epochName, evolutionDisplayName } from '../i18n/localize.js';
 

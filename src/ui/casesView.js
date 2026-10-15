@@ -1,22 +1,22 @@
 import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.23';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.23';
-import { KNIVES } from '../data/knives.data.js?v=5.4.23';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.23';
-import { saveLocal } from '../save/saveManager.js?v=5.4.23';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.23';
-import { updateHUD } from './hudView.js?v=5.4.23';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.23';
+import { GAME } from '../core/state.js?v=5.4.24';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.24';
+import { KNIVES } from '../data/knives.data.js?v=5.4.24';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.24';
+import { saveLocal } from '../save/saveManager.js?v=5.4.24';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.24';
+import { updateHUD } from './hudView.js?v=5.4.24';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.24';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.23';
-import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.23';
-import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.23';
-import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.23';
-import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.23';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.24';
+import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.24';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.24';
+import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.24';
+import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.24';
 import { TALENTS } from '../data/talents.data.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.23';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.24';
 import { KNIFE_RARITIES, getRarityMeta } from '../data/knifeRarities.config.js';
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -404,6 +404,17 @@ export function playCaseUnlock() {
   } catch (e) { }
 }
 
+/** Джекпот кейса = слот с шансом 1% (или последний в pool как фолбэк). */
+export function isCaseJackpotKnife(caseObj, knife) {
+  if (!caseObj || !knife) return false;
+  const ch = caseObj.fixedChances?.[knife.id];
+  if (ch != null && Number.isFinite(Number(ch))) {
+    return Math.abs(Number(ch) - 0.01) < 0.0015;
+  }
+  const pool = caseObj.pool || [];
+  return pool.length > 0 && pool[pool.length - 1] === knife.id;
+}
+
 export function playCaseWinFanfare(rarity) {
   if (!caseAudioEnabled) return;
   try {
@@ -429,6 +440,52 @@ export function playCaseWinFanfare(rarity) {
   } catch (e) { }
 }
 
+/** Праздничный фанфар именно на 1% джекпот (громче и длиннее обычного win). */
+export function playJackpotFanfare() {
+  if (!caseAudioEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const notes = [
+      { f: 523.25, t: 0, d: 0.22 },
+      { f: 659.25, t: 0.14, d: 0.22 },
+      { f: 783.99, t: 0.28, d: 0.22 },
+      { f: 1046.5, t: 0.42, d: 0.35 },
+      { f: 1318.5, t: 0.62, d: 0.55 },
+      { f: 1046.5, t: 0.95, d: 0.7 }
+    ];
+    notes.forEach(({ f, t, d }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const start = now + t;
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(f, start);
+      gain.gain.setValueAtTime(0.001, start);
+      gain.gain.exponentialRampToValueAtTime(0.34, start + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + d);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + d + 0.05);
+    });
+  } catch (e) { }
+}
+
+function setRouletteJackpotBanner(isJackpot) {
+  const title = document.getElementById('rouletteJackpotTitle');
+  const label = document.getElementById('rouletteDropBannerLabel');
+  if (title) {
+    title.classList.toggle('hidden', !isJackpot);
+    if (isJackpot) title.textContent = t('cases.jackpotWin');
+  }
+  if (label) {
+    label.textContent = isJackpot ? t('cases.jackpotWinSub') : t('roulette.dropBanner');
+    label.classList.toggle('text-amber-300', isJackpot);
+    label.classList.toggle('text-stone-400', !isJackpot);
+  }
+}
+
 export function launchConfettiFireworks(isGold = false) {
   const c = document.getElementById('rouletteConfettiCanvas');
   if (!c) return;
@@ -437,24 +494,28 @@ export function launchConfettiFireworks(isGold = false) {
   const ctx = c.getContext('2d');
   confettiParticles = [];
 
-  const colors = isGold
-    ? ['#facc15', '#fde047', '#ffd700', '#f59e0b', '#ffffff']
-    : ['#ef4444', '#f43f5e', '#ec4899', '#a855f7', '#38bdf8', '#facc15'];
+  const isJackpot = isGold === 'jackpot';
+  const colors = isJackpot
+    ? ['#facc15', '#fde047', '#ffd700', '#f59e0b', '#ef4444', '#ffffff', '#fb923c']
+    : (isGold
+      ? ['#facc15', '#fde047', '#ffd700', '#f59e0b', '#ffffff']
+      : ['#ef4444', '#f43f5e', '#ec4899', '#a855f7', '#38bdf8', '#facc15']);
 
-  for (let i = 0; i < 75; i++) {
+  const count = isJackpot ? 140 : 75;
+  for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = 4 + Math.random() * 8;
+    const speed = (isJackpot ? 5.5 : 4) + Math.random() * (isJackpot ? 10 : 8);
     confettiParticles.push({
       x: c.width / 2,
       y: c.height * 0.45,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed - 3,
-      size: 4 + Math.random() * 5,
+      size: 4 + Math.random() * (isJackpot ? 7 : 5),
       color: colors[Math.floor(Math.random() * colors.length)],
       rotation: Math.random() * Math.PI * 2,
       rotSpeed: (Math.random() - 0.5) * 0.2,
       life: 1.0,
-      decay: 0.012 + Math.random() * 0.008
+      decay: (isJackpot ? 0.008 : 0.012) + Math.random() * 0.008
     });
   }
 
@@ -756,24 +817,29 @@ function onRouletteFinished() {
   const meta = getRarityMeta(rouletteWinningKnife.rarity);
   const isGold = meta.order >= 8;
   const isCovert = rouletteWinningKnife.rarity === 'covert';
+  const isJackpot = isCaseJackpotKnife(activeRouletteCase, rouletteWinningKnife);
 
-  if (isGold || isCovert) {
+  if (isJackpot || isGold || isCovert) {
     const flash = document.getElementById('rouletteFlashOverlay');
     if (flash) {
-      flash.style.opacity = isGold ? '0.85' : '0.5';
-      setTimeout(() => { flash.style.opacity = '0'; }, 280);
+      flash.style.opacity = isJackpot ? '0.95' : (isGold ? '0.85' : '0.5');
+      setTimeout(() => { flash.style.opacity = '0'; }, isJackpot ? 420 : 280);
     }
-    launchConfettiFireworks(isGold);
+    launchConfettiFireworks(isJackpot ? 'jackpot' : isGold);
   }
 
-  playCaseWinFanfare(rouletteWinningKnife.rarity);
+  if (isJackpot) playJackpotFanfare();
+  else playCaseWinFanfare(rouletteWinningKnife.rarity);
 
   const resBanner = document.getElementById('rouletteResultBanner');
   if (resBanner) {
     resBanner.classList.remove('hidden');
-    resBanner.style.borderColor = meta.color;
-    resBanner.style.boxShadow = `0 0 25px ${meta.color}66`;
+    resBanner.style.borderColor = isJackpot ? '#facc15' : meta.color;
+    resBanner.style.boxShadow = isJackpot
+      ? '0 0 40px rgba(250, 204, 21, 0.65), 0 0 70px rgba(239, 68, 68, 0.35)'
+      : `0 0 25px ${meta.color}66`;
   }
+  setRouletteJackpotBanner(isJackpot);
 
   const rIcon = document.getElementById('rouletteResultIcon');
   if (rIcon) rIcon.innerHTML = getKnifeImageHtml(rouletteWinningKnife, 80);
@@ -794,10 +860,13 @@ function onRouletteFinished() {
 
   const rarityEl = document.getElementById('rouletteResultRarity');
   if (rarityEl) {
+    const jackpotChip = isJackpot
+      ? ` • <span class="font-black text-amber-300 uppercase">${t('cases.jackpotWin')}</span>`
+      : '';
     if (isDuplicate) {
-      rarityEl.innerHTML = `<span class="font-bold uppercase ${meta.badgeClass} px-2 py-0.5 rounded text-[11px]">${knifeRarity(rouletteWinningKnife)}</span> • <span class="text-yellow-400 font-bold">${t('cases.duplicateBanner', { refund: duplicateRefundText })}</span>`;
+      rarityEl.innerHTML = `<span class="font-bold uppercase ${meta.badgeClass} px-2 py-0.5 rounded text-[11px]">${knifeRarity(rouletteWinningKnife)}</span> • <span class="text-yellow-400 font-bold">${t('cases.duplicateBanner', { refund: duplicateRefundText })}</span>${jackpotChip}`;
     } else {
-      rarityEl.innerHTML = `<span class="font-bold uppercase ${meta.badgeClass} px-2 py-0.5 rounded text-[11px]">${knifeRarity(rouletteWinningKnife)}</span> • <span class="text-emerald-400 font-bold">${t('cases.newKnifeBanner')}</span>`;
+      rarityEl.innerHTML = `<span class="font-bold uppercase ${meta.badgeClass} px-2 py-0.5 rounded text-[11px]">${knifeRarity(rouletteWinningKnife)}</span> • <span class="text-emerald-400 font-bold">${t('cases.newKnifeBanner')}</span>${jackpotChip}`;
     }
   }
 
@@ -814,10 +883,14 @@ function onRouletteFinished() {
     pbEl.textContent = `${t('inv.factoriesPct', { n: formatNumber(shown.passPct) })} · ${t('inv.clickCps', { n: formatNumber(getBaseKnifeCpsBonus(rouletteWinningKnife)) })}`;
   }
 
-  showKnifeToast(isDuplicate
-    ? t('cases.toastDuplicate', { name: knifeName(rouletteWinningKnife), refund: duplicateRefundText })
-    : t('cases.toastNew', { name: knifeName(rouletteWinningKnife) })
-  );
+  if (isJackpot) {
+    showKnifeToast(t('cases.toastJackpot', { name: knifeName(rouletteWinningKnife) }));
+  } else {
+    showKnifeToast(isDuplicate
+      ? t('cases.toastDuplicate', { name: knifeName(rouletteWinningKnife), refund: duplicateRefundText })
+      : t('cases.toastNew', { name: knifeName(rouletteWinningKnife) })
+    );
+  }
 
   GAME.casesOpened = (GAME.casesOpened || 0) + 1;
   saveLocal();
@@ -892,10 +965,21 @@ export function openMultipleCases(caseObj, count = 3) {
 
   renderMultiCarouselItem();
 
-  playCaseWinFanfare(multiWonItems[0].knife.rarity);
-  launchConfettiFireworks(true);
-
-  showKnifeToast(t('cases.toast3', { name: knifeName(multiWonItems[0].knife) }));
+  const anyJackpot = multiWonItems.some(it => isCaseJackpotKnife(caseObj, it.knife));
+  const topIsJackpot = isCaseJackpotKnife(caseObj, multiWonItems[0].knife);
+  if (anyJackpot) {
+    playJackpotFanfare();
+    launchConfettiFireworks('jackpot');
+    if (topIsJackpot) {
+      showKnifeToast(t('cases.toastJackpot', { name: knifeName(multiWonItems[0].knife) }));
+    } else {
+      showKnifeToast(t('cases.toast3', { name: knifeName(multiWonItems[0].knife) }));
+    }
+  } else {
+    playCaseWinFanfare(multiWonItems[0].knife.rarity);
+    launchConfettiFireworks(true);
+    showKnifeToast(t('cases.toast3', { name: knifeName(multiWonItems[0].knife) }));
+  }
 }
 
 export function renderMultiCarouselItem() {
@@ -904,6 +988,16 @@ export function renderMultiCarouselItem() {
   const knife = currentItem.knife;
   rouletteWinningKnife = knife;
   const meta = getRarityMeta(knife.rarity);
+  const isJackpot = isCaseJackpotKnife(activeRouletteCase, knife);
+  setRouletteJackpotBanner(isJackpot);
+
+  const resBanner = document.getElementById('rouletteResultBanner');
+  if (resBanner) {
+    resBanner.style.borderColor = isJackpot ? '#facc15' : meta.color;
+    resBanner.style.boxShadow = isJackpot
+      ? '0 0 40px rgba(250, 204, 21, 0.65), 0 0 70px rgba(239, 68, 68, 0.35)'
+      : `0 0 25px ${meta.color}66`;
+  }
 
   const rIcon = document.getElementById('rouletteResultIcon');
   if (rIcon) rIcon.innerHTML = getKnifeImageHtml(knife, 80);
@@ -912,10 +1006,13 @@ export function renderMultiCarouselItem() {
 
   const rarityEl = document.getElementById('rouletteResultRarity');
   if (rarityEl) {
+    const jackpotChip = isJackpot
+      ? ` • <span class="font-black text-amber-300 uppercase">${t('cases.jackpotWin')}</span>`
+      : '';
     if (currentItem.isDuplicate) {
-      rarityEl.innerHTML = `<span class="font-bold uppercase ${meta.badgeClass} px-2 py-0.5 rounded text-[11px]">${knifeRarity(knife)}</span> • <span class="text-yellow-400 font-bold">${t('cases.duplicateBanner', { refund: currentItem.refundText })}</span>`;
+      rarityEl.innerHTML = `<span class="font-bold uppercase ${meta.badgeClass} px-2 py-0.5 rounded text-[11px]">${knifeRarity(knife)}</span> • <span class="text-yellow-400 font-bold">${t('cases.duplicateBanner', { refund: currentItem.refundText })}</span>${jackpotChip}`;
     } else {
-      rarityEl.innerHTML = `<span class="font-bold uppercase ${meta.badgeClass} px-2 py-0.5 rounded text-[11px]">${knifeRarity(knife)}</span> • <span class="text-emerald-400 font-bold">${t('cases.newKnifeBanner')}</span>`;
+      rarityEl.innerHTML = `<span class="font-bold uppercase ${meta.badgeClass} px-2 py-0.5 rounded text-[11px]">${knifeRarity(knife)}</span> • <span class="text-emerald-400 font-bold">${t('cases.newKnifeBanner')}</span>${jackpotChip}`;
     }
   }
 
@@ -952,12 +1049,6 @@ export function renderMultiCarouselItem() {
         renderMultiCarouselItem();
       });
     });
-  }
-
-  const resBanner = document.getElementById('rouletteResultBanner');
-  if (resBanner) {
-    resBanner.style.borderColor = meta.color;
-    resBanner.style.boxShadow = `0 0 25px ${meta.color}66`;
   }
 }
 
