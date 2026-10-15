@@ -24,8 +24,9 @@ export const KNIFE_BALANCE_CONFIG = {
   passivePower: 0.28
 };
 
-import { mul } from '../utils/big.js?v=5.4.21';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.21';
+import { mul } from '../utils/big.js?v=5.4.22';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.22';
+import { caseTierJackpotSparkle } from '../economy/sparkleScale.js?v=5.4.22';
 
 /** Pool slot weights: common → jackpot (1%). */
 const CASE_SLOT_WEIGHTS = [0.28, 0.42, 0.58, 0.78, 1.0];
@@ -69,6 +70,7 @@ export function syncKnivesToCaseTiers(cases, knives) {
     const tier = Math.max(1, Number(c.tierNumber) || (index + 1));
     const jackpotPassive = caseTierJackpotPassive(tier);
     const jackpotClickCap = caseTierJackpotClickCap(tier);
+    const jackpotSparkle = caseTierJackpotSparkle(tier);
     const pool = c.pool || [];
 
     for (let slot = 0; slot < pool.length; slot++) {
@@ -77,7 +79,8 @@ export function syncKnivesToCaseTiers(cases, knives) {
       const weight = CASE_SLOT_WEIGHTS[Math.min(slot, CASE_SLOT_WEIGHTS.length - 1)];
       const passiveMult = Math.max(1, Math.round(jackpotPassive * weight));
       const clickMult = Math.max(2, Math.round(2.2 * passiveMult));
-      const sparkleMult = Math.round((1 + 0.35 * Math.log10(passiveMult + 1)) * 100) / 100;
+      // ✨/крит растёт с тиром кейса (не log от пассива) — свой кейс фармится ровнее следующего.
+      const sparkleMult = Math.max(1, Math.round(jackpotSparkle * weight));
       // cpsBonus = click-rate cap contribution only (≤280), never passive income mult.
       const cpsBonus = Math.max(1, Math.min(280, Math.round(jackpotClickCap * weight)));
       knife.passiveMult = passiveMult;

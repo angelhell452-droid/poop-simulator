@@ -1,16 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.21';
-import { KNIVES } from '../data/knives.data.js?v=5.4.21';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.21';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.21';
-import { getKnifeStar, getHatLevel, getKnifeClickMult } from '../economy/production.js?v=5.4.21';
-import { gte, gt, spendBio } from '../utils/big.js?v=5.4.21';
+import { GAME } from '../core/state.js?v=5.4.22';
+import { KNIVES } from '../data/knives.data.js?v=5.4.22';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.22';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.22';
+import { getKnifeStar, getHatLevel, getKnifeClickMult } from '../economy/production.js?v=5.4.22';
+import { gte, gt, spendBio } from '../utils/big.js?v=5.4.22';
 import { events } from '../core/events.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.21';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.22';
 import { t } from '../i18n/t.js';
 import { knifeName } from '../i18n/localize.js';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.21';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.22';
 
 // Tier 1 knives set from first 3 starter cases
 export const TIER_1_KNIFE_IDS = new Set(

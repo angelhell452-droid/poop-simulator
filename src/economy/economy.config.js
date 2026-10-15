@@ -50,18 +50,26 @@ export const ECONOMY = {
   // Кейс #1 (BT 0): онбординг — доля стека BT1, не полный слив.
   caseSparkleCase0Ratio: 0.08,
 
-  // --- Блестяшки ---
-  // Эпоха 1 = x1. Каждая следующая эпоха * sparkleEpochBase.
-  // 1.35 вместо 1.5 — мягче разгон по эпохам (форма ~3000 = эпоха 6).
+  // --- Блестяшки (приток только от ножа; эпоха/BT/CPS формы больше не кормят ✨) ---
+  // ✨ за крит у джекпота кейса тира 1. Дальше × caseSparkleStackGrowthPerBt()^tier.
+  sparkleCritBase: 5,
+  // Без ножа — слабый онбординг на кейс #1.
+  sparkleNoKnifeMult: 0.5,
+  // Мягкий буст от звёзд заточки (+5% за уровень выше 1).
+  sparkleStarStep: 0.05,
+  // Золотой метеор = столько «крит-пачек» того же ножа (для всех; VIP лишь автосбор).
+  meteorCritPackMin: 8,
+  meteorCritPackMax: 15,
+  // Звездопад слабее золотого.
+  meteorShowerCritPackMin: 3,
+  meteorShowerCritPackMax: 6,
+  // Legacy keys (цены кейсов / старые формулы) — не множат кликовый приток ✨.
   sparkleEpochBase: 1.35,
   sparkleBreakthroughStep: 0.25,
-  sparkleStarStep: 0.05,
-  // SparklesIncome ∝ CPS^sparkleCpsExponent. Нормализация к sparkleCpsRef (CPS тира 1).
-  // 0.55 вместо 0.8 — late-game CPS больше не раздувает блестяшки до уровня биомассы.
   sparkleCpsExponent: 0.55,
   sparkleCpsRef: 80,
 
-  // --- Метеориты ---
+  // --- Метеориты (спавн/лут-баффы; размер ✨ пачки — от ножа, см. выше) ---
   meteorPurseBase: 5400,
   meteorSliceMin: 0.10,
   meteorSliceMax: 0.18,
@@ -116,25 +124,12 @@ export function caseUnlockBreakthrough(reqForm) {
 }
 
 /**
- * Во сколько раз ожидаемый стек ✨ растёт за один прорыв.
- * Собирается из тех же рычагов, что и приток: epoch × (CPS^exp) × нож тира.
+ * Во сколько раз стек/цена кейса и ✨-доход джекпота растут за один тир кейса.
+ * Приток ✨ привязан к ножу — рост = шаг силы ножа (K^0.35), без эпохи/CPS формы.
  */
 export function caseSparkleStackGrowthPerBt() {
   const k = Math.max(1.01, Number(ECONOMY.tierGrowthK) || 3.8);
-  const formStep = Math.max(1, Number(ECONOMY.caseFormStep) || 1000);
-  const factoryStep = Math.max(1, Number(ECONOMY.factoryFormStep) || 850);
-  const epochBase = Math.max(1, Number(ECONOMY.sparkleEpochBase) || 1.35);
-  const cpsExp = Number(ECONOMY.sparkleCpsExponent);
-  const exp = Number.isFinite(cpsExp) ? cpsExp : 0.55;
-
-  // +1000 форм ≈ 2 эпохи по 500.
-  const epochPerBt = Math.pow(epochBase, formStep / 500);
-  // CPS вдоль гармонии ~ K^(forms/factoryStep); блестяшки ~ CPS^exp.
-  const cpsPerBt = Math.pow(k, (formStep / factoryStep) * exp);
-  // Джекпот ножа кейса растёт как K^0.25 за тир (см. knifeBalance sync).
-  const knifePerBt = Math.pow(k, 0.25);
-  // Мягкий blend: не перемножаем всё на 100%, иначе late costs улетают слишком жёстко.
-  return epochPerBt * Math.pow(cpsPerBt, 0.9) * Math.pow(knifePerBt, 0.5);
+  return Math.pow(k, 0.35);
 }
 
 /**

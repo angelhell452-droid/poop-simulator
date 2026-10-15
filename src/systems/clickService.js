@@ -1,16 +1,13 @@
-import { GAME } from '../core/state.js?v=5.4.21';
+import { GAME } from '../core/state.js?v=5.4.22';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.21';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.21';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.21';
-import { getSparkleEpochMult, sparkleMultFromProgress } from '../economy/sparkleScale.js?v=5.4.21';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.21';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.21';
-import { takeClickBudget } from './autoclickService.js?v=5.4.21';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.22';
+import { getSparklesPerCrit } from '../economy/sparkleScale.js?v=5.4.22';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.22';
+import { takeClickBudget } from './autoclickService.js?v=5.4.22';
 import { events } from '../core/events.js';
-import { add, bigPow, cmp, gainBio, gte, isBig, mul } from '../utils/big.js?v=5.4.21';
+import { add, bigPow, gainBio, mul } from '../utils/big.js?v=5.4.22';
 import { hasPerk } from '../data/perks.data.js';
-import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.21';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.22';
 
 export let pendingClicks = 0;
 
@@ -50,27 +47,11 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
   const cascadeChance = (critCascadeTalent ? critCascadeTalent.level * 0.001 : 0);
 
   const eqKnife = getEquippedKnife();
-  const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
-  const isGambler = GAME.archetype === 'gambler';
-  const gamblerMult = isGambler ? 2.0 : 1.0;
-
-  // Прогрессивное масштабирование Блестяшек от Прорывов, Эпохи и Звезд ножа:
-  const bCount = Math.max(0, GAME.breakthroughCount ?? GAME.totalTranscend ?? 0);
-  const currentEpoch = getPhaseForStage(GAME.evoStage).id;
   const knifeStar = eqKnife ? getKnifeStar(eqKnife.id) : 1;
-  const breakthroughMult = 1 + bCount * ECONOMY.sparkleBreakthroughStep;
-  const epochMult = getSparkleEpochMult(currentEpoch);
-  const starMult = 1 + Math.max(0, knifeStar - 1) * ECONOMY.sparkleStarStep;
-  // Гармония: ✨ от model CPS формы — не от полного пассива (турбо/стаки иначе дают миллионы).
-  const cpsSparkleMult = sparkleMultFromProgress(GAME.evoStage);
-  const cpsFloor = gte(cpsSparkleMult, 0.25) ? cpsSparkleMult : 0.25;
-  let progScale = mul(mul(mul(breakthroughMult, epochMult), starMult), cpsFloor);
-  let sparklesPerProc = mul(mul(knifeSparkleMult, gamblerMult), progScale);
-  if (!isBig(sparklesPerProc)) {
-    sparklesPerProc = Math.max(1, Math.round(Number(sparklesPerProc) || 1));
-  } else if (cmp(sparklesPerProc, 1) < 0) {
-    sparklesPerProc = 1;
-  }
+  // ✨ только от ножа (+звёзды, gambler). Эпоха / BT / CPS формы не кормят приток.
+  const sparklesPerProc = getSparklesPerCrit(eqKnife, knifeStar, {
+    gambler: GAME.archetype === 'gambler'
+  });
 
   let totalEarned = 0;
   let sparklesEarned = 0;

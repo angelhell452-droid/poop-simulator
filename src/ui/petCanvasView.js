@@ -1,25 +1,30 @@
-import { GAME } from '../core/state.js?v=5.4.21';
-import { getEquippedKnife } from '../economy/production.js?v=5.4.21';
-
+import { GAME } from '../core/state.js?v=5.4.22';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.21';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.22';
 import { hasPerk } from '../data/perks.data.js';
-import { getClickPower, getPassiveIncome, getTurboClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.21';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.21';
-import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.21';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.21';
-import { updateHUD } from './hudView.js?v=5.4.21';
-import { saveLocal } from '../save/saveManager.js?v=5.4.21';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.21';
+import {
+  getClickPower,
+  getPassiveIncome,
+  getTurboClickMult,
+  getKnifeFactorySynergyMult,
+  getEquippedKnife,
+  getKnifeStar
+} from '../economy/production.js?v=5.4.22';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.22';
+import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.22';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.22';
+import { updateHUD } from './hudView.js?v=5.4.22';
+import { saveLocal } from '../save/saveManager.js?v=5.4.22';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.22';
 import { events } from '../core/events.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.21';
-import { getSparkleEpochMult, sparkleMultFromProgress } from '../economy/sparkleScale.js?v=5.4.21';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.21';
-import { KNIVES } from '../data/knives.data.js?v=5.4.21';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.21';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.22';
+import { getMeteorSparkleGain, getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.22';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.22';
+import { KNIVES } from '../data/knives.data.js?v=5.4.22';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.22';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.21';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.21';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.22';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.22';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
@@ -1547,21 +1552,14 @@ export function catchGoldenMeteor() {
     GAME.sparkleMagnetUntil = Date.now() + 15000;
   }
 
-  // ГАРАНТИРОВАННЫЙ ДРОП БЛЕСТЯШЕК СО ВСЕХ ЗВЕЗДНЫХ МЕТЕОРИТОВ (100% шанс)
-  const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
+  // Гарантия ✨: ~8–15 крит-пачек того же ножа (для всех; VIP только автосбор).
   const eqKnife = getEquippedKnife();
-  const knifeSparkleMult = Math.max(1, Number(eqKnife?.sparkleMult) || 1);
-  const slice = ECONOMY.meteorSliceMin + Math.random() * (ECONOMY.meteorSliceMax - ECONOMY.meteorSliceMin);
-  // Гармония: метеорит ∝ model CPS формы (не полный пассив)
-  const cpsSparkleMult = sparkleMultFromProgress(GAME.evoStage);
-  const cpsFloor = gte(cpsSparkleMult, 0.25) ? cpsSparkleMult : 0.25;
-  const purseSlice = mul(profile.purse, slice * profile.localMult * profile.flushBonus * lootMult * knifeSparkleMult);
-  let spGain = mul(mul(purseSlice, meteorTalentSparkle()), cpsFloor);
-  if (!isBig(spGain)) {
-    spGain = Math.max(60, Math.round(Number(spGain) || 60));
-  } else if (cmp(spGain, 60) < 0) {
-    spGain = 60;
-  }
+  const knifeStar = eqKnife ? getKnifeStar(eqKnife.id) : 1;
+  let spGain = getMeteorSparkleGain(eqKnife, knifeStar, {
+    lootMult,
+    talentMult: meteorTalentSparkle(),
+    shower: false
+  });
   const tripleTalent = TALENTS.find(t => t.id === 'talent_meteor_triple');
   const tripleChance = tripleTalent ? tripleTalent.level * 0.001 : 0;
   let isTriple = false;
@@ -1758,16 +1756,13 @@ export function catchShowerMeteor(index) {
   GAME.stats.totalMeteorsCaught = (Number(GAME.stats.totalMeteorsCaught) || 0) + 1;
   GAME.meteorsCaught = GAME.stats.totalMeteorsCaught;
   events.emit('stats:meteorCaught', { total: GAME.stats.totalMeteorsCaught });
-  const profile = meteorSparkleProfile(GAME.evoStage, GAME.totalTranscend, GAME.totalPrestiges);
-  let sparkGain = mul(
-    profile.purse * (0.012 + Math.random() * 0.010) * profile.localMult * profile.flushBonus,
-    meteorTalentSparkle()
-  );
-  if (!isBig(sparkGain)) {
-    sparkGain = Math.max(24, Math.round(Number(sparkGain) || 24));
-  } else if (cmp(sparkGain, 24) < 0) {
-    sparkGain = 24;
-  }
+  const eqKnife = getEquippedKnife();
+  const knifeStar = eqKnife ? getKnifeStar(eqKnife.id) : 1;
+  let sparkGain = getMeteorSparkleGain(eqKnife, knifeStar, {
+    lootMult: 1,
+    talentMult: meteorTalentSparkle(),
+    shower: true
+  });
 
   const tripleTalent = TALENTS.find(t => t.id === 'talent_meteor_triple');
   const tripleChance = tripleTalent ? tripleTalent.level * 0.001 : 0;

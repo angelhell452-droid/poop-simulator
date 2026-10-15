@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.21';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.22';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.22 PRO',
+    date: '15 Октября 2026',
+    dateEn: 'October 15, 2026',
+    title: 'Патч 5.4.22: Блестяшки от ножа',
+    titleEn: 'Patch 5.4.22: Sparkles From Knife',
+    badge: 'Патч 5.4.22',
+    badgeEn: 'Patch 5.4.22',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '✨',
+        text: 'Доход ✨ с критов и метеоритов больше не растёт от эпохи/прорыва/CPS формы — только от экипированного ножа (+звёзды). Свой кейс фармится легче следующего. Золотой метеор ≈ 8–15 критов того же ножа (для всех; VIP лишь автосбор).',
+        textEn: 'Crit/meteor ✨ no longer scale with epoch/breakthrough/form CPS — only equipped knife (+stars). Your case farms easier than the next. Golden meteor ≈ 8–15 crits of the same knife (everyone; VIP only auto-collects).'
+      }
+    ]
+  },
   {
     version: 'v5.4.21 PRO',
     date: '15 Октября 2026',

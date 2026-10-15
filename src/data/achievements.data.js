@@ -1,4 +1,4 @@
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.21';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.22';
 
 export function generateAchievements() {
   const list = [];

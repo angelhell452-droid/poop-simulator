@@ -1,8 +1,8 @@
-import { GAME } from '../core/state.js?v=5.4.21';
+import { GAME } from '../core/state.js?v=5.4.22';
 import { TALENTS } from '../data/talents.data.js';
 import { events } from '../core/events.js';
 import { isTalentVisible } from '../progression/unlocks.js';
-import { bigPow, cmp, div, gte, isBig, log10Of, mul, rehydrateBig, sub } from '../utils/big.js?v=5.4.21';
+import { bigPow, cmp, div, gte, isBig, log10Of, mul, rehydrateBig, sub } from '../utils/big.js?v=5.4.22';
 
 /**
  * Calculates sum of geometric progression for talent costs:
