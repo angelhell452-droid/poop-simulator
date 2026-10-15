@@ -1043,6 +1043,15 @@ body.girly-mode {
   animation: jackpotWinTitlePulse 0.9s ease-in-out infinite;
 }
 
+/* Плашка квеста поверх рулетки кейсов и прочих z-50 модалок */
+#tutorialQuestWidget.tutorial-widget-priority {
+  position: fixed !important;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 900 !important;
+  pointer-events: auto;
+}
+
 .jackpot-badge {
   display: inline-flex;
   align-items: center;

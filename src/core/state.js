@@ -65,6 +65,7 @@ export function getDefaultGameState() {
     hatLevels: {},
     casesOpened: 0,
     firstCaseDiscountUsed: false,
+    caseFirstBuyDiscountUsed: {},
     firstCaseNotified: false,
     lastDailyTop10Claim: 0,
 
@@ -81,6 +82,7 @@ export function getDefaultGameState() {
     tutorialStepIndex: 0,
     currentQuestId: 1,
     tutorialCompleted: false,
+    tutorialStarted: false,
     tutorialCritBonus: 0,
     tutorialClickBonus: 0,
     tutorialIncomeMult: 1,
@@ -102,7 +104,7 @@ export function getDefaultGameState() {
     lastActiveTime: Date.now(),
     cloudAdminSeq: 0,
     worldReset: 0,
-    patchVersion: '5.4.26',
+    patchVersion: '5.4.27',
 
     autoBuyerEnabled: true,
     autoBuyerMode: 'latest',

@@ -1,20 +1,96 @@
-import { GAME, feedCount, washCount } from '../core/state.js?v=5.4.26';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.26';
+import { GAME, feedCount, washCount } from '../core/state.js?v=5.4.27';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.27';
 import { TALENTS } from '../data/talents.data.js';
 import { PERMANENT_PERKS, hasPerk } from '../data/perks.data.js';
 import { RELICS, hasRelic } from '../data/relics.data.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.26';
-import { gainBio } from '../utils/big.js?v=5.4.26';
-import { saveLocal } from '../save/saveManager.js?v=5.4.26';
-import { updateHUD } from './hudView.js?v=5.4.26';
-import { addVisualParticle, triggerForcedMeteor } from './petCanvasView.js?v=5.4.26';
-import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.26';
-import { openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.26';
-import { switchTalentSubTab } from './talentView.js?v=5.4.26';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.27';
+import { gainBio } from '../utils/big.js?v=5.4.27';
+import { saveLocal } from '../save/saveManager.js?v=5.4.27';
+import { updateHUD } from './hudView.js?v=5.4.27';
+import { addVisualParticle, triggerForcedMeteor } from './petCanvasView.js?v=5.4.27';
+import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.27';
+import { openPrestigeModal, openTranscendModal } from './modalManager.js?v=5.4.27';
+import { switchTalentSubTab } from './talentView.js?v=5.4.27';
 import { t, onLocaleChange } from '../i18n/t.js';
 
 let activeSpotlightElement = null;
 let isSpotlightActive = false;
+let meteorForcedForCatchQuest = false;
+let lastCatchQuestKey = null;
+
+/** Миграция: метеор-квест переехал с позиции 10 на 5 (перед кейсом). */
+export function migrateTutorialStepForMeteorBeforeCase() {
+  if (GAME.tutorialCompleted) {
+    GAME.tutorialStarted = true;
+    return;
+  }
+  if ((GAME.tutorialStepIndex || 0) > 0 || (GAME.totalClicks || 0) > 0 || (GAME.casesOpened || 0) > 0) {
+    GAME.tutorialStarted = true;
+  }
+  const oldIdx = Math.max(0, Math.floor(Number(GAME.tutorialStepIndex) || 0));
+  if (GAME.tutorialQuestOrderV2) return;
+  GAME.tutorialQuestOrderV2 = true;
+  const caught = (GAME.meteorsCaught || 0) >= 1;
+  let newIdx = oldIdx;
+  if (oldIdx < 4) {
+    newIdx = oldIdx;
+  } else if (!caught) {
+    newIdx = 4; // catch_star
+  } else if (oldIdx === 9) {
+    newIdx = 5; // был на старом метеоре, уже поймал → кейс
+  } else if (oldIdx >= 10) {
+    newIdx = oldIdx; // boom+ без сдвига
+  } else {
+    newIdx = oldIdx + 1; // chest..skin → +1
+  }
+  GAME.tutorialStepIndex = Math.min(TUTORIAL_QUESTS.length, newIdx);
+  GAME.currentQuestId = Math.min(TUTORIAL_QUESTS.length, (GAME.tutorialStepIndex || 0) + 1);
+}
+
+function ensureMeteorForCatchQuest(step) {
+  if (!step || step.id !== 'catch_star' || step.check()) {
+    meteorForcedForCatchQuest = false;
+    lastCatchQuestKey = null;
+    return;
+  }
+  const key = `${GAME.tutorialStepIndex}|catch_star`;
+  if (lastCatchQuestKey !== key) {
+    lastCatchQuestKey = key;
+    meteorForcedForCatchQuest = false;
+  }
+  if (!meteorForcedForCatchQuest) {
+    triggerForcedMeteor();
+    meteorForcedForCatchQuest = true;
+  }
+}
+
+export function startTutorialTraining() {
+  if (isTutorialComplete()) return;
+  GAME.tutorialStarted = true;
+  const cta = document.getElementById('tutorialStartModal');
+  if (cta) cta.classList.add('hidden');
+  const widget = document.getElementById('tutorialQuestWidget');
+  if (widget) widget.classList.remove('hidden');
+  saveLocal();
+  updateTutorialQuestWidget();
+  const step = getCurrentQuest();
+  if (step) {
+    ensureMeteorForCatchQuest(step);
+    activateTutorialSpotlight(step);
+  }
+}
+
+export function updateTutorialStartCta() {
+  const cta = document.getElementById('tutorialStartModal');
+  if (!cta) return;
+  if (isTutorialComplete() || GAME.tutorialStarted) {
+    cta.classList.add('hidden');
+    return;
+  }
+  cta.classList.remove('hidden');
+  const widget = document.getElementById('tutorialQuestWidget');
+  if (widget) widget.classList.add('hidden');
+}
 
 export const TUTORIAL_QUESTS = [
   // 1. Первая слизь
@@ -65,7 +141,7 @@ export const TUTORIAL_QUESTS = [
       if (tab) tab.click();
     },
     claim: (silent = false) => {
-      GAME.sparkles = gainBio(GAME.sparkles, );
+      GAME.sparkles = gainBio(GAME.sparkles, 20);
       if (!silent) addVisualParticle('+20 Блестяшек ✨', '#fbbf24', 1.8);
     }
   },
@@ -99,7 +175,7 @@ export const TUTORIAL_QUESTS = [
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     },
     claim: (silent = false) => {
-      GAME.sparkles = gainBio(GAME.sparkles, );
+      GAME.sparkles = gainBio(GAME.sparkles, 10);
       if (!silent) addVisualParticle('+10 Блестяшек ✨', '#fbbf24', 1.8);
     }
   },
@@ -132,10 +208,37 @@ export const TUTORIAL_QUESTS = [
     }
   },
 
-  // 5. Первый сундук
+  // 5. Поймай звезду (перед кейсом — учит ловить метеорит)
+  {
+    id: 'catch_star',
+    num: 5,
+    icon: '☄️',
+    titleKey: 'tutorial.step10Title',
+    fallbackTitle: 'Поймай звезду',
+    taskKey: 'tutorial.step10Task',
+    fallbackTask: '🎯 Задача: Поймай прилетевший Метеорит',
+    rewardDesc: '+50 ✨',
+    beaconSelector: '#petCanvas',
+    check: () => (GAME.meteorsCaught || 0) >= 1,
+    progress: () => {
+      const cur = Math.min(1, GAME.meteorsCaught || 0);
+      return { current: cur, max: 1, label: `Метеориты: ${formatNumber(cur)} / 1` };
+    },
+    guide: () => {
+      triggerForcedMeteor();
+      const el = document.getElementById('petCanvas');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+    claim: (silent = false) => {
+      GAME.sparkles = gainBio(GAME.sparkles, 50);
+      if (!silent) addVisualParticle('+50 Блестяшек ✨', '#fbbf24', 1.8);
+    }
+  },
+
+  // 6. Первый сундук
   {
     id: 'first_chest',
-    num: 5,
+    num: 6,
     icon: '📦',
     titleKey: 'tutorial.step5Title',
     fallbackTitle: 'Первый сундук',
@@ -153,15 +256,15 @@ export const TUTORIAL_QUESTS = [
       if (tab) tab.click();
     },
     claim: (silent = false) => {
-      GAME.sparkles = gainBio(GAME.sparkles, );
+      GAME.sparkles = gainBio(GAME.sparkles, 20);
       if (!silent) addVisualParticle('+20 Блестяшек ✨', '#fbbf24', 1.8);
     }
   },
 
-  // 6. Стальной хват
+  // 7. Стальной хват
   {
     id: 'steel_grip',
-    num: 6,
+    num: 7,
     icon: '🗡️',
     titleKey: 'tutorial.step6Title',
     fallbackTitle: 'Стальной хват',
@@ -182,10 +285,10 @@ export const TUTORIAL_QUESTS = [
     }
   },
 
-  // 7. Закалка стали
+  // 8. Закалка стали
   {
     id: 'steel_temper',
-    num: 7,
+    num: 8,
     icon: '⭐',
     titleKey: 'tutorial.step7Title',
     fallbackTitle: 'Закалка стали',
@@ -207,10 +310,10 @@ export const TUTORIAL_QUESTS = [
     }
   },
 
-  // 8. Стиль и Сила
+  // 9. Стиль и Сила
   {
     id: 'style_and_power',
-    num: 8,
+    num: 9,
     icon: '👑',
     titleKey: 'tutorial.step8Title',
     fallbackTitle: 'Стиль и Сила',
@@ -235,16 +338,16 @@ export const TUTORIAL_QUESTS = [
     }
   },
 
-  // 9. Новая кожа
+  // 10. Новая кожа
   {
     id: 'new_skin',
-    num: 9,
+    num: 10,
     icon: '🥋',
     titleKey: 'tutorial.step9Title',
     fallbackTitle: 'Новая кожа',
     taskKey: 'tutorial.step9Task',
     fallbackTask: '🎯 Задача: Купи и экипируй Одежду (скин)',
-    rewardDesc: '☄️ Метеорит',
+    rewardDesc: '+25 ✨',
     beaconSelector: '#btnCanvasInventory',
     check: () => Boolean(GAME.equippedSkin) || (Array.isArray(GAME.ownedSkins) && GAME.ownedSkins.length > 0),
     progress: () => {
@@ -258,35 +361,8 @@ export const TUTORIAL_QUESTS = [
       }, 100);
     },
     claim: (silent = false) => {
-      triggerForcedMeteor();
-      if (!silent) addVisualParticle('Метеорит в небе!', '#eab308', 2.0);
-    }
-  },
-
-  // 10. Поймай звезду
-  {
-    id: 'catch_star',
-    num: 10,
-    icon: '☄️',
-    titleKey: 'tutorial.step10Title',
-    fallbackTitle: 'Поймай звезду',
-    taskKey: 'tutorial.step10Task',
-    fallbackTask: '🎯 Задача: Поймай прилетевший Метеорит',
-    rewardDesc: '+50 ✨',
-    beaconSelector: '#petCanvas',
-    check: () => (GAME.meteorsCaught || 0) >= 1,
-    progress: () => {
-      const cur = Math.min(1, GAME.meteorsCaught || 0);
-      return { current: cur, max: 1, label: `Метеориты: ${formatNumber(cur)} / 1` };
-    },
-    guide: () => {
-      triggerForcedMeteor();
-      const el = document.getElementById('petCanvas');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    },
-    claim: (silent = false) => {
-      GAME.sparkles = gainBio(GAME.sparkles, );
-      if (!silent) addVisualParticle('+50 Блестяшек ✨', '#fbbf24', 1.8);
+      GAME.sparkles = gainBio(GAME.sparkles, 25);
+      if (!silent) addVisualParticle('+25 Блестяшек ✨', '#fbbf24', 2.0);
     }
   },
 
@@ -341,7 +417,7 @@ export const TUTORIAL_QUESTS = [
       }
     },
     claim: (silent = false) => {
-      GAME.sparkles = gainBio(GAME.sparkles, );
+      GAME.sparkles = gainBio(GAME.sparkles, 100);
       if (!silent) addVisualParticle('+100 Блестяшек ✨', '#fbbf24', 2.0);
     }
   },
@@ -420,7 +496,7 @@ export const TUTORIAL_QUESTS = [
       if (tab) tab.click();
     },
     claim: (silent = false) => {
-      GAME.sparkles = gainBio(GAME.sparkles, );
+      GAME.sparkles = gainBio(GAME.sparkles, 50);
       if (!silent) addVisualParticle('Вечный бафф активен! +50 ✨', '#fbbf24', 2.0);
     }
   },
@@ -516,6 +592,12 @@ export function isTutorialComplete() {
   return Boolean(GAME.tutorialCompleted || (GAME.tutorialStepIndex || 0) >= TUTORIAL_QUESTS.length);
 }
 
+/** Активен ли квест с данным id (для акций заточки/скина и т.п.). */
+export function isTutorialQuestActive(questId) {
+  if (GAME.tutorialCompleted || !questId) return false;
+  return getCurrentQuest()?.id === questId;
+}
+
 /**
  * Ретроактивная проверка: если условия квестов уже выполнены в state.js,
  * автоматически засчитываем их без зависаний.
@@ -587,18 +669,23 @@ export function resolveSpotlightTarget(step) {
     }
 
     case 5: {
-      // 5. Первый сундук: Открыть Кейс №1 в магазине за Блестяшки
+      // 5. Поймай звезду: клик по метеориту на холсте
+      return document.getElementById('canvasBox') || document.getElementById('petCanvas');
+    }
+
+    case 6: {
+      // 6. Первый сундук: Открыть Кейс №1
       const panel = document.getElementById('panelCases');
       if (!panel || panel.classList.contains('hidden')) {
         return document.querySelector('.dash-tab[data-target="panelCases"]');
       }
-      return document.querySelector('.open-case-btn[data-case="case_weapon_1"]') ||
+      return document.querySelector('.open-case-btn[data-case="case_classic"]') ||
              panel.querySelector('.open-case-btn') ||
              panel;
     }
 
-    case 6: {
-      // 6. Стальной хват: Зайти в Инвентарь и экипировать выбитый Нож
+    case 7: {
+      // 7. Стальной хват: экипировать нож
       const invModal = document.getElementById('characterInventoryModal');
       if (!invModal || invModal.classList.contains('hidden')) {
         return document.getElementById('btnCanvasInventory');
@@ -610,8 +697,8 @@ export function resolveSpotlightTarget(step) {
       return invModal.querySelector('.equip-knife-btn') || invModal;
     }
 
-    case 7: {
-      // 7. Закалка стали: Заточить нож на +1 звезду в гардеробе
+    case 8: {
+      // 8. Закалка стали: заточить нож
       const invModal = document.getElementById('characterInventoryModal');
       if (!invModal || invModal.classList.contains('hidden')) {
         return document.getElementById('btnCanvasInventory');
@@ -621,8 +708,8 @@ export function resolveSpotlightTarget(step) {
              invModal;
     }
 
-    case 8: {
-      // 8. Стиль и Сила: Купить и экипировать первую Шапку в гардеробе
+    case 9: {
+      // 9. Стиль и Сила: шапка
       const invModal = document.getElementById('characterInventoryModal');
       if (!invModal || invModal.classList.contains('hidden')) {
         return document.getElementById('btnCanvasInventory');
@@ -637,8 +724,8 @@ export function resolveSpotlightTarget(step) {
              hatsPanel;
     }
 
-    case 9: {
-      // 9. Новая кожа: Купить и экипировать первую Одежду (скин) по акции за 1000 ✨
+    case 10: {
+      // 10. Новая кожа: скин
       const invModal = document.getElementById('characterInventoryModal');
       if (!invModal || invModal.classList.contains('hidden')) {
         return document.getElementById('btnCanvasInventory');
@@ -651,11 +738,6 @@ export function resolveSpotlightTarget(step) {
              skinsPanel.querySelector('.buy-skin-btn') ||
              skinsPanel.querySelector('.equip-skin-btn') ||
              skinsPanel;
-    }
-
-    case 10: {
-      // 10. Поймай звезду: Кликнуть по прилетевшему Метеориту
-      return document.getElementById('canvasBox') || document.getElementById('petCanvas');
     }
 
     case 11: {
@@ -773,8 +855,11 @@ export function refreshTutorialSpotlight() {
 
   const widget = document.getElementById('tutorialQuestWidget');
   if (widget) {
-    widget.style.zIndex = '860';
+    // Виджет квеста всегда выше рулетки кейсов (z-50 / elevated 855)
+    widget.style.zIndex = '900';
   }
+
+  ensureMeteorForCatchQuest(step);
 
   let target = null;
   if (step.check()) {
@@ -796,9 +881,10 @@ export function refreshTutorialSpotlight() {
     target.classList.add('tutorial-spotlight-target');
     activeSpotlightElement = target;
 
-    const modal = target.closest('.fixed:not(#tutorialSpotlightOverlay):not(#bootVeil)');
+    const modal = target.closest('.fixed:not(#tutorialSpotlightOverlay):not(#bootVeil):not(#tutorialStartModal)');
     if (modal) {
-      modal.style.zIndex = '860';
+      // Рулетка/модалки под квестом, но над затемнением
+      modal.style.zIndex = modal.id === 'caseRouletteModal' ? '855' : '870';
       activeElevatedModal = modal;
     }
   }
@@ -809,7 +895,9 @@ export function refreshTutorialSpotlight() {
  */
 export function activateTutorialSpotlight(step) {
   if (!step || isTutorialComplete()) return;
+  if (!GAME.tutorialStarted) GAME.tutorialStarted = true;
   isSpotlightActive = true;
+  ensureMeteorForCatchQuest(step);
   step.guide();
   setTimeout(() => {
     if (isSpotlightActive) refreshTutorialSpotlight();
@@ -862,6 +950,16 @@ export function updateTutorialQuestWidget() {
 
   if (isTutorialComplete()) {
     if (widget) widget.classList.add('hidden');
+    updateTutorialStartCta();
+    deactivateTutorialSpotlight();
+    return;
+  }
+
+  migrateTutorialStepForMeteorBeforeCase();
+  updateTutorialStartCta();
+
+  if (!GAME.tutorialStarted) {
+    if (widget) widget.classList.add('hidden');
     deactivateTutorialSpotlight();
     return;
   }
@@ -871,6 +969,7 @@ export function updateTutorialQuestWidget() {
 
   if (isTutorialComplete()) {
     if (widget) widget.classList.add('hidden');
+    updateTutorialStartCta();
     deactivateTutorialSpotlight();
     return;
   }
@@ -882,7 +981,12 @@ export function updateTutorialQuestWidget() {
     return;
   }
 
-  if (widget) widget.classList.remove('hidden');
+  if (widget) {
+    widget.classList.remove('hidden');
+    widget.classList.add('tutorial-widget-priority');
+    widget.style.zIndex = '900';
+  }
+  ensureMeteorForCatchQuest(currentStep);
 
   const stepIdx = currentStep.num - 1;
   GAME.currentQuestId = currentStep.num;
@@ -900,8 +1004,9 @@ export function updateTutorialQuestWidget() {
   if (iconEl) iconEl.textContent = isDone ? '🎁' : currentStep.icon;
 
   const questTitle = t(currentStep.titleKey) || currentStep.fallbackTitle;
+  const totalSteps = TUTORIAL_QUESTS.length;
   if (headerEl) {
-    headerEl.textContent = `Квест ${currentStep.num}/18: ${questTitle}`;
+    headerEl.textContent = `Квест ${currentStep.num}/${totalSteps}: ${questTitle}`;
     headerEl.className = isDone
       ? 'font-game text-xs text-emerald-300 font-extrabold block truncate animate-pulse'
       : 'font-game text-xs text-yellow-300 font-extrabold block truncate';
@@ -961,7 +1066,11 @@ export function updateTutorialQuestWidget() {
     if (overlay && !overlay.classList.contains('hidden')) {
       overlay.classList.add('hidden');
     }
-    if (widget) widget.style.zIndex = '';
+    // Плашка квеста остаётся поверх рулетки даже без spotlight
+    if (widget) {
+      widget.classList.add('tutorial-widget-priority');
+      widget.style.zIndex = '900';
+    }
     if (activeSpotlightElement) {
       activeSpotlightElement.classList.remove('tutorial-spotlight-target');
       activeSpotlightElement = null;
@@ -980,6 +1089,14 @@ export function initTutorialListeners() {
     overlay.addEventListener('click', (e) => {
       e.stopPropagation();
       deactivateTutorialSpotlight();
+    });
+  }
+
+  const startBtn = document.getElementById('btnStartTutorialTraining');
+  if (startBtn) {
+    startBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      startTutorialTraining();
     });
   }
 
@@ -1029,4 +1146,8 @@ export function initTutorialListeners() {
   onLocaleChange(() => {
     updateTutorialQuestWidget();
   });
+
+  migrateTutorialStepForMeteorBeforeCase();
+  updateTutorialStartCta();
+  updateTutorialQuestWidget();
 }

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Poop Simulator v5.4.26 PRO</title>
+  <title>Poop Simulator v5.4.27 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,13 +20,27 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles/main.css?v=5.4.26">
+  <link rel="stylesheet" href="styles/main.css?v=5.4.27">
 </head>
 
 <body class="bg-stone-900 text-stone-100 flex flex-col selection:bg-amber-400">
   <div id="bootVeil" class="boot-veil" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:#121816;"><span data-i18n="common.loading">Загрузка</span></div>
   <!-- TUTORIAL SPOTLIGHT OVERLAY (Black 0.6 backdrop) -->
   <div id="tutorialSpotlightOverlay" class="fixed inset-0 bg-black/60 z-[850] transition-opacity duration-300 hidden pointer-events-auto"></div>
+
+  <!-- Fresh-player CTA: start guided quests -->
+  <div id="tutorialStartModal"
+    class="fixed inset-0 z-[920] hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="tutorial-start-card max-w-sm w-full text-center p-6 sm:p-8 rounded-[2rem] border-4 border-amber-400 bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 shadow-[0_0_40px_rgba(250,204,21,0.35)] space-y-4">
+      <div class="text-5xl animate-bounce select-none">🎒</div>
+      <h2 class="font-game text-2xl sm:text-3xl font-black text-yellow-300 leading-tight" data-i18n="tutorial.startCta">Начать обучение!</h2>
+      <p class="text-sm text-stone-300 leading-relaxed" data-i18n="tutorial.startCtaSub">Квесты проведут тебя по игре шаг за шагом — кликай подсказки и забирай награды.</p>
+      <button id="btnStartTutorialTraining" type="button"
+        class="w-full jelly-btn font-game text-base sm:text-lg font-black px-6 py-3.5 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-400 text-stone-950 border-2 border-yellow-200 shadow-xl animate-pulse">
+        <span data-i18n="tutorial.startCtaBtn">Начать обучение!</span>
+      </button>
+    </div>
+  </div>
 
   <!-- 1. FULLSCREEN LOBBY -->
   <div id="lobby" class="fixed inset-0 z-[1000] flex items-center justify-center p-4">
@@ -35,7 +49,7 @@
         <div class="text-5xl sm:text-6xl mb-2 animate-bounce select-none">💩</div>
         <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wide text-emerald-400 drop-shadow">POOP SIMULATOR</h1>
         <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-[11px] font-black tracking-wider uppercase my-1.5 shadow">
-          <span>✨</span> <span id="lobbyVersionTag">v5.4.26 PRO</span>
+          <span>✨</span> <span id="lobbyVersionTag">v5.4.27 PRO</span>
         </div>
         <p class="text-xs sm:text-sm text-stone-400 mt-1">Войдите в аккаунт или зарегистрируйтесь для игры</p>
       </div>
@@ -118,7 +132,7 @@
           <h1 class="text-lg sm:text-xl font-game text-yellow-300 tracking-wide" id="mainGameTitle">Poop Simulator</h1>
           <span
             class="text-[10px] bg-yellow-500/20 text-yellow-300 font-black px-2 py-0.5 rounded-full border border-yellow-500/40 cursor-pointer hover:bg-yellow-500/30 transition"
-            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.4.26 PRO</span>
+            id="versionTag" data-i18n-title="header.versionTitle" title="Открыть журнал обновлений">v5.4.27 PRO</span>
           <button id="btnBugReport"
             class="jelly-btn font-game px-2.5 py-0.5 text-xs flex items-center gap-1"
             data-i18n-title="header.bugTitle" title="Сообщить об ошибке">
@@ -2484,7 +2498,7 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=5.4.26"></script>
+  <script type="module" src="src/main.js?v=5.4.27"></script>
 </body>
 
 </html>

@@ -1,17 +1,17 @@
-import { GAME } from '../core/state.js?v=5.4.26';
+import { GAME } from '../core/state.js?v=5.4.27';
 import { events } from '../core/events.js';
-import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase, probeCloudServers } from '../save/cloudSync.js?v=5.4.26';
-import { updateHUD } from './hudView.js?v=5.4.26';
-import { renderFactories } from './factoryView.js?v=5.4.26';
-import { renderTalents } from './talentView.js?v=5.4.26';
+import { getStoredAccount, registerAccount, loginAccount, logoutAccount, syncToCloudDatabase, probeCloudServers } from '../save/cloudSync.js?v=5.4.27';
+import { updateHUD } from './hudView.js?v=5.4.27';
+import { renderFactories } from './factoryView.js?v=5.4.27';
+import { renderTalents } from './talentView.js?v=5.4.27';
 import { renderShop } from './shopView.js';
 import { renderAchievements } from './achievementsView.js';
 import { renderEvoChronicles } from './evoChroniclesView.js';
-import { renderCasesSystem } from './casesView.js?v=5.4.26';
-import { refreshAdminAccess } from './adminView.js?v=5.4.26';
-import { currentGuildTag, formatTaggedName } from '../guild/guildPresence.js?v=5.4.26';
+import { renderCasesSystem } from './casesView.js?v=5.4.27';
+import { refreshAdminAccess } from './adminView.js?v=5.4.27';
+import { currentGuildTag, formatTaggedName } from '../guild/guildPresence.js?v=5.4.27';
 import { t, setLocale, getLocale, listLocales, onLocaleChange, applyDomI18n } from '../i18n/t.js';
-import { showLobby, handleSessionInterrupted } from '../core/lobbyAuth.js?v=5.4.26';
+import { showLobby, handleSessionInterrupted } from '../core/lobbyAuth.js?v=5.4.27';
 
 function paintServerLine(id, row) {
   const node = document.getElementById(id);

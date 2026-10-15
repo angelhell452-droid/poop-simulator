@@ -6,11 +6,11 @@
  * and Server Authority on login.
  */
 
-import { pauseGameLoop, resumeGameLoop } from './gameLoop.js?v=5.4.26';
-import { hashPassword, saveStoredAccount, getStoredAccount, loadFromCloudDatabaseOrLocal, CLOUD_SAVE_ENDPOINT } from '../save/cloudSync.js?v=5.4.26';
-import { GAME } from './state.js?v=5.4.26';
-import { saveLocal } from '../save/saveManager.js?v=5.4.26';
-import { CURRENT_CLIENT_PATCH_VERSION } from './serverAuthority.js?v=5.4.26';
+import { pauseGameLoop, resumeGameLoop } from './gameLoop.js?v=5.4.27';
+import { hashPassword, saveStoredAccount, getStoredAccount, loadFromCloudDatabaseOrLocal, CLOUD_SAVE_ENDPOINT } from '../save/cloudSync.js?v=5.4.27';
+import { GAME } from './state.js?v=5.4.27';
+import { saveLocal } from '../save/saveManager.js?v=5.4.27';
+import { CURRENT_CLIENT_PATCH_VERSION } from './serverAuthority.js?v=5.4.27';
 
 // In-memory credentials cache for instant reconnect without page reload
 let cachedCredentials = null;

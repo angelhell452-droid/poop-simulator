@@ -1,48 +1,53 @@
-import { GAME } from './core/state.js?v=5.4.26';
-import { startGameLoop } from './core/gameLoop.js?v=5.4.26';
-import { performBlockingHandshake, startAuthorityWatcher } from './core/serverAuthority.js?v=5.4.26';
-import { initLobbyAuth, checkAutoLogin } from './core/lobbyAuth.js?v=5.4.26';
-import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.4.26';
-import { saveLocal, saveGame, hardReset } from './save/saveManager.js?v=5.4.26';
-import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.4.26';
-import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.4.26';
-import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.4.26';
+import { GAME } from './core/state.js?v=5.4.27';
+import { startGameLoop } from './core/gameLoop.js?v=5.4.27';
+import { performBlockingHandshake, startAuthorityWatcher } from './core/serverAuthority.js?v=5.4.27';
+import { initLobbyAuth, checkAutoLogin } from './core/lobbyAuth.js?v=5.4.27';
+import { loadFromCloudDatabaseOrLocal, syncToCloudDatabase, flushCloudSave, wipePlayerData, requestCloudSync, getStoredAccount, confirmLiveSession } from './save/cloudSync.js?v=5.4.27';
+import { saveLocal, saveGame, hardReset } from './save/saveManager.js?v=5.4.27';
+import { updateHUD, initAutocareListeners, initAutomationToggleListeners, showWelcomeGreeting, initHudI18n } from './ui/hudView.js?v=5.4.27';
+import { renderFactories, initFactoryListeners } from './ui/factoryView.js?v=5.4.27';
+import { renderTalents, initTalentsListeners } from './ui/talentView.js?v=5.4.27';
 import { renderShop, initShopI18n } from './ui/shopView.js';
 import { renderAchievements } from './ui/achievementsView.js';
-import { renderCasesSystem, initCasesListeners, updateCasesButtons, updateCasesTabBadge, checkFirstCaseNotification } from './ui/casesView.js?v=5.4.26';
-import { initKnivesIndexListeners } from './ui/knivesIndexView.js?v=5.4.26';
-import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.4.26';
-import { initModals } from './ui/modalManager.js?v=5.4.26';
-import { initAuthModal, refreshServerStatus } from './ui/authModalView.js?v=5.4.26';
-import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js?v=5.4.26';
-import { initLeaderboardView } from './ui/leaderboardView.js?v=5.4.26';
-import { initFriendsView } from './ui/friendsView.js?v=5.4.26';
-import { initGuildView } from './ui/guildView.js?v=5.4.26';
-import { initMailView } from './ui/mailView.js?v=5.4.26';
-import { startSocialPulse } from './ui/socialPulse.js?v=5.4.26';
-import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.4.26';
+import { renderCasesSystem, initCasesListeners, updateCasesButtons, updateCasesTabBadge, checkFirstCaseNotification } from './ui/casesView.js?v=5.4.27';
+import { initKnivesIndexListeners } from './ui/knivesIndexView.js?v=5.4.27';
+import { initPetCanvas, warmSceneArt, triggerPetSquash, addVisualParticle, checkMeteorClick } from './ui/petCanvasView.js?v=5.4.27';
+import { initModals } from './ui/modalManager.js?v=5.4.27';
+import { initAuthModal, refreshServerStatus } from './ui/authModalView.js?v=5.4.27';
+import { initAdminPanel, refreshAdminAccess } from './ui/adminView.js?v=5.4.27';
+import { initLeaderboardView } from './ui/leaderboardView.js?v=5.4.27';
+import { initFriendsView } from './ui/friendsView.js?v=5.4.27';
+import { initGuildView } from './ui/guildView.js?v=5.4.27';
+import { initMailView } from './ui/mailView.js?v=5.4.27';
+import { startSocialPulse } from './ui/socialPulse.js?v=5.4.27';
+import { initPatchNotesListeners, openPatchNotesModal } from './ui/patchNotesView.js?v=5.4.27';
 import { initVipShop } from './ui/vipShopView.js';
 import { initProfileView, renderProfileStats } from './ui/profileView.js';
 import { hasPerk } from './data/perks.data.js';
 import { getRelicLevel } from './data/relics.data.js';
-import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.4.26';
-import { initTutorialListeners, validateAndAdvanceRetroactiveQuests } from './ui/tutorialView.js';
-import { initBeginnerGuideListeners } from './ui/beginnerGuideView.js?v=5.4.26';
-import { initBugReportListeners } from './ui/bugReportView.js?v=5.4.26';
-import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.4.26';
+import { initSmartAssistantListeners } from './ui/smartAssistantView.js?v=5.4.27';
+import {
+  initTutorialListeners,
+  validateAndAdvanceRetroactiveQuests,
+  updateTutorialQuestWidget,
+  migrateTutorialStepForMeteorBeforeCase
+} from './ui/tutorialView.js';
+import { initBeginnerGuideListeners } from './ui/beginnerGuideView.js?v=5.4.27';
+import { initBugReportListeners } from './ui/bugReportView.js?v=5.4.27';
+import { renderCharacterInventory, initCharacterInventoryListeners } from './ui/characterInventoryView.js?v=5.4.27';
 import { initSharpenView } from './ui/sharpenView.js';
 import { initHotkeys } from './ui/hotkeys.js';
 import { feedPet, washPet, polishPet, ticklePet } from './systems/petCareService.js';
-import { addPendingClicks, processBatchedClicks } from './systems/clickService.js?v=5.4.26';
-import { checkAchievements } from './systems/achievementsService.js?v=5.4.26';
-import { getPassiveIncome } from './economy/production.js?v=5.4.26';
+import { addPendingClicks, processBatchedClicks } from './systems/clickService.js?v=5.4.27';
+import { checkAchievements } from './systems/achievementsService.js?v=5.4.27';
+import { getPassiveIncome } from './economy/production.js?v=5.4.27';
 import { TALENTS } from './data/talents.data.js';
-import { ACHIEVEMENTS } from './data/achievements.data.js?v=5.4.26';
-import { SHOP_ITEMS } from './data/shop.data.js?v=5.4.26';
-import { formatNumber } from './utils/numberFormatter.js?v=5.4.26';
-import { gainBio, isBig, mul } from './utils/big.js?v=5.4.26';
+import { ACHIEVEMENTS } from './data/achievements.data.js?v=5.4.27';
+import { SHOP_ITEMS } from './data/shop.data.js?v=5.4.27';
+import { formatNumber } from './utils/numberFormatter.js?v=5.4.27';
+import { gainBio, isBig, mul } from './utils/big.js?v=5.4.27';
 import { formatDurationAway } from './utils/timeUtils.js';
-import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap } from './systems/autoclickService.js?v=5.4.26';
+import { clampAutoclickerState, getAutoclickCap, getClickCapCps, isAutoclickUnlocked, syncAutoclickSpeedToCap } from './systems/autoclickService.js?v=5.4.27';
 import { events } from './core/events.js';
 import { initI18n, t, onLocaleChange } from './i18n/t.js';
 
@@ -188,7 +193,9 @@ export async function bootstrap() {
   });
   events.on('save:loaded', () => {
     updateAutoclickerUI();
+    migrateTutorialStepForMeteorBeforeCase();
     validateAndAdvanceRetroactiveQuests();
+    updateTutorialQuestWidget();
   });
 
   let shownClickCap = -1;
@@ -352,7 +359,9 @@ export async function bootstrap() {
   updateCasesTabBadge();
   renderCharacterInventory();
   renderProfileStats();
+  migrateTutorialStepForMeteorBeforeCase();
   validateAndAdvanceRetroactiveQuests();
+  updateTutorialQuestWidget();
   updateHUD();
 
   // 9. Event Listener for tick UI sync

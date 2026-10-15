@@ -1,16 +1,17 @@
-import { GAME } from '../core/state.js?v=5.4.26';
-import { KNIVES } from '../data/knives.data.js?v=5.4.26';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.26';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.26';
-import { getKnifeStar, getHatLevel, getKnifeClickMult } from '../economy/production.js?v=5.4.26';
-import { gte, gt, spendBio } from '../utils/big.js?v=5.4.26';
+import { GAME } from '../core/state.js?v=5.4.27';
+import { KNIVES } from '../data/knives.data.js?v=5.4.27';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.27';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.27';
+import { getKnifeStar, getHatLevel, getKnifeClickMult } from '../economy/production.js?v=5.4.27';
+import { gte, gt, spendBio } from '../utils/big.js?v=5.4.27';
 import { events } from '../core/events.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.26';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.27';
 import { t } from '../i18n/t.js';
 import { knifeName } from '../i18n/localize.js';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.26';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.27';
+import { isTutorialQuestActive } from '../ui/tutorialView.js?v=5.4.27';
 
 // Tier 1 knives set from first 3 starter cases
 export const TIER_1_KNIFE_IDS = new Set(
@@ -74,8 +75,8 @@ export function getKnifeSharpenCost(knifeOrId, explicitStar = null) {
 
   // Внедрить акцию: Если у игрока активен Квест №7, то базовая стоимость самой первой заточки на +1 звезду
   // для любого текущего ножа принудительно снижается до строго 100 Блестяшек ✨.
-  const isQuest7Active = !GAME.tutorialCompleted && (GAME.tutorialStepIndex === 6 || GAME.currentQuestId === 7);
-  if (isQuest7Active && currentStar === 1) {
+  // Квест «Закалка стали» (num 8 → index 7) после вставки метеор-квеста
+  if (isTutorialQuestActive('steel_temper') && currentStar === 1) {
     cost = 100;
   }
 

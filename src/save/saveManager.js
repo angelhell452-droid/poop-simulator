@@ -1,20 +1,20 @@
-import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.4.26';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.26';
+import { GAME, feedCount, washCount, polishCount, flushCount, setFeedCount, setWashCount, setPolishCount, setFlushCount } from '../core/state.js?v=5.4.27';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.27';
 import { TALENTS } from '../data/talents.data.js';
-import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.26';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.26';
+import { ACHIEVEMENTS } from '../data/achievements.data.js?v=5.4.27';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.27';
 import { PERMANENT_PERKS } from '../data/perks.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.4.26';
-import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.4.26';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.26';
-import { migrateSaveData } from './migrations.js?v=5.4.26';
-import { clampAutoclickerState } from '../systems/autoclickService.js?v=5.4.26';
+import { KNIVES } from '../data/knives.data.js?v=5.4.27';
+import { BODY_SKINS, SKIN_FITTING } from '../data/skins.data.js?v=5.4.27';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.27';
+import { migrateSaveData } from './migrations.js?v=5.4.27';
+import { clampAutoclickerState } from '../systems/autoclickService.js?v=5.4.27';
 import { notePeakForm } from '../progression/unlocks.js';
-import { maxUnlockedStage } from '../progression/phases.data.js?v=5.4.26';
+import { maxUnlockedStage } from '../progression/phases.data.js?v=5.4.27';
 import { events } from '../core/events.js';
-import { gt, isBig, rehydrateBig } from '../utils/big.js?v=5.4.26';
+import { gt, isBig, rehydrateBig } from '../utils/big.js?v=5.4.27';
 import { RELICS } from '../data/relics.data.js';
-import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION, LOCAL_PATCH_VERSION_KEY, compareSemver } from '../core/serverAuthority.js?v=5.4.26';
+import { canSaveLocal, registerLocalSaveCallback, CURRENT_CLIENT_PATCH_VERSION, LOCAL_PATCH_VERSION_KEY, compareSemver } from '../core/serverAuthority.js?v=5.4.27';
 
 function keepBio(value) {
   const n = rehydrateBig(value);
@@ -131,6 +131,10 @@ export function buildSavePayload() {
     currentQuestId: GAME.currentQuestId || ((GAME.tutorialStepIndex || 0) + 1),
     tutorialStepIndex: GAME.tutorialStepIndex || 0,
     tutorialCompleted: !!GAME.tutorialCompleted,
+    tutorialStarted: !!GAME.tutorialStarted,
+    tutorialQuestOrderV2: !!GAME.tutorialQuestOrderV2,
+    caseFirstBuyDiscountUsed: GAME.caseFirstBuyDiscountUsed || {},
+    firstCaseDiscountUsed: !!GAME.firstCaseDiscountUsed,
     knifeStats: KNIVES.map(k => ({ id: k.id, statTrak: k.statTrak || 0 })),
     knifeStars: GAME.knifeStars || {},
     hatLevels: GAME.hatLevels || {}
@@ -217,11 +221,14 @@ export function wipeRuntimeCatalogs() {
   GAME.turboCount = 0;
   GAME.casesOpened = 0;
   GAME.firstCaseDiscountUsed = false;
+  GAME.caseFirstBuyDiscountUsed = {};
   GAME.firstCaseNotified = false;
   GAME.totalClicks = 0;
   GAME.tutorialStepIndex = 0;
   GAME.currentQuestId = 1;
   GAME.tutorialCompleted = false;
+  GAME.tutorialStarted = false;
+  GAME.tutorialQuestOrderV2 = true;
   GAME.tutorialCritBonus = 0;
   GAME.tutorialClickBonus = 0;
   GAME.tutorialIncomeMult = 1;
@@ -470,6 +477,12 @@ export function applySaveDataSafely(rawData) {
   GAME.tutorialStepIndex = stepIdx;
   GAME.currentQuestId = Math.max(1, Math.min(19, Math.floor(Number(GAME.currentQuestId ?? (stepIdx + 1)) || 1)));
   GAME.tutorialCompleted = Boolean(GAME.tutorialCompleted || stepIdx >= 18);
+  GAME.tutorialStarted = Boolean(GAME.tutorialStarted || GAME.tutorialCompleted || stepIdx > 0);
+  GAME.tutorialQuestOrderV2 = Boolean(GAME.tutorialQuestOrderV2);
+  if (!GAME.caseFirstBuyDiscountUsed || typeof GAME.caseFirstBuyDiscountUsed !== 'object') {
+    GAME.caseFirstBuyDiscountUsed = {};
+  }
+  if (GAME.firstCaseDiscountUsed) GAME.caseFirstBuyDiscountUsed.case_classic = true;
   GAME.tutorialCritBonus = Math.max(0, Number(GAME.tutorialCritBonus) || 0);
   GAME.tutorialClickBonus = Math.max(0, Number(GAME.tutorialClickBonus) || 0);
   GAME.tutorialIncomeMult = Math.max(1, Number(GAME.tutorialIncomeMult) || 1);

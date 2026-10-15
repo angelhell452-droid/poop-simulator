@@ -1,13 +1,13 @@
-import { GAME } from '../core/state.js?v=5.4.26';
+import { GAME } from '../core/state.js?v=5.4.27';
 import { TALENTS } from '../data/talents.data.js';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.26';
-import { getSparklesPerCrit } from '../economy/sparkleScale.js?v=5.4.26';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.26';
-import { takeClickBudget } from './autoclickService.js?v=5.4.26';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.27';
+import { getSparklesPerCrit } from '../economy/sparkleScale.js?v=5.4.27';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.27';
+import { takeClickBudget } from './autoclickService.js?v=5.4.27';
 import { events } from '../core/events.js';
-import { add, bigPow, gainBio, mul } from '../utils/big.js?v=5.4.26';
+import { add, bigPow, gainBio, mul } from '../utils/big.js?v=5.4.27';
 import { hasPerk } from '../data/perks.data.js';
-import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.26';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.27';
 
 export let pendingClicks = 0;
 

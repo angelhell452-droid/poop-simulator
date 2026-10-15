@@ -1,28 +1,28 @@
 import { knifeName, knifeDesc, knifeRarity, shopName, shopDesc, skinName } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.26';
-import { KNIVES } from '../data/knives.data.js?v=5.4.26';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.26';
+import { GAME } from '../core/state.js?v=5.4.27';
+import { KNIVES } from '../data/knives.data.js?v=5.4.27';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.27';
 import {
   getKnifeStar, getKnifeSharpenCost, getKnifeRecycleReward, getEquippedKnife, sharpenKnife, getBestKnife, equipBestKnife,
   getHatLevel, getHatInlayCost, inlayHat
 } from '../systems/knifeService.js';
 import { openSharpenWheelModal } from './sharpenView.js';
-import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.4.26';
-import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.4.26';
-import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.26';
-import { saveLocal } from '../save/saveManager.js?v=5.4.26';
-import { updateHUD } from './hudView.js?v=5.4.26';
+import { getPoopSkinInfo } from '../progression/evolutionService.js?v=5.4.27';
+import { getHatClickMult, getKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../economy/production.js?v=5.4.27';
+import { getClickCapCps, getKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.27';
+import { saveLocal } from '../save/saveManager.js?v=5.4.27';
+import { updateHUD } from './hudView.js?v=5.4.27';
 import { renderShop } from './shopView.js';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.26';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.26';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.27';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.27';
 import { isBoutiqueUnlocked } from '../progression/unlocks.js';
 import { getPlungerIcon, getRollIcon } from '../utils/icons.js';
 import { getRarityMeta } from '../data/knifeRarities.config.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { hatArtHtml } from './artIcon.js?v=5.4.26';
-import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.26';
-import { gte, spendBio } from '../utils/big.js?v=5.4.26';
+import { hatArtHtml } from './artIcon.js?v=5.4.27';
+import { BODY_SKINS, findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.27';
+import { gte, spendBio } from '../utils/big.js?v=5.4.27';
 
 
 let currentInvTab = 'knives'; // 'knives' | 'hats' | 'skins'
@@ -96,8 +96,12 @@ function paintInvTabs() {
 export function getSkinPrice(skin) {
   // Динамическая скидка на Квест №9: Если на аккаунте активен Квест №9 ("Новая кожа"), то стоимость самой первой Одежды (скина) в магазине принудительно и временно снижается с 25,000 Блестяшек до строго 1,000 Блестяшек ✨.
   if (skin.id === 'skin_robe') {
-    const isQuest9 = !GAME.tutorialCompleted && (GAME.tutorialStepIndex === 8 || Number(GAME.currentQuestId) === 9);
-    if (isQuest9) return 1000;
+    // Квест «Новая кожа» (num 10 → index 9) после вставки метеор-квеста
+    // Акция скина на квесте «Новая кожа»
+    const { isTutorialQuestActive } = await import('./tutorialView.js?v=5.4.27').catch(() => ({}));
+    if (typeof isTutorialQuestActive === 'function' ? isTutorialQuestActive('new_skin') : (!GAME.tutorialCompleted && Number(GAME.currentQuestId) === 10)) {
+      return 1000;
+    }
   }
   return skin.price;
 }

@@ -1,5 +1,5 @@
-import { GAME } from '../core/state.js?v=5.4.26';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.26';
+import { GAME } from '../core/state.js?v=5.4.27';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.27';
 import { t } from '../i18n/t.js';
 
 const GAME_VERSION = 'v5.1.0 PRO';

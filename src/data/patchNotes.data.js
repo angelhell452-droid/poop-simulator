@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.26';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.27';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.27 PRO',
+    date: '16 Октября 2026',
+    dateEn: 'October 16, 2026',
+    title: 'Патч 5.4.27: Обучение и скидки кейсов',
+    titleEn: 'Patch 5.4.27: Training & Case Discounts',
+    badge: 'Патч 5.4.27',
+    badgeEn: 'Patch 5.4.27',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'feature',
+        icon: '🎒',
+        text: 'Свежий игрок видит по центру «Начать обучение!»; квест на метеорит перед первым кейсом (метеор вызывается при фокусе); скидка −90% на 1-ю покупку кейса #1 и −10% на первую покупку #2/#3. Рулетка кейсов не перекрывает виджет квеста.',
+        textEn: 'New players get a centered “Start Training!” CTA; meteor quest now comes before the first case (forced spawn on focus); −90% off case #1 first buy and −10% off cases #2/#3 first buy. Case roulette no longer covers the quest widget.'
+      }
+    ]
+  },
   {
     version: 'v5.4.26 PRO',
     date: '15 Октября 2026',

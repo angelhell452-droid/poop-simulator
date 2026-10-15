@@ -1,22 +1,22 @@
 import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.26';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.26';
-import { KNIVES } from '../data/knives.data.js?v=5.4.26';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.26';
-import { saveLocal } from '../save/saveManager.js?v=5.4.26';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.26';
-import { updateHUD } from './hudView.js?v=5.4.26';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.26';
+import { GAME } from '../core/state.js?v=5.4.27';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.27';
+import { KNIVES } from '../data/knives.data.js?v=5.4.27';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.27';
+import { saveLocal } from '../save/saveManager.js?v=5.4.27';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.27';
+import { updateHUD } from './hudView.js?v=5.4.27';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.27';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.26';
-import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.26';
-import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.26';
-import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.26';
-import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.26';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.27';
+import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.27';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.27';
+import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.27';
+import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.27';
 import { TALENTS } from '../data/talents.data.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.26';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.27';
 import { KNIFE_RARITIES, getRarityMeta } from '../data/knifeRarities.config.js';
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -50,20 +50,57 @@ export function getCaseTierCategory(caseIndexOrObj) {
 }
 
 export const FIRST_CASE_ID = 'case_classic';
-/** First-open promo: 50% of case #1 sparkle cost (not a flat 10). */
-export function getFirstCaseDiscountCost(caseObj = null) {
-  const base = Math.max(0, Number(caseObj?.cost) || caseSparkleCost(0) || 3200);
-  return Math.max(100, Math.round(base * 0.5));
-}
-/** @deprecated use getFirstCaseDiscountCost — kept for any stale imports */
-export const FIRST_CASE_DISCOUNT_COST = 1600; // fallback ≈ 50% of case #1 (3200)
+/** Скидка на 1-ю покупку: кейс #1 −90%, #2 и #3 −10%. */
+export const CASE_FIRST_BUY_DISCOUNT_RATE = {
+  case_classic: 0.9,
+  case_bravo: 0.1,
+  case_weapon_2: 0.1
+};
 
+function ensureCaseDiscountMap() {
+  if (!GAME.caseFirstBuyDiscountUsed || typeof GAME.caseFirstBuyDiscountUsed !== 'object') {
+    GAME.caseFirstBuyDiscountUsed = {};
+  }
+  if (GAME.firstCaseDiscountUsed) {
+    GAME.caseFirstBuyDiscountUsed[FIRST_CASE_ID] = true;
+  }
+  return GAME.caseFirstBuyDiscountUsed;
+}
+
+export function getCaseFirstBuyDiscountRate(caseObj) {
+  const cid = typeof caseObj === 'string' ? caseObj : caseObj?.id;
+  const rate = CASE_FIRST_BUY_DISCOUNT_RATE[cid];
+  if (!rate) return 0;
+  const used = ensureCaseDiscountMap();
+  if (used[cid]) return 0;
+  return rate;
+}
+
+export function isCaseFirstBuyDiscountAvailable(caseObj) {
+  return getCaseFirstBuyDiscountRate(caseObj) > 0;
+}
+
+/** @deprecated alias — кейс #1 */
 export function isFirstCaseDiscountAvailable(caseObj) {
   const cid = typeof caseObj === 'string' ? caseObj : caseObj?.id;
   if (cid !== FIRST_CASE_ID) return false;
-  if (GAME.firstCaseDiscountUsed || (GAME.casesOpened || 0) > 0) return false;
-  return true;
+  return isCaseFirstBuyDiscountAvailable(caseObj);
 }
+
+export function getCaseDiscountedSparkleCost(caseObj = null) {
+  const base = Math.max(0, Number(caseObj?.cost) || caseSparkleCost(0) || 3200);
+  const rate = getCaseFirstBuyDiscountRate(caseObj);
+  if (rate <= 0) return base;
+  return Math.max(1, Math.round(base * (1 - rate)));
+}
+
+/** @deprecated use getCaseDiscountedSparkleCost */
+export function getFirstCaseDiscountCost(caseObj = null) {
+  return getCaseDiscountedSparkleCost(caseObj);
+}
+
+/** @deprecated */
+export const FIRST_CASE_DISCOUNT_COST = 320; // ≈ 10% of case #1 (~3200) after −90%
 
 export function casePlungerCost(caseObj) {
   return Math.max(0, Number(caseObj?.costPlungers) || 0);
@@ -167,8 +204,8 @@ export function getCaseLockAlert(caseObj) {
 }
 
 export function caseRollNeed(caseObj, count = 1) {
-  if (isFirstCaseDiscountAvailable(caseObj)) {
-    const promo = getFirstCaseDiscountCost(caseObj);
+  if (isCaseFirstBuyDiscountAvailable(caseObj)) {
+    const promo = getCaseDiscountedSparkleCost(caseObj);
     if (count <= 1) return promo;
     const baseCost = caseObj?.cost || 0;
     return add(promo, mul(baseCost, count - 1));
@@ -206,8 +243,11 @@ function payForCase(caseObj, count = 1) {
 
   if (cmp(sparkleCost, 0) > 0) {
     GAME.sparkles = spendBio(GAME.sparkles, sparkleCost);
-    if (isFirstCaseDiscountAvailable(caseObj)) {
-      GAME.firstCaseDiscountUsed = true;
+    if (isCaseFirstBuyDiscountAvailable(caseObj)) {
+      const cid = caseObj?.id;
+      const used = ensureCaseDiscountMap();
+      if (cid) used[cid] = true;
+      if (cid === FIRST_CASE_ID) GAME.firstCaseDiscountUsed = true;
     }
     // talent_case_cashback: возвращает 1% Блестяшек обратно при покупке любого кейса
     const cashbackLvl = TALENTS.find(t => t.id === 'talent_case_cashback')?.level || 0;
@@ -254,8 +294,10 @@ function refundLabel(refund) {
 }
 
 export function casePriceHtml(caseObj) {
-  if (isFirstCaseDiscountAvailable(caseObj)) {
-    return `<span class="line-through text-stone-500 text-[10px] mr-1">${formatNumber(caseObj.cost)}</span><span class="inline-flex items-center gap-1 text-emerald-300 font-black">${formatNumber(getFirstCaseDiscountCost(caseObj))} ✨</span><span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-1 py-0.2 rounded font-black border border-emerald-500/40 uppercase ml-1 animate-pulse">-50%</span>`;
+  const discRate = getCaseFirstBuyDiscountRate(caseObj);
+  if (discRate > 0) {
+    const pct = Math.round(discRate * 100);
+    return `<span class="line-through text-stone-500 text-[10px] mr-1">${formatNumber(caseObj.cost)}</span><span class="inline-flex items-center gap-1 text-emerald-300 font-black">${formatNumber(getCaseDiscountedSparkleCost(caseObj))} ✨</span><span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-1 py-0.2 rounded font-black border border-emerald-500/40 uppercase ml-1 animate-pulse">-${pct}%</span>`;
   }
   const costPlungers = Number(caseObj?.costPlungers) || 0;
   const costSparkles = caseObj?.cost || 0;
@@ -563,7 +605,15 @@ export function openCaseRoulette(caseId) {
 
   activeRouletteCase = caseObj;
   const modal = document.getElementById('caseRouletteModal');
-  if (modal) modal.classList.remove('hidden');
+  if (modal) {
+    modal.classList.remove('hidden');
+    // Ниже виджета квеста (z-900) и CTA обучения (z-920), выше обычных панелей
+    if (!GAME.tutorialCompleted) {
+      modal.style.zIndex = '855';
+    } else {
+      modal.style.zIndex = '';
+    }
+  }
 
   const titleEl = document.getElementById('rouletteCaseTitle');
   if (titleEl) titleEl.textContent = caseName(caseObj);
@@ -944,7 +994,11 @@ export function openMultipleCases(caseObj, count = 3) {
   activeRouletteCase = caseObj;
 
   const modal = document.getElementById('caseRouletteModal');
-  if (modal) modal.classList.remove('hidden');
+  if (modal) {
+    modal.classList.remove('hidden');
+    if (!GAME.tutorialCompleted) modal.style.zIndex = '855';
+    else modal.style.zIndex = '';
+  }
 
   const titleEl = document.getElementById('rouletteCaseTitle');
   if (titleEl) titleEl.textContent = t('cases.openedTitle', { name: caseName(caseObj), n: formatNumber(count) });
@@ -1151,7 +1205,9 @@ export function renderCasesSystem() {
     } else {
       cratesList.innerHTML = filteredCases.map(c => {
       const isUnlocked = caseIsOpen(c);
-      const isDiscounted = isFirstCaseDiscountAvailable(c);
+      const discRate = getCaseFirstBuyDiscountRate(c);
+      const isDiscounted = discRate > 0;
+      const discPct = Math.round(discRate * 100);
       const hasCurrency = canAffordCase(c, 1);
       const hasCurrency3 = isUnlocked && canAffordCase(c, 3);
       const canOpen = isUnlocked && hasCurrency;
@@ -1164,7 +1220,7 @@ export function renderCasesSystem() {
         : '';
 
       const discountBadge = isDiscounted
-        ? `<div class="mt-1 text-[9.5px] font-black text-emerald-300 bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-500/60 shadow-sm flex items-center justify-center gap-1 animate-pulse"><span>🎁</span> <span>${t('cases.firstDiscountBadge')}</span></div>`
+        ? `<div class="mt-1 text-[9.5px] font-black text-emerald-300 bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-500/60 shadow-sm flex items-center justify-center gap-1 animate-pulse"><span>🎁</span> <span>${t('cases.firstDiscountBadgePct', { n: formatNumber(discPct) }) || `Скидка −${discPct}% на 1-ю покупку!`}</span></div>`
         : '';
 
       const btnText = !isUnlocked
@@ -1475,7 +1531,7 @@ export function updateCasesButtons() {
     const c = WEAPON_CASES.find(cs => cs.id === btn.dataset.case);
     if (!c) return;
     const isUnlocked = caseIsOpen(c);
-    const isDiscounted = isFirstCaseDiscountAvailable(c);
+    const isDiscounted = isCaseFirstBuyDiscountAvailable(c);
     const hasCurrency = canAffordCase(c, 1);
     const canOpen = isUnlocked && hasCurrency;
     btn.disabled = !canOpen;
