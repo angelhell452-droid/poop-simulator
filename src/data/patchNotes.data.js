@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.24';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.25';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.25 PRO',
+    date: '15 Октября 2026',
+    dateEn: 'October 15, 2026',
+    title: 'Патч 5.4.25: Свечение без обрезки',
+    titleEn: 'Patch 5.4.25: Glow Without Clipping',
+    badge: 'Патч 5.4.25',
+    badgeEn: 'Patch 5.4.25',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'ui',
+        icon: '✨',
+        text: 'Превью кейса шире; у строк добычи свечение внутри карточки (inset), без внешнего ореола — больше не режется скролл-рамкой.',
+        textEn: 'Case preview is wider; loot rows use inset glow only — no outer bloom clipped by the scroll edge.'
+      }
+    ]
+  },
   {
     version: 'v5.4.24 PRO',
     date: '15 Октября 2026',

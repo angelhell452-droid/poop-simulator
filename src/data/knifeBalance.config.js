@@ -24,9 +24,9 @@ export const KNIFE_BALANCE_CONFIG = {
   passivePower: 0.28
 };
 
-import { mul } from '../utils/big.js?v=5.4.24';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.24';
-import { caseTierJackpotSparkle } from '../economy/sparkleScale.js?v=5.4.24';
+import { mul } from '../utils/big.js?v=5.4.25';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.25';
+import { caseTierJackpotSparkle } from '../economy/sparkleScale.js?v=5.4.25';
 
 /** Pool slot weights: common → jackpot (1%). */
 const CASE_SLOT_WEIGHTS = [0.28, 0.42, 0.58, 0.78, 1.0];

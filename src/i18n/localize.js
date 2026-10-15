@@ -1,7 +1,7 @@
 import { dataText, getLocale, t, td } from './t.js';
-import { ENTITIES } from '../data/evolutions.data.js?v=5.4.24';
-import { PHASE_COUNT, PHASE_FORMS } from '../progression/phases.data.js?v=5.4.24';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.24';
+import { ENTITIES } from '../data/evolutions.data.js?v=5.4.25';
+import { PHASE_COUNT, PHASE_FORMS } from '../progression/phases.data.js?v=5.4.25';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.25';
 
 export function knifeName(item) {
   return dataText('knife', item?.id, 'name', item?.name || '');

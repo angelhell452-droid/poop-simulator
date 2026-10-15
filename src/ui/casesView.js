@@ -1,22 +1,22 @@
 import { caseName, caseDesc, knifeName, knifeDesc, knifeRarity } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.24';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.24';
-import { KNIVES } from '../data/knives.data.js?v=5.4.24';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.24';
-import { saveLocal } from '../save/saveManager.js?v=5.4.24';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.24';
-import { updateHUD } from './hudView.js?v=5.4.24';
-import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.24';
+import { GAME } from '../core/state.js?v=5.4.25';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.25';
+import { KNIVES } from '../data/knives.data.js?v=5.4.25';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.25';
+import { saveLocal } from '../save/saveManager.js?v=5.4.25';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.25';
+import { updateHUD } from './hudView.js?v=5.4.25';
+import { renderCharacterInventory, openCharacterInventoryModal, showKnifeToast } from './characterInventoryView.js?v=5.4.25';
 import { events } from '../core/events.js';
 import { getKnifeImageHtml } from '../utils/knifeIcons.js';
-import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.24';
-import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.24';
-import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.24';
-import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.24';
-import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.24';
+import { getBaseKnifeShownBonuses, getKnifeEffectiveClickMult, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.25';
+import { getBaseKnifeCpsBonus } from '../systems/autoclickService.js?v=5.4.25';
+import { isCasesUnlocked, peakForm } from '../progression/unlocks.js?v=5.4.25';
+import { caseUnlockForm, caseUnlockBreakthrough, caseSparkleCost } from '../economy/economy.config.js?v=5.4.25';
+import { isBig, add, cmp, mul, spendBio, gainBio, mulFloor } from '../utils/big.js?v=5.4.25';
 import { TALENTS } from '../data/talents.data.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.24';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.25';
 import { KNIFE_RARITIES, getRarityMeta } from '../data/knifeRarities.config.js';
 let caseAudioEnabled = true;
 let audioCtx = null;
@@ -1295,7 +1295,8 @@ export function openCasePreviewModal(caseId) {
       const pct = item.chancePercent < 1.0 ? item.chancePercent.toFixed(2) : item.chancePercent.toFixed(1);
       const isJackpot = Math.round(item.chancePercent) === 1 || (item.chancePercent <= 1.05 && item.chancePercent >= 0.95);
 
-      const rColor = `${meta.borderClass} ${meta.bgClass} ${meta.shadowClass} ${meta.cssClass}`;
+      // Без shadowClass: внешний ореол клипится overflow списка; свечение — inset в CSS превью.
+      const rColor = `${meta.borderClass} ${meta.bgClass} ${meta.cssClass}`;
       const badgeColor = meta.badgeClass;
 
       const clickLabel = isBig(shown.clickMult)
