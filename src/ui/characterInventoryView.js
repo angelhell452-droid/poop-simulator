@@ -94,14 +94,12 @@ function paintInvTabs() {
 }
 
 export function getSkinPrice(skin) {
-  // Динамическая скидка на Квест №9: Если на аккаунте активен Квест №9 ("Новая кожа"), то стоимость самой первой Одежды (скина) в магазине принудительно и временно снижается с 25,000 Блестяшек до строго 1,000 Блестяшек ✨.
+  // Акция первой одежды на квесте «Новая кожа» (num 10 → index 9).
   if (skin.id === 'skin_robe') {
-    // Квест «Новая кожа» (num 10 → index 9) после вставки метеор-квеста
-    // Акция скина на квесте «Новая кожа»
-    const { isTutorialQuestActive } = await import('./tutorialView.js?v=5.4.27').catch(() => ({}));
-    if (typeof isTutorialQuestActive === 'function' ? isTutorialQuestActive('new_skin') : (!GAME.tutorialCompleted && Number(GAME.currentQuestId) === 10)) {
-      return 1000;
-    }
+    const isSkinQuest = !GAME.tutorialCompleted && (
+      Number(GAME.currentQuestId) === 10 || Number(GAME.tutorialStepIndex) === 9
+    );
+    if (isSkinQuest) return 1000;
   }
   return skin.price;
 }
