@@ -2461,7 +2461,7 @@ export default {
   "perk.perk_critical_singularity.name": "Critical Singularity",
   "perk.perk_critical_singularity.desc": "Permanently multiplies all final Critical Damage by x1.50 multiplicatively.",
   "perk.perk_blacksmith_blessing.name": "Blacksmith's Blessing",
-  "perk.perk_blacksmith_blessing.desc": "Knife sharpen safeguard: on failure knife level drops by at most -1 instead of resetting to 0.",
+  "perk.perk_blacksmith_blessing.desc": "Sharpen safeguard: on failure ★ stays (only sparkles spent). Without it, fail = −1★.",
   "perk.perk_singularity_core.name": "Singularity Core",
   "perk.perk_singularity_core.desc": "Global x1.50 multiplier for endgame factory tiers (above #11).",
   "perk.perk_ticket_factory.name": "Ticket Factory",

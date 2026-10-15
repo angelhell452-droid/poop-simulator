@@ -1,16 +1,16 @@
-import { GAME } from '../core/state.js?v=5.4.22';
-import { KNIVES } from '../data/knives.data.js?v=5.4.22';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.22';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.22';
-import { getKnifeStar, getHatLevel, getKnifeClickMult } from '../economy/production.js?v=5.4.22';
-import { gte, gt, spendBio } from '../utils/big.js?v=5.4.22';
+import { GAME } from '../core/state.js?v=5.4.23';
+import { KNIVES } from '../data/knives.data.js?v=5.4.23';
+import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.23';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.23';
+import { getKnifeStar, getHatLevel, getKnifeClickMult } from '../economy/production.js?v=5.4.23';
+import { gte, gt, spendBio } from '../utils/big.js?v=5.4.23';
 import { events } from '../core/events.js';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.22';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.23';
 import { t } from '../i18n/t.js';
 import { knifeName } from '../i18n/localize.js';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.22';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.23';
 
 // Tier 1 knives set from first 3 starter cases
 export const TIER_1_KNIFE_IDS = new Set(
@@ -101,10 +101,26 @@ export function getKnifeRecycleReward(knifeOrId, explicitStar = null) {
   return { amount, currency, symbol, isAstral };
 }
 
+/**
+ * Штраф к шансу заточки от текущего ★ (попытка +1).
+ * ★1–10: 0; ★11–19: −1.5%/★; ★20–24: ещё −4%/★. Таланты могут дать 100% до штрафа.
+ */
+export function getKnifeSharpenStarPenalty(currentStar) {
+  const s = Math.max(1, Math.floor(Number(currentStar) || 1));
+  if (s <= 10) return 0;
+  if (s <= 19) return (s - 10) * 0.015;
+  return (19 - 10) * 0.015 + (s - 19) * 0.04;
+}
+
 export function getKnifeSharpenChance(knifeId) {
   const upgChanceTalent = TALENTS.find(t => t.id === 'talent_upgrade_chance')?.level || 0;
   const forgeLuckLvl = getRelicLevel('relic_forge_luck');
-  return Math.min(1.0, 0.70 + upgChanceTalent * 0.03 + forgeLuckLvl * 0.05);
+  // Таланты/реликвии жмут к 100% на низких ★; оверкап не копится.
+  const boosted = Math.min(1.0, 0.70 + upgChanceTalent * 0.03 + forgeLuckLvl * 0.05);
+  const star = getKnifeStar(knifeId);
+  const penalized = boosted - getKnifeSharpenStarPenalty(star);
+  // Пол: рулетка жива на ★20–25 даже у полного билда.
+  return Math.max(0.45, Math.min(1.0, penalized));
 }
 
 export function canSharpenKnife(knifeId) {
@@ -140,6 +156,7 @@ export function applyKnifeSharpen(knifeId, isSuccess) {
   const curStar = getKnifeStar(knifeId);
   const forgeLuckLvl = getRelicLevel('relic_forge_luck');
   const hasBlessing = hasPerk('perk_blacksmith_blessing');
+  // Защита: фейл не роняет ★. Без защиты — мягкий −1 (вайпа на ★1 больше нет).
   const hasProtection = hasBlessing || forgeLuckLvl > 0;
 
   if (!GAME.knifeStars) GAME.knifeStars = {};
@@ -150,7 +167,7 @@ export function applyKnifeSharpen(knifeId, isSuccess) {
     events.emit('knife:sharpened', { knife, newStar });
     return { success: true, newStar, knife, cost: costInfo.cost };
   } else {
-    const newStar = hasProtection ? Math.max(1, curStar - 1) : 1;
+    const newStar = hasProtection ? curStar : Math.max(1, curStar - 1);
     GAME.knifeStars[knifeId] = newStar;
     events.emit('knife:sharpenFailed', { knife, newStar });
     return {
@@ -160,8 +177,8 @@ export function applyKnifeSharpen(knifeId, isSuccess) {
       hasProtection,
       cost: costInfo.cost,
       msg: hasProtection
-        ? `Заточка сорвалась! Защита «Небесная Кузница» сохранила уровень: снижен лишь на -1 (★${newStar}).`
-        : `Заточка сорвалась! Звезда ножа сброшена до ★1.`
+        ? `Заточка сорвалась! Защита сохранила ★${newStar} (потрачены только ✨).`
+        : `Заточка сорвалась! Уровень снижен на −1 → ★${newStar}.`
     };
   }
 }

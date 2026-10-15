@@ -1,6 +1,24 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.22';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.23';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.23 PRO',
+    date: '15 Октября 2026',
+    dateEn: 'October 15, 2026',
+    title: 'Патч 5.4.23: Заточка без вайпа',
+    titleEn: 'Patch 5.4.23: Sharpen Without Wipe',
+    badge: 'Патч 5.4.23',
+    badgeEn: 'Patch 5.4.23',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '⭐',
+        text: 'Фейл заточки больше не сбрасывает на ★1 — только −1★ (с защитой ★ сохраняется). Таланты по-прежнему могут дать до 100% на низких ★, но с ★11+ шанс падает, к ★20–25 рулетка снова жёстче (пол 45%).',
+        textEn: 'Sharpen fail no longer resets to ★1 — only −1★ (with protection ★ stays). Talents can still reach 100% on low ★, but from ★11+ chance drops and ★20–25 is harder again (45% floor).'
+      }
+    ]
+  },
   {
     version: 'v5.4.22 PRO',
     date: '15 Октября 2026',

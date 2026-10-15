@@ -1,4 +1,4 @@
-import { GAME } from '../core/state.js?v=5.4.22';
+import { GAME } from '../core/state.js?v=5.4.23';
 
 /**
  * 5 Тиров Реликвий Прорыва (Breakthrough Relic Tiers)
@@ -169,8 +169,8 @@ export const RELICS = [
     name: '🗡️ Небесная Кузница Ножей',
     nameEn: 'Celestial Knife Forge',
     icon: '🗡️',
-    desc: '+5% к шансу успеха заточки ножа за уровень и защита от падения в 0.',
-    descEn: '+5% to knife sharpening success chance per level and protection from resetting to 0.',
+    desc: '+5% к шансу успеха заточки за уровень; при фейле ★ не падает (только ✨).',
+    descEn: '+5% sharpen success per level; on fail ★ stays (only ✨ spent).',
     cost: 6,
     max: 12,
     tier: 2,

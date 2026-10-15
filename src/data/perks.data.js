@@ -1,8 +1,8 @@
-import { GAME } from '../core/state.js?v=5.4.22';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.22';
-import { SHOP_ITEMS } from './shop.data.js?v=5.4.22';
-import { getRelicLevel } from './relics.data.js?v=5.4.22';
-import { gte, spendBio } from '../utils/big.js?v=5.4.22';
+import { GAME } from '../core/state.js?v=5.4.23';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.23';
+import { SHOP_ITEMS } from './shop.data.js?v=5.4.23';
+import { getRelicLevel } from './relics.data.js?v=5.4.23';
+import { gte, spendBio } from '../utils/big.js?v=5.4.23';
 
 /**
  * 20 Уникальных Постоянных Перков (Permanent Perks) за Блестяшки ✨
@@ -186,8 +186,8 @@ export const PERMANENT_PERKS = [
     icon: '🛡️',
     reqBreakthrough: 40,
     cost: 10000000,
-    desc: 'Защита заточки ножей: при неудаче уровень ножа падает максимум на -1, а не сбрасывается в 0.',
-    descEn: 'Knife sharpen safeguard: on failure knife level drops by at most -1 instead of resetting to 0.'
+    desc: 'Защита заточки: при неудаче ★ не падает (теряются только ✨). Без защиты фейл = −1★.',
+    descEn: 'Sharpen safeguard: on failure ★ stays (only ✨ spent). Without it, fail = −1★.'
   },
 
   // --- 🔒 Требует строго 50-й Прорыв ---
