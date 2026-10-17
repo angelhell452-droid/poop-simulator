@@ -1,13 +1,13 @@
-import { GAME } from '../core/state.js?v=5.4.30';
+import { GAME } from '../core/state.js?v=5.4.31';
 import { TALENT_TIERS, TALENTS } from '../data/talents.data.js';
-import { RELIC_TIERS, RELICS, getRelicLevel } from '../data/relics.data.js?v=5.4.30';
-import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.4.30';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.30';
-import { drawPlunger } from '../utils/icons.js?v=5.4.30';
+import { RELIC_TIERS, RELICS, getRelicLevel } from '../data/relics.data.js?v=5.4.31';
+import { TRANSCEND_UPGRADES } from '../data/transcend.data.js?v=5.4.31';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.31';
+import { drawPlunger } from '../utils/icons.js?v=5.4.31';
 import { getAffordableTalentInfo, buyTalent } from '../systems/talentService.js';
-import { buyRelic, buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.4.30';
-import { updateHUD } from './hudView.js?v=5.4.30';
-import { saveLocal } from '../save/saveManager.js?v=5.4.30';
+import { buyRelic, buyTranscendUpgrade } from '../prestige/transcendService.js?v=5.4.31';
+import { updateHUD } from './hudView.js?v=5.4.31';
+import { saveLocal } from '../save/saveManager.js?v=5.4.31';
 import { getRollIcon } from '../utils/icons.js';
 import { isRelicSectionUnlocked, isTalentVisible } from '../progression/unlocks.js';
 import { t, td, onLocaleChange } from '../i18n/t.js';
@@ -182,8 +182,8 @@ export function renderFlushTalents() {
     row.querySelector('.buy-talent-btn').addEventListener('click', async () => {
       if (buyTalent(tl.id)) {
         renderTalents();
-        const inventory = await import('./characterInventoryView.js?v=5.4.30');
-        const index = await import('./knivesIndexView.js?v=5.4.30');
+        const inventory = await import('./characterInventoryView.js?v=5.4.31');
+        const index = await import('./knivesIndexView.js?v=5.4.31');
         inventory.renderCharacterInventory();
         index.renderKnivesIndexBook();
         updateHUD();

@@ -1,11 +1,11 @@
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.30';
-import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.30';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.30';
-import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.30';
-import { GAME } from '../core/state.js?v=5.4.30';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.30';
-import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.30';
-import { caseTierJackpotPassive } from './knifeBalance.config.js?v=5.4.30';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.31';
+import { PHASE_FORMS, PHASE_COUNT } from '../progression/phases.constants.js?v=5.4.31';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.31';
+import { isBig, mul, div, sub, bigPow } from '../utils/big.js?v=5.4.31';
+import { GAME } from '../core/state.js?v=5.4.31';
+import { ECONOMY, formBaseCostAt } from '../economy/economy.config.js?v=5.4.31';
+import { getBreakthroughIncomeMult } from '../economy/metaMultipliers.js?v=5.4.31';
+import { caseTierJackpotPassive } from './knifeBalance.config.js?v=5.4.31';
 
 export const EPOCH_NAMES = [
   { epoch: "Первичный Био-Бульон", bg: "#0284c7", body: "#78350f", aura: null, archetype: "classic" },
@@ -59,8 +59,8 @@ export const ENTITIES = [
 /**
  * Порог cycleBiomass для формы (stage index i) — накопленная сумма цен уровней.
  *
- * Цена одного уровня: formBaseCost * K^((stage-1)/factoryFormStep) * flushPowerBase^flushes
- * ≈ модельный CPS тира × formBuySeconds.
+ * Цена одного уровня: formBaseCostAt(i) * K^((stage-1)/factoryFormStep) * flushPowerBase^flushes
+ * ≈ модельный CPS тира × formBuySecondsAt(i) (круиз до ~10–20k, затем тормоз).
  *
  * Абсолютный порог: base * flushMult * (r^i - 1) / (r - 1), r = K^(1/factoryFormStep).
  * Никогда не возвращает Infinity/NaN (иначе effectiveFormCost схлопывается в 1 через rehydrateBig).
@@ -77,7 +77,7 @@ export function calcEvolutionCost(i) {
   const flushBaseRaw = Number(ECONOMY.flushPowerBase);
   const flushBase = Number.isFinite(flushBaseRaw) && flushBaseRaw > 1 ? flushBaseRaw : 1.18;
   const flushMult = bigPow(Math.max(1.01, flushBase), flushes);
-  const baseRaw = Number(ECONOMY.formBaseCost);
+  const baseRaw = Number(formBaseCostAt(stage));
   const base = Number.isFinite(baseRaw) && baseRaw > 0 ? baseRaw : 1;
 
   const rMinus1 = Math.pow(K, 1 / step) - 1;

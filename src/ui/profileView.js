@@ -1,5 +1,5 @@
-import { GAME } from '../core/state.js?v=5.4.30';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.30';
+import { GAME } from '../core/state.js?v=5.4.31';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.31';
 import { t, onLocaleChange } from '../i18n/t.js';
 import { events } from '../core/events.js';
 

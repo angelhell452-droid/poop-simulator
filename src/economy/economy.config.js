@@ -3,7 +3,8 @@
  * Меняй числа здесь — формы, заводы, смывы и блестяшки читают этот файл.
  * Сила клика/пассива ножей — в src/data/knifeBalance.config.js.
  *
- * Форма — корень прогрессии. Цена формы ≈ formBuySeconds секунд модельного CPS.
+ * Форма — корень прогрессии. Цена формы ≈ formBuySecondsAt(stage) секунд модельного CPS.
+ * Кривая: приятно до ~10–20k форм, затем плавный тормоз к late-якорю formBuySeconds.
  * Модельный CPS включает пол пассива джекпота кейса текущего BT (formScaleWithCaseKnife).
  * Заводы и формы растут на tierGrowthK за каждый шаг factoryFormStep форм.
  * Кейсы: строго 1 кейс на 1 прорыв; цена = доля ожидаемого стека блестяшек к этому BT.
@@ -22,16 +23,20 @@ export const ECONOMY = {
   factoryBaseCps: 80,
   // Новый завод каждые N форм (диапазон ТЗ: 700–1000).
   factoryFormStep: 850,
-  // Секунды модельного CPS на одну форму. 90 (было 25): авто-MAX заводов не пролетает 2k форм за полминуты.
+  // Late-якорь секунд модельного CPS на форму (после ~35k). Кривая — formBuySecondsAt().
   formBuySeconds: 90,
-  // Цена одного уровня формы: factoryBaseCps * formBuySeconds (= formBaseCost).
-  // Порог формы i — накопленная сумма: base * flushMult * (r^i - 1)/(r - 1),
-  // r = K^(1/factoryFormStep). Прирост соседних уровней ≈ base * K^(stage/step) * flushMult.
+  // Узлы кривой темпа форм (секунды модельного CPS).
+  formPaceCruiseSeconds: 40,   // 1 → 10k
+  formPaceMidSeconds: 65,      // к 20k
+  formPaceCruiseUntil: 10000,
+  formPaceMidUntil: 20000,
+  formPaceLateUntil: 35000,
+  // Цена одного уровня формы при late-якоре (legacy / UI). Реальный порог — formBaseCostAt(stage).
   get formBaseCost() {
     return this.factoryBaseCps * this.formBuySeconds;
   },
   // После N копий завода доход от доп. копий растёт с убывающей отдачей (автозакуп не = линейный ×40).
-  factoryCopySoftcapKnee: 8,
+  factoryCopySoftcapKnee: 14,
   factoryCopySoftcapPower: 0.42,
   // Порог формы масштабируется бустом прорыва — тот же рычаг, что качает доход после BT.
   formScaleWithBreakthrough: true,
@@ -78,12 +83,46 @@ export const ECONOMY = {
 };
 
 /**
+ * Секунды модельного CPS на форму по текущей форме.
+ * 1→10k: 40 (круиз) → 10k→20k: 40…65 → 20k→35k: 65…90 → дальше 90.
+ */
+export function formBuySecondsAt(stage) {
+  const s = Math.max(0, Number(stage) || 0);
+  const cruise = Number(ECONOMY.formPaceCruiseSeconds);
+  const mid = Number(ECONOMY.formPaceMidSeconds);
+  const late = Number(ECONOMY.formBuySeconds);
+  const cSec = Number.isFinite(cruise) && cruise > 0 ? cruise : 40;
+  const mSec = Number.isFinite(mid) && mid > 0 ? mid : 65;
+  const lSec = Number.isFinite(late) && late > 0 ? late : 90;
+  const tCruise = Math.max(1, Number(ECONOMY.formPaceCruiseUntil) || 10000);
+  const tMid = Math.max(tCruise + 1, Number(ECONOMY.formPaceMidUntil) || 20000);
+  const tLate = Math.max(tMid + 1, Number(ECONOMY.formPaceLateUntil) || 35000);
+
+  if (s < tCruise) return cSec;
+  if (s < tMid) {
+    const t = (s - tCruise) / (tMid - tCruise);
+    return cSec + (mSec - cSec) * t;
+  }
+  if (s < tLate) {
+    const t = (s - tMid) / (tLate - tMid);
+    return mSec + (lSec - mSec) * t;
+  }
+  return lSec;
+}
+
+/** База цены формы на данном stage: factoryBaseCps × formBuySecondsAt(stage). */
+export function formBaseCostAt(stage) {
+  const cps = Math.max(1, Number(ECONOMY.factoryBaseCps) || 80);
+  return cps * formBuySecondsAt(stage);
+}
+
+/**
  * Эффективное число копий завода для CPS: до knee — линейно, дальше power-softcap.
- * count=40, knee=8, power=0.42 → ≈ 8 + 32^0.42 ≈ 12 (вместо 40).
+ * count=40, knee=14, power=0.42 → ≈ 14 + 26^0.42 ≈ 18 (вместо 40).
  */
 export function effectiveFactoryCopyCount(count) {
   const n = Math.max(0, Number(count) || 0);
-  const knee = Math.max(1, Number(ECONOMY.factoryCopySoftcapKnee) || 8);
+  const knee = Math.max(1, Number(ECONOMY.factoryCopySoftcapKnee) || 14);
   const power = Number(ECONOMY.factoryCopySoftcapPower);
   const p = Number.isFinite(power) && power > 0 ? Math.min(1, power) : 0.42;
   if (n <= knee) return n;

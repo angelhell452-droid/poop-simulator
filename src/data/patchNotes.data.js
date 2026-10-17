@@ -1,6 +1,30 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.30';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.31';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.31 PRO',
+    date: '17 Октября 2026',
+    dateEn: 'October 17, 2026',
+    title: 'Патч 5.4.31: Темп форм до 20k',
+    titleEn: 'Patch 5.4.31: Form Pace to 20k',
+    badge: 'Патч 5.4.31',
+    badgeEn: 'Patch 5.4.31',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🚀',
+        text: 'Кривая темпа форм: ~40с до 10k, плавно к ~65с к 20k, затем к 90с после 35k — приятный круиз, лёгкий тормоз позже.',
+        textEn: 'Form pace curve: ~40s until 10k, ramps to ~65s by 20k, then to 90s after 35k — smooth cruise, gentle slowdown later.'
+      },
+      {
+        type: 'balance',
+        icon: '🏭',
+        text: 'Softcap копий заводов: knee 8→14 — ранний спам копий ощущается сильнее.',
+        textEn: 'Factory copy softcap knee 8→14 — early copy spam feels stronger.'
+      }
+    ]
+  },
   {
     version: 'v5.4.30 PRO',
     date: '17 Октября 2026',
