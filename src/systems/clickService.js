@@ -1,13 +1,13 @@
-import { GAME } from '../core/state.js?v=5.4.29';
+import { GAME } from '../core/state.js?v=5.4.30';
 import { TALENTS } from '../data/talents.data.js';
-import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.29';
-import { getSparklesPerCrit } from '../economy/sparkleScale.js?v=5.4.29';
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.29';
-import { takeClickBudget } from './autoclickService.js?v=5.4.29';
+import { getClickPower, getEquippedKnife, getPassiveIncome, getKnifeFactorySynergyMult, getKnifeStar } from '../economy/production.js?v=5.4.30';
+import { getSparklesPerCrit } from '../economy/sparkleScale.js?v=5.4.30';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.30';
+import { takeClickBudget } from './autoclickService.js?v=5.4.30';
 import { events } from '../core/events.js';
-import { add, bigPow, gainBio, mul } from '../utils/big.js?v=5.4.29';
+import { add, bigPow, gainBio, mul } from '../utils/big.js?v=5.4.30';
 import { hasPerk } from '../data/perks.data.js';
-import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.29';
+import { autoCollectVipMeteors } from '../ui/petCanvasView.js?v=5.4.30';
 
 export let pendingClicks = 0;
 
@@ -103,8 +103,8 @@ export function processBatchedClicks(clickClientX = null, clickClientY = null) {
     }
   }
 
-  // Аварийный буст кликов при штрафе ножа:
-  // ЕСЛИ активен штраф ножа (mult == 0.10), то каждый Критический удар при ручном клике
+  // Аварийный буст кликов при штрафе без ножа:
+  // ЕСЛИ активен штраф (mult == 0.10), то каждый Критический удар при ручном клике
   // гарантированно начисляет в кошелек +5 Блестяшек ✨
   const isKnifePenaltyActive = getKnifeFactorySynergyMult() <= 0.10;
   if (isKnifePenaltyActive && critsCount > 0 && isManual) {

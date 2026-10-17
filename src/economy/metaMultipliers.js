@@ -1,6 +1,6 @@
-import { GAME } from '../core/state.js?v=5.4.29';
-import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.4.29';
-import { ECONOMY } from './economy.config.js?v=5.4.29';
+import { GAME } from '../core/state.js?v=5.4.30';
+import { getPhaseForForm, getPhaseForStage, PHASE_COUNT, CLASSIC_EPOCHS } from '../progression/phases.data.js?v=5.4.30';
+import { ECONOMY } from './economy.config.js?v=5.4.30';
 
 function echoCount(phaseId) {
   const bag = GAME.phaseEcho || {};
@@ -59,11 +59,11 @@ function openPairEchoBonus(at, closedPairs, previewPhase = 0, previewAdd = 0) {
   return bonus;
 }
 
-import { bigPow, isBig, log10Of, mul, rehydrateBig } from '../utils/big.js?v=5.4.29';
+import { bigPow, isBig, log10Of, mul, rehydrateBig } from '../utils/big.js?v=5.4.30';
 import { TALENTS } from '../data/talents.data.js';
 import { hasPerk } from '../data/perks.data.js';
 
-import { getRelicLevel } from '../data/relics.data.js?v=5.4.29';
+import { getRelicLevel } from '../data/relics.data.js?v=5.4.30';
 
 export function getFlushIncomeMult() {
   const flushes = Math.max(0, GAME.flushCount ?? GAME.totalPrestiges ?? 0);
@@ -174,7 +174,7 @@ export function calculateInfiniteIncomeChain({
   result = mul(result, infMult);
   // * Вантузный Капитал (relic_guild_plunger_scaling)
   result = mul(result, capMult);
-  // * Синергия Ножа и Фабрик (штраф x0.1 при отсутствии актуального ножа)
+  // * Синергия Ножа и Фабрик (штраф x0.1 только без экипированного ножа)
   result = mul(result, knifeSynergyMult);
 
   return result;

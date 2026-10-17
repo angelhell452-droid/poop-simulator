@@ -1,6 +1,6 @@
-import { GAME } from '../core/state.js?v=5.4.29';
+import { GAME } from '../core/state.js?v=5.4.30';
 import { TALENTS } from '../data/talents.data.js';
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.29';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.30';
 import { hasPerk } from '../data/perks.data.js';
 import {
   getClickPower,
@@ -9,22 +9,22 @@ import {
   getKnifeFactorySynergyMult,
   getEquippedKnife,
   getKnifeStar
-} from '../economy/production.js?v=5.4.29';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.29';
-import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.29';
-import { checkAchievements } from '../systems/achievementsService.js?v=5.4.29';
-import { updateHUD } from './hudView.js?v=5.4.29';
-import { saveLocal } from '../save/saveManager.js?v=5.4.29';
-import { requestCloudSync } from '../save/cloudSync.js?v=5.4.29';
+} from '../economy/production.js?v=5.4.30';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.30';
+import { add, cmp, gainBio, gt, gte, isBig, mul } from '../utils/big.js?v=5.4.30';
+import { checkAchievements } from '../systems/achievementsService.js?v=5.4.30';
+import { updateHUD } from './hudView.js?v=5.4.30';
+import { saveLocal } from '../save/saveManager.js?v=5.4.30';
+import { requestCloudSync } from '../save/cloudSync.js?v=5.4.30';
 import { events } from '../core/events.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.29';
-import { getMeteorSparkleGain, getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.29';
-import { ECONOMY } from '../economy/economy.config.js?v=5.4.29';
-import { KNIVES } from '../data/knives.data.js?v=5.4.29';
-import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.29';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.30';
+import { getMeteorSparkleGain, getSparkleEpochMult } from '../economy/sparkleScale.js?v=5.4.30';
+import { ECONOMY } from '../economy/economy.config.js?v=5.4.30';
+import { KNIVES } from '../data/knives.data.js?v=5.4.30';
+import { findBodySkin, SKIN_FITTING } from '../data/skins.data.js?v=5.4.30';
 import { t } from '../i18n/t.js';
-import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.29';
-import { executeTimeWarp } from './vipShopView.js?v=5.4.29';
+import { getRelicLevel, hasRelic } from '../data/relics.data.js?v=5.4.30';
+import { executeTimeWarp } from './vipShopView.js?v=5.4.30';
 import { AVAILABLE_KNIFE_ART } from '../data/availableKnifeArt.data.js';
 
 let canvas = null;
@@ -202,7 +202,7 @@ function scheduleNextMeteor(extraMs = 0) {
   const base = 40000 + Math.random() * 35000 + extraMs;
   let delay = Math.max(12000, base * spawnScale * magnet * catcherScale);
   if (getKnifeFactorySynergyMult() <= 0.10) {
-    // Аварийный буст при штрафе: частота метеоритов временно увеличивается до 1 раза в 45 сек
+    // Аварийный буст без ножа: частота метеоритов временно увеличивается до 1 раза в 45 сек
     delay = Math.min(delay, 45000);
   }
   nextMeteorSpawn = Date.now() + delay;
@@ -1427,7 +1427,7 @@ function renderPetLoop(time) {
     }
   }
 } else {
-  // При активном штрафе ножа ограничиваем время ожидания прилета метеорита до максимум 45 секунд
+  // При штрафе без ножа ограничиваем время ожидания прилета метеорита до максимум 45 секунд
     if (getKnifeFactorySynergyMult() <= 0.10 && nextMeteorSpawn > Date.now() + 45000) {
       nextMeteorSpawn = Date.now() + 45000;
     }

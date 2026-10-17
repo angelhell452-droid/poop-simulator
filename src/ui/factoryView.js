@@ -1,18 +1,19 @@
 import { factoryName, factoryTier } from '../i18n/localize.js';
 import { t, onLocaleChange } from '../i18n/t.js';
-import { GAME } from '../core/state.js?v=5.4.29';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.29';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.29';
-import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.4.29';
-import { buyFactory } from '../systems/factoryService.js?v=5.4.29';
-import { updateHUD, openRateBreakdown } from './hudView.js?v=5.4.29';
-import { factoryMilestoneRank, getFactoryBreakdown, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.29';
-import { saveLocal } from '../save/saveManager.js?v=5.4.29';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.29';
-import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.4.29';
-import { mul } from '../utils/big.js?v=5.4.29';
-import { drawPlunger } from '../utils/icons.js?v=5.4.29';
+import { GAME } from '../core/state.js?v=5.4.30';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.30';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.30';
+import { getAffordableFactoryInfo } from '../economy/costs.js?v=5.4.30';
+import { buyFactory } from '../systems/factoryService.js?v=5.4.30';
+import { updateHUD, openRateBreakdown } from './hudView.js?v=5.4.30';
+import { factoryMilestoneRank, getFactoryBreakdown, getKnifeFactorySynergyMult } from '../economy/production.js?v=5.4.30';
+import { saveLocal } from '../save/saveManager.js?v=5.4.30';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.30';
+import { buyHorizonUpgrade, horizonOpen, horizonShopRows, horizonSparkCount } from '../economy/horizon.js?v=5.4.30';
+import { mul } from '../utils/big.js?v=5.4.30';
+import { drawPlunger } from '../utils/icons.js?v=5.4.30';
 import { events } from '../core/events.js';
+import { openCharacterInventoryModal } from './characterInventoryView.js?v=5.4.30';
 
 let activeFactoryTier = '1'; // '1' | '2' | '3' | '4'
 
@@ -48,29 +49,16 @@ export function updateFactoryPenaltyBanner() {
         <span class="text-2xl shrink-0 select-none">⚠️</span>
         <div class="space-y-1 flex-1">
           <div class="font-game text-xs sm:text-sm font-extrabold text-red-300 tracking-wide leading-snug">
-            ВНИМАНИЕ: Твой нож устарел для текущей формы питомца! Заводы работают всего на 10% мощности.
+            ВНИМАНИЕ: Нож не экипирован! Заводы работают всего на 10% мощности.
           </div>
           <div class="text-[11px] sm:text-xs text-amber-200 leading-snug font-medium">
-            💡 <b class="text-yellow-300">РЕШЕНИЕ:</b> Перейди во вкладку магазина <button type="button" class="sos-goto-bravo-btn inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 hover:bg-emerald-500/30 transition font-bold shadow-sm cursor-pointer">[⭐ Тир 1]</button>, открой Кейс <b class="text-yellow-300 font-bold">«Операция Браво»</b> за <span class="text-yellow-300 font-bold">1.5k Блестяшек ✨</span> и экипируй новый нож, чтобы вернуть 100% пассивного дохода!
+            💡 <b class="text-yellow-300">РЕШЕНИЕ:</b> Оденьте нож в <button type="button" class="sos-goto-inventory-btn inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 hover:bg-emerald-500/30 transition font-bold shadow-sm cursor-pointer">[Инвентарь]</button>, чтобы избежать штрафа на доход и вернуть 100% пассивного дохода.
           </div>
         </div>
       </div>
     `;
-    banner.querySelector('.sos-goto-bravo-btn')?.addEventListener('click', () => {
-      const casesTab = document.querySelector('.dash-tab[data-target="panelCases"]');
-      if (casesTab) casesTab.click();
-      import('./casesView.js').then(m => {
-        if (m.activeCaseTier !== undefined) m.activeCaseTier = '1';
-        if (m.renderCasesSystem) m.renderCasesSystem();
-        setTimeout(() => {
-          const bravoCard = document.querySelector('[data-case="case_bravo"]');
-          if (bravoCard) {
-            bravoCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            bravoCard.classList.add('ring-4', 'ring-yellow-400');
-            setTimeout(() => bravoCard.classList.remove('ring-4', 'ring-yellow-400'), 2000);
-          }
-        }, 100);
-      });
+    banner.querySelector('.sos-goto-inventory-btn')?.addEventListener('click', () => {
+      openCharacterInventoryModal('knives');
     });
   } else if (banner) {
     banner.remove();

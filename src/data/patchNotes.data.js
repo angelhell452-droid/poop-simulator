@@ -1,6 +1,30 @@
-import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.29';
+import { PATCH_NOTES_ARCHIVE } from './patchNotesArchive.data.js?v=5.4.30';
 
 export const PATCH_NOTES = [
+  {
+    version: 'v5.4.30 PRO',
+    date: '17 Октября 2026',
+    dateEn: 'October 17, 2026',
+    title: 'Патч 5.4.30: Штраф только без ножа',
+    titleEn: 'Patch 5.4.30: No-Knife Penalty Only',
+    badge: 'Патч 5.4.30',
+    badgeEn: 'Patch 5.4.30',
+    badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    changes: [
+      {
+        type: 'balance',
+        icon: '🗡️',
+        text: 'Убран штраф за «устаревший» нож: любой экипированный нож даёт 100% дохода заводов. Штраф −90% остаётся только без ножа (после формы 3500).',
+        textEn: 'Removed outdated-knife penalty: any equipped knife keeps 100% factory income. −90% remains only with no knife equipped (after form 3500).'
+      },
+      {
+        type: 'ui',
+        icon: '⚠️',
+        text: 'Плашка предупреждения: «Оденьте нож, чтобы избежать штрафа на доход» с быстрым переходом в Инвентарь.',
+        textEn: 'Warning banner: “Equip a knife to avoid the income penalty” with a quick jump to Inventory.'
+      }
+    ]
+  },
   {
     version: 'v5.4.29 PRO',
     date: '16 Октября 2026',

@@ -1,25 +1,24 @@
-import { GAME } from '../core/state.js?v=5.4.29';
-import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.29';
-import { FACTORIES } from '../data/factories.data.js?v=5.4.29';
+import { GAME } from '../core/state.js?v=5.4.30';
+import { EVOLUTIONS } from '../data/evolutions.data.js?v=5.4.30';
+import { FACTORIES } from '../data/factories.data.js?v=5.4.30';
 import { TALENTS } from '../data/talents.data.js';
-import { KNIVES } from '../data/knives.data.js?v=5.4.29';
-import { WEAPON_CASES } from '../data/cases.data.js?v=5.4.29';
-import { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../data/knifeBalance.config.js?v=5.4.29';
+import { KNIVES } from '../data/knives.data.js?v=5.4.30';
+import { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult } from '../data/knifeBalance.config.js?v=5.4.30';
 export { KNIFE_BALANCE_CONFIG, getKnifeEffectiveClickMult, getKnifeEffectivePassiveMult };
-import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.29';
-import { dampenGearMult, getCleanIncomeMult, getHungerClickMult, getHappyCritBonus, getIdealMult, getInfinityEssenceMult, getPlungerCapitalMult, getPlungersIncomeMult, getRollsIncomeMult, getTutorialClickMult, getTutorialCritBonus, getTutorialIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.4.29';
+import { SHOP_ITEMS } from '../data/shop.data.js?v=5.4.30';
+import { dampenGearMult, getCleanIncomeMult, getHungerClickMult, getHappyCritBonus, getIdealMult, getInfinityEssenceMult, getPlungerCapitalMult, getPlungersIncomeMult, getRollsIncomeMult, getTutorialClickMult, getTutorialCritBonus, getTutorialIncomeMult, isIdealPet, lateComboMult } from './metaMultipliers.js?v=5.4.30';
 import { hasPerk } from '../data/perks.data.js';
-import { guildPresenceMult } from '../guild/guildPresence.js?v=5.4.29';
+import { guildPresenceMult } from '../guild/guildPresence.js?v=5.4.30';
 import { ARCHETYPES } from '../progression/archetypes.js';
 import { archetypeName } from '../i18n/localize.js';
-import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.29';
+import { getPhaseForStage } from '../progression/phases.data.js?v=5.4.30';
 import { getIncomePace, getVipIncomeMult, INCOME_PACE } from './pace.js';
-import { findBodySkin } from '../data/skins.data.js?v=5.4.29';
-import { add, bigPow, cmp, isBig, mul } from '../utils/big.js?v=5.4.29';
-import { formatNumber } from '../utils/numberFormatter.js?v=5.4.29';
-import { horizonIncomeMult } from './horizon.js?v=5.4.29';
-import { effectiveFactoryCopyCount } from './economy.config.js?v=5.4.29';
-import { BARE_CLICK_CAP } from '../systems/autoclickService.js?v=5.4.29';
+import { findBodySkin } from '../data/skins.data.js?v=5.4.30';
+import { add, bigPow, cmp, isBig, mul } from '../utils/big.js?v=5.4.30';
+import { formatNumber } from '../utils/numberFormatter.js?v=5.4.30';
+import { horizonIncomeMult } from './horizon.js?v=5.4.30';
+import { effectiveFactoryCopyCount } from './economy.config.js?v=5.4.30';
+import { BARE_CLICK_CAP } from '../systems/autoclickService.js?v=5.4.30';
 
 /** Max share of factory income that a full click-cap stream may add. */
 const CLICK_INCOME_SHARE_CAP = 0.15;
@@ -295,28 +294,14 @@ export function getKnifeFactorySynergyMult() {
   const currentStage = GAME.evoStage || 0;
   const btCount = GAME.breakthroughCount ?? GAME.totalTranscend ?? 0;
 
-  // Если игрок на 0-м Прорыве или текущая форма меньше 3 500, активируется полный иммунитет:
-  // 100% мощности (x1.00), штраф полностью отключен
+  // Ранний прогресс: без штрафа (обучение / до формы 3500).
   if (btCount === 0 || currentStage < 3500) {
     return 1.0;
   }
 
+  // Штраф только без экипированного ножа. Устаревший/тир-1 нож больше не штрафует.
   const knife = getEquippedKnife();
-  if (!knife) return 0.1; // 90% штраф без экипированного ножа после формы 3500
-
-  // Ножи редких/божественных тиров всегда удовлетворяют синергии
-  if (['godly', 'celestial', 'special', 'titanium', 'rainbow', 'cosmic', 'quantum', 'impossible', 'absolute'].includes(knife.rarity)) {
-    return 1.0;
-  }
-
-  const knifeCase = WEAPON_CASES.find(c => c.pool && c.pool.includes(knife.id));
-  const knifeTier = knifeCase?.tierNumber || 1;
-
-  // Штраф -90% (x0.10) включается ТОЛЬКО тогда, когда форма пробивает отметку 3 500,
-  // а игрок все еще сидит со стартовым оружием (Тир 1 из первого кейса)
-  if (knifeTier <= 1) {
-    return 0.1;
-  }
+  if (!knife) return 0.1;
 
   return 1.0;
 }
